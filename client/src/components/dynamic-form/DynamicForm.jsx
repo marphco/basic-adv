@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import axios from 'axios';
-import './DynamicForm.css';
+import { useState } from "react";
+import axios from "axios";
+import "./DynamicForm.css";
 
 const DynamicForm = () => {
   const [selectedServices, setSelectedServices] = useState([]);
@@ -8,19 +8,20 @@ const DynamicForm = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    brandName: '',
-    projectType: 'new',
-    businessField: '',
-    otherBusinessField: '',
-    projectObjectives: '',
-    contactInfo: { name: '', email: '', phone: '' },
+    brandName: "",
+    projectType: "new",
+    businessField: "",
+    otherBusinessField: "",
+    projectObjectives: "",
+    contactInfo: { name: "", email: "", phone: "" },
   });
   const [answers, setAnswers] = useState({});
   const [questionCount, setQuestionCount] = useState(0);
+  const [additionalDetails, setAdditionalDetails] = useState({}); // Store additional details
 
   const maxQuestions = 7; // Limit number of questions
-  const services = ['Logo', 'Website', 'App'];
-  const businessFields = ['Tecnologia', 'Moda', 'Alimentare', 'Altro'];
+  const services = ["Logo", "Website", "App"];
+  const businessFields = ["Tecnologia", "Moda", "Alimentare", "Altro"];
 
   const toggleService = (service) => {
     if (selectedServices.includes(service)) {
@@ -37,7 +38,7 @@ const DynamicForm = () => {
 
   const handleAnswerChange = (e, questionText) => {
     const { type, value, checked } = e.target;
-    if (type === 'checkbox') {
+    if (type === "checkbox") {
       setAnswers((prev) => ({
         ...prev,
         [questionText]: {
@@ -50,25 +51,27 @@ const DynamicForm = () => {
     }
   };
 
+  const handleDetailsChange = (e, questionText) => {
+    const { value } = e.target;
+    setAdditionalDetails({ ...additionalDetails, [questionText]: value });
+  };
+
   const generateAIQuestion = async () => {
     if (selectedServices.length === 0) {
-      alert('Devi selezionare almeno un servizio.');
+      alert("Devi selezionare almeno un servizio.");
       return;
     }
-    
+
     setLoading(true);
     try {
-      const response = await axios.post(
-        'http://localhost:5001/api/generate',
-        {
-          servicesSelected: selectedServices,
-          formData,
-        }
-      );
+      const response = await axios.post("http://localhost:5001/api/generate", {
+        servicesSelected: selectedServices,
+        formData,
+      });
       setAiQuestions(response.data.questions || []);
       setQuestionCount(1); // Start counting questions
     } catch (error) {
-      console.error('Error generating AI questions:', error);
+      console.error("Error generating AI questions:", error);
     } finally {
       setLoading(false);
     }
@@ -82,7 +85,7 @@ const DynamicForm = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        'http://localhost:5001/api/nextQuestion',
+        "http://localhost:5001/api/nextQuestion",
         {
           currentAnswers: answers,
         }
@@ -90,7 +93,10 @@ const DynamicForm = () => {
       setAiQuestions(response.data.questions || []);
       setQuestionCount(questionCount + 1); // Increase question count
     } catch (error) {
-      console.error('Error sending answer and generating next question:', error);
+      console.error(
+        "Error sending answer and generating next question:",
+        error
+      );
     } finally {
       setLoading(false);
     }
@@ -98,26 +104,27 @@ const DynamicForm = () => {
 
   const handleSubmitContactInfo = async () => {
     try {
-      await axios.post('http://localhost:5001/api/submitLog', {
+      await axios.post("http://localhost:5001/api/submitLog", {
         answers,
+        additionalDetails,
         contactInfo: formData.contactInfo,
       });
-      alert('Grazie! Ti contatteremo a breve.');
+      alert("Grazie! Ti contatteremo a breve.");
       setSelectedServices([]);
       setAiQuestions([]);
       setFormData({
-        brandName: '',
-        projectType: 'new',
-        businessField: '',
-        otherBusinessField: '',
-        projectObjectives: '',
-        contactInfo: { name: '', email: '', phone: '' },
+        brandName: "",
+        projectType: "new",
+        businessField: "",
+        otherBusinessField: "",
+        projectObjectives: "",
+        contactInfo: { name: "", email: "", phone: "" },
       });
       setAnswers({});
       setQuestionCount(0);
       setIsCompleted(false);
     } catch (error) {
-      console.error('Error submitting log:', error);
+      console.error("Error submitting log:", error);
     }
   };
 
@@ -131,7 +138,9 @@ const DynamicForm = () => {
             {services.map((service) => (
               <button
                 key={service}
-                className={`service-btn ${selectedServices.includes(service) ? 'selected' : ''}`}
+                className={`service-btn ${
+                  selectedServices.includes(service) ? "selected" : ""
+                }`}
                 onClick={() => toggleService(service)}
               >
                 {service}
@@ -154,7 +163,11 @@ const DynamicForm = () => {
           {/* Project Type */}
           <div className="form-group">
             <label>Nuovo progetto o restyling?</label>
-            <select name="projectType" value={formData.projectType} onChange={handleInputChange}>
+            <select
+              name="projectType"
+              value={formData.projectType}
+              onChange={handleInputChange}
+            >
               <option value="new">Nuovo</option>
               <option value="restyling">Restyling</option>
             </select>
@@ -176,7 +189,7 @@ const DynamicForm = () => {
               <option value="Altro">Altro</option>
             </select>
 
-            {formData.businessField === 'Altro' && (
+            {formData.businessField === "Altro" && (
               <input
                 type="text"
                 name="otherBusinessField"
@@ -187,8 +200,12 @@ const DynamicForm = () => {
             )}
           </div>
 
-          <button className="submit-btn" onClick={generateAIQuestion} disabled={loading}>
-            {loading ? 'Caricamento...' : 'Next'}
+          <button
+            className="submit-btn"
+            onClick={generateAIQuestion}
+            disabled={loading}
+          >
+            {loading ? "Caricamento..." : "Next"}
           </button>
         </div>
       ) : isCompleted ? (
@@ -203,7 +220,10 @@ const DynamicForm = () => {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  contactInfo: { ...formData.contactInfo, name: e.target.value },
+                  contactInfo: {
+                    ...formData.contactInfo,
+                    name: e.target.value,
+                  },
                 })
               }
               placeholder="Inserisci il tuo nome"
@@ -219,7 +239,10 @@ const DynamicForm = () => {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  contactInfo: { ...formData.contactInfo, email: e.target.value },
+                  contactInfo: {
+                    ...formData.contactInfo,
+                    email: e.target.value,
+                  },
                 })
               }
               placeholder="Inserisci il tuo email"
@@ -235,15 +258,22 @@ const DynamicForm = () => {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  contactInfo: { ...formData.contactInfo, phone: e.target.value },
+                  contactInfo: {
+                    ...formData.contactInfo,
+                    phone: e.target.value,
+                  },
                 })
               }
               placeholder="Inserisci il tuo numero di telefono (facoltativo)"
             />
           </div>
 
-          <button className="submit-btn" onClick={handleSubmitContactInfo} disabled={loading}>
-            {loading ? 'Invio...' : 'Invia'}
+          <button
+            className="submit-btn"
+            onClick={handleSubmitContactInfo}
+            disabled={loading}
+          >
+            {loading ? "Invio..." : "Invia"}
           </button>
         </div>
       ) : (
@@ -254,14 +284,14 @@ const DynamicForm = () => {
               {aiQuestions.map((question, index) => (
                 <div key={index}>
                   <p>{question.text}</p>
-                  {question.type === 'text' && (
+                  {question.type === "text" && (
                     <input
                       type="text"
                       placeholder="Rispondi qui..."
                       onChange={(e) => handleAnswerChange(e, question.text)}
                     />
                   )}
-                  {question.type === 'multiple-choice' && (
+                  {question.type === "multiple-choice" &&
                     question.options.map((option, i) => (
                       <div key={i}>
                         <input
@@ -273,9 +303,8 @@ const DynamicForm = () => {
                         />
                         <label htmlFor={option}>{option}</label>
                       </div>
-                    ))
-                  )}
-                  {question.type === 'checkbox' && (
+                    ))}
+                  {question.type === "checkbox" &&
                     question.options.map((option, i) => (
                       <div key={i}>
                         <input
@@ -286,11 +315,25 @@ const DynamicForm = () => {
                         />
                         <label htmlFor={option}>{option}</label>
                       </div>
-                    ))
+                    ))}
+                  {/* Maggiori dettagli */}
+                  {question.moreDetails && (
+                    <div className="form-group">
+                      <label>Maggiori dettagli:</label>
+                      <textarea
+                        name="details"
+                        placeholder="Inserisci ulteriori dettagli qui..."
+                        onChange={(e) => handleDetailsChange(e, question.text)}
+                      ></textarea>
+                    </div>
                   )}
                 </div>
               ))}
-              <button className="submit-btn" type="button" onClick={handleNextQuestion}>
+              <button
+                className="submit-btn"
+                type="button"
+                onClick={handleNextQuestion}
+              >
                 Prossima domanda
               </button>
             </form>

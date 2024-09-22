@@ -17,29 +17,32 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5001;
 
-let questionLog = []; // To store questions and answers
+let questionLog = [];
 
 // AI question generation based on the initial form data
 app.post('/api/generate', async (req, res) => {
   const { servicesSelected, formData } = req.body;
 
   try {
-    // Pass the collected information to OpenAI, informing it not to ask for already provided info
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4o',
         messages: [
-          { 
-            role: 'system', 
-            content: `Sei un assistente che raccoglie informazioni per creare un piano di progetto per il brand "${formData.brandName}". Le seguenti informazioni sono già state raccolte: 
-            - Nome del Brand: ${formData.brandName}
-            - Tipo di Progetto: ${formData.projectType}
-            - Settore Aziendale: ${formData.businessField}.
-            Non fare nuovamente domande su queste informazioni. Concentrati sul raccogliere ulteriori dettagli necessari per i servizi selezionati: ${servicesSelected.join(', ')}. Fai domande semplici che un non esperto potrebbe comprendere facilmente. Evita termini tecnici e concentrati sulle esigenze di base per ogni servizio selezionato.`
+          {
+            role: 'system',
+            content: `Sei un assistente che aiuta a raccogliere dettagli per un progetto per il brand "${formData.brandName}".
+                      Le seguenti informazioni sono già state raccolte:
+                      - Nome del Brand: ${formData.brandName}
+                      - Tipo di Progetto: ${formData.projectType}
+                      - Settore Aziendale: ${formData.businessField}.
+                      Non fare nuovamente domande su queste informazioni. 
+                      Ora, fai domande relative ai servizi selezionati (${servicesSelected.join(', ')}).
+                      Per ogni domanda, genera quattro risposte pertinenti e aggiungi sempre un'opzione per "Maggiori informazioni".
+                      Le domande devono essere semplici, facili da comprendere e orientate a un utente che potrebbe non avere esperienza tecnica.`
           }
         ],
-        max_tokens: 150,
+        max_tokens: 300,
         temperature: 0.7
       },
       {
@@ -51,8 +54,8 @@ app.post('/api/generate', async (req, res) => {
     );
 
     const question = response.data.choices[0].message.content;
-    const aiQuestions = parseAiQuestionResponse(question);
-    questionLog.push({ question, formData }); // Store question in log
+    const aiQuestions = parseAiQuestionResponse(question); // Parse generated questions and options
+    questionLog.push({ question, formData });
     res.json({ questions: aiQuestions });
   } catch (error) {
     console.error('Error generating AI question:', error);
@@ -64,7 +67,6 @@ app.post('/api/generate', async (req, res) => {
 app.post('/api/nextQuestion', async (req, res) => {
   const { currentAnswers } = req.body;
 
-  // Add answers to log
   questionLog.push({ answers: currentAnswers });
 
   try {
@@ -73,13 +75,16 @@ app.post('/api/nextQuestion', async (req, res) => {
       {
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'Continua a generare domande per raccogliere informazioni dettagliate per il progetto.' },
-          { 
-            role: 'user', 
-            content: `L'utente ha risposto: ${JSON.stringify(currentAnswers)}. Qual è la prossima domanda rilevante?`
+          {
+            role: 'system',
+            content: 'Continua a generare domande pertinenti in base alle risposte ricevute per raccogliere tutte le informazioni necessarie per il progetto.'
+          },
+          {
+            role: 'user',
+            content: `L'utente ha risposto: ${JSON.stringify(currentAnswers)}. Genera la prossima domanda rilevante.`
           }
         ],
-        max_tokens: 150,
+        max_tokens: 300,
         temperature: 0.7
       },
       {
@@ -104,17 +109,19 @@ app.post('/api/submitLog', async (req, res) => {
   const { answers, contactInfo } = req.body;
   questionLog.push({ contactInfo, answers });
 
-  // AI Project Plan Generation
   try {
     const aiResponse = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'Crea un piano di progetto basato sulle risposte dell\'utente.' },
-          { 
-            role: 'user', 
-            content: `Queste sono le risposte dell'utente: ${JSON.stringify(answers)}. Genera un piano di progetto dettagliato e innovativo per soddisfare le aspettative del cliente.` 
+          {
+            role: 'system',
+            content: 'Crea un piano di progetto dettagliato e innovativo basato sulle risposte dell\'utente. Usa un linguaggio semplice e accessibile.'
+          },
+          {
+            role: 'user',
+            content: `Queste sono le risposte dell'utente: ${JSON.stringify(answers)}. Genera un piano di progetto dettagliato per soddisfare le aspettative del cliente.`
           }
         ],
         max_tokens: 2000,
@@ -135,34 +142,45 @@ app.post('/api/submitLog', async (req, res) => {
     const logPath = path.join(__dirname, 'logs', 'project_log.txt');
     fs.writeFileSync(logPath, JSON.stringify(questionLog, null, 2), 'utf-8');
 
-    res.status(200).json({ message: 'Log submitted and saved', projectPlan });
+    res.status(200).json({ message: 'Log inviato e salvato', projectPlan });
   } catch (error) {
     console.error('Error generating project plan:', error);
     res.status(500).json({ error: 'Errore nella generazione del piano di progetto' });
   }
 });
 
-// Parsing the AI's response to format as questions
+// Parsing the AI's response to format as questions with generated options
 function parseAiQuestionResponse(text) {
   const questions = [];
   const lines = text.split('\n');
+
   lines.forEach((line) => {
     if (line.includes('?')) {
-      // Logic for assigning the type of answer based on question content
-      if (line.includes('Hai già un logo')) {
-        questions.push({ text: line, type: 'multiple-choice', options: ['Sì', 'No'] });
-      } else if (line.includes('target principale')) {
-        questions.push({
-          text: line,
-          type: 'checkbox',
-          options: ['Teenager', 'Giovani', 'Adulti', 'Uomini', 'Donne']
-        });
+      const question = { text: line, options: [], moreDetails: true };
+
+      const optionsMatch = line.match(/\(([^)]+)\)/); // Example: "(Moderno, Classico, Vintage)"
+      if (optionsMatch && optionsMatch[1]) {
+        question.type = 'checkbox'; // Allow multiple choices for style-like questions
+        question.options = optionsMatch[1].split(',').map(opt => opt.trim());
+      } else if (line.includes('colori')) {
+        question.type = 'text'; // Open text input for colors
+        question.moreDetails = false; // No need for "Maggiori dettagli" on colors
       } else {
-        questions.push({ text: line, type: 'text' });
+        question.type = 'multiple-choice'; // Default to multiple-choice
+        question.options = extractOptions(line); // Extract default options
       }
+
+      questions.push(question);
     }
   });
+
   return questions;
+}
+
+function extractOptions(questionText) {
+  // This function assumes options are generated dynamically for the given question
+  // Fallback in case no options are extracted
+  return ['Opzione 1', 'Opzione 2', 'Opzione 3', 'Opzione 4'];
 }
 
 app.listen(PORT, () => {
