@@ -19,23 +19,27 @@ const PORT = process.env.PORT || 5001;
 
 let questionLog = []; // To store questions and answers
 
-// Generate initial questions based on service selection
+// AI question generation based on the initial form data
 app.post('/api/generate', async (req, res) => {
   const { servicesSelected, formData } = req.body;
 
   try {
+    // Pass the collected information to OpenAI, informing it not to ask for already provided info
     const response = await axios.post(
       'https://api.openai.com/v1/chat/completions',
       {
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'Sei un assistente che raccoglie informazioni per un piano di progetto.' },
           { 
-            role: 'user', 
-            content: `L'utente ha selezionato: ${servicesSelected.join(', ')}. Genera delle domande per raccogliere: nome del brand, tipo di progetto, settore aziendale, obiettivi del progetto, target del mercato, e ulteriori dettagli rilevanti per la creazione di un piano di progetto.` 
+            role: 'system', 
+            content: `Sei un assistente che raccoglie informazioni per creare un piano di progetto per il brand "${formData.brandName}". Le seguenti informazioni sono già state raccolte: 
+            - Nome del Brand: ${formData.brandName}
+            - Tipo di Progetto: ${formData.projectType}
+            - Settore Aziendale: ${formData.businessField}.
+            Non fare nuovamente domande su queste informazioni. Concentrati sul raccogliere ulteriori dettagli necessari per i servizi selezionati: ${servicesSelected.join(', ')}. Fai domande semplici che un non esperto potrebbe comprendere facilmente. Evita termini tecnici e concentrati sulle esigenze di base per ogni servizio selezionato.`
           }
         ],
-        max_tokens: 250, // Increase the tokens to allow more detailed questions
+        max_tokens: 150,
         temperature: 0.7
       },
       {
@@ -52,11 +56,11 @@ app.post('/api/generate', async (req, res) => {
     res.json({ questions: aiQuestions });
   } catch (error) {
     console.error('Error generating AI question:', error);
-    res.status(500).json({ error: 'Error generating AI question' });
+    res.status(500).json({ error: 'Errore nella generazione delle domande AI' });
   }
 });
 
-// Handle subsequent questions
+// For handling next questions after user answers
 app.post('/api/nextQuestion', async (req, res) => {
   const { currentAnswers } = req.body;
 
@@ -91,11 +95,11 @@ app.post('/api/nextQuestion', async (req, res) => {
     res.json({ questions: aiQuestions });
   } catch (error) {
     console.error('Error generating next question:', error);
-    res.status(500).json({ error: 'Error generating next question' });
+    res.status(500).json({ error: 'Errore nella generazione delle prossime domande' });
   }
 });
 
-// Submit final answers and generate project plan
+// Submitting and logging the final answers and generating the project plan
 app.post('/api/submitLog', async (req, res) => {
   const { answers, contactInfo } = req.body;
   questionLog.push({ contactInfo, answers });
@@ -107,14 +111,14 @@ app.post('/api/submitLog', async (req, res) => {
       {
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'Crea un piano di progetto dettagliato e innovativo basato sulle risposte dell\'utente.' },
+          { role: 'system', content: 'Crea un piano di progetto basato sulle risposte dell\'utente.' },
           { 
             role: 'user', 
-            content: `Queste sono le risposte dell'utente: ${JSON.stringify(answers)}. Genera un piano di progetto dettagliato.` 
+            content: `Queste sono le risposte dell'utente: ${JSON.stringify(answers)}. Genera un piano di progetto dettagliato e innovativo per soddisfare le aspettative del cliente.` 
           }
         ],
-        max_tokens: 2000, // Increased to 2000 tokens for a longer project plan
-        temperature: 0.6 // Lowered to make responses more focused
+        max_tokens: 2000,
+        temperature: 0.7
       },
       {
         headers: {
@@ -134,11 +138,11 @@ app.post('/api/submitLog', async (req, res) => {
     res.status(200).json({ message: 'Log submitted and saved', projectPlan });
   } catch (error) {
     console.error('Error generating project plan:', error);
-    res.status(500).json({ error: 'Error generating project plan' });
+    res.status(500).json({ error: 'Errore nella generazione del piano di progetto' });
   }
 });
 
-// Helper function to parse AI questions
+// Parsing the AI's response to format as questions
 function parseAiQuestionResponse(text) {
   const questions = [];
   const lines = text.split('\n');

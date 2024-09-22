@@ -18,8 +18,7 @@ const DynamicForm = () => {
   const [answers, setAnswers] = useState({});
   const [questionCount, setQuestionCount] = useState(0);
 
-  const maxQuestionsPerStep = 4;  // 4 questions per step
-  const maxQuestions = 10; // Limit total number of questions
+  const maxQuestions = 7; // Limit number of questions
   const services = ['Logo', 'Website', 'App'];
   const businessFields = ['Tecnologia', 'Moda', 'Alimentare', 'Altro'];
 
@@ -52,6 +51,11 @@ const DynamicForm = () => {
   };
 
   const generateAIQuestion = async () => {
+    if (selectedServices.length === 0) {
+      alert('Devi selezionare almeno un servizio.');
+      return;
+    }
+    
     setLoading(true);
     try {
       const response = await axios.post(
@@ -71,8 +75,8 @@ const DynamicForm = () => {
   };
 
   const handleNextQuestion = async () => {
-    if (questionCount * maxQuestionsPerStep >= maxQuestions) {
-      setIsCompleted(true); // End questioning after the set number of questions
+    if (questionCount >= maxQuestions) {
+      setIsCompleted(true); // End questioning
       return;
     }
     setLoading(true);
@@ -84,7 +88,7 @@ const DynamicForm = () => {
         }
       );
       setAiQuestions(response.data.questions || []);
-      setQuestionCount(questionCount + 1); // Increase question count for the next step
+      setQuestionCount(questionCount + 1); // Increase question count
     } catch (error) {
       console.error('Error sending answer and generating next question:', error);
     } finally {
@@ -93,14 +97,12 @@ const DynamicForm = () => {
   };
 
   const handleSubmitContactInfo = async () => {
-    // Send contact information and log
     try {
       await axios.post('http://localhost:5001/api/submitLog', {
         answers,
         contactInfo: formData.contactInfo,
       });
-      alert('Thank you! We will reach out to you.');
-      // Clear form after submission
+      alert('Grazie! Ti contatteremo a breve.');
       setSelectedServices([]);
       setAiQuestions([]);
       setFormData({
@@ -124,7 +126,7 @@ const DynamicForm = () => {
       <h2>Client Acquisition Form</h2>
       {!isCompleted && questionCount === 0 ? (
         <div>
-          <p>What services are you interested in?</p>
+          <p>Quali servizi ti interessano?</p>
           <div className="selectable-buttons">
             {services.map((service) => (
               <button
@@ -137,6 +139,7 @@ const DynamicForm = () => {
             ))}
           </div>
 
+          {/* Brand or Company Name */}
           <div className="form-group">
             <label>Nome del brand o azienda:</label>
             <input
@@ -148,6 +151,7 @@ const DynamicForm = () => {
             />
           </div>
 
+          {/* Project Type */}
           <div className="form-group">
             <label>Nuovo progetto o restyling?</label>
             <select name="projectType" value={formData.projectType} onChange={handleInputChange}>
@@ -156,6 +160,7 @@ const DynamicForm = () => {
             </select>
           </div>
 
+          {/* Business Field */}
           <div className="form-group">
             <label>Settore aziendale:</label>
             <select
@@ -183,12 +188,12 @@ const DynamicForm = () => {
           </div>
 
           <button className="submit-btn" onClick={generateAIQuestion} disabled={loading}>
-            {loading ? 'Loading...' : 'Next'}
+            {loading ? 'Caricamento...' : 'Next'}
           </button>
         </div>
       ) : isCompleted ? (
         <div>
-          <h3>Thank you! Please provide your contact info.</h3>
+          <h3>Grazie! Inserisci i tuoi contatti.</h3>
           <div className="form-group">
             <label>Nome:</label>
             <input
@@ -222,7 +227,7 @@ const DynamicForm = () => {
           </div>
 
           <div className="form-group">
-            <label>Phone (optional):</label>
+            <label>Phone (facoltativo):</label>
             <input
               type="tel"
               name="phone"
@@ -238,21 +243,21 @@ const DynamicForm = () => {
           </div>
 
           <button className="submit-btn" onClick={handleSubmitContactInfo} disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit'}
+            {loading ? 'Invio...' : 'Invia'}
           </button>
         </div>
       ) : (
         <div>
-          <h3>AI Questions:</h3>
+          <h3>Domande AI:</h3>
           {aiQuestions.length > 0 ? (
             <form>
-              {aiQuestions.slice(0, maxQuestionsPerStep).map((question, index) => (
+              {aiQuestions.map((question, index) => (
                 <div key={index}>
                   <p>{question.text}</p>
                   {question.type === 'text' && (
                     <input
                       type="text"
-                      placeholder="Answer here..."
+                      placeholder="Rispondi qui..."
                       onChange={(e) => handleAnswerChange(e, question.text)}
                     />
                   )}
@@ -286,11 +291,11 @@ const DynamicForm = () => {
                 </div>
               ))}
               <button className="submit-btn" type="button" onClick={handleNextQuestion}>
-                Next Question
+                Prossima domanda
               </button>
             </form>
           ) : (
-            <p>No questions generated yet.</p>
+            <p>Nessuna domanda generata.</p>
           )}
         </div>
       )}
