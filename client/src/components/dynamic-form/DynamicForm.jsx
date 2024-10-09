@@ -3,14 +3,22 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./DynamicForm.css";
 
+// Importa i componenti figli
+import ServiceSelection from "../service-selection/ServiceSelection";
+import InitialForm from "../initial-form/InitialForm";
+import QuestionForm from "../question-form/QuestionForm";
+import ContactForm from "../contact-form/ContactForm";
+import ThankYouMessage from "../thank-you-message/ThankYouMessage";
+
 const DynamicForm = () => {
-  const [sessionId] = useState(uuidv4());
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [questionNumber, setQuestionNumber] = useState(0);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [showThankYou, setShowThankYou] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // Stati principali
+  const [sessionId] = useState(uuidv4()); // ID univoco per la sessione
+  const [selectedServices, setSelectedServices] = useState([]); // Servizi selezionati dall'utente
+  const [currentQuestion, setCurrentQuestion] = useState(null); // Domanda corrente
+  const [questionNumber, setQuestionNumber] = useState(0); // Numero della domanda corrente
+  const [isCompleted, setIsCompleted] = useState(false); // Indica se il questionario è completato
+  const [showThankYou, setShowThankYou] = useState(false); // Indica se mostrare il messaggio di ringraziamento
+  const [loading, setLoading] = useState(false); // Stato di caricamento
   const [formData, setFormData] = useState({
     brandName: "",
     projectType: "new",
@@ -18,12 +26,14 @@ const DynamicForm = () => {
     otherBusinessField: "",
     projectObjectives: "",
     contactInfo: { name: "", email: "", phone: "" },
-  });
-  const [answers, setAnswers] = useState({});
+  }); // Dati del modulo iniziale e di contatto
+  const [answers, setAnswers] = useState({}); // Risposte dell'utente alle domande
 
+  // Dati statici
   const services = ["Logo", "Website", "App"];
   const businessFields = ["Tecnologia", "Moda", "Alimentare", "Altro"];
 
+  // Funzione per gestire la selezione dei servizi
   const toggleService = (service) => {
     if (selectedServices.includes(service)) {
       setSelectedServices(selectedServices.filter((s) => s !== service));
@@ -32,29 +42,42 @@ const DynamicForm = () => {
     }
   };
 
+  // Funzione per gestire i cambiamenti negli input del modulo iniziale
   const handleFormInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Funzione per gestire le selezioni multiple con checkbox
-  const handleAnswerChange = (e) => {
+  // Funzione per gestire le selezioni multiple con checkbox e radio button
+  const handleAnswerChange = (e, isSingleSelection = false) => {
     const { value, checked } = e.target;
     const questionText = currentQuestion.question;
 
     setAnswers((prevAnswers) => {
-      const prevOptions = prevAnswers[questionText]?.options || [];
-      const newOptions = checked
-        ? [...prevOptions, value]
-        : prevOptions.filter((option) => option !== value);
+      if (isSingleSelection) {
+        // Per la selezione singola (radio button)
+        return {
+          ...prevAnswers,
+          [questionText]: {
+            ...prevAnswers[questionText],
+            options: value,
+          },
+        };
+      } else {
+        // Per selezioni multiple (checkbox)
+        const prevOptions = prevAnswers[questionText]?.options || [];
+        const newOptions = checked
+          ? [...prevOptions, value]
+          : prevOptions.filter((option) => option !== value);
 
-      return {
-        ...prevAnswers,
-        [questionText]: {
-          ...prevAnswers[questionText],
-          options: newOptions,
-        },
-      };
+        return {
+          ...prevAnswers,
+          [questionText]: {
+            ...prevAnswers[questionText],
+            options: newOptions,
+          },
+        };
+      }
     });
   };
 
@@ -72,6 +95,7 @@ const DynamicForm = () => {
     }));
   };
 
+  // Funzione per generare la prima domanda
   const generateFirstQuestion = async () => {
     if (selectedServices.length === 0) {
       alert("Devi selezionare almeno un servizio.");
@@ -95,6 +119,7 @@ const DynamicForm = () => {
     }
   };
 
+  // Funzione per recuperare la domanda successiva
   const fetchNextQuestion = async () => {
     setLoading(true);
     try {
@@ -112,8 +137,8 @@ const DynamicForm = () => {
 
       const nextQuestion = response.data.question;
 
-      if (questionNumber >= 10 || !nextQuestion) {
-        // Abbiamo raggiunto il limite di domande o non ci sono più domande
+      if (!nextQuestion) {
+        // Non ci sono più domande
         setIsCompleted(true);
         setCurrentQuestion(null);
       } else {
@@ -127,6 +152,7 @@ const DynamicForm = () => {
     }
   };
 
+  // Funzione per gestire l'invio della risposta alla domanda corrente
   const handleAnswerSubmit = (e) => {
     e.preventDefault();
 
@@ -136,7 +162,12 @@ const DynamicForm = () => {
     const inputAnswer = userAnswer.input || "";
 
     // Validazione delle risposte
-    if (currentQuestion.requiresInput) {
+    if (currentQuestion.type === "font_selection") {
+      if (selectedOptions === "" && inputAnswer.trim() === "") {
+        alert("Per favore, seleziona un font o inserisci il nome di uno.");
+        return;
+      }
+    } else if (currentQuestion.requiresInput) {
       if (inputAnswer.trim() === "") {
         alert("Per favore, inserisci una risposta.");
         return;
@@ -153,6 +184,7 @@ const DynamicForm = () => {
     fetchNextQuestion();
   };
 
+  // Funzione per inviare le informazioni di contatto
   const handleSubmitContactInfo = async () => {
     setLoading(true);
     try {
@@ -168,213 +200,45 @@ const DynamicForm = () => {
     }
   };
 
+  // Rendering del componente
   return (
     <div className="dynamic-form">
       <h2>Client Acquisition Form</h2>
       {showThankYou ? (
-        <div>
-          <h3>Grazie! Ti contatteremo a breve.</h3>
-        </div>
+        // Mostra il messaggio di ringraziamento
+        <ThankYouMessage />
       ) : currentQuestion ? (
-        <div>
-          <h3>{currentQuestion.question}</h3>
-          <form onSubmit={handleAnswerSubmit}>
-            {currentQuestion.requiresInput ? (
-              // Mostra solo il campo di input
-              <div className="form-group">
-                <label>Risposta:</label>
-                <textarea
-                  name="inputAnswer"
-                  placeholder="Inserisci la tua risposta qui..."
-                  value={answers[currentQuestion.question]?.input || ""}
-                  onChange={handleInputChange}
-                ></textarea>
-              </div>
-            ) : (
-              <>
-                {/* Mostra le opzioni con i checkbox */}
-                {currentQuestion.options &&
-                  currentQuestion.options.length > 0 &&
-                  currentQuestion.options.map((option, index) => (
-                    <div key={index}>
-                      <input
-                        type="checkbox"
-                        id={`option_${index}`}
-                        name={`answer_${questionNumber}`}
-                        value={option}
-                        checked={
-                          answers[currentQuestion.question]?.options
-                            ? answers[currentQuestion.question].options.includes(
-                                option
-                              )
-                            : false
-                        }
-                        onChange={handleAnswerChange}
-                      />
-                      <label htmlFor={`option_${index}`}>{option}</label>
-                    </div>
-                  ))}
-
-                {/* Campo di input opzionale */}
-                <div className="form-group">
-                  <label>Vuoi aggiungere qualcosa?</label>
-                  <textarea
-                    name="inputAnswer"
-                    placeholder="Inserisci ulteriori dettagli qui..."
-                    value={answers[currentQuestion.question]?.input || ""}
-                    onChange={handleInputChange}
-                  ></textarea>
-                </div>
-              </>
-            )}
-
-            {loading ? (
-              <p>Caricamento...</p>
-            ) : (
-              <button className="submit-btn" type="submit">
-                Invia
-              </button>
-            )}
-          </form>
-        </div>
+        // Mostra il form della domanda corrente
+        <QuestionForm
+          currentQuestion={currentQuestion}
+          questionNumber={questionNumber}
+          answers={answers}
+          handleAnswerSubmit={handleAnswerSubmit}
+          handleInputChange={handleInputChange}
+          handleAnswerChange={handleAnswerChange}
+          loading={loading}
+        />
       ) : isCompleted ? (
-        <div>
-          <h3>Grazie! Inserisci i tuoi contatti.</h3>
-          {/* Form per i contatti */}
-          <div className="form-group">
-            <label>Nome:</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.contactInfo.name}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  contactInfo: {
-                    ...formData.contactInfo,
-                    name: e.target.value,
-                  },
-                })
-              }
-              placeholder="Inserisci il tuo nome"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Email:</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.contactInfo.email}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  contactInfo: {
-                    ...formData.contactInfo,
-                    email: e.target.value,
-                  },
-                })
-              }
-              placeholder="Inserisci la tua email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Telefono (facoltativo):</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.contactInfo.phone}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  contactInfo: {
-                    ...formData.contactInfo,
-                    phone: e.target.value,
-                  },
-                })
-              }
-              placeholder="Inserisci il tuo numero di telefono (facoltativo)"
-            />
-          </div>
-
-          <button
-            className="submit-btn"
-            onClick={handleSubmitContactInfo}
-            disabled={loading}
-          >
-            {loading ? "Invio..." : "Invia"}
-          </button>
-        </div>
+        // Mostra il form per le informazioni di contatto
+        <ContactForm
+          formData={formData}
+          setFormData={setFormData}
+          handleSubmitContactInfo={handleSubmitContactInfo}
+          loading={loading}
+        />
       ) : (
+        // Mostra il form iniziale
         <div>
-          {/* Form iniziale */}
-          <p>Quali servizi ti interessano?</p>
-          <div className="selectable-buttons">
-            {services.map((service) => (
-              <button
-                key={service}
-                className={`service-btn ${
-                  selectedServices.includes(service) ? "selected" : ""
-                }`}
-                onClick={() => toggleService(service)}
-              >
-                {service}
-              </button>
-            ))}
-          </div>
-
-          {/* Nome del brand o azienda */}
-          <div className="form-group">
-            <label>Nome del brand o azienda:</label>
-            <input
-              type="text"
-              name="brandName"
-              value={formData.brandName}
-              onChange={handleFormInputChange}
-              placeholder="Inserisci il nome del brand o azienda"
-            />
-          </div>
-
-          {/* Tipo di progetto */}
-          <div className="form-group">
-            <label>Nuovo progetto o restyling?</label>
-            <select
-              name="projectType"
-              value={formData.projectType}
-              onChange={handleFormInputChange}
-            >
-              <option value="new">Nuovo</option>
-              <option value="restyling">Restyling</option>
-            </select>
-          </div>
-
-          {/* Settore aziendale */}
-          <div className="form-group">
-            <label>Settore aziendale:</label>
-            <select
-              name="businessField"
-              value={formData.businessField}
-              onChange={handleFormInputChange}
-            >
-              {businessFields.map((field) => (
-                <option key={field} value={field}>
-                  {field}
-                </option>
-              ))}
-            </select>
-
-            {formData.businessField === "Altro" && (
-              <input
-                type="text"
-                name="otherBusinessField"
-                value={formData.otherBusinessField}
-                onChange={handleFormInputChange}
-                placeholder="Descrivi la tua idea di business/brand"
-              />
-            )}
-          </div>
-
+          <ServiceSelection
+            services={services}
+            selectedServices={selectedServices}
+            toggleService={toggleService}
+          />
+          <InitialForm
+            formData={formData}
+            handleFormInputChange={handleFormInputChange}
+            businessFields={businessFields}
+          />
           <button
             className="submit-btn"
             onClick={generateFirstQuestion}
@@ -387,5 +251,8 @@ const DynamicForm = () => {
     </div>
   );
 };
+
+// Definizione delle propTypes (vuote in questo caso)
+DynamicForm.propTypes = {};
 
 export default DynamicForm;
