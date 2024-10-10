@@ -2,44 +2,36 @@ const mongoose = require('mongoose');
 
 const ProjectLogSchema = new mongoose.Schema({
   formData: {
-    type: Object,
-    required: true,
+    brandName: { type: String, required: true },
+    projectType: { type: String, required: true },
+    businessField: { type: String, required: true },
+    otherBusinessField: { type: String, default: '' },
+    projectObjectives: { type: String, default: '' },
+    contactInfo: {
+      name: { type: String, required: false }, // Reso facoltativo
+      email: { type: String, required: false }, // Reso facoltativo
+      phone: { type: String, default: '' },
+    },
   },
   questions: {
     type: Array,
     required: true,
   },
   answers: {
-    type: Object,
-    default: {}, // Imposta valore di default
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {},
     required: true,
   },
-  additionalDetails: {
-    type: Object,
-  },
-  contactInfo: {
-    name: {
-      type: String,
-      required: false, // Reso facoltativo
-    },
-    email: {
-      type: String,
-      required: false, // Reso facoltativo
-    },
-    phone: {
-      type: String,
-    },
-  },
-  projectPlan: {
-    type: String,
-  },
+  projectPlan: { type: String },
   questionCount: {
     type: Number,
-    default: 1,
+    default: 0,
   },
   sessionId: {
     type: String,
     required: true,
+    unique: true,
   },
   createdAt: {
     type: Date,
@@ -56,6 +48,20 @@ const ProjectLogSchema = new mongoose.Schema({
   serviceQuestionCount: {
     type: Map,
     of: Number,
+    default: {},
+  },
+  maxQuestionsPerService: {
+    type: Number,
+    required: true,
+  },
+  totalQuestions: {
+    type: Number,
+    required: true,
+  },
+  askedQuestions: {
+    type: Map,
+    of: [String],
+    default: {},
   },
 });
 

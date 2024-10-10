@@ -14,7 +14,7 @@ const FontSelection = ({
       {currentQuestion.options.map((option, index) => (
         <div key={index} className="font-option">
           <input
-            type="radio"
+            type="checkbox"
             id={`font_option_${index}`}
             name="fontSelection"
             value={option}
