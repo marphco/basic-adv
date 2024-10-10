@@ -26,7 +26,7 @@ const DynamicForm = () => {
     otherBusinessField: "",
     projectObjectives: "",
     contactInfo: { name: "", email: "", phone: "" },
-  }); // Dati del modulo iniziale e di contatto
+  }); // Dati del modulo iniziale
   const [answers, setAnswers] = useState({}); // Risposte dell'utente alle domande
 
   // Dati statici
@@ -48,36 +48,24 @@ const DynamicForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Funzione per gestire le selezioni multiple con checkbox e radio button
-  const handleAnswerChange = (e, isSingleSelection = false) => {
+  // Funzione per gestire le selezioni multiple con checkbox
+  const handleAnswerChange = (e) => {
     const { value, checked } = e.target;
     const questionText = currentQuestion.question;
 
     setAnswers((prevAnswers) => {
-      if (isSingleSelection) {
-        // Per la selezione singola (radio button)
-        return {
-          ...prevAnswers,
-          [questionText]: {
-            ...prevAnswers[questionText],
-            options: value,
-          },
-        };
-      } else {
-        // Per selezioni multiple (checkbox)
-        const prevOptions = prevAnswers[questionText]?.options || [];
-        const newOptions = checked
-          ? [...prevOptions, value]
-          : prevOptions.filter((option) => option !== value);
+      const prevOptions = prevAnswers[questionText]?.options || [];
+      const newOptions = checked
+        ? [...prevOptions, value]
+        : prevOptions.filter((option) => option !== value);
 
-        return {
-          ...prevAnswers,
-          [questionText]: {
-            ...prevAnswers[questionText],
-            options: newOptions,
-          },
-        };
-      }
+      return {
+        ...prevAnswers,
+        [questionText]: {
+          ...prevAnswers[questionText],
+          options: newOptions,
+        },
+      };
     });
   };
 
@@ -104,9 +92,11 @@ const DynamicForm = () => {
 
     setLoading(true);
     try {
+      const formDataToSend = { ...formData };
+      
       const response = await axios.post("http://localhost:5001/api/generate", {
         servicesSelected: selectedServices,
-        formData,
+        formData: formDataToSend,
         sessionId,
       });
 
@@ -114,6 +104,7 @@ const DynamicForm = () => {
       setQuestionNumber(1);
     } catch (error) {
       console.error("Errore nella generazione della prima domanda AI:", error);
+      alert("Errore nella generazione della domanda. Riprova più tardi.");
     } finally {
       setLoading(false);
     }
@@ -147,6 +138,7 @@ const DynamicForm = () => {
       }
     } catch (error) {
       console.error("Errore nel recupero della prossima domanda:", error);
+      alert("Errore nel recupero della prossima domanda. Riprova più tardi.");
     } finally {
       setLoading(false);
     }
@@ -163,7 +155,7 @@ const DynamicForm = () => {
 
     // Validazione delle risposte
     if (currentQuestion.type === "font_selection") {
-      if (selectedOptions === "" && inputAnswer.trim() === "") {
+      if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
         alert("Per favore, seleziona un font o inserisci il nome di uno.");
         return;
       }
@@ -189,12 +181,13 @@ const DynamicForm = () => {
     setLoading(true);
     try {
       await axios.post("http://localhost:5001/api/submitLog", {
-        contactInfo: formData.contactInfo,
+        contactInfo: formData.contactInfo, // Assicurati che formData.contactInfo sia gestito correttamente
         sessionId,
       });
       setShowThankYou(true);
     } catch (error) {
       console.error("Errore nell'invio dei contatti:", error);
+      alert("Errore nell'invio dei contatti. Riprova più tardi.");
     } finally {
       setLoading(false);
     }

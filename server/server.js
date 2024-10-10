@@ -244,7 +244,7 @@ app.post("/api/nextQuestion", async (req, res) => {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
-    // Salva la risposta
+    // Salva la risposta usando .set() per il Map
     const questionText = Object.keys(currentAnswer)[0];
     const answerData = currentAnswer[questionText];
     logEntry.answers.set(questionText, answerData);
@@ -262,7 +262,7 @@ app.post("/api/nextQuestion", async (req, res) => {
     console.log(`Session ${sessionId} - Received answer for service: ${currentService}`);
     console.log(`Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(currentService)}`);
     console.log(`Total Question Count: ${logEntry.questionCount}`);
-    console.log(`Total Questions Allowed: ${logEntry.totalQuestions}`);
+    console.log(`Answers: ${JSON.stringify(logEntry.answers)}`); // Log delle risposte
 
     // Controlla se abbiamo raggiunto il minimo di domande per questo servizio
     if (logEntry.serviceQuestionCount.get(currentService) >= 8) {
