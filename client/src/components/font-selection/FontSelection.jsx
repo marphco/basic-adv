@@ -18,8 +18,12 @@ const FontSelection = ({
             id={`font_option_${index}`}
             name="fontSelection"
             value={option}
-            checked={answers[currentQuestion.question]?.options === option}
-            onChange={(e) => handleAnswerChange(e, true)} // Passiamo un flag per indicare che è una selezione singola
+            checked={
+              answers[currentQuestion.question]?.options
+                ? answers[currentQuestion.question].options.includes(option)
+                : false
+            }
+            onChange={handleAnswerChange} // Rimosso il secondo argomento
           />
           <label htmlFor={`font_option_${index}`}>
             <img

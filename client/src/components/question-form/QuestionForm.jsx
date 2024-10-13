@@ -59,9 +59,7 @@ const QuestionForm = ({
                     value={option}
                     checked={
                       answers[currentQuestion.question]?.options
-                        ? answers[currentQuestion.question].options.includes(
-                            option
-                          )
+                        ? answers[currentQuestion.question].options.includes(option)
                         : false
                     }
                     onChange={handleAnswerChange}

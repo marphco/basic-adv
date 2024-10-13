@@ -29,6 +29,9 @@ mongoose.connect("mongodb://localhost:27017/basic")
     console.error("Errore di connessione al database:", err);
   });
 
+// Funzione di sanitizzazione per le chiavi
+const sanitizeKey = (key) => key.replace(/\./g, '_');
+
 // Funzione per generare una domanda per un servizio specifico
 const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
   // Crea una stringa con le domande già poste
@@ -120,6 +123,11 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
       }
     }
 
+    // Rimuovi il punto finale dalla domanda, se presente
+    if (aiQuestion.question.endsWith('.')) {
+      aiQuestion.question = aiQuestion.question.slice(0, -1);
+    }
+
     // Verifica che 'question' sia presente
     if (!aiQuestion.question) {
       console.error("La risposta dell'AI non contiene una domanda valida.");
@@ -159,8 +167,6 @@ app.post("/api/generate", async (req, res) => {
   if (!servicesSelected || !formData || !sessionId) {
     return res.status(400).json({ error: "Campi richiesti mancanti" });
   }
-
-  // **Rimosso il controllo di contactInfo**
 
   try {
     // Determina il limite di domande per servizio
@@ -210,8 +216,8 @@ app.post("/api/generate", async (req, res) => {
       (newLogEntry.serviceQuestionCount.get(firstService) || 0) + 1
     );
 
-    // Aggiungi la domanda all'elenco delle domande già poste
-    newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question);
+    // Aggiungi la domanda all'elenco delle domande già poste (con il testo originale)
+    newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question); // Conserva la domanda originale
 
     // Salva nel database
     await newLogEntry.save();
@@ -244,10 +250,11 @@ app.post("/api/nextQuestion", async (req, res) => {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
-    // Salva la risposta usando .set() per il Map
+    // Salva la risposta usando .set() per il Map (sanitized)
     const questionText = Object.keys(currentAnswer)[0];
+    const sanitizedQuestionText = sanitizeKey(questionText);
     const answerData = currentAnswer[questionText];
-    logEntry.answers.set(questionText, answerData);
+    logEntry.answers.set(sanitizedQuestionText, answerData);
 
     // Ottieni il servizio corrente
     const currentService = logEntry.servicesQueue[logEntry.currentServiceIndex];
@@ -256,7 +263,7 @@ app.post("/api/nextQuestion", async (req, res) => {
     if (!logEntry.askedQuestions.has(currentService)) {
       logEntry.askedQuestions.set(currentService, []);
     }
-    logEntry.askedQuestions.get(currentService).push(questionText);
+    logEntry.askedQuestions.get(currentService).push(questionText); // Conserva la domanda originale
 
     // Log per debugging
     console.log(`Session ${sessionId} - Received answer for service: ${currentService}`);
@@ -310,7 +317,7 @@ app.post("/api/nextQuestion", async (req, res) => {
     );
 
     // Aggiungi la domanda all'elenco delle domande già poste
-    logEntry.askedQuestions.get(nextService).push(aiQuestion.question);
+    logEntry.askedQuestions.get(nextService).push(aiQuestion.question); // Conserva la domanda originale
 
     // Salva nel database
     await logEntry.save();

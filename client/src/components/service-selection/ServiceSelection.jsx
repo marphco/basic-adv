@@ -8,9 +8,7 @@ const ServiceSelection = ({ services, selectedServices, toggleService }) => (
       {services.map((service) => (
         <button
           key={service}
-          className={`service-btn ${
-            selectedServices.includes(service) ? "selected" : ""
-          }`}
+          className={`service-btn ${selectedServices.includes(service) ? "selected" : ""}`}
           onClick={() => toggleService(service)}
         >
           {service}

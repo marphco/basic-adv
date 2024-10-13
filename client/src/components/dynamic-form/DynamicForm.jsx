@@ -93,7 +93,7 @@ const DynamicForm = () => {
     setLoading(true);
     try {
       const formDataToSend = { ...formData };
-      
+
       const response = await axios.post("http://localhost:5001/api/generate", {
         servicesSelected: selectedServices,
         formData: formDataToSend,
@@ -129,9 +129,21 @@ const DynamicForm = () => {
       const nextQuestion = response.data.question;
 
       if (!nextQuestion) {
-        // Non ci sono più domande
-        setIsCompleted(true);
-        setCurrentQuestion(null);
+        // Controlla se "Logo" è selezionato e se la domanda sui font non è ancora stata posta
+        if (selectedServices.includes("Logo") && !answers["Seleziona i font desiderati."]) {
+          const fontQuestion = {
+            question: "Seleziona i font desiderati.",
+            type: "font_selection",
+            options: ["Serif", "Sans-serif", "Script", "Monospaced", "Manoscritto", "Decorativo"],
+            requiresInput: true, // Impostato a true per gestire anche font personalizzati
+          };
+          setCurrentQuestion(fontQuestion);
+          setQuestionNumber((prev) => prev + 1);
+        } else {
+          // Non ci sono più domande
+          setIsCompleted(true);
+          setCurrentQuestion(null);
+        }
       } else {
         setCurrentQuestion(nextQuestion);
         setQuestionNumber((prev) => prev + 1);
@@ -166,9 +178,7 @@ const DynamicForm = () => {
       }
     } else {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        alert(
-          "Per favore, seleziona almeno una risposta o inserisci un commento."
-        );
+        alert("Per favore, seleziona almeno una risposta o inserisci un commento.");
         return;
       }
     }
