@@ -1,7 +1,7 @@
-import DynamicForm from '../contact-form/DynamicForm'; // Assicurati che il percorso sia corretto
-import './Contact.css';
+import DynamicForm from '../dynamic-form/DynamicForm'; // Assicurati che il percorso sia corretto
+import './Contacts.css';
 
-const Contact = () => {
+const Contacts = () => {
   const handleRestart = () => {
     // Logica per resettare il form, se necessario
   };
@@ -13,4 +13,4 @@ const Contact = () => {
   );
 };
 
-export default Contact;
+export default Contacts;

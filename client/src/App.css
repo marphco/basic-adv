@@ -17,7 +17,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* Cambiato per evitare sovrapposizioni */
-  align-items: center;
+  align-items: flex-start; /* Cambiato da center a flex-start */
   background-color: var(--background-color);
 }
 

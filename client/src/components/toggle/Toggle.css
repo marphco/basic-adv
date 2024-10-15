@@ -2,8 +2,6 @@
 .toggle-container {
     display: flex;
     align-items: center;
-    /* Aggiungi un'altezza fissa se non è già presente */
-    height: 40px; /* Puoi regolare questo valore */
   }
   
   /* Contenitore dei cerchi */

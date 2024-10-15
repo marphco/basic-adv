@@ -7,7 +7,7 @@ import { Cursor } from './components/cursor/Cursor';
 import Home from './components/home/Home';
 // import AboutUs from './components/about-us/AboutUs';
 // import Portfolio from './components/portfolio/Portfolio';
-// import Contact from './components/contacts/Contact';
+import Contacts from './components/contacts/Contacts';
 // import Dashboard from './components/dashboard/Dashboard';
 import Navbar from './components/navbar/Navbar';
 
@@ -42,9 +42,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           {/* <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/contatti" element={<Contact />} /> 
-          <Route path="/dashboard" element={<Dashboard />} /> */}
+          <Route path="/portfolio" element={<Portfolio />} /> */}
+          <Route path="/contatti" element={<Contacts />} /> 
+          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
         </Routes>
       </div>
     </Router>

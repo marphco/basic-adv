@@ -1,35 +1,47 @@
+/* Contenitore principale della Navbar */
+.navbar-block {
+    width: 50vw; /* Occupa il 50% della larghezza del viewport */
+    display: flex;
+    justify-content: space-between; /* Distribuisce lo spazio tra menu e toggle */
+    align-items: center; /* Centra verticalmente gli elementi */
+    align-self: flex-end; /* Allinea il blocco alla destra all'interno del contenitore flex */
+    margin-top: 20px; /* Spazio superiore di 20px */
+}
+
+/* Stile della Navbar */
 .navbar {
-    position: fixed;
-    top: 0;
-    margin-top: 20px !important;
-    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Distribuisce lo spazio tra menu e toggle */
+    align-items: center; /* Centra verticalmente gli elementi */
+    width: 100%; /* Occupa tutta la larghezza del navbar-block */
     background-color: transparent; /* Trasparente come desiderato */
     padding: 0 20px; /* Padding orizzontale */
     z-index: 1000;
+    height: 40px; /* Altezza della Navbar */
+}
+
+/* Stile del Menu della Navbar */
+.navbar-menu {
     display: flex;
-    justify-content: space-between;
-    align-items: center; /* Centra verticalmente gli elementi */
-    height: 40px; /* Imposta l'altezza a 40px, corrispondente al Toggle */
-  }
-  
-  .navbar-menu {
-    display: flex;
-    justify-content: center;
-    list-style: none;
+    list-style: none; /* Rimuove i bullet points */
     margin: 0;
     padding: 0;
-  }
-  
-  .navbar-menu li {
-    margin: 0 15px;
-  }
-  
-  .navbar-menu li a {
-    color: var(--primary-text-color); /* Usa la variabile CSS */
-    text-decoration: none;
-    font-size: 1.2rem;
-  }
-  
-  .navbar-menu li a:hover {
-    color: var(--foreground-color);
-  }
+}
+
+/* Stile degli Elementi del Menu */
+.navbar-menu li {
+    margin: 0 15px; /* Spazio laterale tra i link */
+}
+
+/* Stile dei Link della Navbar */
+.navbar-menu li a {
+    color: var(--primary-text-color); /* Usa la variabile CSS per il colore del testo */
+    text-decoration: none; /* Rimuove la sottolineatura */
+    font-size: 0.8rem; /* Dimensione del font */
+    transition: color 0.3s ease-in-out; /* Transizione fluida per l'hover */
+}
+
+/* Stile dei Link al Passaggio del Mouse */
+.navbar-menu li a:hover {
+    color: var(--foreground-color); /* Cambia colore al passaggio del mouse */
+}
