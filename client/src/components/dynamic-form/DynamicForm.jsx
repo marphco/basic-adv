@@ -31,7 +31,7 @@ const DynamicForm = () => {
 
   // Dati statici
   const services = ["Logo", "Website", "App"];
-  const businessFields = ["Tecnologia", "Moda", "Alimentare", "Altro"];
+  const businessFields = ["Seleziona un settore", "Tecnologia", "Moda", "Alimentare", "Altro"];
 
   // Funzione per gestire la selezione dei servizi
   const toggleService = (service) => {
@@ -44,8 +44,20 @@ const DynamicForm = () => {
 
   // Funzione per gestire i cambiamenti negli input del modulo iniziale
   const handleFormInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type } = e.target;
+
+    if (type === "file") {
+      // Se l'input è di tipo file, ottieni il file selezionato
+      const file = e.target.files[0]; // Prende il primo file selezionato
+      setFormData({ ...formData, [name]: file });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+
+    // Reset di otherBusinessField se businessField cambia e non è "Altro"
+    if (name === "businessField" && value !== "Altro") {
+      setFormData({ ...formData, otherBusinessField: "" });
+    }
   };
 
   // Funzione per gestire le selezioni multiple con checkbox
@@ -90,15 +102,55 @@ const DynamicForm = () => {
       return;
     }
 
+    // Validazione dei campi obbligatori
+    if (!formData.brandName.trim()) {
+      alert("Per favore, inserisci il nome del brand.");
+      return;
+    }
+
+    if (!formData.businessField || formData.businessField === "Seleziona un settore") {
+      alert("Per favore, seleziona il settore aziendale.");
+      return;
+    }
+
+    if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
+      alert("Per favore, specifica il tuo settore aziendale.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const formDataToSend = { ...formData };
+      const formDataToSend = new FormData();
+      formDataToSend.append(
+        "servicesSelected",
+        JSON.stringify(selectedServices)
+      );
+      formDataToSend.append("sessionId", sessionId);
 
-      const response = await axios.post("http://localhost:5001/api/generate", {
-        servicesSelected: selectedServices,
-        formData: formDataToSend,
-        sessionId,
-      });
+      // Aggiungi tutti i campi di formData
+      for (const key in formData) {
+        if (Object.prototype.hasOwnProperty.call(formData, key)) {
+          if (key === "currentLogo" && formData[key]) {
+            // Aggiungi il file
+            formDataToSend.append(key, formData[key]);
+          } else if (key === "contactInfo") {
+            // Serializza contactInfo
+            formDataToSend.append(key, JSON.stringify(formData[key]));
+          } else {
+            formDataToSend.append(key, formData[key]);
+          }
+        }
+      }
+
+      const response = await axios.post(
+        "http://localhost:5001/api/generate",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       setCurrentQuestion(response.data.question);
       setQuestionNumber(1);
@@ -123,27 +175,20 @@ const DynamicForm = () => {
         {
           currentAnswer: userAnswer,
           sessionId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
       const nextQuestion = response.data.question;
 
       if (!nextQuestion) {
-        // Controlla se "Logo" è selezionato e se la domanda sui font non è ancora stata posta
-        if (selectedServices.includes("Logo") && !answers["Seleziona i font desiderati."]) {
-          const fontQuestion = {
-            question: "Seleziona i font desiderati.",
-            type: "font_selection",
-            options: ["Serif", "Sans-serif", "Script", "Monospaced", "Manoscritto", "Decorativo"],
-            requiresInput: true, // Impostato a true per gestire anche font personalizzati
-          };
-          setCurrentQuestion(fontQuestion);
-          setQuestionNumber((prev) => prev + 1);
-        } else {
-          // Non ci sono più domande
-          setIsCompleted(true);
-          setCurrentQuestion(null);
-        }
+        // Non ci sono più domande
+        setIsCompleted(true);
+        setCurrentQuestion(null);
       } else {
         setCurrentQuestion(nextQuestion);
         setQuestionNumber((prev) => prev + 1);
@@ -178,7 +223,9 @@ const DynamicForm = () => {
       }
     } else {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        alert("Per favore, seleziona almeno una risposta o inserisci un commento.");
+        alert(
+          "Per favore, seleziona almeno una risposta o inserisci un commento."
+        );
         return;
       }
     }
@@ -190,10 +237,18 @@ const DynamicForm = () => {
   const handleSubmitContactInfo = async () => {
     setLoading(true);
     try {
-      await axios.post("http://localhost:5001/api/submitLog", {
-        contactInfo: formData.contactInfo, // Assicurati che formData.contactInfo sia gestito correttamente
-        sessionId,
-      });
+      await axios.post(
+        "http://localhost:5001/api/submitLog",
+        {
+          contactInfo: formData.contactInfo,
+          sessionId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setShowThankYou(true);
     } catch (error) {
       console.error("Errore nell'invio dei contatti:", error);

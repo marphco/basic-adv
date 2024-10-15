@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const ProjectLogSchema = new mongoose.Schema({
+  sessionId: { type: String, required: true, unique: true },
   formData: {
     brandName: { type: String, required: true },
     projectType: { type: String, required: true },
@@ -8,10 +9,12 @@ const ProjectLogSchema = new mongoose.Schema({
     otherBusinessField: { type: String, default: '' },
     projectObjectives: { type: String, default: '' },
     contactInfo: {
-      name: { type: String, required: false }, // Reso facoltativo
-      email: { type: String, required: false }, // Reso facoltativo
+      name: { type: String, required: false },
+      email: { type: String, required: false },
       phone: { type: String, default: '' },
     },
+    currentLogo: { type: String }, // Aggiunto il campo 'currentLogo'
+    // Puoi aggiungere altri campi se necessario
   },
   questions: {
     type: Array,
@@ -27,11 +30,6 @@ const ProjectLogSchema = new mongoose.Schema({
   questionCount: {
     type: Number,
     default: 0,
-  },
-  sessionId: {
-    type: String,
-    required: true,
-    unique: true,
   },
   createdAt: {
     type: Date,

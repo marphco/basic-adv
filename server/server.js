@@ -4,8 +4,11 @@ const axios = require("axios");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const ProjectLog = require("./models/ProjectLog");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
-dotenv.config();
+dotenv.config(); // Carica le variabili d'ambiente dal file .env
 
 const app = express();
 
@@ -16,12 +19,45 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use(express.json());
+
+// Configura multer per gestire l'upload dei file
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Assicurati che la cartella 'uploads' esista
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
+});
+
+// Aggiungi limitazioni e filtraggio dei file (opzionale)
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limite di 5MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "application/pdf",
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Tipo di file non supportato"), false);
+    }
+  },
+});
 
 const PORT = process.env.PORT || 5001;
 
-// Connessione a MongoDB senza opzioni deprecate
-mongoose.connect("mongodb://localhost:27017/basic")
+// Connessione a MongoDB
+mongoose
+  .connect("mongodb://localhost:27017/basic")
   .then(() => {
     console.log("Connesso al database MongoDB");
   })
@@ -30,18 +66,32 @@ mongoose.connect("mongodb://localhost:27017/basic")
   });
 
 // Funzione di sanitizzazione per le chiavi
-const sanitizeKey = (key) => key.replace(/\./g, '_');
+const sanitizeKey = (key) => key.replace(/\./g, "_");
 
 // Funzione per generare una domanda per un servizio specifico
-const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
+const generateQuestionForService = async (
+  service,
+  formData,
+  answers,
+  askedQuestions
+) => {
   // Crea una stringa con le domande già poste
-  const askedQuestionsList = askedQuestions.join('\n');
+  const askedQuestionsList = askedQuestions.join("\n");
 
-  const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto per il brand "${formData.brandName}". Le seguenti informazioni sono già state raccolte:
+  // Includi la descrizione dell'immagine se disponibile
+  let imageInfo = "";
+  if (formData.currentLogoDescription) {
+    imageInfo = `\nIl cliente ha fornito una descrizione del logo attuale: ${formData.currentLogoDescription}`;
+  }
+
+  const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto per il brand "${
+    formData.brandName
+  }". Le seguenti informazioni sono già state raccolte:
 
 - Nome del Brand: ${formData.brandName}
 - Tipo di Progetto: ${formData.projectType}
 - Settore Aziendale: ${formData.businessField}
+${imageInfo}
 
 Servizio Attuale: ${service}
 
@@ -110,7 +160,10 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
       const jsonStartIndex = aiResponseText.indexOf("{");
       const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1;
       if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        const jsonString = aiResponseText.substring(jsonStartIndex, jsonEndIndex);
+        const jsonString = aiResponseText.substring(
+          jsonStartIndex,
+          jsonEndIndex
+        );
         try {
           aiQuestion = JSON.parse(jsonString);
         } catch (error) {
@@ -124,7 +177,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     }
 
     // Rimuovi il punto finale dalla domanda, se presente
-    if (aiQuestion.question.endsWith('.')) {
+    if (aiQuestion.question.endsWith(".")) {
       aiQuestion.question = aiQuestion.question.slice(0, -1);
     }
 
@@ -147,7 +200,12 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     // Verifica che la domanda non sia duplicata
     if (askedQuestions.includes(aiQuestion.question)) {
       // Genera una nuova domanda se è già stata posta
-      return await generateQuestionForService(service, formData, answers, askedQuestions);
+      return await generateQuestionForService(
+        service,
+        formData,
+        answers,
+        askedQuestions
+      );
     }
 
     return aiQuestion;
@@ -158,14 +216,29 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
 };
 
 // Endpoint per generare la prima domanda
-app.post("/api/generate", async (req, res) => {
+app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   console.log("Received /api/generate request:", req.body); // Log per debugging
 
-  const { servicesSelected, formData, sessionId } = req.body;
+  // Estrai i campi dal corpo della richiesta
+  const servicesSelected = JSON.parse(req.body.servicesSelected);
+  const formData = { ...req.body };
+  const sessionId = req.body.sessionId;
 
-  // Validazione di base
-  if (!servicesSelected || !formData || !sessionId) {
-    return res.status(400).json({ error: "Campi richiesti mancanti" });
+  // Rimuovi 'servicesSelected' e 'sessionId' da formData per evitare duplicati
+  delete formData.servicesSelected;
+  delete formData.sessionId;
+
+  // Se 'contactInfo' è presente, parsalo
+  if (formData.contactInfo) {
+    formData.contactInfo = JSON.parse(formData.contactInfo);
+  } else {
+    formData.contactInfo = {}; // Inizializza come oggetto vuoto se non esiste
+  }
+
+// Se un file è stato caricato, aggiungi il percorso del file a 'formData'
+if (req.file) {
+    formData.currentLogo = req.file.path; // Salva il percorso del file
+    console.log("Percorso del logo caricato:", formData.currentLogo);
   }
 
   try {
@@ -205,8 +278,14 @@ app.post("/api/generate", async (req, res) => {
 
     // Genera la prima domanda per il primo servizio
     const firstService = servicesSelected[0];
-    const askedQuestionsForService = newLogEntry.askedQuestions.get(firstService) || [];
-    const aiQuestion = await generateQuestionForService(firstService, formData, newLogEntry.answers, askedQuestionsForService);
+    const askedQuestionsForService =
+      newLogEntry.askedQuestions.get(firstService) || [];
+    const aiQuestion = await generateQuestionForService(
+      firstService,
+      formData,
+      newLogEntry.answers,
+      askedQuestionsForService
+    );
 
     // Aggiungi la domanda al log
     newLogEntry.questions.push(aiQuestion);
@@ -222,14 +301,22 @@ app.post("/api/generate", async (req, res) => {
     // Salva nel database
     await newLogEntry.save();
 
-    console.log(`Session ${sessionId} - Generated first question for service: ${firstService}`);
-    console.log(`Service Question Count [${firstService}]: ${newLogEntry.serviceQuestionCount.get(firstService)}`);
+    console.log(
+      `Session ${sessionId} - Generated first question for service: ${firstService}`
+    );
+    console.log(
+      `Service Question Count [${firstService}]: ${newLogEntry.serviceQuestionCount.get(
+        firstService
+      )}`
+    );
     console.log(`Total Question Count: ${newLogEntry.questionCount}`);
 
     res.json({ question: aiQuestion });
   } catch (error) {
     console.error("Error generating AI question:", error);
-    res.status(500).json({ error: "Errore nella generazione delle domande AI" });
+    res
+      .status(500)
+      .json({ error: "Errore nella generazione delle domande AI" });
   }
 });
 
@@ -266,8 +353,14 @@ app.post("/api/nextQuestion", async (req, res) => {
     logEntry.askedQuestions.get(currentService).push(questionText); // Conserva la domanda originale
 
     // Log per debugging
-    console.log(`Session ${sessionId} - Received answer for service: ${currentService}`);
-    console.log(`Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(currentService)}`);
+    console.log(
+      `Session ${sessionId} - Received answer for service: ${currentService}`
+    );
+    console.log(
+      `Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(
+        currentService
+      )}`
+    );
     console.log(`Total Question Count: ${logEntry.questionCount}`);
     console.log(`Answers: ${JSON.stringify(logEntry.answers)}`); // Log delle risposte
 
@@ -277,18 +370,24 @@ app.post("/api/nextQuestion", async (req, res) => {
         if (logEntry.serviceQuestionCount.get(currentService) >= 10) {
           // Raggiunto il massimo di 10 domande per 1 servizio, termina il questionario
           await logEntry.save();
-          console.log(`Session ${sessionId} - Reached max questions for service: ${currentService}. Ending questionnaire.`);
+          console.log(
+            `Session ${sessionId} - Reached max questions for service: ${currentService}. Ending questionnaire.`
+          );
           return res.json({ question: null });
         }
       } else {
         // Per più servizi, passa al servizio successivo
         logEntry.currentServiceIndex += 1;
-        console.log(`Session ${sessionId} - Switching to next service. Current Service Index: ${logEntry.currentServiceIndex}`);
+        console.log(
+          `Session ${sessionId} - Switching to next service. Current Service Index: ${logEntry.currentServiceIndex}`
+        );
 
         // Se non ci sono più servizi, termina il questionario
         if (logEntry.currentServiceIndex >= logEntry.servicesQueue.length) {
           await logEntry.save();
-          console.log(`Session ${sessionId} - All services completed. Ending questionnaire.`);
+          console.log(
+            `Session ${sessionId} - All services completed. Ending questionnaire.`
+          );
           return res.json({ question: null });
         }
       }
@@ -297,16 +396,24 @@ app.post("/api/nextQuestion", async (req, res) => {
     // Controlla se ha raggiunto il massimo di domande totali
     if (logEntry.questionCount >= logEntry.totalQuestions) {
       await logEntry.save();
-      console.log(`Session ${sessionId} - Reached total question limit. Ending questionnaire.`);
+      console.log(
+        `Session ${sessionId} - Reached total question limit. Ending questionnaire.`
+      );
       return res.json({ question: null }); // Indica al frontend che non ci sono più domande
     }
 
     // Determina il servizio corrente per la prossima domanda
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-    const askedQuestionsForNextService = logEntry.askedQuestions.get(nextService) || [];
+    const askedQuestionsForNextService =
+      logEntry.askedQuestions.get(nextService) || [];
 
     // Genera la prossima domanda per il servizio corrente
-    const aiQuestion = await generateQuestionForService(nextService, logEntry.formData, logEntry.answers, askedQuestionsForNextService);
+    const aiQuestion = await generateQuestionForService(
+      nextService,
+      logEntry.formData,
+      logEntry.answers,
+      askedQuestionsForNextService
+    );
 
     // Aggiungi la nuova domanda al log
     logEntry.questions.push(aiQuestion);
@@ -322,8 +429,14 @@ app.post("/api/nextQuestion", async (req, res) => {
     // Salva nel database
     await logEntry.save();
 
-    console.log(`Session ${sessionId} - Generated new question for service: ${nextService}`);
-    console.log(`Service Question Count [${nextService}]: ${logEntry.serviceQuestionCount.get(nextService)}`);
+    console.log(
+      `Session ${sessionId} - Generated new question for service: ${nextService}`
+    );
+    console.log(
+      `Service Question Count [${nextService}]: ${logEntry.serviceQuestionCount.get(
+        nextService
+      )}`
+    );
     console.log(`Total Question Count: ${logEntry.questionCount}`);
 
     res.json({ question: aiQuestion });
@@ -350,40 +463,84 @@ app.post("/api/submitLog", async (req, res) => {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
+    // Assicurati che 'logEntry.formData.contactInfo' sia un oggetto
+    if (!logEntry.formData.contactInfo) {
+      logEntry.formData.contactInfo = {};
+    }
+
     // **Aggiorna le informazioni di contatto all'interno di formData**
     logEntry.formData.contactInfo = {
-      name: contactInfo.name || logEntry.formData.contactInfo.name,
-      email: contactInfo.email || logEntry.formData.contactInfo.email,
-      phone: contactInfo.phone || logEntry.formData.contactInfo.phone,
+      name: contactInfo.name || logEntry.formData.contactInfo.name || "",
+      email: contactInfo.email || logEntry.formData.contactInfo.email || "",
+      phone: contactInfo.phone || logEntry.formData.contactInfo.phone || "",
     };
+
     await logEntry.save();
 
     // Rispondi immediatamente al client
     res.status(200).json({ message: "Log inviato e salvato" });
 
     // Genera il project plan in background
+    // Genera il project plan in background
     try {
       // Verifica che tutte le risposte essenziali siano presenti
-      if (!logEntry.formData.contactInfo.name || !logEntry.formData.contactInfo.email) {
-        throw new Error("Nome ed email sono obbligatori per generare il project plan.");
+      if (
+        !logEntry.formData.contactInfo.name ||
+        !logEntry.formData.contactInfo.email
+      ) {
+        throw new Error(
+          "Nome ed email sono obbligatori per generare il project plan."
+        );
       }
 
       // Struttura le risposte in modo leggibile
-      const formattedAnswers = Array.from(logEntry.answers.entries()).map(([question, response]) => {
-        if (response.input) {
-          return `**${question}:** ${response.input}`;
-        } else if (response.options) {
-          return `**${question}:** ${response.options.join(', ')}`;
-        } else {
-          return `**${question}:** Nessuna risposta fornita`;
-        }
-      }).join('\n');
+      const formattedAnswers = Array.from(logEntry.answers.entries())
+        .map(([question, response]) => {
+          let answerText = "";
+          if (response.input && response.options) {
+            answerText = `Opzioni selezionate: ${response.options.join(
+              ", "
+            )}\nRisposta libera: ${response.input}`;
+          } else if (response.input) {
+            answerText = `Risposta libera: ${response.input}`;
+          } else if (response.options) {
+            answerText = `Opzioni selezionate: ${response.options.join(", ")}`;
+          } else {
+            answerText = "Nessuna risposta fornita";
+          }
+          return `**${question}**\n${answerText}`;
+        })
+        .join("\n\n");
 
-      const promptProjectPlan = `Sei un assistente creativo che aiuta a sviluppare idee e suggerimenti innovativi basati sulle risposte dell'utente. Ecco le risposte fornite dall'utente per ogni servizio selezionato:
+      const promptProjectPlan = `Sei un esperto creativo nel campo del branding e del design. Il tuo compito è creare un piano d'azione dettagliato e innovativo per un progetto di ${
+        logEntry.formData.projectType
+      } del logo per il brand "${
+        logEntry.formData.brandName
+      }", che opera nel settore ${logEntry.formData.businessField} ${
+        logEntry.formData.otherBusinessField
+      }.
+
+Il cliente ha fornito le seguenti informazioni sul logo attuale: ${
+        logEntry.formData.currentLogoDescription || "Non disponibile"
+      }
+
+Obiettivi del progetto: ${
+        logEntry.formData.projectObjectives || "Non specificati"
+      }
+
+**Risposte del cliente:**
 
 ${formattedAnswers}
 
-Genera un project plan dettagliato e personalizzato che includa idee e suggerimenti specifici per ciascun servizio, basati sulle risposte dell'utente. Assicurati che ogni idea sia chiaramente collegata alle risposte fornite e rifletta le preferenze e le esigenze espresse dall'utente. Evita suggerimenti generici o non pertinenti.`;
+**Il tuo compito:**
+
+- Analizza attentamente le risposte del cliente e identifica i punti chiave.
+- Proponi idee creative e concetti unici per il nuovo logo, tenendo conto delle preferenze espresse.
+- Suggerisci elementi di design specifici, come forme, colori, tipografie, e come possono combinarsi per rappresentare al meglio il brand.
+- Offri spunti innovativi che possano superare le aspettative del cliente.
+- Presenta il piano d'azione in modo strutturato e professionale, suddividendo il processo in fasi chiare.
+
+**Nota:** Il tuo obiettivo è creare un project plan che non solo soddisfi le esigenze del cliente, ma che porti anche valore aggiunto attraverso idee innovative e una visione creativa.`;
 
       const aiResponse = await axios.post(
         "https://api.openai.com/v1/chat/completions",
@@ -391,17 +548,12 @@ Genera un project plan dettagliato e personalizzato che includa idee e suggerime
           model: "gpt-4",
           messages: [
             {
-              role: "system",
-              content:
-                "Sei un assistente creativo che aiuta a sviluppare idee e suggerimenti innovativi basati sulle risposte dell'utente.",
-            },
-            {
               role: "user",
               content: promptProjectPlan,
             },
           ],
           max_tokens: 2000,
-          temperature: 0.7,
+          temperature: 0.8, // Aumentiamo la temperatura per maggiore creatività
         },
         {
           headers: {
