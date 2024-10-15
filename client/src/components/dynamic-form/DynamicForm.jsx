@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
@@ -10,9 +11,9 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 
-const DynamicForm = () => {
+const DynamicForm = ({ onRestart }) => {
   // Stati principali
-  const [sessionId] = useState(uuidv4()); // ID univoco per la sessione
+  const [sessionId, setSessionId] = useState(uuidv4()); // ID univoco per la sessione
   const [selectedServices, setSelectedServices] = useState([]); // Servizi selezionati dall'utente
   const [currentQuestion, setCurrentQuestion] = useState(null); // Domanda corrente
   const [questionNumber, setQuestionNumber] = useState(0); // Numero della domanda corrente
@@ -38,6 +39,32 @@ const DynamicForm = () => {
     "Alimentare",
     "Altro",
   ];
+
+  // Funzione per resettare lo stato e tornare all'inizio
+  const handleRestart = () => {
+    // Resetta tutti gli stati ai valori iniziali
+    setSessionId(uuidv4());
+    setSelectedServices([]);
+    setCurrentQuestion(null);
+    setQuestionNumber(0);
+    setIsCompleted(false);
+    setShowThankYou(false);
+    setLoading(false);
+    setFormData({
+      brandName: "",
+      projectType: "new",
+      businessField: "",
+      otherBusinessField: "",
+      projectObjectives: "",
+      contactInfo: { name: "", email: "", phone: "" },
+    });
+    setAnswers({});
+
+    // Chiama onRestart per informare App.jsx di resettare lo stato
+    if (onRestart) {
+      onRestart();
+    }
+  };
 
   // Funzione per gestire la selezione dei servizi
   const toggleService = (service) => {
@@ -286,7 +313,7 @@ const DynamicForm = () => {
       <h2>Client Acquisition Form</h2>
       {showThankYou ? (
         // Mostra il messaggio di ringraziamento
-        <ThankYouMessage />
+        <ThankYouMessage handleRestart={handleRestart} />
       ) : isCompleted ? (
         // Mostra il form per le informazioni di contatto
         <ContactForm
@@ -332,7 +359,8 @@ const DynamicForm = () => {
   );
 };
 
-// Definizione delle propTypes (vuote in questo caso)
-DynamicForm.propTypes = {};
+DynamicForm.propTypes = {
+  onRestart: PropTypes.func.isRequired,
+};
 
 export default DynamicForm;
