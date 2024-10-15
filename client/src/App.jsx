@@ -21,7 +21,7 @@ function App() {
 
   return (
     <>
-      <Cursor isDark={isDark} /> {/* Include the Cursor component */}
+      <Cursor isDark={isDark} />
       <div className="App" data-theme={isDark ? 'dark' : 'light'}>
         <Toggle isChecked={isDark} handleChange={() => setIsDark(!isDark)} />
         <h1 className="title">Hello world!</h1>

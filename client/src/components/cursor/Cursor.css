@@ -1,66 +1,59 @@
-/* Cursor black for light mode */
+/* Cursor black */
 .cursor-black.custom-cursor-dot {
-    background-color: black;
+  background-color: black;
+}
+
+.cursor-black.custom-cursor-circle {
+  border-color: black;
+}
+
+/* Cursor white */
+.cursor-white.custom-cursor-dot {
+  background-color: white;
+}
+
+.cursor-white.custom-cursor-circle {
+  border-color: white;
+}
+
+/* Stili comuni */
+.custom-cursor-dot {
+  position: fixed;
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+.custom-cursor-circle {
+  position: fixed;
+  width: 2em;
+  height: 2em;
+  border: 1px solid black;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: border-color 0.3s ease, width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
+}
+
+/* Hover effect for clickable elements */
+.custom-cursor-circle.hovered {
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 0%; /* Transforms into a square */
+  animation: rotateInfinite 2s linear infinite; /* Keeps rotating */
+}
+
+/* Keyframes for continuous rotation */
+@keyframes rotateInfinite {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
   }
-  
-  .cursor-black.custom-cursor-circle {
-    border-color: black;
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
   }
-  
-  /* Cursor white for dark mode */
-  .cursor-white.custom-cursor-dot {
-    background-color: white;
-  }
-  
-  .cursor-white.custom-cursor-circle {
-    border-color: white;
-  }
-  
-  /* Dot follows the cursor */
-  .custom-cursor-dot {
-    position: fixed;
-    width: 0.3em;
-    height: 0.3em;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 10000;
-    transform: translate(-50%, -50%);
-    transition: background-color 0.3s ease, width 0.3s ease, height 0.3s ease;
-  }
-  
-  /* Circle that follows the dot */
-  .custom-cursor-circle {
-    position: fixed;
-    width: 2em;
-    height: 2em;
-    border: 1px solid black;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: border-color 0.3s ease, width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, transform 0.3s ease;
-  }
-  
-  /* Hover effect for clickable elements */
-  /* .custom-cursor-dot.hovered {
-    width: 0.6em;
-    height: 0.6em;
-  } */
-  
-  .custom-cursor-circle.hovered {
-    width: 1.3em;
-    height: 1.3em;
-    border-radius: 0%; /* Transforms into a square */
-    animation: rotateInfinite 2s linear infinite; /* Keeps rotating */
-  }
-  
-  /* Keyframes for continuous rotation */
-  @keyframes rotateInfinite {
-    from {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-    to {
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-  }
-  
+}

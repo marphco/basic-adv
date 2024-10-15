@@ -3,13 +3,14 @@
     position: absolute;
     top: 2em;
     right: 2em;
+    cursor: none;
   }
   
   /* Contenitore dei cerchi */
   .toggle-circles {
     display: flex;
     align-items: center;
-    cursor: pointer;
+    cursor: none;
   }
   
   /* Stile base per i cerchi */
