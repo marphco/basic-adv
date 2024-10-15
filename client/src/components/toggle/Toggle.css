@@ -1,43 +1,51 @@
+/* Posizionamento del toggle */
 .toggle-container {
     position: absolute;
     top: 2em;
     right: 2em;
-}
-
-.toggle {
-    visibility: hidden;
-}
-
-.toggle + label {
+  }
+  
+  /* Contenitore dei cerchi */
+  .toggle-circles {
     display: flex;
     align-items: center;
-    font-size: 1.5em;
-    color: var(--primary-text-color);
-    transition: color 500ms ease-in-out;
-}
-
-.toggle + label:before {
-    content: "";
-    height: 1em;
-    width: 2em;
-    border-radius: 1em;
-    background-color: var(--toggle-bg);
-    margin-right: 0.5em;
-    transition: background-color 500ms ease-in-out;
-}
-
-.toggle + label:after {
-    content: "";
-    height: 0.8em;
-    width: 0.8em;
-    border-radius: 1em;
-    background-color: var(--toggle-fg);
-    position: absolute;
-    left: 0.14em;
-    transition: background-color 500ms ease-in-out, transform 500ms ease-in-out;
-}
-
-.toggle:checked + label::after {
-    transform: translateX(110%);
-
-}
+    cursor: pointer;
+  }
+  
+  /* Stile base per i cerchi */
+  .circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 0 2px;
+    transition: all 0.3s ease;
+  }
+  
+  /* Cerchio bianco */
+  .white-circle {
+    background-color: white;
+    border: solid .7px black;
+  }
+  
+  /* Cerchio nero */
+  .black-circle {
+    background-color: black;
+    border: solid .7px white;
+  }
+  
+  /* Cerchio attivo (più grande) */
+  .circle.active {
+    width: 20px;
+    height: 20px;
+  }
+  
+  /* Bordo per il cerchio bianco su sfondo bianco */
+  body[data-theme='light'] .white-circle {
+    border: 1px solid black;
+  }
+  
+  /* Bordo per il cerchio nero su sfondo nero */
+  body[data-theme='dark'] .black-circle {
+    border: 1px solid white;
+  }
+  

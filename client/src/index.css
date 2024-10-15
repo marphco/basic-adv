@@ -11,8 +11,10 @@
   --foreground-color: #003cff;
   --primary-text-color: #0a0a0a;
   --secondary-text-color: #ffffff;
-  --toggle-bg: #f0eb9d;
-  --toggle-fg: #ffd000;
+  --toggle-active-color: #000; /* Colore del cerchietto attivo */
+  --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
+  --circle-size-small: 15px; /* Dimensione cerchietto piccolo */
+  --circle-size-large: 25px; /* Dimensione cerchietto grande */
 }
 
 [data-theme="dark"] {
