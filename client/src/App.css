@@ -23,7 +23,6 @@ body {
 
 .title {
   color: var(--primary-text-color);
-  transition: color 500ms ease-in-out; /* Questa linea è ora ridondante se inclusa globalmente */
   margin-bottom: 50px;
 }
 
@@ -32,5 +31,4 @@ body {
   border-radius: 10px;
   background-color: var(--foreground-color);
   color: var(--secondary-text-color);
-  transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
 }

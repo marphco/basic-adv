@@ -1,7 +1,7 @@
 import './Toggle.css';
 import PropTypes from 'prop-types';
 
-export const Toggle = ({ handleChange, isChecked }) => {
+const Toggle = ({ handleChange, isChecked }) => {
   return (
     <div className="toggle-container">
       <div
@@ -26,3 +26,5 @@ Toggle.propTypes = {
   handleChange: PropTypes.func.isRequired,
   isChecked: PropTypes.bool.isRequired,
 };
+
+export default Toggle;

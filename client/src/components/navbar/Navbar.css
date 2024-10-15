@@ -1,10 +1,15 @@
 .navbar {
     position: fixed;
     top: 0;
+    margin-top: 20px !important;
     width: 100%;
-    background-color: transparent; /* Imposta trasparente */
-    padding: 10px 0;
+    background-color: transparent; /* Trasparente come desiderato */
+    padding: 0 20px; /* Padding orizzontale */
     z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Centra verticalmente gli elementi */
+    height: 40px; /* Imposta l'altezza a 40px, corrispondente al Toggle */
   }
   
   .navbar-menu {
@@ -23,7 +28,6 @@
     color: var(--primary-text-color); /* Usa la variabile CSS */
     text-decoration: none;
     font-size: 1.2rem;
-    transition: color 500ms ease-in-out;
   }
   
   .navbar-menu li a:hover {

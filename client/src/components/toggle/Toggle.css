@@ -1,9 +1,9 @@
 /* Posizionamento del toggle */
 .toggle-container {
-    position: absolute;
-    top: 2em;
-    right: 2em;
-    cursor: none;
+    display: flex;
+    align-items: center;
+    /* Aggiungi un'altezza fissa se non è già presente */
+    height: 40px; /* Puoi regolare questo valore */
   }
   
   /* Contenitore dei cerchi */
@@ -49,4 +49,3 @@
   body[data-theme='dark'] .black-circle {
     border: 1px solid white;
   }
-  

@@ -1,23 +1,29 @@
-// src/App.jsx
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Row, Container, Button } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import useLocalStorage from 'use-local-storage';
 import './App.css';
-import { Toggle } from './components/toggle/Toggle';
 import { Cursor } from './components/cursor/Cursor';
-import DynamicForm from './components/dynamic-form/DynamicForm'; // Presumo che DynamicForm esista
 import Home from './components/home/Home';
 // import AboutUs from './components/about-us/AboutUs';
 // import Portfolio from './components/portfolio/Portfolio';
-// import Contact from './components/contacts/Contact'; // Creeremo questo
-// import Dashboard from './components/dashboard/Dashboard'; // Creeremo questo
-import Navbar from './components/navbar/Navbar'; // Creeremo questo
+// import Contact from './components/contacts/Contact';
+// import Dashboard from './components/dashboard/Dashboard';
+import Navbar from './components/navbar/Navbar';
 
 function App() {
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
-  
+  const [showForm, setShowForm] = useState(false); // State to control form visibility
+
+  const handleClick = () => {
+    setShowForm(true); // Show the form when the button is clicked
+  };
+
+  const handleRestart = () => {
+    setShowForm(false); // Hide the form and show the "Get in Touch!" button
+  };
+
   useEffect(() => {
     // Aggiungi una classe al body
     document.body.classList.add('no-default-cursor');
@@ -32,13 +38,12 @@ function App() {
     <Router>
       <Cursor isDark={isDark} />
       <div className="App" data-theme={isDark ? 'dark' : 'light'}>
-        <Toggle isChecked={isDark} handleChange={() => setIsDark(!isDark)} />
-        <Navbar /> {/* Navbar con i link di navigazione */}
+        <Navbar isDark={isDark} setIsDark={setIsDark} /> {/* Passa le props */}
         <Routes>
           <Route path="/" element={<Home />} />
           {/* <Route path="/about-us" element={<AboutUs />} />
           <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/contatti" element={<Contact />} />
+          <Route path="/contatti" element={<Contact />} /> 
           <Route path="/dashboard" element={<Dashboard />} /> */}
         </Routes>
       </div>
