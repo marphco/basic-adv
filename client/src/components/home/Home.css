@@ -1,0 +1,23 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--background-color);
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .home-logo {
+    width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  
+  .home-intro {
+    font-size: 2rem;
+    max-width: 600px;
+    color: var(--primary-text-color); /* Usa la variabile CSS */
+  }

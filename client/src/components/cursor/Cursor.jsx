@@ -1,4 +1,3 @@
-// Cursor.jsx
 import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './Cursor.css';
@@ -50,35 +49,43 @@ export const Cursor = ({ isDark }) => {
     };
 
     const handlePointerEnter = (e) => {
-      const target = e.target.closest(
-        'a, button, label, [role="button"], [onClick], input, textarea, select'
-      );
-      if (target) {
-        if (
-          target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA') {
-          // Nascondi il cursore personalizzato
-          dot?.classList.add('hidden');
-          circle?.classList.add('hidden');
-        } else {
-          addHoverClass();
+      // Verifica che e.target sia un Elemento DOM e che 'closest' esista
+      if (e.target && typeof e.target.closest === 'function') {
+        const target = e.target.closest(
+          'a, button, label, [role="button"], [onClick], input, textarea, select'
+        );
+        if (target) {
+          if (
+            target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA'
+          ) {
+            // Nascondi il cursore personalizzato
+            dot?.classList.add('hidden');
+            circle?.classList.add('hidden');
+          } else {
+            addHoverClass();
+          }
         }
       }
     };
 
     const handlePointerLeave = (e) => {
-      const target = e.target.closest(
-        'a, button, label, [role="button"], [onClick], input, textarea, select'
-      );
-      if (target) {
-        if (
-          target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA') {
-          // Mostra nuovamente il cursore personalizzato
-          dot?.classList.remove('hidden');
-          circle?.classList.remove('hidden');
-        } else {
-          removeHoverClass();
+      // Verifica che e.target sia un Elemento DOM e che 'closest' esista
+      if (e.target && typeof e.target.closest === 'function') {
+        const target = e.target.closest(
+          'a, button, label, [role="button"], [onClick], input, textarea, select'
+        );
+        if (target) {
+          if (
+            target.tagName === 'INPUT' ||
+            target.tagName === 'TEXTAREA'
+          ) {
+            // Mostra nuovamente il cursore personalizzato
+            dot?.classList.remove('hidden');
+            circle?.classList.remove('hidden');
+          } else {
+            removeHoverClass();
+          }
         }
       }
     };

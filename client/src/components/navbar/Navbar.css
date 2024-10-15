@@ -1,0 +1,31 @@
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: transparent; /* Imposta trasparente */
+    padding: 10px 0;
+    z-index: 1000;
+  }
+  
+  .navbar-menu {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .navbar-menu li {
+    margin: 0 15px;
+  }
+  
+  .navbar-menu li a {
+    color: var(--primary-text-color); /* Usa la variabile CSS */
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 500ms ease-in-out;
+  }
+  
+  .navbar-menu li a:hover {
+    color: var(--foreground-color);
+  }

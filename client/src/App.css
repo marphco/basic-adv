@@ -1,18 +1,29 @@
+/* Transizioni globali per background-color e color */
+body, .App, .section, .home-container, .about-us-container, .portfolio-container, .contact-container, .dashboard-container, .navbar, .navbar-menu li a, .home-intro, .title, .box {
+  transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
+}
+
+/* Altri stili globali */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background-color);
+  color: var(--primary-text-color);
+}
+
 .App {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh; /* Modificato per evitare problemi con height 100vh */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* Cambiato per evitare sovrapposizioni */
   align-items: center;
   background-color: var(--background-color);
-  transition: background-color 500ms ease-in-out;
-
 }
 
 .title {
   color: var(--primary-text-color);
-  transition: color 500ms ease-in-out;
+  transition: color 500ms ease-in-out; /* Questa linea è ora ridondante se inclusa globalmente */
   margin-bottom: 50px;
 }
 
@@ -20,7 +31,6 @@
   padding: 20px;
   border-radius: 10px;
   background-color: var(--foreground-color);
-  transition: background-color 500ms ease-in-out;
   color: var(--secondary-text-color);
-  transition: color 500ms ease-in-out;
+  transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
 }

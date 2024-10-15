@@ -3,7 +3,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
-  /* cursor: none; */
+  /* transition: background-color 500ms ease-in-out, color 500ms ease-in-out; */
 }
 
 /* Nasconde il cursore predefinito su tutto il sito */
@@ -39,12 +39,6 @@ body.no-default-cursor a {
   cursor: none !important;
 }
 
-/* Opzionale: Permetti al cursore personalizzato di gestire gli stati hover */
-body.no-default-cursor .btn:hover,
-body.no-default-cursor a:hover {
-  /* Puoi aggiungere stili personalizzati per gli stati hover se necessario */
-}
-
 :root {
   --background-color: #fefefa;
   --foreground-color: #003cff;
@@ -52,8 +46,6 @@ body.no-default-cursor a:hover {
   --secondary-text-color: #ffffff;
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
   --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
-  --circle-size-small: 15px; /* Dimensione cerchietto piccolo */
-  --circle-size-large: 25px; /* Dimensione cerchietto grande */
 }
 
 [data-theme="dark"] {
