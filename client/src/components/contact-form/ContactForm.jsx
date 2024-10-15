@@ -2,71 +2,63 @@ import PropTypes from "prop-types";
 import "./ContactForm.css";
 
 const ContactForm = ({ formData, setFormData, handleSubmitContactInfo, loading }) => {
-  const { contactInfo } = formData;
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       contactInfo: {
-        ...contactInfo,
+        ...formData.contactInfo,
         [name]: value,
       },
     });
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleSubmitContactInfo();
+  };
+
   return (
-    <form onSubmit={handleSubmitContactInfo}>
+    <form onSubmit={handleSubmit} className="contact-form">
+      <h3>Inserisci le tue informazioni di contatto:</h3>
       <div className="form-group">
         <label>Nome:</label>
         <input
           type="text"
           name="name"
-          value={contactInfo.name}
+          value={formData.contactInfo.name}
           onChange={handleChange}
-          placeholder="Inserisci il tuo nome"
           required
         />
       </div>
-
       <div className="form-group">
         <label>Email:</label>
         <input
           type="email"
           name="email"
-          value={contactInfo.email}
+          value={formData.contactInfo.email}
           onChange={handleChange}
-          placeholder="Inserisci la tua email"
           required
         />
       </div>
-
       <div className="form-group">
         <label>Telefono:</label>
         <input
           type="tel"
           name="phone"
-          value={contactInfo.phone}
+          value={formData.contactInfo.phone}
           onChange={handleChange}
-          placeholder="Inserisci il tuo telefono"
         />
       </div>
-
       <button type="submit" disabled={loading}>
-        {loading ? "Caricamento..." : "Invia"}
+        {loading ? "Invio..." : "Invia"}
       </button>
     </form>
   );
 };
 
 ContactForm.propTypes = {
-  formData: PropTypes.shape({
-    contactInfo: PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      email: PropTypes.string.isRequired,
-      phone: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
+  formData: PropTypes.object.isRequired,
   setFormData: PropTypes.func.isRequired,
   handleSubmitContactInfo: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,

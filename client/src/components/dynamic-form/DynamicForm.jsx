@@ -31,7 +31,13 @@ const DynamicForm = () => {
 
   // Dati statici
   const services = ["Logo", "Website", "App"];
-  const businessFields = ["Seleziona un settore", "Tecnologia", "Moda", "Alimentare", "Altro"];
+  const businessFields = [
+    "Seleziona un settore",
+    "Tecnologia",
+    "Moda",
+    "Alimentare",
+    "Altro",
+  ];
 
   // Funzione per gestire la selezione dei servizi
   const toggleService = (service) => {
@@ -49,14 +55,24 @@ const DynamicForm = () => {
     if (type === "file") {
       // Se l'input è di tipo file, ottieni il file selezionato
       const file = e.target.files[0]; // Prende il primo file selezionato
-      setFormData({ ...formData, [name]: file });
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: file,
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
-    }
+      setFormData((prevFormData) => {
+        const updatedFormData = {
+          ...prevFormData,
+          [name]: value,
+        };
 
-    // Reset di otherBusinessField se businessField cambia e non è "Altro"
-    if (name === "businessField" && value !== "Altro") {
-      setFormData({ ...formData, otherBusinessField: "" });
+        // Reset di otherBusinessField se businessField cambia e non è "Altro"
+        if (name === "businessField" && value !== "Altro") {
+          updatedFormData.otherBusinessField = "";
+        }
+
+        return updatedFormData;
+      });
     }
   };
 
@@ -108,12 +124,18 @@ const DynamicForm = () => {
       return;
     }
 
-    if (!formData.businessField || formData.businessField === "Seleziona un settore") {
+    if (
+      !formData.businessField ||
+      formData.businessField === "Seleziona un settore"
+    ) {
       alert("Per favore, seleziona il settore aziendale.");
       return;
     }
 
-    if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
+    if (
+      formData.businessField === "Altro" &&
+      !formData.otherBusinessField.trim()
+    ) {
       alert("Per favore, specifica il tuo settore aziendale.");
       return;
     }
@@ -265,6 +287,14 @@ const DynamicForm = () => {
       {showThankYou ? (
         // Mostra il messaggio di ringraziamento
         <ThankYouMessage />
+      ) : isCompleted ? (
+        // Mostra il form per le informazioni di contatto
+        <ContactForm
+          formData={formData}
+          setFormData={setFormData}
+          handleSubmitContactInfo={handleSubmitContactInfo}
+          loading={loading}
+        />
       ) : currentQuestion ? (
         // Mostra il form della domanda corrente
         <QuestionForm
@@ -274,14 +304,6 @@ const DynamicForm = () => {
           handleAnswerSubmit={handleAnswerSubmit}
           handleInputChange={handleInputChange}
           handleAnswerChange={handleAnswerChange}
-          loading={loading}
-        />
-      ) : isCompleted ? (
-        // Mostra il form per le informazioni di contatto
-        <ContactForm
-          formData={formData}
-          setFormData={setFormData}
-          handleSubmitContactInfo={handleSubmitContactInfo}
           loading={loading}
         />
       ) : (
