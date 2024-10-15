@@ -1,3 +1,4 @@
+// Cursor.jsx
 import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './Cursor.css';
@@ -13,7 +14,7 @@ export const Cursor = ({ isDark }) => {
   useEffect(() => {
     const dot = dotRef.current;
     const circle = circleRef.current;
-    const speed = 0.15;
+    const speed = 0.12;
 
     const moveCursor = (e) => {
       mouseX.current = e.clientX;
@@ -37,7 +38,7 @@ export const Cursor = ({ isDark }) => {
       requestAnimationFrame(animateCircle);
     };
 
-    // Event handlers for hover and click events
+    // Event handlers for hover and input focus events
     const addHoverClass = () => {
       dot?.classList.add('hovered');
       circle?.classList.add('hovered');
@@ -49,16 +50,36 @@ export const Cursor = ({ isDark }) => {
     };
 
     const handlePointerEnter = (e) => {
-      const target = e.target.closest('a, button, label, [role="button"], [onClick]');
+      const target = e.target.closest(
+        'a, button, label, [role="button"], [onClick], input, textarea, select'
+      );
       if (target) {
-        addHoverClass();
+        if (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA') {
+          // Nascondi il cursore personalizzato
+          dot?.classList.add('hidden');
+          circle?.classList.add('hidden');
+        } else {
+          addHoverClass();
+        }
       }
     };
 
     const handlePointerLeave = (e) => {
-      const target = e.target.closest('a, button, label, [role="button"], [onClick]');
+      const target = e.target.closest(
+        'a, button, label, [role="button"], [onClick], input, textarea, select'
+      );
       if (target) {
-        removeHoverClass();
+        if (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA') {
+          // Mostra nuovamente il cursore personalizzato
+          dot?.classList.remove('hidden');
+          circle?.classList.remove('hidden');
+        } else {
+          removeHoverClass();
+        }
       }
     };
 
@@ -73,7 +94,7 @@ export const Cursor = ({ isDark }) => {
       document.removeEventListener('pointerenter', handlePointerEnter, true);
       document.removeEventListener('pointerleave', handlePointerLeave, true);
     };
-  }, []); // Effetto eseguito solo al montaggio
+  }, []);
 
   // Aggiorna le classi CSS quando isDark cambia
   useEffect(() => {

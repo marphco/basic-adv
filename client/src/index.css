@@ -3,7 +3,46 @@
   padding: 0;
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
-  cursor: none; /* Hide the default cursor */
+  /* cursor: none; */
+}
+
+/* Nasconde il cursore predefinito su tutto il sito */
+body.no-default-cursor *,
+body.no-default-cursor *::before,
+body.no-default-cursor *::after {
+  cursor: none !important;
+}
+
+/* Nasconde il cursore predefinito su tutto il sito */
+body.no-default-cursor,
+body.no-default-cursor *,
+body.no-default-cursor *::before,
+body.no-default-cursor *::after {
+  cursor: none !important;
+}
+
+/* Mostra il cursore testo per gli input di testo e select */
+body.no-default-cursor input[type="text"],
+body.no-default-cursor input[type="email"],
+body.no-default-cursor input[type="password"],
+body.no-default-cursor textarea {
+  cursor: text !important;
+}
+
+/* Mostra il cursore pointer per i pulsanti e altri elementi interattivi */
+body.no-default-cursor button,
+body.no-default-cursor [type="button"],
+body.no-default-cursor [type="submit"],
+body.no-default-cursor [role="button"],
+body.no-default-cursor .btn,
+body.no-default-cursor a {
+  cursor: none !important;
+}
+
+/* Opzionale: Permetti al cursore personalizzato di gestire gli stati hover */
+body.no-default-cursor .btn:hover,
+body.no-default-cursor a:hover {
+  /* Puoi aggiungere stili personalizzati per gli stati hover se necessario */
 }
 
 :root {

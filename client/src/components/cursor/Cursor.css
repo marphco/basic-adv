@@ -19,8 +19,8 @@
 /* Stili comuni */
 .custom-cursor-dot {
   position: fixed;
-  width: 0.3em;
-  height: 0.3em;
+  width: 0.25em;
+  height: 0.25em;
   border-radius: 50%;
   pointer-events: none;
   z-index: 10000;
@@ -32,7 +32,7 @@
   position: fixed;
   width: 2em;
   height: 2em;
-  border: 1px solid black;
+  border: .8px solid black;
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
@@ -42,10 +42,23 @@
 
 /* Hover effect for clickable elements */
 .custom-cursor-circle.hovered {
-  width: 1.3em;
-  height: 1.3em;
+  width: 1em;
+  height: 1em;
   border-radius: 0%; /* Transforms into a square */
   animation: rotateInfinite 2s linear infinite; /* Keeps rotating */
+}
+
+/* Cursor styling for input fields */
+.custom-cursor-circle.text-input {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+}
+
+/* Nasconde il cursore personalizzato */
+.custom-cursor-dot.hidden,
+.custom-cursor-circle.hidden {
+  display: none !important;
 }
 
 /* Keyframes for continuous rotation */
