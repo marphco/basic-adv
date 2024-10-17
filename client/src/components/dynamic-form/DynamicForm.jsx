@@ -1,3 +1,4 @@
+// src/components/dynamic-form/DynamicForm.jsx
 import PropTypes from "prop-types";
 import { useState } from "react";
 import axios from "axios";
@@ -30,6 +31,10 @@ const DynamicForm = ({ onRestart }) => {
   }); // Dati del modulo iniziale
   const [answers, setAnswers] = useState({}); // Risposte dell'utente alle domande
 
+  // **Nuovi Stati**
+  const [isLogoSelected, setIsLogoSelected] = useState(false); // Traccia se "logo" è selezionato
+  const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false); // Traccia se la domanda sui font è stata posta
+
   // Dati statici
   const services = ["Logo", "Website", "App"];
   const businessFields = [
@@ -59,6 +64,8 @@ const DynamicForm = ({ onRestart }) => {
       contactInfo: { name: "", email: "", phone: "" },
     });
     setAnswers({});
+    setIsLogoSelected(false);
+    setIsFontQuestionAsked(false);
 
     // Chiama onRestart per informare App.jsx di resettare lo stato
     if (onRestart) {
@@ -70,8 +77,14 @@ const DynamicForm = ({ onRestart }) => {
   const toggleService = (service) => {
     if (selectedServices.includes(service)) {
       setSelectedServices(selectedServices.filter((s) => s !== service));
+      if (service === "Logo") {
+        setIsLogoSelected(false);
+      }
     } else {
       setSelectedServices([...selectedServices, service]);
+      if (service === "Logo") {
+        setIsLogoSelected(true);
+      }
     }
   };
 
@@ -201,6 +214,14 @@ const DynamicForm = ({ onRestart }) => {
         }
       );
 
+      // **Aggiorna lo stato se la domanda sui font è inclusa**
+      if (
+        response.data.question &&
+        response.data.question.type === "font_selection"
+      ) {
+        setIsFontQuestionAsked(true);
+      }
+
       setCurrentQuestion(response.data.question);
       setQuestionNumber(1);
     } catch (error) {
@@ -235,10 +256,38 @@ const DynamicForm = ({ onRestart }) => {
       const nextQuestion = response.data.question;
 
       if (!nextQuestion) {
-        // Non ci sono più domande
-        setIsCompleted(true);
-        setCurrentQuestion(null);
+        // **Controlla se è necessario aggiungere la domanda sui font**
+        if (isLogoSelected && !isFontQuestionAsked) {
+          // Definisci la domanda sui font
+          const fontQuestion = {
+            question: "Quale tipo di font preferisci?",
+            type: "font_selection",
+            options: [
+              "Serif",
+              "Sans-serif",
+              "Script",
+              "Monospaced",
+              "Manoscritto",
+              "Decorativo",
+            ],
+            requiresInput: false,
+          };
+
+          // Aggiorna lo stato
+          setCurrentQuestion(fontQuestion);
+          setQuestionNumber((prev) => prev + 1);
+          setIsFontQuestionAsked(true);
+        } else {
+          // Non ci sono più domande
+          setIsCompleted(true);
+          setCurrentQuestion(null);
+        }
       } else {
+        // **Aggiorna lo stato se la domanda sui font è inclusa**
+        if (nextQuestion.type === "font_selection") {
+          setIsFontQuestionAsked(true);
+        }
+
         setCurrentQuestion(nextQuestion);
         setQuestionNumber((prev) => prev + 1);
       }
@@ -283,8 +332,10 @@ const DynamicForm = ({ onRestart }) => {
   };
 
   // Funzione per inviare le informazioni di contatto
-  const handleSubmitContactInfo = async () => {
+  const handleSubmitContactInfo = async (e) => {
+    e.preventDefault(); // Assicurati che venga preventDefault per evitare il reload
     setLoading(true);
+
     try {
       await axios.post(
         "http://localhost:5001/api/submitLog",
@@ -298,6 +349,7 @@ const DynamicForm = ({ onRestart }) => {
           },
         }
       );
+      
       setShowThankYou(true);
     } catch (error) {
       console.error("Errore nell'invio dei contatti:", error);

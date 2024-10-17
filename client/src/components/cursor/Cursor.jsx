@@ -49,20 +49,27 @@ export const Cursor = ({ isDark }) => {
     };
 
     const handlePointerEnter = (e) => {
-      // Verifica che e.target sia un Elemento DOM e che 'closest' esista
       if (e.target && typeof e.target.closest === 'function') {
         const target = e.target.closest(
           'a, button, label, [role="button"], [onClick], input, textarea, select'
         );
         if (target) {
-          if (
-            target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA'
-          ) {
-            // Nascondi il cursore personalizzato
+          if (target.tagName === 'INPUT') {
+            const inputType = target.getAttribute('type');
+            if (inputType === 'text' || inputType === 'email' || inputType === 'tel' || inputType === 'password') {
+              // Nascondi il cursore personalizzato solo per questi tipi di input
+              dot?.classList.add('hidden');
+              circle?.classList.add('hidden');
+            } else if (inputType === 'checkbox' || inputType === 'radio') {
+              // Aggiungi la classe 'hovered' per animare il cursore
+              addHoverClass();
+            }
+          } else if (target.tagName === 'TEXTAREA') {
+            // Nascondi il cursore personalizzato per textarea
             dot?.classList.add('hidden');
             circle?.classList.add('hidden');
           } else {
+            // Per altri elementi interattivi, aggiungi la classe 'hovered'
             addHoverClass();
           }
         }
@@ -70,20 +77,27 @@ export const Cursor = ({ isDark }) => {
     };
 
     const handlePointerLeave = (e) => {
-      // Verifica che e.target sia un Elemento DOM e che 'closest' esista
       if (e.target && typeof e.target.closest === 'function') {
         const target = e.target.closest(
           'a, button, label, [role="button"], [onClick], input, textarea, select'
         );
         if (target) {
-          if (
-            target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA'
-          ) {
-            // Mostra nuovamente il cursore personalizzato
+          if (target.tagName === 'INPUT') {
+            const inputType = target.getAttribute('type');
+            if (inputType === 'text' || inputType === 'email' || inputType === 'tel' || inputType === 'password') {
+              // Mostra nuovamente il cursore personalizzato solo per questi tipi di input
+              dot?.classList.remove('hidden');
+              circle?.classList.remove('hidden');
+            } else if (inputType === 'checkbox' || inputType === 'radio') {
+              // Rimuovi la classe 'hovered' per fermare l'animazione
+              removeHoverClass();
+            }
+          } else if (target.tagName === 'TEXTAREA') {
+            // Mostra nuovamente il cursore personalizzato per textarea
             dot?.classList.remove('hidden');
             circle?.classList.remove('hidden');
           } else {
+            // Per altri elementi interattivi, rimuovi la classe 'hovered'
             removeHoverClass();
           }
         }

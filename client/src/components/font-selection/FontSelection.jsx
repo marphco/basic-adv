@@ -1,63 +1,46 @@
-import PropTypes from "prop-types";
-import "./FontSelection.css";
+import PropTypes from 'prop-types';
+import './FontSelection.css';
 
 const FontSelection = ({
   currentQuestion,
   answers,
-  handleInputChange,
   handleAnswerChange,
   fontOptionImages,
-}) => (
-  <>
-    {/* Visualizza le opzioni dei font con immagini */}
-    <div className="font-options">
-      {currentQuestion.options.map((option, index) => (
-        <div key={index} className="font-option">
+}) => {
+
+  return (
+    <div className="font-selection">
+      {currentQuestion.options.map((font, index) => (
+        <label key={index} className="font-option">
           <input
-            type="checkbox"
-            id={`font_option_${index}`}
-            name="fontSelection"
-            value={option}
+            type="checkbox" // Cambiato da "radio" a "checkbox"
+            name={`fontSelection_${index}`} // Nome unico per ogni checkbox
+            value={font}
             checked={
               answers[currentQuestion.question]?.options
-                ? answers[currentQuestion.question].options.includes(option)
+                ? answers[currentQuestion.question].options.includes(font)
                 : false
             }
-            onChange={handleAnswerChange} // Rimosso il secondo argomento
+            onChange={handleAnswerChange}
           />
-          <label htmlFor={`font_option_${index}`}>
-            <img
-              src={fontOptionImages[option]}
-              alt={option}
-              className="font-image"
-            />
-            <span>{option}</span>
-          </label>
-        </div>
+          <span className="font-display">
+            <img src={fontOptionImages[font]} alt={font} />
+            {font}
+          </span>
+        </label>
       ))}
     </div>
-
-    {/* Campo di input per font personalizzato */}
-    <div className="form-group">
-      <label>Preferisci un font specifico? Indicalo qui:</label>
-      <input
-        type="text"
-        name="customFont"
-        value={answers[currentQuestion.question]?.input || ""}
-        onChange={handleInputChange}
-        placeholder="Nome del font preferito"
-      />
-    </div>
-  </>
-);
+  );
+};
 
 FontSelection.propTypes = {
   currentQuestion: PropTypes.shape({
     question: PropTypes.string.isRequired,
     options: PropTypes.arrayOf(PropTypes.string).isRequired,
+    requiresInput: PropTypes.bool.isRequired,
+    type: PropTypes.string.isRequired,
   }).isRequired,
   answers: PropTypes.object.isRequired,
-  handleInputChange: PropTypes.func.isRequired,
   handleAnswerChange: PropTypes.func.isRequired,
   fontOptionImages: PropTypes.object.isRequired,
 };

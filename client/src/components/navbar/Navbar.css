@@ -2,6 +2,7 @@
 .navbar-block {
     width: 50vw; /* Occupa il 50% della larghezza del viewport */
     display: flex;
+    position: fixed;
     justify-content: space-between; /* Distribuisce lo spazio tra menu e toggle */
     align-items: center; /* Centra verticalmente gli elementi */
     align-self: flex-end; /* Allinea il blocco alla destra all'interno del contenitore flex */
@@ -17,7 +18,6 @@
     background-color: transparent; /* Trasparente come desiderato */
     padding: 0 20px; /* Padding orizzontale */
     z-index: 1000;
-    height: 40px; /* Altezza della Navbar */
 }
 
 /* Stile del Menu della Navbar */

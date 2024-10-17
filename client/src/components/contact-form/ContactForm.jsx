@@ -2,55 +2,53 @@ import PropTypes from "prop-types";
 import "./ContactForm.css";
 
 const ContactForm = ({ formData, setFormData, handleSubmitContactInfo, loading }) => {
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       contactInfo: {
-        ...formData.contactInfo,
+        ...prevData.contactInfo,
         [name]: value,
       },
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    handleSubmitContactInfo();
+    }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="contact-form">
-      <h3>Inserisci le tue informazioni di contatto:</h3>
-      <div className="form-group">
-        <label>Nome:</label>
+    <form className="contact-form" onSubmit={handleSubmitContactInfo}>
+      <div>
+        <label htmlFor="name">Nome:</label>
         <input
           type="text"
+          id="name"
           name="name"
           value={formData.contactInfo.name}
           onChange={handleChange}
           required
         />
       </div>
-      <div className="form-group">
-        <label>Email:</label>
+      <div>
+        <label htmlFor="email">Email:</label>
         <input
           type="email"
+          id="email"
           name="email"
           value={formData.contactInfo.email}
           onChange={handleChange}
           required
         />
       </div>
-      <div className="form-group">
-        <label>Telefono:</label>
+      <div>
+        <label htmlFor="phone">Telefono:</label>
         <input
           type="tel"
+          id="phone"
           name="phone"
           value={formData.contactInfo.phone}
           onChange={handleChange}
         />
       </div>
-      <button type="submit" disabled={loading}>
+      <button type="submit" className="submit-btn" disabled={loading}>
         {loading ? "Invio..." : "Invia"}
       </button>
     </form>

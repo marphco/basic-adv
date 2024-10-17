@@ -51,7 +51,7 @@ const QuestionForm = ({
             {currentQuestion.options &&
               currentQuestion.options.length > 0 &&
               currentQuestion.options.map((option, index) => (
-                <div key={index}>
+                <label key={index} className="checkbox-label">
                   <input
                     type="checkbox"
                     id={`option_${index}`}
@@ -64,8 +64,9 @@ const QuestionForm = ({
                     }
                     onChange={handleAnswerChange}
                   />
-                  <label htmlFor={`option_${index}`}>{option}</label>
-                </div>
+                  <span className="custom-checkbox"></span>
+                  {option}
+                </label>
               ))}
 
             {/* Campo di input opzionale */}
