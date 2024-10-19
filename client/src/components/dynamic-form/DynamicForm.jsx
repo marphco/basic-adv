@@ -1,5 +1,5 @@
 // src/components/dynamic-form/DynamicForm.jsx
-import PropTypes from "prop-types";
+// import PropTypes from "prop-types";
 import { useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
@@ -12,7 +12,7 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 
-const DynamicForm = ({ onRestart }) => {
+const DynamicForm = () => {
   // Stati principali
   const [sessionId, setSessionId] = useState(uuidv4()); // ID univoco per la sessione
   const [selectedServices, setSelectedServices] = useState([]); // Servizi selezionati dall'utente
@@ -68,9 +68,9 @@ const DynamicForm = ({ onRestart }) => {
     setIsFontQuestionAsked(false);
 
     // Chiama onRestart per informare App.jsx di resettare lo stato
-    if (onRestart) {
-      onRestart();
-    }
+    // if (onRestart) {
+    //   onRestart();
+    // }
   };
 
   // Funzione per gestire la selezione dei servizi
@@ -411,8 +411,8 @@ const DynamicForm = ({ onRestart }) => {
   );
 };
 
-DynamicForm.propTypes = {
-  onRestart: PropTypes.func.isRequired,
-};
+// DynamicForm.propTypes = {
+//   onRestart: PropTypes.func.isRequired,
+// };
 
 export default DynamicForm;

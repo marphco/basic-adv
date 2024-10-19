@@ -1,17 +1,12 @@
 import './Contacts.css';
 import DynamicForm from '../dynamic-form/DynamicForm';
-import PropTypes from "prop-types";
 
-const Contacts = ({ handleRestart }) => {
+const Contacts = () => {
   return (
     <div className="contacts-container">
-      <DynamicForm onRestart={handleRestart} />
+      <DynamicForm />
     </div>
   );
-};
-
-Contacts.propTypes = {
-  handleRestart: PropTypes.func.isRequired,
 };
 
 export default Contacts;
