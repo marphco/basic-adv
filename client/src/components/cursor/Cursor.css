@@ -61,6 +61,13 @@
   display: none !important;
 }
 
+/* Quando il dot viene cliccato */
+.custom-cursor-dot.clicked {
+  width: .8em;
+  height: .8em;
+  transition: width 0.1s ease, height 0.1s ease;
+}
+
 /* Keyframes for continuous rotation */
 @keyframes rotateInfinite {
   from {

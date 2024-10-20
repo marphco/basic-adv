@@ -104,9 +104,20 @@ export const Cursor = ({ isDark }) => {
       }
     };
 
+    // Gestisci il click del mouse
+    const handleMouseDown = () => {
+      dot?.classList.add('clicked');
+    };
+
+    const handleMouseUp = () => {
+      dot?.classList.remove('clicked');
+    };
+
     document.addEventListener('mousemove', moveCursor);
     document.addEventListener('pointerenter', handlePointerEnter, true);
     document.addEventListener('pointerleave', handlePointerLeave, true);
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
 
     animateCircle();
 
@@ -114,6 +125,8 @@ export const Cursor = ({ isDark }) => {
       document.removeEventListener('mousemove', moveCursor);
       document.removeEventListener('pointerenter', handlePointerEnter, true);
       document.removeEventListener('pointerleave', handlePointerLeave, true);
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
   }, []);
 

@@ -28,7 +28,7 @@ function App() {
       const maxScroll = container.scrollWidth - container.clientWidth;
 
       // Incrementa o decrementa la posizione di scroll con sensibilità aumentata
-      const scrollAmount = event.deltaY * 1.5; // Aumenta la sensibilità
+      const scrollAmount = event.deltaY * 1.2; // Ridotta sensibilità per movimenti più lenti
       targetScrollPositionRef.current += scrollAmount;
 
       // Limita la posizione di scroll entro i limiti validi
@@ -52,10 +52,10 @@ function App() {
       const targetPosition = targetScrollPositionRef.current;
 
       // Calcola la distanza e applica l'interpolazione
-      const distance = (targetPosition - currentPosition) * .2; // Aumentato a 0.2 per maggiore fluidità
+      const distance = (targetPosition - currentPosition) * 0.07; // Ridotto per maggiore fluidità
 
       // Se il movimento è significativo, continuiamo l'animazione
-      if (Math.abs(distance) > .5) { // Aumentato la soglia a 1
+      if (Math.abs(distance) > 0.1) { // Soglia ridotta per animazione più fluida
         container.scrollLeft += distance;
         scrollPositionRef.current = container.scrollLeft; // Aggiorna la posizione corrente
         requestAnimationFrame(smoothScroll); // Continua a chiamare l'animazione

@@ -41,18 +41,18 @@ body.no-default-cursor a {
 
 :root {
   --background-color: #fefefa;
-  --foreground-color: #003cff;
-  --primary-text-color: #0a0a0a;
+  --foreground-color: #F79320;
+  --primary-text-color: #161616;
   --secondary-text-color: #ffffff;
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
   --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
 }
 
 [data-theme="dark"] {
-  --background-color: #0a0a0a;
-  --foreground-color: #567aff;
+  --background-color: #161616;
+  --foreground-color: #F79320;
   --primary-text-color: #f6f6f6;
-  --secondary-text-color: #0a0a0a;
+  --secondary-text-color: #161616;
   --toggle-bg: #283452;
   --toggle-fg: #00a6ff;
 }
