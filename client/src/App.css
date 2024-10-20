@@ -4,22 +4,42 @@ body, .App, .section, .home-container, .about-us-container, .portfolio-container
 }
 
 /* Altri stili globali */
-body {
+body, html, #root {
   margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: var(--background-color);
-  color: var(--primary-text-color);
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Previene lo scroll predefinito */
+}
+
+.scroll-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Nasconde lo scroll verticale e le scrollbar */
+  position: relative;
 }
 
 .App {
-  width: 100%;
-  min-height: 100vh; /* Modificato per evitare problemi con height 100vh */
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* Cambiato per evitare sovrapposizioni */
-  align-items: flex-start; /* Cambiato da center a flex-start */
-  background-color: var(--background-color);
+  flex-direction: row;
+  width: 300vw; /* 3 sezioni, modificare in base al numero */
+  height: 100vh;
 }
+
+.section {
+  flex: 0 0 100vw; /* Ogni sezione occupa 100% della larghezza della finestra */
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  z-index: 10; /* Assicura che la navbar stia sopra gli altri contenuti */
+}
+
 
 .title {
   color: var(--primary-text-color);

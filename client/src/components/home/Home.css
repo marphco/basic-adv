@@ -9,20 +9,20 @@
     text-align: center;
     box-sizing: border-box;
     overflow: hidden; /* Nasconde eventuali overflow */
-}
-
-.home-content {
+  }
+  
+  .home-content {
     padding: 20px; /* Aggiungi padding all'interno del contenuto */
-}
-
-.home-logo {
+  }
+  
+  .home-logo {
     width: 150px;
     height: auto;
     margin-bottom: 20px;
-}
-
-.home-intro {
+  }
+  
+  .home-intro {
     font-size: 2rem;
     max-width: 600px;
     color: var(--primary-text-color); /* Usa la variabile CSS */
-}
+  }
