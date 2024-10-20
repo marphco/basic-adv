@@ -34,17 +34,6 @@ function App() {
       // Limita la posizione di scroll entro i limiti validi
       targetScrollPositionRef.current = Math.max(0, Math.min(targetScrollPositionRef.current, maxScroll));
 
-      // Log delle informazioni dello scroll
-      console.log('--- Wheel Event ---');
-      console.log('DeltaY:', event.deltaY);
-      console.log('Scroll Amount:', scrollAmount);
-      console.log('Updated Target Scroll:', targetScrollPositionRef.current);
-      console.log('Max Scroll:', maxScroll);
-
-      // Log delle dimensioni del contenitore
-      console.log('Container ScrollWidth:', container.scrollWidth);
-      console.log('Container ClientWidth:', container.clientWidth);
-
       // Avvia l'animazione di scroll se non è già in corso
       if (!isScrollingRef.current) {
         isScrollingRef.current = true;
@@ -65,12 +54,6 @@ function App() {
       // Calcola la distanza e applica l'interpolazione
       const distance = (targetPosition - currentPosition) * .2; // Aumentato a 0.2 per maggiore fluidità
 
-      // Log delle informazioni dello smooth scroll
-      console.log('--- Smooth Scroll ---');
-      console.log('Current Position:', currentPosition);
-      console.log('Target Position:', targetPosition);
-      console.log('Distance:', distance);
-
       // Se il movimento è significativo, continuiamo l'animazione
       if (Math.abs(distance) > .5) { // Aumentato la soglia a 1
         container.scrollLeft += distance;
@@ -81,7 +64,6 @@ function App() {
         container.scrollLeft = targetPosition;
         scrollPositionRef.current = targetPosition;
         isScrollingRef.current = false;
-        console.log('--- Scroll Animation Completed ---');
       }
     };
 
@@ -90,9 +72,6 @@ function App() {
     if (container) {
       scrollPositionRef.current = container.scrollLeft;
       targetScrollPositionRef.current = container.scrollLeft;
-      console.log('Initial Scroll Position:', container.scrollLeft);
-      console.log('Container ScrollWidth:', container.scrollWidth);
-      console.log('Container ClientWidth:', container.clientWidth);
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false });
