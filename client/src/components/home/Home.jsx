@@ -27,7 +27,7 @@ const Home = ({ isDark }) => {
           <img src={logo} alt="Logo Basic Adv" className="home-logo"/>
         </div>
         <div className="scroll-hint">
-          CURIOSO? <span className="scroll-arrow">↓</span>
+          COMINCIAMO? <span className="scroll-arrow">↓</span>
         </div>
       </div>
     </div>
