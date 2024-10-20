@@ -95,7 +95,7 @@ function App() {
       <div className="scroll-wrapper" ref={scrollContainerRef}>
         <div className="App" data-theme={isDark ? 'dark' : 'light'}>
           <Navbar isDark={isDark} setIsDark={setIsDark} />
-          <div className="section"><Home /></div>
+          <div className="section"><Home isDark={isDark !== undefined ? isDark : false} /></div>
           <div className="section"><AboutUs /></div>
           <div className="section"><Contacts /></div>
         </div>

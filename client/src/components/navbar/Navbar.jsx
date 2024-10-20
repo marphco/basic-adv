@@ -13,16 +13,16 @@ const Navbar = ({ isDark, setIsDark }) => {
       <nav className="navbar">
         <ul className="navbar-menu">
           <li>
-            <Link to="/">Home</Link>
+            <Link to="/">HOME</Link>
           </li>
           <li>
-            <Link to="/about-us">About Us</Link>
+            <Link to="/about-us">ABOUT US</Link>
           </li>
           <li>
-            <Link to="/portfolio">Portfolio</Link>
+            <Link to="/portfolio">PORTFOLIO</Link>
           </li>
           <li>
-            <Link to="/contatti">Contacts</Link>
+            <Link to="/contatti">CONTACTS</Link>
           </li>
         </ul>
         <Toggle isChecked={isDark} handleChange={handleToggleChange} />

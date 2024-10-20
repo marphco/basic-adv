@@ -1,28 +1,72 @@
 .home-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between;
     height: 100vh;
     width: 100vw;
     background-color: var(--background-color);
-    text-align: center;
     box-sizing: border-box;
-    overflow: hidden; /* Nasconde eventuali overflow */
-  }
-  
-  .home-content {
-    padding: 20px; /* Aggiungi padding all'interno del contenuto */
-  }
-  
-  .home-logo {
-    width: 150px;
-    height: auto;
-    margin-bottom: 20px;
-  }
-  
-  .home-intro {
+    padding: 80px;
+    position: relative;
+}
+
+.home-text {
+    position: absolute;
+    top: 400px;
+    right: 80px;
+    text-align: right;
+}
+
+.home-text p {
+    font-weight: 100;
     font-size: 2rem;
-    max-width: 600px;
-    color: var(--primary-text-color); /* Usa la variabile CSS */
-  }
+    color: var(--primary-text-color);
+    max-width: 40vw;
+}
+
+.tagline {
+    font-weight: 400;
+    color: var(--foreground-color);
+}
+
+/* Sezione inferiore con logo e scroll hint */
+.bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    position: absolute;
+    bottom: 80px;
+    /* left: 40px;
+    right: 40px; */
+}
+
+.home-logo-container {
+    flex: 1;
+}
+
+.home-logo {
+    max-width: 50vw; /* Limitiamo la dimensione del logo */
+    max-height: 30vh;
+}
+
+.scroll-hint {
+    font-size: 1.2rem;
+    color: var(--primary-text-color);
+    font-weight: 100;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    transform: rotate(-90deg);
+    pointer-events: none;
+    position: relative;
+    bottom: 64px;
+    right: 96px;
+}
+
+.scroll-arrow {
+    display: inline-block;
+    font-weight: 900;
+    color: var(--foreground-color);
+    margin-left: 10px;
+    font-size: 1.5rem;
+}

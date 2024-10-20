@@ -22,14 +22,14 @@
   
   /* Cerchio bianco */
   .white-circle {
-    background-color: white;
-    border: solid .7px black;
+    background-color: #fefefa;
+    border: solid .7px #161616;
   }
   
   /* Cerchio nero */
   .black-circle {
-    background-color: black;
-    border: solid .7px white;
+    background-color: #161616;
+    border: solid .7px #fefefa;
   }
   
   /* Cerchio attivo (più grande) */
@@ -40,10 +40,10 @@
   
   /* Bordo per il cerchio bianco su sfondo bianco */
   body[data-theme='light'] .white-circle {
-    border: 1px solid black;
+    border: 1px solid #161616;
   }
   
   /* Bordo per il cerchio nero su sfondo nero */
   body[data-theme='dark'] .black-circle {
-    border: 1px solid white;
+    border: 1px solid #fefefa;
   }
