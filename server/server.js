@@ -55,15 +55,14 @@ const upload = multer({
 
 const PORT = process.env.PORT || 5001;
 
+const dbUri = process.env.MONGO_URI;
+
 // Connessione a MongoDB
-mongoose
-  .connect("mongodb://localhost:27017/basic")
-  .then(() => {
-    console.log("Connesso al database MongoDB");
-  })
-  .catch((err) => {
-    console.error("Errore di connessione al database:", err);
-  });
+mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connesso al database MongoDB'))
+  .catch(err => console.error('Errore di connessione al database:', err));
+
+  console.log(process.env.MONGODB_URI);
 
 // Funzione di sanitizzazione per le chiavi
 const sanitizeKey = (key) => key.replace(/\./g, "_");
