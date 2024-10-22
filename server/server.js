@@ -58,7 +58,7 @@ const PORT = process.env.PORT || 5001;
 const dbUri = process.env.MONGO_URI;
 
 // Connessione a MongoDB
-mongoose.connect(dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(dbUri)
   .then(() => console.log('Connesso al database MongoDB'))
   .catch(err => console.error('Errore di connessione al database:', err));
 
