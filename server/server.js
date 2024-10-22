@@ -14,7 +14,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Modifica se il frontend è ospitato altrove
+    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Usa la variabile d'ambiente per flessibilità
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -61,8 +61,6 @@ const dbUri = process.env.MONGO_URI;
 mongoose.connect(dbUri)
   .then(() => console.log('Connesso al database MongoDB'))
   .catch(err => console.error('Errore di connessione al database:', err));
-
-  console.log(process.env.MONGODB_URI);
 
 // Funzione di sanitizzazione per le chiavi
 const sanitizeKey = (key) => key.replace(/\./g, "_");
