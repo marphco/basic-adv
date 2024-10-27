@@ -9,27 +9,40 @@ body, html, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Previene lo scroll predefinito */
+  /* overflow: hidden; */
+  cursor: none !important;
 }
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Nasconde la scrollbar su Firefox
+html, body {
+  scrollbar-width: none; Firefox
+  -ms-overflow-style: none; IE e Edge
+} */
 
 .scroll-wrapper {
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* Nasconde lo scroll verticale e le scrollbar */
   position: relative;
 }
 
 .App {
   display: flex;
   flex-direction: row;
-  width: 300vw; /* 3 sezioni, modificare in base al numero */
+  width: max-content; /* 3 sezioni, modificare in base al numero */
   height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .section {
-  flex: 0 0 100vw; /* Ogni sezione occupa 100% della larghezza della finestra */
+  min-width: 100vw; /* Ogni sezione occupa l'intera larghezza della finestra */
   height: 100vh;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .navbar {

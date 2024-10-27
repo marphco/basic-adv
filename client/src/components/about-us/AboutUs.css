@@ -1,34 +1,37 @@
 .aboutus-section {
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
+    overflow: hidden; /* Assicura che non ci siano overflow durante l'animazione */
     background-color: var(--background-color);
-    box-sizing: border-box;
-    padding: 20px;
+    margin-left: -1px;
   }
   
   .aboutus-content {
     display: flex;
-    flex-direction: column;
-    gap: 50px;
+    align-items: center;
+    margin-bottom: 50px;
   }
   
-  .aboutus-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .second-block {
+    margin-left: 200px; /* Sposta il secondo blocco più a destra di 200px */
   }
   
   .aboutus-image {
     width: 300px;
     height: auto;
+    border-radius: 20px;
+    transform: translateY(-800px);
+    opacity: 0;
   }
   
   .aboutus-text {
     max-width: 500px;
     padding-left: 20px;
-  }
-  
+    transform: translateX(800px);
+    opacity: 0;
+  } 
