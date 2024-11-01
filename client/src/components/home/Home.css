@@ -87,7 +87,7 @@
     position: absolute;
     top: 0;
     right: 0; /* Cambiamo il posizionamento per partire da destra */
-    width: 40%;
+    width: 55%;
     height: 100%;
     display: flex;
     pointer-events: none;
@@ -100,7 +100,7 @@
   .stripe {
     flex: 1;
     height: 100%;
-    background-color: red;
+    background-color: rgb(238, 238, 238);;
     transform: scaleX(0);
     margin-left: -2px; /* Per assicurarci che le stripes si sovrappongano leggermente */
   }
