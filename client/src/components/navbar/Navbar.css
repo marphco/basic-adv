@@ -1,55 +1,156 @@
 /* Contenitore principale della Navbar */
 .navbar-block {
-  width: 50vw; /* Occupa il 50% della larghezza del viewport */
-  display: flex;
-  position: fixed;
-  justify-content: space-between; /* Distribuisce lo spazio tra menu e toggle */
-  align-items: center; /* Centra verticalmente gli elementi */
-  align-self: flex-end; /* Allinea il blocco alla destra all'interno del contenitore flex */
-  margin-top: 20px; /* Spazio superiore di 20px */
-  z-index: 1000;
+    width: 50vw;
+    display: flex;
+    position: fixed;
+    justify-content: space-between;
+    align-items: center;
+    align-self: flex-end;
+    margin-top: 20px;
+    z-index: 1000;
 }
 
-/* Stile della Navbar */
 .navbar {
-  display: flex;
-  justify-content: space-between; /* Distribuisce lo spazio tra menu e toggle */
-  align-items: center; /* Centra verticalmente gli elementi */
-  width: 100%; /* Occupa tutta la larghezza del navbar-block */
-  background-color: transparent; /* Trasparente come desiderato */
-  padding: 0 80px; /* Padding orizzontale */
-  z-index: 1000;
-  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth transition */
-  color: var(--primary-text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background-color: transparent;
+    padding: 0 80px;
+    z-index: 1000;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    color: var(--primary-text-color);
 }
 
-/* Stile della Navbar per modalità scura */
 .navbar.dark-mode {
-    color: white; /* Cambia il colore del testo in modalità scura */
-  }
+    color: white;
+}
 
-/* Stile del Menu della Navbar */
 .navbar-menu {
-  display: flex;
-  list-style: none; /* Rimuove i bullet points */
-  margin: 0;
-  padding: 0;
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    transition: all 0.1s ease-in-out;
 }
 
-/* Stile degli Elementi del Menu */
 .navbar-menu li {
-  margin-right: 15px; /* Spazio laterale tra i link */
+    margin-right: 15px;
 }
 
-/* Stile dei Link della Navbar */
 .navbar-menu li a {
-  color: inherit;
-  text-decoration: none; /* Rimuove la sottolineatura */
-  font-size: 0.8rem; /* Dimensione del font */
-  transition: color 0.3s ease-in-out; /* Transizione fluida per l'hover */
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color 0.1s ease-in-out;
 }
 
-/* Stile dei Link al Passaggio del Mouse */
 .navbar-menu li a:hover {
-  color: var(--foreground-color); /* Cambia colore al passaggio del mouse */
+    color: var(--foreground-color);
+}
+
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger {
+    width: 25px;
+    height: 2px;
+    background-color: var(--primary-text-color);
+    margin: 2px 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.hamburger.open:nth-child(1) {
+    transform: rotate(45deg) translateY(4px);
+}
+
+.hamburger.open:nth-child(2) {
+    transform: rotate(-45deg) translateY(-4px);
+}
+
+.hamburger-menu .hamburger.dark-mode {
+    background-color: white;
+}
+
+@media screen and (max-width: 768px) {
+    .navbar-menu {
+        display: none;
+        position: absolute;
+        top: 50px;
+        left: 10%;
+        flex-direction: column;
+        width: 90%;
+        text-align: left;
+        padding: 20px 0;
+    }
+
+    .navbar-menu.open {
+        display: flex;
+        animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    .navbar-menu li {
+        opacity: 0;
+        transform: translateX(-20px);
+        animation: slideIn 0.4s forwards;
+    }
+
+    .navbar-menu li:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .navbar-menu li:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .navbar-menu li:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .navbar-menu li:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes slideIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Animazione in uscita del menu */
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+    }
+
+    .navbar-menu li.close {
+        animation: slideOut 0.4s forwards;
+    }
+
+    .hamburger-menu {
+        display: flex;
+    }
+
+    .navbar {
+        padding: 0 10%;
+    }
 }

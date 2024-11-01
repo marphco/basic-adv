@@ -68,7 +68,7 @@ const Home = ({ isDark }) => {
       .to(stripesContainer, { opacity: 1, duration: 0.5 })
       .to(stripes, {
         scaleX: 1,
-        transformOrigin: 'right center', // Modificato per far partire le strisce dall'estrema destra
+        transformOrigin: 'left center', // Modificato per far partire le strisce dall'estrema destra
         stagger: 0.1,
         ease: 'none',
       });
