@@ -1,63 +1,75 @@
+import { useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './AboutUs.css';
-import 'aos/dist/aos.css';
-import { useEffect } from 'react';
-import AOS from 'aos';
-import img1 from '../../assets/marco.jpg'; 
-import img2 from '../../assets/marco.jpg';
+import img1 from '../../assets/marco.jpg';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const AboutUs = () => {
-  useEffect(() => {
-    // Inizializza AOS con configurazioni specifiche
-    AOS.init({
-      duration: 1000,
-      once: false,
-      mirror: true,
-      offset: 200, // Controlla lo scorrimento orizzontale
-    });
+  const imageRef = useRef(null);
+  // const aboutUsRef = useRef(null);
+  // const stripesContainerRef = useRef(null);
 
-    // Funzione per gestire lo scroll orizzontale e attivare AOS
-    const handleScroll = () => {
-      document.querySelectorAll('.aos-init').forEach((element) => {
-        const elementOffset = element.getBoundingClientRect().left;
+  // useEffect(() => {
+  //   const aboutUsElem = aboutUsRef.current;
+  //   const stripesContainer = stripesContainerRef.current;
+  //   const imageElem = imageRef.current;
 
-        // Se l'elemento è visibile nello schermo, attiva l'animazione
-        if (elementOffset < window.innerWidth * 0.9) {
-          element.classList.add('aos-animate');
-        } else {
-          element.classList.remove('aos-animate');
-        }
-      });
-    };
+  //   if (!aboutUsElem || !stripesContainer || !imageElem) {
+  //     console.error('Elements not found');
+  //     return;
+  //   }
 
-    const scrollWrapper = document.querySelector('.scroll-wrapper');
-    scrollWrapper.addEventListener('scroll', handleScroll);
+  //   // Creare e aggiungere le strisce al container
+  //   const numStripes = 10; // Numero di strisce ridotto per migliorare l'effetto visivo
+  //   for (let i = 0; i < numStripes; i++) {
+  //     const stripe = document.createElement('div');
+  //     stripe.classList.add('stripe');
+  //     stripesContainer.appendChild(stripe);
+  //   }
 
-    // Rimuovi l'evento quando il componente viene smontato
-    return () => {
-      scrollWrapper.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+  //   // Effetto parallasse laterale dell'immagine durante lo scroll
+  //   gsap.to(imageElem, {
+  //     x: '-10%',
+  //     ease: 'none',
+  //     scrollTrigger: {
+  //       trigger: aboutUsElem,
+  //       start: 'top bottom',
+  //       end: 'bottom top',
+  //       scrub: true,
+  //       markers: false,
+  //     },
+  //   });
+
+  //   // Effetto di transizione con strisce
+  //   const stripes = stripesContainer.querySelectorAll('.stripe');
+  //   gsap.to(stripes, {
+  //     scaleX: 1.1,
+  //     transformOrigin: 'left center',
+  //     stagger: 0.1,
+  //     scrollTrigger: {
+  //       trigger: aboutUsElem,
+  //       start: 'top center',
+  //       end: 'bottom top',
+  //       scrub: true,
+  //       markers: false,
+  //     },
+  //   });
+  // }, []);
 
   return (
-    <section className="section aboutus-section">
+    <div className="aboutus-section">
+      <div className="stripes-container"></div>
       <div className="aboutus-content">
-        <div className="aboutus-item" data-aos="fade-down">
-          <img src={img1} alt="Immagine 1" className="aboutus-image" />
-          <div className="aboutus-text" data-aos="fade-right">
-            <h2>Titolo Immagine 1</h2>
-            <p>Testo che accompagna la prima immagine, che entra da destra.</p>
-          </div>
-        </div>
-
-        <div className="aboutus-item" data-aos="fade-up">
-          <img src={img2} alt="Immagine 2" className="aboutus-image" />
-          <div className="aboutus-text" data-aos="fade-right">
-            <h2>Titolo Immagine 2</h2>
-            <p>Testo che accompagna la seconda immagine, che entra da destra.</p>
-          </div>
-        </div>
+        <img
+          ref={imageRef}
+          src={img1}
+          alt="Immagine About Us"
+          className="aboutus-image"
+        />
       </div>
-    </section>
+    </div>
   );
 };
 

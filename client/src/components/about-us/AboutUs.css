@@ -1,34 +1,41 @@
 .aboutus-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 100vh;
+    position: relative;
     width: 100vw;
-    background-color: var(--background-color);
-    box-sizing: border-box;
-    padding: 20px;
-  }
+    height: 100vh;
+    overflow: hidden;
+}
   
-  .aboutus-content {
+/* .stripes-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 50px;
-  }
+    pointer-events: none;
+}
   
-  .aboutus-item {
+.stripe {
+    flex: 1;
+    height: 100%;
+    background-color: red;
+    transform: scaleX(0);
+    margin-right: -2px;
+} */
+  
+.aboutus-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-  }
+}
   
-  .aboutus-image {
-    width: 300px;
-    height: auto;
-  }
-  
-  .aboutus-text {
-    max-width: 500px;
-    padding-left: 20px;
-  }
-  
+.aboutus-image {
+    width: auto;
+    height: 100%;
+    object-fit: cover;
+    margin-left: 0;
+}
+

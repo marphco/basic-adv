@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import './Navbar.css';
 import Toggle from '../toggle/Toggle'; // Importazione predefinita corretta
 import PropTypes from 'prop-types'; // Importa PropTypes
+import classNames from 'classnames'; // Per gestire classi dinamiche
 
 const Navbar = ({ isDark, setIsDark }) => {
   const handleToggleChange = () => {
@@ -10,7 +11,7 @@ const Navbar = ({ isDark, setIsDark }) => {
 
   return (
     <div className="navbar-block">
-      <nav className="navbar">
+      <nav className={classNames('navbar', { 'dark-mode': isDark })}>
         <ul className="navbar-menu">
           <li>
             <Link to="/">HOME</Link>
