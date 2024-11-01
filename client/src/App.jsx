@@ -18,8 +18,9 @@ function App() {
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
 
   const scrollContainerRef = useRef(null);
+  const windowWidthRef = useRef(window.innerWidth);
 
-  useEffect(() => {
+  const initializeScroll = () => {
     const container = scrollContainerRef.current;
 
     if (!container) {
@@ -52,13 +53,26 @@ function App() {
         anticipatePin: 1,
       },
     });
+  };
 
-    // Memorizza il riferimento per l'uso nella funzione di cleanup
-    const cleanupContainer = container;
+  useEffect(() => {
+    initializeScroll();
+
+    const handleResize = () => {
+      const newWidth = window.innerWidth;
+
+      // Esegui il refresh solo se la larghezza della finestra cambia
+      if (newWidth !== windowWidthRef.current) {
+        windowWidthRef.current = newWidth;
+        initializeScroll();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       ScrollTrigger.getAll().forEach((t) => t.kill());
-      gsap.killTweensOf(cleanupContainer);
     };
   }, []);
 
