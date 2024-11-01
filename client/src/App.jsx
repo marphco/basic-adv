@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useEffect, useRef } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { gsap } from 'gsap';
@@ -18,7 +19,7 @@ function App() {
 
   const scrollContainerRef = useRef(null);
 
-  const initializeScroll = () => {
+  useEffect(() => {
     const container = scrollContainerRef.current;
 
     if (!container) {
@@ -51,24 +52,13 @@ function App() {
         anticipatePin: 1,
       },
     });
-  };
 
-  useEffect(() => {
-    initializeScroll();
-
-    const handleResize = () => {
-      // Ignora il resize sui dispositivi mobili
-      if (window.innerWidth > 768) {
-        initializeScroll();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
+    // Memorizza il riferimento per l'uso nella funzione di cleanup
+    const cleanupContainer = container;
 
     return () => {
-      window.removeEventListener('resize', handleResize);
       ScrollTrigger.getAll().forEach((t) => t.kill());
-      gsap.killTweensOf(scrollContainerRef.current);
+      gsap.killTweensOf(cleanupContainer);
     };
   }, []);
 
