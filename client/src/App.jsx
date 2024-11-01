@@ -20,6 +20,7 @@ function App() {
   const scrollContainerRef = useRef(null);
   const isMobileRef = useRef(window.innerWidth <= 768);
   const windowWidthRef = useRef(window.innerWidth);
+  const windowHeightRef = useRef(window.innerHeight);
 
   const initializeScroll = () => {
     const container = scrollContainerRef.current;
@@ -61,11 +62,13 @@ function App() {
 
     const handleResize = () => {
       const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
       const isMobile = newWidth <= 768;
 
-      // Se siamo su desktop e la larghezza cambia, ricalcola lo scroll
-      if (!isMobile && newWidth !== windowWidthRef.current) {
+      // Se siamo su desktop e la larghezza o l'altezza cambiano, ricalcola lo scroll
+      if (!isMobile && (newWidth !== windowWidthRef.current || newHeight !== windowHeightRef.current)) {
         windowWidthRef.current = newWidth;
+        windowHeightRef.current = newHeight;
         initializeScroll();
       }
 
