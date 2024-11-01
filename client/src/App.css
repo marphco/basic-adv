@@ -11,6 +11,7 @@ body, html, #root {
   width: 100%;
   /* overflow: hidden; */
   cursor: none !important;
+  overscroll-behavior: none;
 }
 
 html::-webkit-scrollbar, body::-webkit-scrollbar {
