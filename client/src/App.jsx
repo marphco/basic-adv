@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useEffect, useRef } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { gsap } from 'gsap';
@@ -12,7 +11,7 @@ import AboutUs from './components/about-us/AboutUs';
 import Contacts from './components/contacts/Contacts';
 
 function App() {
-  gsap.registerPlugin(ScrollTrigger); // Registra il plugin
+  gsap.registerPlugin(ScrollTrigger);
 
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
@@ -21,15 +20,25 @@ function App() {
 
   useEffect(() => {
     const container = scrollContainerRef.current;
+
     if (!container) {
       console.error('scrollContainerRef.current is null');
       return;
     }
 
-    // Calcola la larghezza totale delle sezioni
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // Rimuovi qualsiasi animazione GSAP per i dispositivi mobili
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+      gsap.killTweensOf(container);
+      container.style.transform = ''; // Rimuovi le trasformazioni GSAP su mobile
+      return; // Interrompi qui per dispositivi mobili
+    }
+
+    // Se su desktop, abilita lo scroll orizzontale
     const totalWidth = container.scrollWidth - window.innerWidth;
 
-    // Imposta l'animazione con GSAP
     gsap.to(container, {
       x: -totalWidth,
       ease: 'none',
@@ -40,13 +49,13 @@ function App() {
         scrub: 1.5,
         pin: true,
         anticipatePin: 1,
-        // markers: true, // Puoi rimuovere i markers se non necessari
       },
     });
 
     // Pulizia al dismontaggio
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
+      gsap.killTweensOf(container);
     };
   }, []);
 
@@ -61,7 +70,6 @@ function App() {
     <Router>
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
-        {/* Sposta la Navbar fuori dal container animato */}
         <Navbar isDark={isDark} setIsDark={setIsDark} />
         <div
           className="App"

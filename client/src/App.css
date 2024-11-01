@@ -9,7 +9,6 @@ body, html, #root {
   padding: 0;
   height: 100%;
   width: 100%;
-  /* overflow: hidden; */
   cursor: none !important;
   overscroll-behavior: none;
 }
@@ -17,12 +16,6 @@ body, html, #root {
 html::-webkit-scrollbar, body::-webkit-scrollbar {
   display: none;
 }
-
-/* Nasconde la scrollbar su Firefox
-html, body {
-  scrollbar-width: none; Firefox
-  -ms-overflow-style: none; IE e Edge
-} */
 
 .scroll-wrapper {
   width: 100vw;
@@ -33,14 +26,14 @@ html, body {
 .App {
   display: flex;
   flex-direction: row;
-  width: max-content; /* 3 sezioni, modificare in base al numero */
+  width: max-content;
   height: 100vh;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
 .section {
-  min-width: 100vw; /* Ogni sezione occupa l'intera larghezza della finestra */
+  min-width: 100vw;
   height: 100vh;
   box-sizing: border-box;
   flex-shrink: 0;
@@ -51,18 +44,31 @@ html, body {
   top: 20px;
   left: 0;
   width: 100%;
-  z-index: 10; /* Assicura che la navbar stia sopra gli altri contenuti */
+  z-index: 10;
 }
 
+/* Media query per dispositivi mobili */
+@media screen and (max-width: 768px) {
+  .App {
+    display: block; /* Layout verticale */
+    width: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 
-.title {
-  color: var(--primary-text-color);
-  margin-bottom: 50px;
-}
+  .section {
+    min-width: 100%;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+  }
 
-.box {
-  padding: 20px;
-  border-radius: 10px;
-  background-color: var(--foreground-color);
-  color: var(--secondary-text-color);
+  body, html, #root {
+    cursor: default !important; /* Usa il cursore di default su mobile */
+  }
+
+  .navbar {
+    padding: 10px 20px;
+  }
 }

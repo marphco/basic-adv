@@ -21,12 +21,18 @@ const Home = ({ isDark }) => {
     }
   }, [isDark]);
 
-  useEffect(() => {
+  const setupAnimation = () => {
     const homeElem = homeRef.current;
     const stripesContainer = stripesContainerRef.current;
 
     if (!homeElem || !stripesContainer) {
       console.error('Elements not found');
+      return;
+    }
+
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      // Non applicare animazioni delle stripes su mobile
       return;
     }
 
@@ -53,6 +59,7 @@ const Home = ({ isDark }) => {
         end: 'bottom top',
         scrub: true,
         markers: false,
+        id: 'stripesAnimation',
         onEnter: () => {
           stripesContainer.style.backgroundColor = 'transparent';
         },
@@ -61,10 +68,27 @@ const Home = ({ isDark }) => {
       .to(stripesContainer, { opacity: 1, duration: 0.5 })
       .to(stripes, {
         scaleX: 1,
-        transformOrigin: 'left center', // Modificato per far partire le strisce dall'estrema destra
+        transformOrigin: 'right center', // Modificato per far partire le strisce dall'estrema destra
         stagger: 0.1,
         ease: 'none',
       });
+  };
+
+  useEffect(() => {
+    // Esegui l'animazione all'inizio
+    setupAnimation();
+
+    // Listener di resize per reimpostare l'animazione
+    const handleResize = () => {
+      window.location.reload();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
   }, [isDark]);
 
   return (
