@@ -18,6 +18,7 @@ function App() {
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
 
   const scrollContainerRef = useRef(null);
+  const isMobileRef = useRef(window.innerWidth <= 768);
   const windowWidthRef = useRef(window.innerWidth);
 
   const initializeScroll = () => {
@@ -60,10 +61,17 @@ function App() {
 
     const handleResize = () => {
       const newWidth = window.innerWidth;
+      const isMobile = newWidth <= 768;
 
-      // Esegui il refresh solo se la larghezza della finestra cambia
-      if (newWidth !== windowWidthRef.current) {
+      // Se siamo su desktop e la larghezza cambia, ricalcola lo scroll
+      if (!isMobile && newWidth !== windowWidthRef.current) {
         windowWidthRef.current = newWidth;
+        initializeScroll();
+      }
+
+      // Se passiamo da desktop a mobile o viceversa
+      if (isMobileRef.current !== isMobile) {
+        isMobileRef.current = isMobile;
         initializeScroll();
       }
     };

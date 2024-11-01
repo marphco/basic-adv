@@ -59,7 +59,6 @@ const Home = ({ isDark }) => {
         end: 'bottom top',
         scrub: true,
         markers: false,
-        id: 'stripesAnimation',
         onEnter: () => {
           stripesContainer.style.backgroundColor = 'transparent';
         },
@@ -68,19 +67,26 @@ const Home = ({ isDark }) => {
       .to(stripesContainer, { opacity: 1, duration: 0.5 })
       .to(stripes, {
         scaleX: 1,
-        transformOrigin: 'left center', // Modificato per far partire le strisce dall'estrema destra
+        transformOrigin: 'left center',
         stagger: 0.1,
         ease: 'none',
       });
   };
 
   useEffect(() => {
-    // Esegui l'animazione all'inizio
-    setupAnimation();
+    // Esegui l'animazione all'inizio solo se su desktop
+    if (window.innerWidth > 768) {
+      setupAnimation();
+    }
 
-    // Listener di resize per reimpostare l'animazione
+    // Listener di resize per reimpostare l'animazione solo su desktop
     const handleResize = () => {
-      window.location.reload();
+      if (window.innerWidth > 768) {
+        ScrollTrigger.getAll().forEach((t) => t.kill());
+        setupAnimation();
+      } else {
+        ScrollTrigger.getAll().forEach((t) => t.kill());
+      }
     };
 
     window.addEventListener('resize', handleResize);
