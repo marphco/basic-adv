@@ -18,7 +18,7 @@ function App() {
 
   const scrollContainerRef = useRef(null);
 
-  useEffect(() => {
+  const initializeScroll = () => {
     const container = scrollContainerRef.current;
 
     if (!container) {
@@ -51,11 +51,24 @@ function App() {
         anticipatePin: 1,
       },
     });
+  };
 
-    // Pulizia al dismontaggio
+  useEffect(() => {
+    initializeScroll();
+
+    const handleResize = () => {
+      // Ignora il resize sui dispositivi mobili
+      if (window.innerWidth > 768) {
+        initializeScroll();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
+      window.removeEventListener('resize', handleResize);
       ScrollTrigger.getAll().forEach((t) => t.kill());
-      gsap.killTweensOf(container);
+      gsap.killTweensOf(scrollContainerRef.current);
     };
   }, []);
 
