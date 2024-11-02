@@ -36,8 +36,9 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  width: calc(100% - 80px);
+  width: 100%;
   position: absolute;
+  left: 0;
   bottom: 80px;
 }
 
@@ -50,7 +51,7 @@
 .home-logo {
   max-width: 50vw; /* Limitiamo la dimensione del logo */
   max-height: 30vh;
-  margin-left: 0; /* Rimuovere margini per migliorare l'allineamento in Safari */
+  margin-left: 80px; /* Rimuovere margini per migliorare l'allineamento in Safari */
 }
 
 .scroll-hint {
@@ -123,7 +124,6 @@
   .bottom-section {
     position: absolute;
     bottom: 15vh;
-    left: 20%;
     justify-content: left;
     align-items: flex-start;
   }
@@ -133,7 +133,8 @@
   }
 
   .home-logo {
-    max-width: 100%;
+    max-width: 80%;
+    margin-left: 10%;
     /* max-height: 25vh; */
   }
 }
