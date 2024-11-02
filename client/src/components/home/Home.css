@@ -122,10 +122,9 @@
   }
 
   .bottom-section {
-    width: 100vw;
     position: absolute;
     bottom: 15vh;
-    left: 20%;
+    left: 10%;
   }
 
   .scroll-hint {
@@ -133,7 +132,7 @@
   }
 
   .home-logo {
-    max-width: 80%; 
+    max-width: 100%; 
     /* max-height: 25vh; */
     margin-left: 0; 
   }
