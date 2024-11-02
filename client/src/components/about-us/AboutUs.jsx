@@ -29,7 +29,7 @@ const AboutUs = () => {
       stripesContainer.appendChild(stripe);
     }
 
-    // Effetto parallasse laterale dell'immagine durante lo scroll
+    // Effetto parallasse laterale dell'immagine durante lo scroll (desktop)
     gsap.to(imageElem, {
       x: '-20%',
       ease: 'none',
@@ -56,6 +56,21 @@ const AboutUs = () => {
         markers: false,
       },
     });
+
+    // Effetto parallasse verticale per dispositivi mobili
+    if (window.innerWidth <= 768) {
+      gsap.to(imageElem, {
+        y: '-20%', // Movimento verso l'alto per l'effetto di parallasse verticale
+        ease: 'none',
+        scrollTrigger: {
+          trigger: aboutUsElem,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+          markers: false,
+        },
+      });
+    }
   }, []);
 
   return (
