@@ -1,114 +1,149 @@
 .home-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100vh;
-    width: 100vw;
-    background-color: var(--background-color);
-    box-sizing: border-box;
-    padding: 80px;
-    position: relative;
-    overflow: hidden; /* Assicuriamoci che non ci siano overflow inaspettati */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--background-color);
+  box-sizing: border-box;
+  padding: 80px;
+  position: relative;
+  overflow: hidden; /* Assicuriamoci che non ci siano overflow inaspettati */
+  z-index: 2;
+}
+
+.home-text {
+  position: absolute;
+  top: 400px;
+  right: 80px;
+  text-align: right;
+}
+
+.home-text p {
+  font-weight: 100;
+  font-size: 2rem;
+  color: var(--primary-text-color);
+  max-width: 40vw;
+}
+
+.tagline {
+  font-weight: 400;
+  color: var(--foreground-color);
+}
+
+/* Sezione inferiore con logo e scroll hint */
+.bottom-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: calc(100% - 80px);
+  position: absolute;
+  bottom: 80px;
+}
+
+.home-logo-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.home-logo {
+  max-width: 50vw; /* Limitiamo la dimensione del logo */
+  max-height: 30vh;
+  margin-left: 0; /* Rimuovere margini per migliorare l'allineamento in Safari */
+}
+
+.scroll-hint {
+  font-size: 1.2rem;
+  color: var(--primary-text-color);
+  font-weight: 100;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  position: relative;
+  bottom: 88px;
+  right: -8px;
+}
+
+.scroll-arrow {
+  display: inline-block;
+  font-weight: 900;
+  color: var(--foreground-color);
+  margin-left: 10px;
+  font-size: 1.5rem;
+  animation: scrollArrowAnimation 1.5s infinite ease-in-out;
+}
+
+@keyframes scrollArrowAnimation {
+  0%,
+  100% {
+    transform: translateY(0);
   }
-  
-  .home-text {
-    position: absolute;
-    top: 400px;
-    right: 80px;
-    text-align: right;
+  50% {
+    transform: translateY(10px);
   }
-  
+}
+
+.stripes-container {
+  position: absolute;
+  top: 0;
+  right: 0; /* Cambiamo il posizionamento per partire da destra */
+  width: 55%;
+  height: 100%;
+  display: flex;
+  pointer-events: none;
+  justify-content: flex-end; /* Assicuriamoci che le stripes vengano visualizzate a destra */
+  z-index: 1000;
+  -webkit-transform: scaleX(-1); /* Safari specific fix */
+  transform: scaleX(-1); /* Flip horizontal for Safari */
+}
+
+.stripe {
+  flex: 1;
+  height: 100%;
+  background-color: rgb(238, 238, 238);
+  transform: scaleX(0);
+  margin-left: -2px; /* Per assicurarci che le stripes si sovrappongano leggermente */
+}
+
+@media screen and (max-width: 768px) {
+
   .home-text p {
-    font-weight: 100;
-    font-size: 2rem;
-    color: var(--primary-text-color);
-    max-width: 40vw;
+    font-size: 1.7em;
+    line-height: 1.1;
+    text-align: left !important;
+    max-width: 100vw !important;
   }
-  
-  .tagline {
-    font-weight: 400;
-    color: var(--foreground-color);
+
+  .home-text {
+    top: 160px;
+    left: 10%;
   }
-  
-  /* Sezione inferiore con logo e scroll hint */
+
   .bottom-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    width: calc(100% - 80px);
+    width: 100vw;
     position: absolute;
-    bottom: 80px;
+    bottom: 15vh;
+    left: 10%;
   }
-  
-  .home-logo-container {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
-  }
-  
-  .home-logo {
-    max-width: 50vw; /* Limitiamo la dimensione del logo */
-    max-height: 30vh;
-    margin-left: 0; /* Rimuovere margini per migliorare l'allineamento in Safari */
-  }
-  
+
   .scroll-hint {
-    font-size: 1.2rem;
-    color: var(--primary-text-color);
-    font-weight: 100;
-    letter-spacing: 0.1em;
-    white-space: nowrap;
-    transform: rotate(-90deg);
-    pointer-events: none;
-    position: relative;
-    bottom: 88px;
-    right: -8px;
+    display: none;
   }
-  
-  .scroll-arrow {
-    display: inline-block;
-    font-weight: 900;
-    color: var(--foreground-color);
-    margin-left: 10px;
-    font-size: 1.5rem;
-    animation: scrollArrowAnimation 1.5s infinite ease-in-out;
+
+  .home-logo {
+    max-width: 80vw; 
+    max-height: 40vh;
+    margin-left: 0; 
   }
-  
-  @keyframes scrollArrowAnimation {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(10px);
-    }
+
+
+}
+
+/* Specifico per Safari */
+@supports (-webkit-touch-callout: none) and (not (min-resolution: 0.001dpcm)) {
+  .home-logo.safari-fix {
+    margin-left: -5vw !important; /* Correggere l'allineamento del logo in Safari in modo uniforme */
   }
-  
-  .stripes-container {
-    position: absolute;
-    top: 0;
-    right: 0; /* Cambiamo il posizionamento per partire da destra */
-    width: 55%;
-    height: 100%;
-    display: flex;
-    pointer-events: none;
-    justify-content: flex-end; /* Assicuriamoci che le stripes vengano visualizzate a destra */
-    z-index: 1000;
-    -webkit-transform: scaleX(-1); /* Safari specific fix */
-    transform: scaleX(-1); /* Flip horizontal for Safari */
-  }
-  
-  .stripe {
-    flex: 1;
-    height: 100%;
-    background-color: rgb(238, 238, 238);;
-    transform: scaleX(0);
-    margin-left: -2px; /* Per assicurarci che le stripes si sovrappongano leggermente */
-  }
-  
-  /* Specifico per Safari */
-  @supports (-webkit-touch-callout: none) and (not (min-resolution: 0.001dpcm)) {
-    .home-logo.safari-fix {
-      margin-left: -5vw !important; /* Correggere l'allineamento del logo in Safari in modo uniforme */
-    }
-  }
-  
+}

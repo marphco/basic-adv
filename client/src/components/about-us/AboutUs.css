@@ -4,25 +4,8 @@
     height: 100vh;
     overflow: hidden;
     background-color: rgb(238, 238, 238);
+    z-index: 1;
 }
-  
-/* .stripes-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 40%;
-    height: 100%;
-    display: flex;
-    pointer-events: none;
-}
-  
-.stripe {
-    flex: 1;
-    height: 100%;
-    background-color: red;
-    transform: scaleX(0);
-    margin-right: -2px;
-} */
   
 .aboutus-content {
     position: relative;
@@ -40,3 +23,9 @@
     margin-left: 0;
 }
 
+@media screen and (max-width: 768px) {    
+    .aboutus-image {
+        position: relative;
+        width: 100%;
+    }
+}
