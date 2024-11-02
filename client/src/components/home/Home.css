@@ -123,7 +123,7 @@
   .bottom-section {
     position: absolute;
     bottom: 15vh;
-    left: 10%;
+    left: 20%;
     justify-content: left;
     align-items: flex-start;
   }
@@ -134,7 +134,6 @@
 
   .home-logo {
     max-width: 100%;
-    left: 0;
     /* max-height: 25vh; */
   }
 }
