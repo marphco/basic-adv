@@ -108,7 +108,6 @@
 }
 
 @media screen and (max-width: 768px) {
-
   .home-text p {
     font-size: 1.4em;
     line-height: 1.1;
@@ -125,6 +124,8 @@
     position: absolute;
     bottom: 15vh;
     left: 10%;
+    justify-content: left;
+    align-items: flex-start;
   }
 
   .scroll-hint {
@@ -132,12 +133,10 @@
   }
 
   .home-logo {
-    max-width: 100%; 
+    max-width: 100%;
+    left: 0;
     /* max-height: 25vh; */
-    margin-left: 0; 
   }
-
-
 }
 
 /* Specifico per Safari */
