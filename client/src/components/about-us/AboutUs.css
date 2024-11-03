@@ -4,7 +4,6 @@
     height: 100vh;
     overflow: hidden;
     background-color: rgb(238, 238, 238);
-    /* z-index non necessario qui */
   }
   
   .stripes-container {
@@ -16,7 +15,7 @@
     display: flex;
     pointer-events: none;
     justify-content: flex-start;
-    z-index: 1; /* Assicurati che sia inferiore a .aboutus-content */
+    z-index: 1;
   }
   
   .aboutus-content {
@@ -26,7 +25,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    z-index: 2; /* Superiore a .stripes-container per portare l'immagine davanti */
+    z-index: 2;
   }
   
   .aboutus-image {
@@ -36,11 +35,36 @@
     margin-left: 0;
   }
   
+  .parallax-image {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    will-change: transform;
+  }
+  
   @media screen and (max-width: 768px) {
-    .aboutus-image {
+    .aboutus-section {
+      height: 100vh; /* Manteniamo l'altezza a 100vh per avere spazio sufficiente */
+      overflow: hidden; /* Evitiamo lo scroll interno */
+    }
+  
+    .aboutus-content {
       position: relative;
       width: 100%;
-      bottom: 25vh;
+      height: 100%;
+      display: block;
+    }
+  
+    .aboutus-image {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      width: 100%;
+      height: 90%; /* Impostiamo l'altezza al 120% per permettere lo spostamento */
+      object-fit: cover;
+    }
+  
+    .parallax-image {
+      transform: translate3d(0, 0, 0);
     }
   }
   

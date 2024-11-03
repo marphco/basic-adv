@@ -1,83 +1,53 @@
-// src/components/about-us/AboutUsMobile.jsx
 import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './AboutUs.css';
-import img1 from '../../assets/marco.jpg';
-
-gsap.registerPlugin(ScrollTrigger);
-console.log('GSAP and ScrollTrigger registered in AboutUsMobile');
+import img1 from '../../assets/marco-mobile.jpg';
 
 const AboutUsMobile = () => {
-  console.log('AboutUsMobile component rendered');
-
-  const aboutUsRef = useRef(null);
   const imageRef = useRef(null);
-  const parallaxTweenRef = useRef(null);
 
   useEffect(() => {
-    console.log('AboutUsMobile useEffect executed');
+    const handleScroll = () => {
+      if (imageRef.current) {
+        const imageHeight = imageRef.current.offsetHeight;
+        const scrollTop = window.scrollY;
+        const sectionTop = imageRef.current.parentElement.parentElement.offsetTop;
+        const windowHeight = window.innerHeight;
 
-    const aboutUsElem = aboutUsRef.current;
-    const imageElem = imageRef.current;
+        // Calcola la posizione relativa dello scroll rispetto alla sezione
+        const scrollPosition = scrollTop + windowHeight - sectionTop;
 
-    console.log('aboutUsElem:', aboutUsElem);
-    console.log('imageElem:', imageElem);
+        // Calcola la percentuale di scroll rispetto all'altezza della sezione
+        const scrollPercent = scrollPosition / (imageHeight + windowHeight);
 
-    if (!aboutUsElem || !imageElem) {
-      console.error('Elements not found in AboutUsMobile');
-      return;
-    }
+        // Limita il valore tra 0 e 1
+        const clampedScroll = Math.min(Math.max(scrollPercent, 0), 1);
 
-    console.log('Elements found in AboutUsMobile');
+        // Calcola la trasformazione inversa
+        const translateY = (1 - clampedScroll) * 30; // Regola 30 per l'intensità
 
-    // Animazione di parallasse per mobile
-    parallaxTweenRef.current = gsap.to(imageElem, {
-      y: '35%',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: aboutUsElem,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: true,
-        markers: true, // Abilita markers per il debugging
-        onUpdate: () => {
-          console.log('parallaxTweenRef onUpdate');
-        },
-      },
-      onComplete: () => {
-        console.log('parallaxTweenRef animation completed');
-      },
-    });
-    console.log('parallaxTweenRef.current created:', parallaxTweenRef.current);
-
-    // Forza un aggiornamento di ScrollTrigger
-    ScrollTrigger.refresh();
-
-    // Pulizia al dismontaggio del componente
-    return () => {
-      console.log('AboutUsMobile cleanup function called');
-      if (parallaxTweenRef.current) {
-        if (parallaxTweenRef.current.scrollTrigger) {
-          parallaxTweenRef.current.scrollTrigger.kill();
-          console.log('parallaxTweenRef.current.scrollTrigger killed');
-        }
-        parallaxTweenRef.current.kill();
-        parallaxTweenRef.current = null;
-        console.log('parallaxTweenRef.current killed and set to null');
+        // Applica la trasformazione
+        imageRef.current.style.transform = `translate3d(0, -${translateY}%, 0)`;
       }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Esegui l'aggiornamento iniziale
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   return (
-    <div className="aboutus-section" ref={aboutUsRef}>
-      {console.log('Rendering AboutUsMobile JSX')}
+    <div className="aboutus-section">
       <div className="aboutus-content">
         <img
-          ref={imageRef}
           src={img1}
           alt="Immagine About Us"
-          className="aboutus-image"
+          className="aboutus-image parallax-image"
+          ref={imageRef}
         />
       </div>
     </div>
