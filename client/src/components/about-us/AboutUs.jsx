@@ -1,6 +1,6 @@
 // src/components/about-us/AboutUs.jsx
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './AboutUs.css';
 import img1 from '../../assets/marco.jpg';
@@ -11,6 +11,7 @@ const AboutUs = () => {
   const aboutUsRef = useRef(null);
   const stripesContainerRef = useRef(null);
   const imageRef = useRef(null);
+  const parallaxTweenRef = useRef(null);
 
   useEffect(() => {
     const aboutUsElem = aboutUsRef.current;
@@ -22,11 +23,9 @@ const AboutUs = () => {
       return;
     }
 
-    // Pulizia delle strisce precedenti
-    stripesContainer.innerHTML = '';
-
     // Creare e aggiungere le strisce al container
-    const numStripes = 15; // Numero di strisce rimane a 15
+    stripesContainer.innerHTML = '';
+    const numStripes = 15; // Manteniamo il numero di strisce a 15
     for (let i = 0; i < numStripes; i++) {
       const stripe = document.createElement('div');
       stripe.classList.add('stripe');
@@ -48,56 +47,90 @@ const AboutUs = () => {
       },
     });
 
-    // Utilizzare gsap.matchMedia per gestire le animazioni in base alla dimensione dello schermo
-    const mm = gsap.matchMedia();
+    // Funzione per creare l'animazione di parallasse
+    const createParallax = () => {
+      // Ripristina le proprietà di trasformazione dell'immagine
+      gsap.set(imageElem, { clearProps: 'x,y' });
 
-    mm.add(
-      {
-        // Definisci le condizioni per mobile e desktop
-        isDesktop: '(min-width: 769px)',
-        isMobile: '(max-width: 768px)',
-      },
-      (context) => {
-        let { isDesktop, isMobile } = context.conditions;
-
-        if (isDesktop) {
-          // Effetto parallasse orizzontale su desktop
-          gsap.to(imageElem, {
-            x: '-20%',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: aboutUsElem,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: true,
-              markers: false,
-            },
-          });
+      // Elimina eventuali animazioni e ScrollTrigger precedenti sull'immagine
+      if (parallaxTweenRef.current) {
+        if (parallaxTweenRef.current.scrollTrigger) {
+          parallaxTweenRef.current.scrollTrigger.kill();
         }
-
-        if (isMobile) {
-          // Effetto parallasse verticale su mobile
-          gsap.to(imageElem, {
-            y: '30%',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: aboutUsElem,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: true,
-              markers: false,
-            },
-          });
-        }
+        parallaxTweenRef.current.kill();
+        parallaxTweenRef.current = null;
       }
-    );
+
+      // Determina se siamo su mobile o desktop
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+      if (isMobile) {
+        // Effetto parallasse verticale per dispositivi mobili
+        parallaxTweenRef.current = gsap.to(imageElem, {
+          y: '35%', // Imposta y a '35%' come desiderato
+          ease: 'none',
+          scrollTrigger: {
+            trigger: aboutUsElem,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      } else {
+        // Effetto parallasse orizzontale dell'immagine su desktop
+        parallaxTweenRef.current = gsap.to(imageElem, {
+          x: '-20%',
+          ease: 'none',
+          scrollTrigger: {
+            trigger: aboutUsElem,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      }
+    };
+
+    // Funzione per inizializzare il parallasse dopo un breve ritardo
+    const initParallax = () => {
+      setTimeout(() => {
+        createParallax();
+        ScrollTrigger.refresh();
+      }, 100); // Ritardo di 100ms
+    };
+
+    // Attendere che l'immagine sia completamente caricata
+    if (imageElem.complete) {
+      initParallax();
+    } else {
+      imageElem.addEventListener('load', initParallax);
+    }
+
+    // Listener per il ridimensionamento della finestra
+    const handleResize = () => {
+      initParallax();
+    };
+
+    window.addEventListener('resize', handleResize);
 
     // Pulizia al dismontaggio del componente
     return () => {
-      mm.revert(); // Elimina tutte le animazioni associate a matchMedia
+      window.removeEventListener('resize', handleResize);
+
+      // Rimuovi l'event listener 'load' sull'immagine
+      imageElem.removeEventListener('load', initParallax);
+
+      // Elimina gli ScrollTrigger associati
+      if (parallaxTweenRef.current) {
+        if (parallaxTweenRef.current.scrollTrigger) {
+          parallaxTweenRef.current.scrollTrigger.kill();
+        }
+        parallaxTweenRef.current.kill();
+        parallaxTweenRef.current = null;
+      }
       if (stripesAnimation && stripesAnimation.scrollTrigger) {
-        stripesAnimation.scrollTrigger.kill(); // Elimina lo ScrollTrigger delle stripes
-        stripesAnimation.kill(); // Elimina l'animazione delle stripes
+        stripesAnimation.scrollTrigger.kill();
+        stripesAnimation.kill();
       }
     };
   }, []);
