@@ -100,8 +100,8 @@ const Home = () => {
       </div>
       <div className="bottom-section">
         <div className="home-logo-container">
-          <img src={logoLight} alt="Logo Light" className="home-logo light-logo safari-fix" />
-          <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo safari-fix" />
+          <img src={logoLight} alt="Logo Light" className="home-logo light-logo" />
+          <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo" />
         </div>
         <div className="scroll-hint">
           COMINCIAMO? <span className="scroll-arrow">↓</span>
