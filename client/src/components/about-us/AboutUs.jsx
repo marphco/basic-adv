@@ -1,3 +1,4 @@
+// src/components/about-us/AboutUs.jsx
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -10,6 +11,8 @@ const AboutUs = () => {
   const aboutUsRef = useRef(null);
   const stripesContainerRef = useRef(null);
   const imageRef = useRef(null);
+  const parallaxTweenRef = useRef(null);
+  const isMobileRef = useRef(window.innerWidth <= 768);
 
   useEffect(() => {
     const aboutUsElem = aboutUsRef.current;
@@ -21,33 +24,23 @@ const AboutUs = () => {
       return;
     }
 
+    // Pulizia delle strisce precedenti
+    stripesContainer.innerHTML = '';
+
     // Creare e aggiungere le strisce al container
-    const numStripes = 10; // Numero di strisce ridotto per migliorare l'effetto visivo
+    const numStripes = 15; // Numero di strisce rimane a 15
     for (let i = 0; i < numStripes; i++) {
       const stripe = document.createElement('div');
       stripe.classList.add('stripe');
       stripesContainer.appendChild(stripe);
     }
 
-    // Effetto parallasse laterale dell'immagine durante lo scroll (desktop)
-    gsap.to(imageElem, {
-      x: '-20%',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: aboutUsElem,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: true,
-        markers: false,
-      },
-    });
-
     // Effetto di transizione con strisce
     const stripes = stripesContainer.querySelectorAll('.stripe');
     gsap.to(stripes, {
       scaleX: 1.1,
       transformOrigin: 'left center',
-      stagger: 0.1,
+      stagger: 5000000,
       scrollTrigger: {
         trigger: aboutUsElem,
         start: 'top center',
@@ -57,20 +50,71 @@ const AboutUs = () => {
       },
     });
 
-    // Effetto parallasse verticale per dispositivi mobili
-    if (window.innerWidth <= 768) {
-      gsap.to(imageElem, {
-        y: '-20%', // Movimento verso l'alto per l'effetto di parallasse verticale
-        ease: 'none',
-        scrollTrigger: {
-          trigger: aboutUsElem,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-          markers: false,
-        },
-      });
-    }
+    // Funzione per creare l'animazione di parallasse appropriata
+    const createParallax = () => {
+      // Elimina l'animazione precedente, se esiste
+      if (parallaxTweenRef.current) {
+        parallaxTweenRef.current.kill();
+      }
+
+      // Determina se siamo su mobile o desktop
+      const isMobile = window.innerWidth <= 768;
+      isMobileRef.current = isMobile;
+
+      // Ripristina le proprietà di trasformazione dell'immagine
+      gsap.set(imageElem, { clearProps: 'x,y' });
+
+      if (isMobile) {
+        // Effetto parallasse verticale per dispositivi mobili
+        parallaxTweenRef.current = gsap.to(imageElem, {
+          y: '30%',
+          ease: 'none',
+          scrollTrigger: {
+            trigger: aboutUsElem,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+            markers: false,
+          },
+        });
+      } else {
+        // Effetto parallasse orizzontale dell'immagine su desktop
+        parallaxTweenRef.current = gsap.to(imageElem, {
+          x: '-20%',
+          ease: 'none',
+          scrollTrigger: {
+            trigger: aboutUsElem,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+            markers: false,
+          },
+        });
+      }
+    };
+
+    // Creare l'animazione di parallasse iniziale
+    createParallax();
+
+    // Listener per il ridimensionamento della finestra
+    const handleResize = () => {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile !== isMobileRef.current) {
+        // Se la dimensione è cambiata da mobile a desktop o viceversa, ricrea l'animazione
+        createParallax();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Pulizia al dismontaggio del componente
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (parallaxTweenRef.current) {
+        parallaxTweenRef.current.kill();
+      }
+      // Non eliminiamo gli ScrollTrigger delle stripes
+    };
   }, []);
 
   return (
