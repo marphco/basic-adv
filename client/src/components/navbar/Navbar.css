@@ -79,7 +79,7 @@
     .navbar-menu {
         display: none;
         position: absolute;
-        top: 50px;
+        top: 30px;
         left: 10%;
         flex-direction: column;
         width: 90%;

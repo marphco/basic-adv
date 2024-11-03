@@ -47,6 +47,20 @@
   justify-content: flex-start;
 }
 
+.home-logo-container .home-logo {
+    display: none;
+  }
+  
+  /* Mostra il logo chiaro in modalità light */
+  body[data-theme='light'] .home-logo-container .home-logo.light-logo {
+    display: block;
+  }
+  
+  /* Mostra il logo scuro in modalità dark */
+  body[data-theme='dark'] .home-logo-container .home-logo.dark-logo {
+    display: block;
+  }
+
 .home-logo {
   max-width: 50vw; /* Limitiamo la dimensione del logo */
   max-height: 30vh;

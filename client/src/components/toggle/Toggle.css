@@ -23,13 +23,13 @@
   /* Cerchio bianco */
   .white-circle {
     background-color: #fefefa;
-    border: solid .7px #161616;
+    border: solid .7px #161616 !important;
   }
   
   /* Cerchio nero */
   .black-circle {
     background-color: #161616;
-    border: solid .7px #fefefa;
+    border: solid .7px #fefefa !important;
   }
   
   /* Cerchio attivo (più grande) */

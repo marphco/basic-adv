@@ -66,7 +66,10 @@ function App() {
       const isMobile = newWidth <= 768;
 
       // Se siamo su desktop e la larghezza o l'altezza cambiano, ricalcola lo scroll
-      if (!isMobile && (newWidth !== windowWidthRef.current || newHeight !== windowHeightRef.current)) {
+      if (
+        !isMobile &&
+        (newWidth !== windowWidthRef.current || newHeight !== windowHeightRef.current)
+      ) {
         windowWidthRef.current = newWidth;
         windowHeightRef.current = newHeight;
         initializeScroll();
@@ -85,7 +88,12 @@ function App() {
       window.removeEventListener('resize', handleResize);
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, []);
+  }, []); // Dipendenze vuote, esegui solo al montaggio
+
+  useEffect(() => {
+    // Imposta il tema aggiungendo un attributo al body
+    document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   useEffect(() => {
     document.body.classList.add('no-default-cursor');
@@ -99,13 +107,9 @@ function App() {
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
         <Navbar isDark={isDark} setIsDark={setIsDark} />
-        <div
-          className="App"
-          data-theme={isDark ? 'dark' : 'light'}
-          ref={scrollContainerRef}
-        >
+        <div className="App" ref={scrollContainerRef}>
           <div className="section">
-            <Home isDark={isDark !== undefined ? isDark : false} />
+            <Home />
           </div>
           <div className="section">
             <AboutUs />

@@ -1,25 +1,16 @@
-import { useEffect, useState, useRef } from 'react';
+// src/components/home/Home.jsx
+import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Home.css';
 import logoLight from '../../assets/logo-light.svg';
 import logoDark from '../../assets/logo-dark.svg';
-import PropTypes from 'prop-types';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Home = ({ isDark }) => {
-  const [logo, setLogo] = useState(logoLight);
+const Home = () => {
   const homeRef = useRef(null);
   const stripesContainerRef = useRef(null);
-
-  useEffect(() => {
-    if (isDark) {
-      setLogo(logoDark);
-    } else {
-      setLogo(logoLight);
-    }
-  }, [isDark]);
 
   const setupAnimation = () => {
     const homeElem = homeRef.current;
@@ -74,7 +65,7 @@ const Home = ({ isDark }) => {
   };
 
   useEffect(() => {
-    // Esegui l'animazione all'inizio solo se su desktop
+    // Esegui l'animazione al montaggio solo su desktop
     if (window.innerWidth > 768) {
       setupAnimation();
     }
@@ -95,22 +86,22 @@ const Home = ({ isDark }) => {
       window.removeEventListener('resize', handleResize);
       ScrollTrigger.getAll().forEach((t) => t.kill());
     };
-  }, [isDark]);
+  }, []); // Dipendenze vuote, l'effetto viene eseguito solo al montaggio
 
   return (
     <div className="home-container" ref={homeRef}>
-      <div
-        className="stripes-container"
-        ref={stripesContainerRef}
-      ></div>
+      <div className="stripes-container" ref={stripesContainerRef}></div>
       <div className="home-text">
         <p>
-          Se si tratta di comunicare, noi ci siamo. Trasformiamo idee in storie, progetti in esperienze. Non importa dove, non importa come: il tuo pubblico sta aspettando.<br /><span className="tagline">E noi siamo qui per farlo innamorare.</span>
+          Se si tratta di comunicare, noi ci siamo. Trasformiamo idee in storie, progetti in esperienze. Non importa dove, non importa come: il tuo pubblico sta aspettando.
+          <br />
+          <span className="tagline">E noi siamo qui per farlo innamorare.</span>
         </p>
       </div>
       <div className="bottom-section">
         <div className="home-logo-container">
-          <img src={logo} alt="Logo Basic Adv" className="home-logo safari-fix" />
+          <img src={logoLight} alt="Logo Light" className="home-logo light-logo safari-fix" />
+          <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo safari-fix" />
         </div>
         <div className="scroll-hint">
           COMINCIAMO? <span className="scroll-arrow">↓</span>
@@ -118,10 +109,6 @@ const Home = ({ isDark }) => {
       </div>
     </div>
   );
-};
-
-Home.propTypes = {
-  isDark: PropTypes.bool.isRequired,
 };
 
 export default Home;
