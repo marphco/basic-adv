@@ -6,7 +6,7 @@ import img1 from '../../assets/marco.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const AboutUsDesktop = () => {
+const AboutUsMobile = () => {
   const aboutUsRef = useRef(null);
   const stripesContainerRef = useRef(null);
   const imageRef = useRef(null);
@@ -46,9 +46,9 @@ const AboutUsDesktop = () => {
       },
     });
 
-    // Animazione di parallasse per desktop
+    // Animazione di parallasse per mobile
     parallaxTweenRef.current = gsap.to(imageElem, {
-      x: '-20%',
+      y: '35%',
       ease: 'none',
       scrollTrigger: {
         trigger: aboutUsElem,
@@ -90,4 +90,4 @@ const AboutUsDesktop = () => {
   );
 };
 
-export default AboutUsDesktop;
+export default AboutUsMobile;
