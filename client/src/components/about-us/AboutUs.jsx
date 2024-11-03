@@ -11,8 +11,6 @@ const AboutUs = () => {
   const aboutUsRef = useRef(null);
   const stripesContainerRef = useRef(null);
   const imageRef = useRef(null);
-  const parallaxTweenRef = useRef(null);
-  const isMobileRef = useRef(window.innerWidth <= 768);
 
   useEffect(() => {
     const aboutUsElem = aboutUsRef.current;
@@ -37,10 +35,10 @@ const AboutUs = () => {
 
     // Effetto di transizione con strisce
     const stripes = stripesContainer.querySelectorAll('.stripe');
-    gsap.to(stripes, {
+    const stripesAnimation = gsap.to(stripes, {
       scaleX: 1.1,
       transformOrigin: 'left center',
-      stagger: 5000000,
+      stagger: 0.1,
       scrollTrigger: {
         trigger: aboutUsElem,
         start: 'top center',
@@ -50,70 +48,57 @@ const AboutUs = () => {
       },
     });
 
-    // Funzione per creare l'animazione di parallasse appropriata
-    const createParallax = () => {
-      // Elimina l'animazione precedente, se esiste
-      if (parallaxTweenRef.current) {
-        parallaxTweenRef.current.kill();
+    // Utilizzare gsap.matchMedia per gestire le animazioni in base alla dimensione dello schermo
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        // Definisci le condizioni per mobile e desktop
+        isDesktop: '(min-width: 769px)',
+        isMobile: '(max-width: 768px)',
+      },
+      (context) => {
+        let { isDesktop, isMobile } = context.conditions;
+
+        if (isDesktop) {
+          // Effetto parallasse orizzontale su desktop
+          gsap.to(imageElem, {
+            x: '-20%',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: aboutUsElem,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+              markers: false,
+            },
+          });
+        }
+
+        if (isMobile) {
+          // Effetto parallasse verticale su mobile
+          gsap.to(imageElem, {
+            y: '30%',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: aboutUsElem,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true,
+              markers: false,
+            },
+          });
+        }
       }
-
-      // Determina se siamo su mobile o desktop
-      const isMobile = window.innerWidth <= 768;
-      isMobileRef.current = isMobile;
-
-      // Ripristina le proprietà di trasformazione dell'immagine
-      gsap.set(imageElem, { clearProps: 'x,y' });
-
-      if (isMobile) {
-        // Effetto parallasse verticale per dispositivi mobili
-        parallaxTweenRef.current = gsap.to(imageElem, {
-          y: '30%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: aboutUsElem,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-            markers: false,
-          },
-        });
-      } else {
-        // Effetto parallasse orizzontale dell'immagine su desktop
-        parallaxTweenRef.current = gsap.to(imageElem, {
-          x: '-20%',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: aboutUsElem,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-            markers: false,
-          },
-        });
-      }
-    };
-
-    // Creare l'animazione di parallasse iniziale
-    createParallax();
-
-    // Listener per il ridimensionamento della finestra
-    const handleResize = () => {
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile !== isMobileRef.current) {
-        // Se la dimensione è cambiata da mobile a desktop o viceversa, ricrea l'animazione
-        createParallax();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
+    );
 
     // Pulizia al dismontaggio del componente
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (parallaxTweenRef.current) {
-        parallaxTweenRef.current.kill();
+      mm.revert(); // Elimina tutte le animazioni associate a matchMedia
+      if (stripesAnimation && stripesAnimation.scrollTrigger) {
+        stripesAnimation.scrollTrigger.kill(); // Elimina lo ScrollTrigger delle stripes
+        stripesAnimation.kill(); // Elimina l'animazione delle stripes
       }
-      // Non eliminiamo gli ScrollTrigger delle stripes
     };
   }, []);
 
