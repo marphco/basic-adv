@@ -4,6 +4,11 @@
     height: 100vh;
     overflow: hidden;
     background-color: rgb(238, 238, 238);
+    transition: background-color 0.5s ease;
+  }
+
+  body[data-theme="dark"] .aboutus-section {
+    background-color: black;
   }
   
   .stripes-container {
@@ -22,7 +27,6 @@
     position: relative;
     width: 100%;
     height: 100%;
-    display: flex;
     justify-content: flex-start;
     align-items: center;
     z-index: 2;
@@ -39,6 +43,76 @@
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     will-change: transform;
+  }
+
+  .who {
+    transform: rotate(-90deg);
+    padding: 0;
+    margin: 0;
+    margin-left: -200px;
+    font-size: 64px;
+    font-weight: 300;
+    color: rgb(238, 238, 238);
+    line-height: 0;
+    transition: background-color 0.5s ease;
+  }
+
+  .chi-siamo {
+    background-color: #ff4003;
+    display: flex;
+    margin: 0;
+    width: 10%;
+    height: 100vh;
+    font-weight: 100;
+  }
+
+  .chi-siamo-text {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    color: white;
+    font-size: 3em;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    transform: rotate(-90deg);
+    white-space: nowrap;
+    z-index: 1000;
+  }
+
+  /* h2 {
+    display: flex;
+    justify-content: flex-start;
+    transform: rotate(-90deg);
+    color: white;
+    margin-left: 0;
+  } */
+
+  body[data-theme="dark"] .who {
+    color: black;
+  }
+
+  .name {
+    background-color: black;
+    padding: 0 20px;
+    transition: background-color 0.5s ease;
+  }
+
+  body[data-theme="dark"] .name {
+    background-color: var(--primary-text-color);
+  }
+
+  .desc {
+    font-weight: 200;
+  }
+
+  body[data-theme="dark"] .desc {
+    color: var(--primary-text-color);
+  }
+
+  .vertical {
+    display: flex;
   }
   
   @media screen and (max-width: 768px) {
@@ -67,4 +141,3 @@
       transform: translate3d(0, 0, 0);
     }
   }
-  
