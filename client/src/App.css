@@ -1,3 +1,5 @@
+/* App.css */
+
 /* Transizioni globali per background-color e color */
 body, .App, .section, .home-container, .about-us-container, .portfolio-container, .contact-container, .dashboard-container, .navbar, .navbar-menu li a, .home-intro, .title, .box {
   transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
@@ -26,10 +28,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 .App {
   display: flex;
   flex-direction: row;
-  width: max-content;
+  width: 600vw; /* Adatta in base al numero di sezioni */
   height: 100vh;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden; /* Rimuove overflow-x: auto e overflow-y: hidden */
 }
 
 .section {

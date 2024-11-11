@@ -1,143 +1,111 @@
 .aboutus-section {
-    position: relative;
-    width: 100vw;
+  position: relative;
+  width: 400vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: rgb(238, 238, 238);
+  transition: background-color 0.5s ease;
+  display: flex;
+}
+
+.chi-siamo {
+  background-color: #ff4003;
+  display: flex;
+  margin: 0;
+  width: 10vw;
+  height: 100vh;
+  font-weight: 100;
+}
+
+.chi-siamo-text {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  color: white;
+  font-size: 3em;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+.aboutus-content {
+  position: relative;
+  width: 90%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 2;
+}
+
+.intro {
+  position: absolute;
+  top: 400px;
+  left: 80px;
+  text-align: left;
+}
+
+.intro p {
+  font-weight: 100;
+  font-size: 2rem;
+  color: var(--primary-text-color);
+  max-width: 30vw;
+}
+
+.decorative-icon {
+  position: absolute;
+  width: 40px;
+  height: auto;
+  opacity: 0.8;
+  pointer-events: none;
+  transition: transform 0.1s ease-out;
+}
+
+/* Posizioni delle icone */
+.decorative-icon:nth-of-type(1) { top: 15%; left: 30%; }
+.decorative-icon:nth-of-type(2) { top: 40%; left: 75%; }
+.decorative-icon:nth-of-type(3) { bottom: 20%; right: 20%; }
+
+.horizontal-line {
+  position: absolute;
+  top: 800px; /* Posiziona la linea sotto il testo intro */
+  left: 0;
+  height: 1px; /* Altezza della linea */
+  width: 0; /* Partenza a 0 per l'animazione */
+  background-color: #ff4003; /* Colore della linea */
+  transition: width 0.3s ease;
+}
+
+/* Responsività */
+@media screen and (max-width: 768px) {
+  .aboutus-section {
     height: 100vh;
     overflow: hidden;
-    background-color: rgb(238, 238, 238);
-    transition: background-color 0.5s ease;
+    flex-direction: column;
   }
 
-  body[data-theme="dark"] .aboutus-section {
-    background-color: black;
-  }
-  
-  .stripes-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    pointer-events: none;
-    justify-content: flex-start;
-    z-index: 1;
-  }
-  
   .aboutus-content {
-    position: relative;
     width: 100%;
     height: 100%;
-    justify-content: flex-start;
-    align-items: center;
-    z-index: 2;
-  }
-  
-  .aboutus-image {
-    width: auto;
-    height: 100%;
-    object-fit: cover;
-    margin-left: 0;
-  }
-  
-  .parallax-image {
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    will-change: transform;
-  }
-
-  .who {
-    transform: rotate(-90deg);
-    padding: 0;
-    margin: 0;
-    margin-left: -200px;
-    font-size: 64px;
-    font-weight: 300;
-    color: rgb(238, 238, 238);
-    line-height: 0;
-    transition: background-color 0.5s ease;
+    display: block;
   }
 
   .chi-siamo {
-    background-color: #ff4003;
-    display: flex;
-    margin: 0;
-    width: 10%;
-    height: 100vh;
-    font-weight: 100;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
   }
 
   .chi-siamo-text {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    color: white;
-    font-size: 3em;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    transform: rotate(-90deg);
-    white-space: nowrap;
-    z-index: 1000;
+    transform: rotate(0deg);
+    font-size: 2em;
+    margin-bottom: 20px;
   }
 
-  /* h2 {
-    display: flex;
-    justify-content: flex-start;
-    transform: rotate(-90deg);
-    color: white;
-    margin-left: 0;
-  } */
-
-  body[data-theme="dark"] .who {
-    color: black;
+  .paragraph {
+    transform: translateY(20px);
   }
-
-  .name {
-    background-color: black;
-    padding: 0 20px;
-    transition: background-color 0.5s ease;
-  }
-
-  body[data-theme="dark"] .name {
-    background-color: var(--primary-text-color);
-  }
-
-  .desc {
-    font-weight: 200;
-  }
-
-  body[data-theme="dark"] .desc {
-    color: var(--primary-text-color);
-  }
-
-  .vertical {
-    display: flex;
-  }
-  
-  @media screen and (max-width: 768px) {
-    .aboutus-section {
-      height: 100vh; /* Manteniamo l'altezza a 100vh per avere spazio sufficiente */
-      overflow: hidden; /* Evitiamo lo scroll interno */
-    }
-  
-    .aboutus-content {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-  
-    .aboutus-image {
-      position: absolute;
-      top: -100px;
-      left: 0;
-      width: 100%;
-      height: 90%; /* Impostiamo l'altezza al 120% per permettere lo spostamento */
-      object-fit: cover;
-    }
-  
-    .parallax-image {
-      transform: translate3d(0, 0, 0);
-    }
-  }
+}
