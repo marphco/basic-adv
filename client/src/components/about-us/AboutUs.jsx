@@ -1,6 +1,5 @@
-import { useRef, useEffect, useLayoutEffect } from "react";
+import { useRef, useLayoutEffect } from "react";
 import "./AboutUs.css";
-import frecciaIcon from "../../assets/freccia.svg"; // Assicurati che l'importazione sia attiva
 import { mergeRefs } from "react-merge-refs";
 import PropTypes from "prop-types";
 import { gsap } from "gsap";
@@ -11,7 +10,7 @@ gsap.registerPlugin(ScrollTrigger);
 const AboutUs = ({ scrollTween }) => {
   const aboutUsRef = useRef(null);
   const lineRef = useRef(null);
-  const iconsRef = useRef([]);
+  // const iconsRef = useRef([]);
 
   const macroAreasRef = useRef(null);
   const brandingRef = useRef(null);
@@ -60,25 +59,6 @@ const AboutUs = ({ scrollTween }) => {
     }, aboutUsRef);
 
     return () => ctx.revert();
-  }, []);
-
-  // Effetto parallasse per le icone decorative (rimane invariato)
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      iconsRef.current.forEach((icon) => {
-        const { left, top, width, height } = icon.getBoundingClientRect();
-        const iconCenterX = left + width / 2;
-        const iconCenterY = top + height / 2;
-        const angleX = (e.clientX - iconCenterX) / 50;
-        const angleY = (e.clientY - iconCenterY) / 50;
-        icon.style.transform = `translate(${angleX}px, ${angleY}px)`;
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
   }, []);
 
   // Animazioni per i servizi
@@ -164,7 +144,7 @@ const AboutUs = ({ scrollTween }) => {
           </p>
         </div>
         <div className="horizontal-line" ref={lineRef}></div>
-        {/* Icone decorative */}
+        {/* Icone decorative
         <img
           src={frecciaIcon}
           alt="Icona decorativa"
@@ -182,7 +162,7 @@ const AboutUs = ({ scrollTween }) => {
           alt="Icona decorativa"
           className="decorative-icon"
           ref={(el) => (iconsRef.current[2] = el)}
-        />
+        /> */}
       </div>
       {/* Sezione Servizi */}
       <section className="services-section">

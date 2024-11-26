@@ -4,7 +4,8 @@
   height: 100vh;
   overflow: hidden;
   background-color: rgb(238, 238, 238);
-  transition: background-color 0.5s ease;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  transition: color 2s ease;
   display: flex;
 }
 
@@ -53,6 +54,7 @@
   font-size: 2rem;
   color: var(--primary-text-color);
   max-width: 30vw;
+  transition: color 0.5s ease;
 }
 
 .decorative-icon {
@@ -87,6 +89,7 @@
   height: 100vh;
   display: flex;
   overflow: hidden;
+  transition: color 0.5s ease;
 }
 
 /* Macroaree */
@@ -144,6 +147,15 @@
   line-height: .7rem;
 }
 
+body[data-theme="dark"] .aboutus-section {
+  background-color: black;
+  transition: background-color 0.5s ease;
+}
+
+body[data-theme="dark"] .services-section {
+  color: white;
+  transition: color 0.5s ease-in-out;
+}
 
 /* Responsività */
 @media screen and (max-width: 768px) {
