@@ -7,7 +7,7 @@ import "./App.css";
 import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
-import AboutUs from "./components/about-us/AboutUs";
+import Services from "./components/services/Services";
 import Contacts from "./components/contacts/Contacts";
 
 // Registra il plugin ScrollTrigger
@@ -113,7 +113,7 @@ function App() {
           </div>
           {scrollTween && (
             <div className="section">
-              <AboutUs scrollTween={scrollTween} />
+              <Services scrollTween={scrollTween} />
             </div>
           )}
           <div className="section">

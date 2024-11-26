@@ -1,4 +1,5 @@
-.aboutus-section {
+/* Services.css */
+.services-section {
   position: relative;
   width: 900vw;
   height: 100vh;
@@ -18,7 +19,7 @@
   font-weight: 100;
 }
 
-.chi-siamo-text {
+.services-text {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -31,12 +32,12 @@
   z-index: 1000;
 }
 
-.aboutus-content {
+.services-content {
   position: relative;
-  width: 20%; /* Riduci la larghezza */
+  width: 20%;
   height: 100%;
   display: flex;
-  justify-content: flex-start; /* Mantieni il testo a sinistra */
+  justify-content: flex-start;
   align-items: center;
   padding: 20px;
   z-index: 2;
@@ -57,35 +58,20 @@
   transition: color 0.5s ease;
 }
 
-.decorative-icon {
-  position: absolute;
-  width: 40px;
-  height: auto;
-  opacity: 0.8;
-  pointer-events: none;
-  transition: transform 0.1s ease-out;
-}
-
-/* Posizioni delle icone */
-.decorative-icon:nth-of-type(1) { top: 15%; left: 30%; }
-.decorative-icon:nth-of-type(2) { top: 40%; left: 75%; }
-.decorative-icon:nth-of-type(3) { bottom: 20%; right: 20%; }
-
 .horizontal-line {
   position: absolute;
-  bottom: 20%; /* Posiziona la linea sotto il testo intro */
+  bottom: 20%;
   left: 0;
-  height: 1px; /* Altezza della linea */
-  width: 0; /* Partenza a 0 per l'animazione */
-  background-color: #ff4003; /* Colore della linea */
+  height: 1px;
+  width: 0;
+  background-color: #ff4003;
   transition: width 0.3s ease;
 }
 
 /* Sezione principale */
-.services-section {
+.services-list-section {
   position: relative;
-  /* margin-left: 40vw; */
-  width: 800vw; /* Spazio per lo scroll orizzontale */
+  width: 800vw;
   height: 100vh;
   display: flex;
   overflow: hidden;
@@ -96,29 +82,25 @@
 .macro-areas {
   display: flex;
   flex-direction: row;
-  /* Rimuovi o regola width se necessario */
-  /* width: 300vw; */
   height: 100%;
 }
 
 .macroarea {
   position: relative;
-  /* Imposta una larghezza appropriata per le macroaree */
-  width: auto; /* Ogni macroarea occupa la larghezza dello schermo */
+  width: auto;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  /* padding-left: 10vw; */
 }
 
-.macroarea:nth-child(2), .macroarea:nth-child(3), .macroarea:nth-child(4), .macroarea:nth-child(5), .macroarea:nth-child(6) {
-  margin-left: 15vw; /* Aggiungi un margine sinistro del 5% della larghezza della finestra */
+.macroarea:nth-child(n+2) {
+  margin-left: 15vw;
 }
 
 .macroarea h2 {
-  font-size: 35vw; /* Testo molto grande */
+  font-size: 35vw;
   font-weight: 200;
   margin: 0;
   padding: 0;
@@ -128,44 +110,44 @@
 
 .services-list {
   position: absolute;
-  bottom: 10%; /* Posizione in basso */
-  left: 0; /* Allineamento a sinistra */
+  bottom: 10%;
+  left: 0;
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  transform: translateX(0); /* Punto A */
+  transform: translateX(0);
 }
 
 .services-list li {
-  opacity: 0; /* Invisibili di default */
-  transform: translateY(20px); /* Posizione iniziale */
+  opacity: 0;
+  transform: translateY(20px);
   font-size: 1rem;
   font-weight: 200;
   margin: 5px 0;
-  line-height: .7rem;
+  line-height: 0.7rem;
 }
 
-body[data-theme="dark"] .aboutus-section {
+body[data-theme="dark"] .services-section {
   background-color: black;
   transition: background-color 0.5s ease;
 }
 
-body[data-theme="dark"] .services-section {
+body[data-theme="dark"] .services-list-section {
   color: white;
   transition: color 0.5s ease-in-out;
 }
 
 /* Responsività */
 @media screen and (max-width: 768px) {
-  .aboutus-section {
+  .services-section {
     height: 100vh;
     overflow: hidden;
     flex-direction: column;
   }
 
-  .aboutus-content {
+  .services-content {
     width: 100%;
     height: 100%;
     display: block;
@@ -177,7 +159,7 @@ body[data-theme="dark"] .services-section {
     flex-direction: row;
   }
 
-  .chi-siamo-text {
+  .services-text {
     transform: rotate(0deg);
     font-size: 2em;
     margin-bottom: 20px;

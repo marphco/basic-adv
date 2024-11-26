@@ -21,7 +21,7 @@ const Home = () => {
       if (stripesContainer) {
         // Creazione delle strisce
         stripesContainer.innerHTML = '';
-        const numStripes = 15;
+        const numStripes = 20;
         for (let i = 0; i < numStripes; i++) {
           const stripe = document.createElement('div');
           stripe.classList.add('stripe');
@@ -36,7 +36,7 @@ const Home = () => {
             trigger: homeElem,
             start: 'top top',
             end: 'bottom 80%',
-            scrub: 2,
+            scrub: true
           },
         });
 
