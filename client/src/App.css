@@ -63,6 +63,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     width: 100%;
     height: auto;
     box-sizing: border-box;
+    flex-shrink: 0;
   }
 
   body, html, #root {

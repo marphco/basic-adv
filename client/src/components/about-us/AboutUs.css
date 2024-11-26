@@ -32,10 +32,10 @@
 
 .aboutus-content {
   position: relative;
-  width: 90%;
+  width: 20%; /* Riduci la larghezza */
   height: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* Mantieni il testo a sinistra */
   align-items: center;
   padding: 20px;
   z-index: 2;
@@ -71,13 +71,79 @@
 
 .horizontal-line {
   position: absolute;
-  top: 800px; /* Posiziona la linea sotto il testo intro */
+  bottom: 20%; /* Posiziona la linea sotto il testo intro */
   left: 0;
   height: 1px; /* Altezza della linea */
   width: 0; /* Partenza a 0 per l'animazione */
   background-color: #ff4003; /* Colore della linea */
   transition: width 0.3s ease;
 }
+
+/* Sezione principale */
+.services-section {
+  position: relative;
+  /* margin-left: 40vw; */
+  width: 300vw; /* Spazio per lo scroll orizzontale */
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Macroaree */
+.macro-areas {
+  display: flex;
+  flex-direction: row;
+  /* Rimuovi o regola width se necessario */
+  /* width: 300vw; */
+  height: 100%;
+}
+
+.macroarea {
+  position: relative;
+  /* Imposta una larghezza appropriata per le macroaree */
+  width: auto; /* Ogni macroarea occupa la larghezza dello schermo */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  /* padding-left: 10vw; */
+}
+
+.macroarea:nth-child(2) {
+  margin-left: 10vw; /* Aggiungi un margine sinistro del 5% della larghezza della finestra */
+}
+
+.macroarea h2 {
+  font-size: 35vw; /* Testo molto grande */
+  font-weight: 200;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.services-list {
+  position: absolute;
+  bottom: 10%; /* Posizione in basso */
+  left: 0; /* Allineamento a sinistra */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(0); /* Punto A */
+}
+
+.services-list li {
+  opacity: 0; /* Invisibili di default */
+  transform: translateY(20px); /* Posizione iniziale */
+  font-size: 1rem;
+  font-weight: 200;
+  margin: 5px 0;
+  line-height: .7rem;
+}
+
 
 /* Responsività */
 @media screen and (max-width: 768px) {
