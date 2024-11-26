@@ -1,93 +1,228 @@
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import './AboutUs.css';
-import img1 from '../../assets/marco.jpg';
+import { useRef, useEffect, useLayoutEffect } from "react";
+import "./AboutUs.css";
+import frecciaIcon from "../../assets/freccia.svg"; // Assicurati che l'importazione sia attiva
+import { mergeRefs } from "react-merge-refs";
+import PropTypes from "prop-types";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const AboutUsDesktop = () => {
+const AboutUs = ({ scrollTween }) => {
   const aboutUsRef = useRef(null);
-  const stripesContainerRef = useRef(null);
-  const imageRef = useRef(null);
-  const parallaxTweenRef = useRef(null);
+  const lineRef = useRef(null);
+  const iconsRef = useRef([]);
 
+  const macroAreasRef = useRef(null);
+  const brandingRef = useRef(null);
+  const webRef = useRef(null);
+  const brandingListRef = useRef(null);
+  const webListRef = useRef(null);
+  const servicesSectionRef = useRef(null);
+
+  // Animazioni esistenti per la linea e il testo "chi-siamo-text"
+  useLayoutEffect(() => {
+    let ctx = gsap.context(() => {
+      const aboutUsElem = aboutUsRef.current;
+
+      // Animazione per la linea orizzontale
+      const lineElem = lineRef.current;
+      const aboutUsWidth = aboutUsElem.scrollWidth;
+
+      gsap.to(lineElem, {
+        width: `${aboutUsWidth}px`,
+        ease: "none",
+        scrollTrigger: {
+          trigger: aboutUsElem,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+          // Rimuoviamo containerAnimation
+        },
+      });
+
+      // Animazione per 'chi-siamo-text'
+      const chiSiamoText = aboutUsElem.querySelector(".chi-siamo-text");
+      if (chiSiamoText) {
+        gsap.to(chiSiamoText, {
+          yPercent: 170,
+          ease: "none",
+          duration: 0.5,
+          scrollTrigger: {
+            trigger: aboutUsElem,
+            start: "top top",
+            end: "bottom top",
+            scrub: 2,
+            // Rimuoviamo containerAnimation
+          },
+        });
+      }
+    }, aboutUsRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Effetto parallasse per le icone decorative (rimane invariato)
   useEffect(() => {
-    const aboutUsElem = aboutUsRef.current;
-    const stripesContainer = stripesContainerRef.current;
-    const imageElem = imageRef.current;
+    const handleMouseMove = (e) => {
+      iconsRef.current.forEach((icon) => {
+        const { left, top, width, height } = icon.getBoundingClientRect();
+        const iconCenterX = left + width / 2;
+        const iconCenterY = top + height / 2;
+        const angleX = (e.clientX - iconCenterX) / 50;
+        const angleY = (e.clientY - iconCenterY) / 50;
+        icon.style.transform = `translate(${angleX}px, ${angleY}px)`;
+      });
+    };
 
-    if (!aboutUsElem || !stripesContainer || !imageElem) {
-      console.error('Elements not found');
-      return;
-    }
-
-    // Creare e aggiungere le strisce al container
-    stripesContainer.innerHTML = '';
-    const numStripes = 15;
-    for (let i = 0; i < numStripes; i++) {
-      const stripe = document.createElement('div');
-      stripe.classList.add('stripe');
-      stripesContainer.appendChild(stripe);
-    }
-
-    // Effetto di transizione con strisce
-    const stripes = stripesContainer.querySelectorAll('.stripe');
-    const stripesAnimation = gsap.to(stripes, {
-      scaleX: 1.1,
-      transformOrigin: 'left center',
-      stagger: 0.1,
-      scrollTrigger: {
-        trigger: aboutUsElem,
-        start: 'top center',
-        end: 'bottom top',
-        scrub: true,
-        markers: false,
-      },
-    });
-
-    // Animazione di parallasse per desktop
-    parallaxTweenRef.current = gsap.to(imageElem, {
-      x: '-20%',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: aboutUsElem,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: true,
-        markers: false,
-      },
-    });
-
-    // Pulizia al dismontaggio del componente
+    window.addEventListener("mousemove", handleMouseMove);
     return () => {
-      if (parallaxTweenRef.current) {
-        if (parallaxTweenRef.current.scrollTrigger) {
-          parallaxTweenRef.current.scrollTrigger.kill();
-        }
-        parallaxTweenRef.current.kill();
-        parallaxTweenRef.current = null;
-      }
-      if (stripesAnimation && stripesAnimation.scrollTrigger) {
-        stripesAnimation.scrollTrigger.kill();
-        stripesAnimation.kill();
-      }
+      window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 
+  // Animazioni per i servizi
+  useLayoutEffect(() => {
+    if (!scrollTween) return;
+
+    let ctx = gsap.context(() => {
+      const q = gsap.utils.selector(aboutUsRef.current);
+
+      // Animazioni di entrata per i servizi "BRANDING"
+      gsap.to(q(".branding-list li"), {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: brandingRef.current,
+          containerAnimation: scrollTween,
+          start: "left center",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      // Movimento dei servizi "BRANDING" da punto A a B
+      gsap.to(brandingListRef.current, {
+        x: () =>
+          brandingRef.current.offsetWidth - brandingListRef.current.offsetWidth,
+        ease: "none",
+        scrollTrigger: {
+          trigger: brandingRef.current,
+          start: "left center",
+          end: "right center",
+          scrub: true,
+          containerAnimation: scrollTween,
+        },
+      });
+
+      // Animazioni di entrata per i servizi "WEB"
+      gsap.to(q(".web-list li"), {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: webRef.current,
+          containerAnimation: scrollTween,
+          start: "left center",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      // Movimento dei servizi "WEB" da punto A a B
+      gsap.to(webListRef.current, {
+        x: () =>
+          webRef.current.offsetWidth - webListRef.current.offsetWidth,
+        ease: "none",
+        scrollTrigger: {
+          trigger: webRef.current,
+          start: "left center",
+          end: "right center",
+          scrub: true,
+          containerAnimation: scrollTween,
+        },
+      });
+    }, aboutUsRef);
+
+    return () => ctx.revert();
+  }, [scrollTween]);
+
   return (
     <div className="aboutus-section" ref={aboutUsRef}>
-      <div className="stripes-container" ref={stripesContainerRef}></div>
+      <div className="chi-siamo">
+        <div className="chi-siamo-text">
+          Ci mettiamo meno tempo a farlo che a spiegartelo.
+        </div>
+      </div>
       <div className="aboutus-content">
+        <div className="intro">
+          <p>
+            Più il progetto è ambizioso, più grande è la sfida – ed è proprio lì
+            che ci piace stare, sempre pronti a superare i nostri limiti. Hai un
+            progetto? Noi siamo già al lavoro.
+          </p>
+        </div>
+        <div className="horizontal-line" ref={lineRef}></div>
+        {/* Icone decorative */}
         <img
-          ref={imageRef}
-          src={img1}
-          alt="Immagine About Us"
-          className="aboutus-image"
+          src={frecciaIcon}
+          alt="Icona decorativa"
+          className="decorative-icon"
+          ref={(el) => (iconsRef.current[0] = el)}
+        />
+        <img
+          src={frecciaIcon}
+          alt="Icona decorativa"
+          className="decorative-icon"
+          ref={(el) => (iconsRef.current[1] = el)}
+        />
+        <img
+          src={frecciaIcon}
+          alt="Icona decorativa"
+          className="decorative-icon"
+          ref={(el) => (iconsRef.current[2] = el)}
         />
       </div>
+      {/* Sezione Servizi */}
+      <section className="services-section">
+        {/* Macroaree */}
+        <div
+          className="macro-areas"
+          ref={mergeRefs([macroAreasRef, servicesSectionRef])}
+        >
+          <div className="branding macroarea" ref={brandingRef}>
+            <h2>BRANDING</h2>
+            <ul className="branding-list services-list" ref={brandingListRef}>
+              {["Logo", "Typography", "Iconography", "Identity", "Naming"].map(
+                (service, idx) => (
+                  <li key={idx}>{service}</li>
+                )
+              )}
+            </ul>
+          </div>
+          <div className="web macroarea" ref={webRef}>
+            <h2>WEB</h2>
+            <ul className="web-list services-list" ref={webListRef}>
+              {[
+                "Analyse",
+                "Wireframe",
+                "Webdesign",
+                "Development",
+                "SEO",
+              ].map((service, idx) => (
+                <li key={idx}>{service}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
 
-export default AboutUsDesktop;
+AboutUs.propTypes = {
+  scrollTween: PropTypes.object.isRequired,
+};
+
+export default AboutUs;

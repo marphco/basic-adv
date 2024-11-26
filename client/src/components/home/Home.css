@@ -1,3 +1,5 @@
+/* Home.css */
+
 .home-container {
   display: flex;
   flex-direction: column;
@@ -108,7 +110,6 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   pointer-events: none;
   justify-content: flex-end;
   z-index: 1000;
-  -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
 }
 
@@ -118,6 +119,11 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   background-color: rgb(238, 238, 238);
   transform: scaleX(0);
   margin-left: -2px;
+  transition: background-color 0.5s ease;
+}
+
+body[data-theme="dark"] .stripe {
+  background-color: black;
 }
 
 @media screen and (max-width: 768px) {
@@ -161,11 +167,8 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   .scroll-hint {
     display: none;
   }
-}
 
-/* Specifico per Safari */
-/* @supports (-webkit-touch-callout: none) and (not (min-resolution: 0.001dpcm)) {
-  .home-logo.safari-fix {
-    margin-left: -5vw !important;
+  .stripes-container {
+    display: none; /* Nascondi le strisce su mobile */
   }
-} */
+}

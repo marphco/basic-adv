@@ -1,129 +1,100 @@
-// src/App.jsx
-import { useState, useEffect, useRef } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import useLocalStorage from 'use-local-storage';
-import './App.css';
-import { Cursor } from './components/cursor/Cursor';
-import Navbar from './components/navbar/Navbar';
-import Home from './components/home/Home';
-import AboutUs from './components/about-us/AboutUs';
-import AboutUsMobile from './components/about-us/AboutUsMobile';
-import Contacts from './components/contacts/Contacts';
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import useLocalStorage from "use-local-storage";
+import "./App.css";
+import { Cursor } from "./components/cursor/Cursor";
+import Navbar from "./components/navbar/Navbar";
+import Home from "./components/home/Home";
+import AboutUs from "./components/about-us/AboutUs";
+import Contacts from "./components/contacts/Contacts";
+
+// Registra il plugin ScrollTrigger
+gsap.registerPlugin(ScrollTrigger);
 
 function App() {
-  gsap.registerPlugin(ScrollTrigger);
-
+  // Gestione del tema (light/dark)
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
 
+  // Riferimenti per le sezioni
   const scrollContainerRef = useRef(null);
-  const isMobileRef = useRef(window.innerWidth <= 768);
+
+  // Stato per gestire la responsività
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const windowWidthRef = useRef(window.innerWidth);
   const windowHeightRef = useRef(window.innerHeight);
 
-  // Aggiungi lo stato isMobile
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  // Riferimento allo ScrollTrigger dello scroll orizzontale
-  const horizontalScrollTriggerRef = useRef(null);
-
-  const initializeScroll = () => {
-    const container = scrollContainerRef.current;
-
-    if (!container) {
-      console.error('scrollContainerRef.current is null');
-      return;
-    }
-
-    const isMobileNow = window.innerWidth <= 768;
-
-    if (isMobileNow) {
-      // Rimuovi l'animazione dello scroll orizzontale su desktop
-      if (horizontalScrollTriggerRef.current) {
-        horizontalScrollTriggerRef.current.kill();
-        horizontalScrollTriggerRef.current = null;
-      }
-      gsap.set(container, { clearProps: 'all' }); // Rimuovi le trasformazioni GSAP su mobile
-      return; // Interrompi qui per dispositivi mobili
-    }
-
-    // Se su desktop, abilita lo scroll orizzontale
-    const totalWidth = container.scrollWidth - window.innerWidth;
-
-    // Rimuovi eventuali animazioni precedenti
-    if (horizontalScrollTriggerRef.current) {
-      horizontalScrollTriggerRef.current.kill();
-      horizontalScrollTriggerRef.current = null;
-    }
-    gsap.killTweensOf(container);
-
-    // Crea l'animazione dello scroll orizzontale
-    const tween = gsap.to(container, {
-      x: -totalWidth,
-      ease: 'none',
-      duration: 1, // la durata può essere ignorata se usi scrub
-    });
-
-    horizontalScrollTriggerRef.current = ScrollTrigger.create({
-      animation: tween,
-      trigger: container,
-      start: 'top top',
-      end: () => `+=${totalWidth}`,
-      scrub: 1.5,
-      pin: true,
-      anticipatePin: 1,
-    });
-
-    // Aggiorna ScrollTrigger
-    ScrollTrigger.refresh();
-  };
-
-  useEffect(() => {
-    initializeScroll();
-
+  
+  // Gestione del resize per aggiornare isMobile
+  useLayoutEffect(() => {
     const handleResize = () => {
-      const newWidth = window.innerWidth;
-      const newHeight = window.innerHeight;
-      const isMobileNow = newWidth <= 768;
-
-      // Aggiorna lo stato isMobile se è cambiato
+      const isMobileNow = window.innerWidth <= 768;
       if (isMobile !== isMobileNow) {
         setIsMobile(isMobileNow);
       }
-
-      // Se le dimensioni cambiano, ricalcola lo scroll
+      
       if (
-        newWidth !== windowWidthRef.current ||
-        newHeight !== windowHeightRef.current ||
-        isMobileRef.current !== isMobileNow
+        window.innerWidth !== windowWidthRef.current ||
+        window.innerHeight !== windowHeightRef.current
       ) {
-        windowWidthRef.current = newWidth;
-        windowHeightRef.current = newHeight;
-        isMobileRef.current = isMobileNow;
-        initializeScroll();
+        windowWidthRef.current = window.innerWidth;
+        windowHeightRef.current = window.innerHeight;
+        ScrollTrigger.refresh();
       }
     };
-
+    
     window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile]);
+  
+  // Riferimento per l'animazione dello scroll orizzontale
+  const [scrollTween, setScrollTween] = useState(null);
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
+  // Centralizzazione delle animazioni in App.jsx
+  useLayoutEffect(() => {
+    let ctx = gsap.context(() => {
+      if (!isMobile && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const totalWidth = container.scrollWidth - window.innerWidth;
 
-      // Elimina solo lo ScrollTrigger dello scroll orizzontale
-      if (horizontalScrollTriggerRef.current) {
-        horizontalScrollTriggerRef.current.kill();
-        horizontalScrollTriggerRef.current = null;
+        // Crea l'animazione dello scroll orizzontale
+        const tween = gsap.to(container, {
+          x: -totalWidth,
+          ease: "none",
+          scrollTrigger: {
+            trigger: container,
+            start: "top top",
+            end: "bottom top",
+            scrub: 2,
+            pin: true,
+            anticipatePin: 1,
+          },
+        });
+
+        setScrollTween(tween);
+      } else {
+        // Se siamo su mobile, resettiamo lo scroll e rimuoviamo eventuali animazioni
+        if (scrollContainerRef.current) {
+          gsap.set(scrollContainerRef.current, { clearProps: 'all' });
+          ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+        }
+        setScrollTween(null);
       }
-    };
-  }, [isMobile]); // Aggiunto isMobile alle dipendenze
 
+      ScrollTrigger.refresh();
+    }, scrollContainerRef);
+
+    return () => ctx.revert();
+  }, [isMobile]);
+
+  // Gestione del tema (aggiunge un attributo al body)
   useEffect(() => {
-    // Imposta il tema aggiungendo un attributo al body
     document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
+  // Gestione del cursore personalizzato (se applicabile)
   useEffect(() => {
     document.body.classList.add('no-default-cursor');
     return () => {
@@ -140,9 +111,11 @@ function App() {
           <div className="section">
             <Home />
           </div>
-          <div className="section">
-            {isMobile ? <AboutUsMobile /> : <AboutUs />}
-          </div>
+          {scrollTween && (
+            <div className="section">
+              <AboutUs scrollTween={scrollTween} />
+            </div>
+          )}
           <div className="section">
             <Contacts />
           </div>

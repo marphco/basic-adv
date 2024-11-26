@@ -41,7 +41,7 @@ body.no-default-cursor a {
 
 :root {
   --background-color: #fefefa;
-  --foreground-color: #F79320;
+  --foreground-color: #ff4003;
   --primary-text-color: #161616;
   --secondary-text-color: #ffffff;
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
@@ -50,7 +50,7 @@ body.no-default-cursor a {
 
 [data-theme="dark"] {
   --background-color: #161616;
-  --foreground-color: #F79320;
+  --foreground-color: #ff4003;
   --primary-text-color: #f6f6f6;
   --secondary-text-color: #161616;
   --toggle-bg: #283452;

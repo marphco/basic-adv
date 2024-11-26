@@ -23,7 +23,7 @@ const AboutUsMobile = () => {
         const clampedScroll = Math.min(Math.max(scrollPercent, 0), 1);
 
         // Calcola la trasformazione inversa
-        const translateY = (1 - clampedScroll) * 50; // Regola 30 per l'intensità
+        const translateY = (1 - clampedScroll) * 30; // Regola 30 per l'intensità
 
         // Applica la trasformazione
         imageRef.current.style.transform = `translate3d(0, -${translateY}%, 0)`;
