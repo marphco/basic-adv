@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Services = ({ scrollTween }) => {
+const Services = ({ scrollTween, isMobile }) => {
   const servicesRef = useRef(null);
   const lineRef = useRef(null);
 
@@ -49,7 +49,25 @@ const Services = ({ scrollTween }) => {
 
       // Animazione per 'services-text'
       const servicesText = servicesElem.querySelector(".services-text");
-      if (servicesText) {
+
+    if (servicesText) {
+      if (isMobile) {
+        // Animazione su mobile
+        gsap.set(servicesText, { x: '50vw' });
+
+        gsap.to(servicesText, {
+          x: -250,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: servicesText,
+            start: 'top 100%',
+            end: 'top 20%',
+            scrub: true,
+            markers: true,
+          },
+        });
+      } else {
+        // Animazione su desktop
         gsap.to(servicesText, {
           yPercent: 350,
           ease: "none",
@@ -62,10 +80,11 @@ const Services = ({ scrollTween }) => {
           },
         });
       }
-    }, servicesRef);
+    }
+  }, servicesRef);
 
-    return () => ctx.revert();
-  }, []);
+  return () => ctx.revert();
+}, [isMobile]);
 
   // Animazioni per i servizi
   useLayoutEffect(() => {
@@ -228,7 +247,8 @@ const Services = ({ scrollTween }) => {
 };
 
 Services.propTypes = {
-  scrollTween: PropTypes.object.isRequired,
+  scrollTween: PropTypes.object,
+  isMobile: PropTypes.bool.isRequired,
 };
 
 export default Services;

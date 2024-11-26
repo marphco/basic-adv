@@ -54,40 +54,43 @@ function App() {
 
   // Centralizzazione delle animazioni in App.jsx
   useLayoutEffect(() => {
-    let ctx = gsap.context(() => {
-      if (!isMobile && scrollContainerRef.current) {
-        const container = scrollContainerRef.current;
-        const totalWidth = container.scrollWidth - window.innerWidth;
+  let ctx = gsap.context(() => {
+    if (!isMobile && scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const totalWidth = container.scrollWidth - window.innerWidth;
 
-        // Crea l'animazione dello scroll orizzontale
-        const tween = gsap.to(container, {
-          x: -totalWidth,
-          ease: "none",
-          scrollTrigger: {
-            trigger: container,
-            start: "top top",
-            end: "bottom top",
-            scrub: 2,
-            pin: true,
-            anticipatePin: 1,
-          },
-        });
+      // Crea l'animazione dello scroll orizzontale
+      const tween = gsap.to(container, {
+        x: -totalWidth,
+        ease: "none",
+        scrollTrigger: {
+          trigger: container,
+          start: "top top",
+          end: "bottom top",
+          scrub: 2,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
 
-        setScrollTween(tween);
-      } else {
-        // Se siamo su mobile, resettiamo lo scroll e rimuoviamo eventuali animazioni
-        if (scrollContainerRef.current) {
-          gsap.set(scrollContainerRef.current, { clearProps: 'all' });
-          ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-        }
+      setScrollTween(tween);
+    } else {
+      // Se siamo su mobile, resettiamo lo scroll e rimuoviamo l'animazione dello scroll orizzontale
+      if (scrollContainerRef.current) {
+        gsap.set(scrollContainerRef.current, { clearProps: 'all' });
+      }
+      if (scrollTween) {
+        scrollTween.kill();
         setScrollTween(null);
       }
+    }
 
-      ScrollTrigger.refresh();
-    }, scrollContainerRef);
+    ScrollTrigger.refresh();
+  }, scrollContainerRef);
 
-    return () => ctx.revert();
-  }, [isMobile]);
+  return () => ctx.revert();
+}, [isMobile]/* eslint-disable-line react-hooks/exhaustive-deps */);
+
 
   // Gestione del tema (aggiunge un attributo al body)
   useEffect(() => {
@@ -111,11 +114,11 @@ function App() {
           <div className="section">
             <Home />
           </div>
-          {scrollTween && (
+
             <div className="section">
-              <Services scrollTween={scrollTween} />
+              <Services scrollTween={scrollTween} isMobile={isMobile} />
             </div>
-          )}
+          
           <div className="section">
             <Contacts />
           </div>
