@@ -63,7 +63,7 @@ const Services = ({ scrollTween, isMobile }) => {
             start: 'top 100%',
             end: 'top 20%',
             scrub: true,
-            markers: true,
+            markers: false,
           },
         });
       } else {
