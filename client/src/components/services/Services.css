@@ -218,10 +218,10 @@ body[data-theme="dark"] .services-list-section {
   }
 
   .services-list li {
-    opacity: 1;
-    transform: none;
+    opacity: 0;
+    transform: translateX(-50px);
     font-weight: 200;
-    font-size: .8em;
+    font-size: 0.8em;
     line-height: 0.4rem;
   }
 
