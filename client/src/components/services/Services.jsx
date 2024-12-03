@@ -31,60 +31,87 @@ const Services = ({ scrollTween, isMobile }) => {
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
       const servicesElem = servicesRef.current;
-
-      // Animazione per la linea orizzontale
       const lineElem = lineRef.current;
-      const servicesWidth = servicesElem.scrollWidth;
 
-      gsap.to(lineElem, {
-        width: `${servicesWidth}px`,
-        ease: "none",
-        scrollTrigger: {
-          trigger: servicesElem,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-
-      // Animazione per 'services-text'
-      const servicesText = servicesElem.querySelector(".services-text");
-
-    if (servicesText) {
       if (isMobile) {
-        // Animazione su mobile
-        gsap.set(servicesText, { x: '50vw' });
+        // Su mobile, animiamo l'altezza della linea per renderla verticale
 
-        gsap.to(servicesText, {
-          x: -250,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: servicesText,
-            start: 'top 100%',
-            end: 'top 20%',
-            scrub: true,
-            markers: false,
-          },
-        });
+        // Otteniamo la posizione iniziale della linea (top)
+        const lineStartY = lineElem.getBoundingClientRect().top + window.scrollY;
+
+        // Otteniamo la posizione finale della linea (il fondo della sezione Services)
+        const servicesEndY = servicesElem.getBoundingClientRect().bottom + window.scrollY;
+
+        // Calcoliamo l'altezza totale che la linea deve raggiungere
+        const lineHeight = servicesEndY - lineStartY;
+
+        gsap.fromTo(
+          lineElem,
+          { height: 0 },
+          {
+            height: lineHeight,
+            ease: "none",
+            scrollTrigger: {
+              trigger: servicesElem,
+              start: "top bottom",
+              end: "bottom bottom",
+              scrub: true,
+            },
+          }
+        );
       } else {
-        // Animazione su desktop
-        gsap.to(servicesText, {
-          yPercent: 350,
+        // Su desktop, animiamo la larghezza della linea per renderla orizzontale
+        const servicesWidth = servicesElem.scrollWidth;
+
+        gsap.to(lineElem, {
+          width: `${servicesWidth}px`,
           ease: "none",
-          duration: 0.5,
           scrollTrigger: {
             trigger: servicesElem,
             start: "top top",
             end: "bottom top",
-            scrub: 2,
+            scrub: true,
           },
         });
       }
-    }
-  }, servicesRef);
 
-  return () => ctx.revert();
-}, [isMobile]);
+      // Animazione per 'services-text' (rimane invariata)
+      const servicesText = servicesElem.querySelector(".services-text");
+
+      if (servicesText) {
+        if (isMobile) {
+          // Animazione su mobile
+          gsap.set(servicesText, { x: '50vw' });
+
+          gsap.to(servicesText, {
+            x: -250,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: servicesText,
+              start: 'top 100%',
+              end: 'top 20%',
+              scrub: true,
+            },
+          });
+        } else {
+          // Animazione su desktop
+          gsap.to(servicesText, {
+            yPercent: 350,
+            ease: "none",
+            duration: 0.5,
+            scrollTrigger: {
+              trigger: servicesElem,
+              start: "top top",
+              end: "bottom top",
+              scrub: 2,
+            },
+          });
+        }
+      }
+    }, servicesRef);
+
+    return () => ctx.revert();
+  }, [isMobile]);
 
   // Animazioni per i servizi
   useLayoutEffect(() => {

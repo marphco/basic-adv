@@ -129,6 +129,7 @@ body[data-theme="dark"] .stripe {
 @media screen and (max-width: 768px) {
   .home-text p {
     font-size: 1.2em;
+    font-weight: 200;
     line-height: 1.1;
     text-align: left !important;
     max-width: 100vw !important;

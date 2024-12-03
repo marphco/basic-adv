@@ -65,7 +65,7 @@
   height: 1px;
   width: 0;
   background-color: #ff4003;
-  transition: width 0.3s ease;
+  transition: width 0.2s ease-in-out;
 }
 
 /* Sezione principale */
@@ -124,7 +124,7 @@
   opacity: 0;
   transform: translateY(20px);
   font-size: 1rem;
-  font-weight: 200;
+  font-weight: 100;
   margin: 5px 0;
   line-height: 0.7rem;
 }
@@ -175,8 +175,19 @@ body[data-theme="dark"] .services-list-section {
 
   .intro p {
     font-size: 1em;
+    font-weight: 200;
     max-width: 80vw;
     line-height: 1.1;
+  }
+
+  .horizontal-line {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    width: 1px;  /* La linea diventa verticale */
+    height: 0;   /* Altezza iniziale zero */
+    background-color: #ff4003;
+    transition: height 0.3s ease-in-out; /* Anima l'altezza */
   }
 
   .macro-areas {
@@ -209,6 +220,12 @@ body[data-theme="dark"] .services-list-section {
   .services-list li {
     opacity: 1;
     transform: none;
-    font-size: 1em;
+    font-weight: 200;
+    font-size: .8em;
+    line-height: 0.4rem;
+  }
+
+  .services-list-section {
+    height: auto;
   }
 }
