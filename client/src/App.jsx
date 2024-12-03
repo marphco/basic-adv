@@ -13,6 +13,8 @@ import Contacts from "./components/contacts/Contacts";
 // Registra il plugin ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
+ScrollTrigger.normalizeScroll(true);
+
 function App() {
   // Gestione del tema (light/dark)
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
