@@ -110,7 +110,7 @@
 
 .services-list {
   position: absolute;
-  bottom: 10%;
+  bottom: 5%;
   left: 0;
   list-style: none;
   padding: 0;
@@ -124,7 +124,7 @@
   opacity: 0;
   transform: translateY(20px);
   font-size: 1rem;
-  font-weight: 100;
+  font-weight: 200;
   margin: 5px 0;
   line-height: 0.7rem;
 }
@@ -220,7 +220,6 @@ body[data-theme="dark"] .services-list-section {
   .services-list li {
     opacity: 0;
     transform: translateX(-50px);
-    font-weight: 200;
     font-size: 0.8em;
     line-height: 0.4rem;
   }
