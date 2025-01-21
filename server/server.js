@@ -60,12 +60,10 @@ const upload = multer({
   },
 });
 
-const PORT = 8080;
+const PORT = process.env.PORT || 5001; // Usa la variabile d'ambiente se disponibile
 
-// Controllo se il server è già in ascolto
-if (!process.env.LISTENING) {
-  process.env.LISTENING = true;
-
+// Controlla se il server è già in ascolto
+if (!module.parent) {
   const server = app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
   });
@@ -77,8 +75,6 @@ if (!process.env.LISTENING) {
       console.error("❌ Errore sconosciuto:", err);
     }
   });
-} else {
-  console.log("⚠️ Il server è già in ascolto, evitando il riavvio.");
 }
 
 app.listen(PORT, () => {
