@@ -12,6 +12,8 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
 const DynamicForm = () => {
   // Stati principali
   const [sessionId, setSessionId] = useState(uuidv4()); // ID univoco per la sessione
@@ -205,7 +207,7 @@ const DynamicForm = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:5001/api/generate",
+        `${API_URL}/api/generate`,
         formDataToSend,
         {
           headers: {
@@ -241,7 +243,7 @@ const DynamicForm = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:5001/api/nextQuestion",
+        `${API_URL}/api/nextQuestion`,
         {
           currentAnswer: userAnswer,
           sessionId,
@@ -338,7 +340,7 @@ const DynamicForm = () => {
 
     try {
       await axios.post(
-        "http://localhost:5001/api/submitLog",
+        `${API_URL}/api/submitLog`,
         {
           contactInfo: formData.contactInfo,
           sessionId,
