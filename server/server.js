@@ -60,35 +60,27 @@ const upload = multer({
   },
 });
 
-const PORT = process.env.PORT || 5001; // Usa la variabile d'ambiente se disponibile
+const PORT = process.env.PORT || 5001;
 
-// Controlla se il server è già in ascolto
-if (!module.parent) {
+// Controlla se un server è già in esecuzione
+if (!global.serverRunning) {
+  global.serverRunning = true; // Imposta il flag per evitare doppi avvii
+
   const server = app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
   });
 
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`❌ Porta ${PORT} già in uso. Il server non verrà riavviato.`);
+      console.error(`❌ Porta ${PORT} già in uso. Uscita forzata.`);
+      process.exit(1); // Esce e impedisce loop infiniti
     } else {
       console.error("❌ Errore sconosciuto:", err);
     }
   });
+} else {
+  console.log("⚠️ Il server è già in ascolto, evitando il riavvio.");
 }
-
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
-
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.error(`❌ Porta ${PORT} già in uso. Tentativo di riutilizzo...`);
-    process.exit(1); // Esce per evitare riavvii multipli
-  } else {
-    console.error("❌ Errore sconosciuto:", err);
-  }
-});
 
 const dbUri = process.env.MONGO_URI;
 
