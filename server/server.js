@@ -77,8 +77,17 @@ if (!module.parent) {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`❌ Porta ${PORT} già in uso. Tentativo di riutilizzo...`);
+    process.exit(1); // Esce per evitare riavvii multipli
+  } else {
+    console.error("❌ Errore sconosciuto:", err);
+  }
 });
 
 const dbUri = process.env.MONGO_URI;
