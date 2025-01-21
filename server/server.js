@@ -60,7 +60,7 @@ const upload = multer({
   },
 });
 
-const PORT = 5001;
+const PORT = 8080;
 
 // Controllo se il server è già in ascolto
 if (!process.env.LISTENING) {
