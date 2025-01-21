@@ -78,8 +78,6 @@ if (!global.serverRunning) {
       console.error("❌ Errore sconosciuto:", err);
     }
   });
-} else {
-  console.log("⚠️ Il server è già in ascolto, evitando il riavvio.");
 }
 
 // Connessione a MongoDB
@@ -610,8 +608,4 @@ ${formattedAnswers}
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Errore interno del server" });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
