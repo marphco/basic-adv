@@ -82,6 +82,7 @@ if (!global.serverRunning) {
   console.log("⚠️ Il server è già in ascolto, evitando il riavvio.");
 }
 
+// Connessione a MongoDB
 const dbUri = process.env.MONGO_URI;
 
 // Connessione a MongoDB
