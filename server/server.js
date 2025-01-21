@@ -14,7 +14,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Usa la variabile d'ambiente per flessibilità
+    origin: [
+      "http://localhost:5173", // Per sviluppo locale
+      "https://basic-adv.vercel.app", // Il frontend in produzione
+    ],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
