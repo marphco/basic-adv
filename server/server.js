@@ -62,22 +62,24 @@ const upload = multer({
 
 const PORT = process.env.PORT || 8080;
 
-const server = app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+// Controllo se il server è già in ascolto
+if (!process.env.LISTENING) {
+  process.env.LISTENING = true;
 
-// Gestisci il caso in cui la porta sia già in uso
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.error(`❌ Porta ${PORT} già in uso, riavvio in 5 secondi...`);
-    setTimeout(() => {
-      server.close();
-      server.listen(PORT);
-    }, 5000);
-  } else {
-    console.error("❌ Errore sconosciuto nel server:", err);
-  }
-});
+  const server = app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`❌ Porta ${PORT} già in uso. Il server non verrà riavviato.`);
+    } else {
+      console.error("❌ Errore sconosciuto:", err);
+    }
+  });
+} else {
+  console.log("⚠️ Il server è già in ascolto, evitando il riavvio.");
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
