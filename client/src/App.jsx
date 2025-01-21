@@ -8,7 +8,10 @@ import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
 import Services from "./components/services/Services";
+import Portfolio from "./components/portfolio/Portfolio";
 import Contacts from "./components/contacts/Contacts";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 // Registra il plugin ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -119,6 +122,12 @@ function App() {
 
             <div className="section">
               <Services scrollTween={scrollTween} isMobile={isMobile} />
+            </div>
+
+            <div className="section">
+              <DndProvider backend={HTML5Backend}>
+              <Portfolio />
+              </DndProvider>
             </div>
           
           <div className="section">
