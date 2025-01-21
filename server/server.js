@@ -167,7 +167,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
           "Content-Type": "application/json",
         },
       }
