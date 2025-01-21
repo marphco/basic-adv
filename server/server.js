@@ -25,6 +25,10 @@ app.use(
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
 // Configura multer per gestire l'upload dei file
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -57,6 +61,10 @@ const upload = multer({
 });
 
 const PORT = process.env.PORT || 5001;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 const dbUri = process.env.MONGO_URI;
 
