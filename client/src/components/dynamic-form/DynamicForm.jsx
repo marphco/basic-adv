@@ -207,7 +207,7 @@ const DynamicForm = () => {
       }
 
       const response = await axios.post(
-        `${API_URL}/api/generate`,
+        `${API_URL.replace(/\/$/, "")}/api/generate`,
         formDataToSend,
         {
           headers: {
@@ -243,7 +243,7 @@ const DynamicForm = () => {
       };
 
       const response = await axios.post(
-        `${API_URL}/api/nextQuestion`,
+        `${API_URL.replace(/\/$/, "")}/api/nextQuestion`,
         {
           currentAnswer: userAnswer,
           sessionId,
@@ -340,7 +340,7 @@ const DynamicForm = () => {
 
     try {
       await axios.post(
-        `${API_URL}/api/submitLog`,
+        `${API_URL.replace(/\/$/, "")}/api/submitLog`,
         {
           contactInfo: formData.contactInfo,
           sessionId,
