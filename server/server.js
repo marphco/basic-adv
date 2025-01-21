@@ -155,7 +155,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-3.5",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -570,7 +570,7 @@ ${formattedAnswers}
       const aiResponse = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: "gpt-3.5",
+          model: "gpt-4",
           messages: [
             {
               role: "user",
