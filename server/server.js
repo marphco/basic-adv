@@ -10,6 +10,8 @@ const fs = require("fs");
 
 dotenv.config(); // Carica le variabili d'ambiente dal file .env
 
+console.log("Chiave OpenAI:", process.env.OPEN_AI_KEY ? "PRESENTE" : "NON TROVATA");
+
 const app = express();
 
 app.use(
