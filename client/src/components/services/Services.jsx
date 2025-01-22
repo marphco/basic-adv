@@ -65,12 +65,15 @@ const Services = ({ scrollTween, isMobile }) => {
 
         gsap.to(lineElem, {
           width: `${servicesWidth}px`,
-          ease: "none",
+          ease: "power2.out", // Cambia l'ease per un movimento più naturale
           scrollTrigger: {
             trigger: servicesElem,
             start: "top top",
             end: "bottom top",
-            scrub: true,
+            scrub: 5, // Torniamo a true per un comportamento base di scrub
+            // Aggiungiamo un pin per mantenere l'elemento visibile durante lo scroll
+            pin: true,
+            pinSpacing: false,
           },
         });
       }

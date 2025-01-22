@@ -42,12 +42,16 @@ function Portfolio() {
   const isMobile = useIsMobile();
 
   const [folders, setFolders] = useState([
-    { id: 'Progetto1', left: 100, top: 100 },
-    { id: 'Progetto2', left: 300, top: 100 },
-    { id: 'Progetto3', left: 100, top: 250 },
-    { id: 'Progetto4', left: 300, top: 250 },
-    { id: 'Progetto5', left: 100, top: 400 },
-    { id: 'Progetto6', left: 300, top: 400 },
+    { id: 'Progetto1', left: 300, top: 100 },
+    { id: 'Progetto2', left: 500, top: 100 },
+    { id: 'Progetto3', left: 300, top: 250 },
+    { id: 'Progetto4', left: 500, top: 250 },
+    { id: 'Progetto5', left: 300, top: 400 },
+    { id: 'Progetto6', left: 500, top: 400 },
+    { id: 'Progetto7', left: 300, top: 550 },
+    { id: 'Progetto8', left: 500, top: 550 },
+    { id: 'Progetto9', left: 300, top: 700 },
+    { id: 'Progetto10', left: 500, top: 700 },
   ]);
 
   function handleDragEnd(event) {
