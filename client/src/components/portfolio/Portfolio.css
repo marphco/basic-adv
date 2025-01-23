@@ -44,9 +44,79 @@
     color: inherit;
   }
 
+  /* Overlay a schermo intero e nascosto di default */
+  .project-section-overlay {
+    /* Inizialmente nascosta */
+    display: none;
+    position: fixed; /* fissa in viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow-y: auto; 
+    overflow-x: hidden;
+    justify-content: center;
+    align-items: flex-end; /* La sezione parte dal basso */
+  }
+  
+  .project-section {
+    position: relative; 
+    width: 100vw;
+    height: 100vh; 
+    max-height: 100vh;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    transform: translateY(100%);
+    transition: transform 0.5s ease-out;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .project-section.show {
+    transform: translateY(0%);
+  }
+  
+  .project-section-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    z-index: 10001;
+  }
+  
+  body.project-section-open {
+    overflow: hidden; /* blocca eventuale scroll del body (verticale) */
+  }
+
+  .project-section-overlay,
+.project-section {
+  overscroll-behavior: none;
+}
+
   @media screen and (max-width: 768px) {
     .folder-icon {
         width: 100px;
         height: 100px;
+      }
+
+      /* .modal {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+      }
+
+      .modal-content {
+        width: 90%;
+        max-height: 90vh;
+      } */
+
+      .project-section {
+        width: 100vw;
+        max-height: 100vh;
       }
   }

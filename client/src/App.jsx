@@ -126,7 +126,7 @@ function App() {
 
             <div className="section">
               <DndProvider backend={HTML5Backend}>
-              <Portfolio />
+              <Portfolio scrollTween={scrollTween} />
               </DndProvider>
             </div>
           
