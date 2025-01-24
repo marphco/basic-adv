@@ -70,9 +70,9 @@ const Services = ({ scrollTween, isMobile }) => {
             trigger: servicesElem,
             start: "top top",
             end: "bottom top",
-            scrub: 5, // Torniamo a true per un comportamento base di scrub
-            // Aggiungiamo un pin per mantenere l'elemento visibile durante lo scroll
-            pin: true,
+            scrub: 5,
+            // Pin temporaneamente disabilitato per il debug
+            // pin: true,
             pinSpacing: false,
           },
         });
@@ -98,10 +98,12 @@ const Services = ({ scrollTween, isMobile }) => {
           });
         } else {
           // Animazione su desktop
+          console.log("Eseguo animazione desktop per .services-text"); // Debugging
+
           gsap.to(servicesText, {
-            yPercent: 350,
+            yPercent: 350, // Ridotto da 350 a 100 per evitare di spostare l'elemento fuori schermo
             ease: "none",
-            duration: 0.5,
+            // duration: 0.5, // Rimosso perché 'scrub' è attivo
             scrollTrigger: {
               trigger: servicesElem,
               start: "top top",
@@ -121,70 +123,69 @@ const Services = ({ scrollTween, isMobile }) => {
     if (!isMobile && !scrollTween) return;
 
     let ctx = gsap.context(() => {
-        const q = gsap.utils.selector(servicesRef.current);
+      const q = gsap.utils.selector(servicesRef.current);
 
-        // Animazioni per ciascuna macroarea e servizi associati
-        const macroAreas = [
-            { ref: brandingRef, listRef: brandingListRef, className: ".branding-list li" },
-            { ref: socialRef, listRef: socialListRef, className: ".social-list li" },
-            { ref: photoRef, listRef: photoListRef, className: ".photo-list li" },
-            { ref: videoRef, listRef: videoListRef, className: ".video-list li" },
-            { ref: webRef, listRef: webListRef, className: ".web-list li" },
-            { ref: applicationRef, listRef: applicationListRef, className: ".application-list li" },
-        ];
+      // Animazioni per ciascuna macroarea e servizi associati
+      const macroAreas = [
+        { ref: brandingRef, listRef: brandingListRef, className: ".branding-list li" },
+        { ref: socialRef, listRef: socialListRef, className: ".social-list li" },
+        { ref: photoRef, listRef: photoListRef, className: ".photo-list li" },
+        { ref: videoRef, listRef: videoListRef, className: ".video-list li" },
+        { ref: webRef, listRef: webListRef, className: ".web-list li" },
+        { ref: applicationRef, listRef: applicationListRef, className: ".application-list li" },
+      ];
 
-        if (isMobile) {
-            // Animazioni su mobile
-            macroAreas.forEach(({ ref, className }) => {
-                gsap.to(q(className), {
-                    opacity: 1,
-                    x: 0,
-                    duration: 0.6,
-                    stagger: 0.1,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: ref.current,
-                        start: "top 50%",
-                        toggleActions: "play none none reverse",
-                    },
-                });
-            });
-        } else {
-            // Animazioni su desktop (rimangono invariate)
-            macroAreas.forEach(({ ref, listRef, className }) => {
-                // Animazioni di entrata per i servizi
-                gsap.to(q(className), {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.6,
-                    stagger: 0.2,
-                    scrollTrigger: {
-                        trigger: ref.current,
-                        containerAnimation: scrollTween,
-                        start: "left center",
-                        toggleActions: "play none none reverse",
-                    },
-                });
+      if (isMobile) {
+        // Animazioni su mobile
+        macroAreas.forEach(({ ref, className }) => {
+          gsap.to(q(className), {
+            opacity: 1,
+            x: 0,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: ref.current,
+              start: "top 50%",
+              toggleActions: "play none none reverse",
+            },
+          });
+        });
+      } else {
+        // Animazioni su desktop (rimangono invariate)
+        macroAreas.forEach(({ ref, listRef, className }) => {
+          // Animazioni di entrata per i servizi
+          gsap.to(q(className), {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.2,
+            scrollTrigger: {
+              trigger: ref.current,
+              containerAnimation: scrollTween,
+              start: "left center",
+              toggleActions: "play none none reverse",
+            },
+          });
 
-                // Movimento dei servizi da punto A a B
-                gsap.to(listRef.current, {
-                    x: () => ref.current.offsetWidth - listRef.current.offsetWidth,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: ref.current,
-                        start: "left center",
-                        end: "right center",
-                        scrub: true,
-                        containerAnimation: scrollTween,
-                    },
-                });
-            });
-        }
+          // Movimento dei servizi da punto A a B
+          gsap.to(listRef.current, {
+            x: () => ref.current.offsetWidth - listRef.current.offsetWidth,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ref.current,
+              start: "left center",
+              end: "right center",
+              scrub: true,
+              containerAnimation: scrollTween,
+            },
+          });
+        });
+      }
     }, servicesRef);
 
     return () => ctx.revert();
-}, [scrollTween, isMobile]);
-
+  }, [scrollTween, isMobile]);
 
   return (
     <div className="services-section" ref={servicesRef}>
