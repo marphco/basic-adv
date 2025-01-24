@@ -98,7 +98,6 @@ const Services = ({ scrollTween, isMobile }) => {
           });
         } else {
           // Animazione su desktop
-          console.log("Eseguo animazione desktop per .services-text"); // Debugging
 
           gsap.to(servicesText, {
             yPercent: 350, // Ridotto da 350 a 100 per evitare di spostare l'elemento fuori schermo
