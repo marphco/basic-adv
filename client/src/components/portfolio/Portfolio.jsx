@@ -1,11 +1,16 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+// Portfolio.jsx
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { DndContext, useDraggable, closestCenter } from "@dnd-kit/core";
-// import { arrayMove } from "@dnd-kit/sortable";
 import "./Portfolio.css";
 import folderIcon from "../../assets/folder.svg";
-import ProjectSection from "./ProjectSection"; // Importa il nuovo componente
+import ProjectSection from "./ProjectSection"; // Importa il componente ProjectSection
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types"; // Importa PropTypes
 
+gsap.registerPlugin(ScrollTrigger);
+
+// Hook per determinare se è mobile
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -35,10 +40,9 @@ const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
         position: "absolute",
       };
 
-  const lastClickTimeRef = useRef(0); // Usa un ref invece dello stato
+  const lastClickTimeRef = useRef(0);
   const doubleClickTime = 300;
 
-  // Singolo handleClick, con logica diversa se mobile o desktop
   const handleClick = useCallback(
     (event) => {
       if (isMobile) {
@@ -81,7 +85,6 @@ const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      // se mobile → onClick apre sezione. se desktop → usiamo i pointerDown
       {...(isMobile ? { onClick: handleClick } : modifiedListeners)}
       className={`folder ${isMobile ? "mobile" : ""}`}
     >
@@ -116,7 +119,6 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
   ]);
 
   // Stato per la modalità
-  // Cambiamo il nome dello stato da modalIsOpen a sectionIsOpen
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
 
@@ -170,24 +172,99 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
     );
   }
 
+  // Riferimento alla sezione Portfolio Text
+  const portfolioRef = useRef(null);
+
+  // Animazione della banda arancione con testo
+  useLayoutEffect(() => {
+    const portfolioElem = portfolioRef.current;
+    const portfolioText = portfolioElem?.querySelector(".portfolio-text");
+
+    // if (!portfolioElem || !portfolioText) return;
+
+    let ctx = gsap.context(() => {
+      // Animazione per 'portfolio-text'
+      if (isMobile) {
+        // Animazione su mobile
+        gsap.set(portfolioText, { x: '90vw' });
+
+        gsap.to(portfolioText, {
+          x: -200,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: portfolioText,
+            start: 'top 100%',
+            end: 'top 20%',
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      } else {
+        // Animazione su desktop (orizzontale)
+        gsap.to(portfolioText, {
+          yPercent: 45,
+          ease: "none",
+          scrollTrigger: {
+            trigger: portfolioElem,
+            start: "center top",
+            end: "bottom top",
+            scrub: 2,
+            invalidateOnRefresh: true,
+            // markers:true
+          },
+        });
+      }
+    }, portfolioRef);
+
+    return () => ctx.revert();
+  }, [isMobile]);
+
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className={`portfolio-section ${isMobile ? "mobile" : ""}`}>
-        {folders.map((folder) => (
-          <Folder
-            key={folder.id}
-            id={folder.id}
-            left={folder.left}
-            top={folder.top}
-            isMobile={isMobile}
-            onOpenSection={openSection} // Rinominato da onOpenModal a onOpenSection
-          />
-        ))}
-        {sectionIsOpen && (
-          <ProjectSection onClose={closeSection} project={currentProject} />
-        )}
+    <div className="portfolio-section" ref={portfolioRef}>
+      {/* Barra Portfolio Text */}
+      <div className="chi-siamo portfolio-siamo">
+        <div className="portfolio-text">
+          Ci piacerebbe avere un desktop così ordinato.
+        </div>
       </div>
-    </DndContext>
+
+      {/* Introduzione per Desktop */}
+      {!isMobile && (
+        <div className="intro-portfolio">
+          <p>
+            Puoi giocare a spostare le cartelle. Serve a qualcosa? No.
+            Però non dimenticare di dare un'occhiata al contenuto.
+          </p>
+        </div>
+      )}
+
+      {/* Introduzione per Mobile */}
+      {isMobile && (
+        <div className="intro-mobile">
+          <p>
+            Non hai scuse, dai un'occhiata al contenuto delle cartelle.
+          </p>
+        </div>
+      )}
+
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className={`portfolio-content ${isMobile ? "mobile" : ""}`}>
+          {folders.map((folder) => (
+            <Folder
+              key={folder.id}
+              id={folder.id}
+              left={folder.left}
+              top={folder.top}
+              isMobile={isMobile}
+              onOpenSection={openSection}
+            />
+          ))}
+          {sectionIsOpen && (
+            <ProjectSection onClose={closeSection} project={currentProject} />
+          )}
+        </div>
+      </DndContext>
+    </div>
   );
 }
 
