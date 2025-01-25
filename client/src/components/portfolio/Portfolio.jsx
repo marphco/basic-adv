@@ -4,8 +4,7 @@ import { DndContext, useDraggable, closestCenter } from "@dnd-kit/core";
 import "./Portfolio.css";
 import folderIcon from "../../assets/folder.svg";
 import ProjectSection from "./ProjectSection"; // Importa il nuovo componente
-// import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+import PropTypes from "prop-types"; // Importa PropTypes
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -36,29 +35,32 @@ const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
         position: "absolute",
       };
 
-  const [lastClickTime, setLastClickTime] = useState(0);
+  const lastClickTimeRef = useRef(0); // Usa un ref invece dello stato
   const doubleClickTime = 300;
 
   // Singolo handleClick, con logica diversa se mobile o desktop
-  const handleClick = useCallback((event) => {
-    if (isMobile) {
-      // Mobile: apri la modale subito
-      onOpenSection(id);
-    } else {
-      // Desktop: rileva doppio clic
-      const currentTime = Date.now();
-      const delta = currentTime - lastClickTime;
-
-      if (delta < doubleClickTime) {
-        event.preventDefault();
+  const handleClick = useCallback(
+    (event) => {
+      if (isMobile) {
+        // Mobile: apri la sezione subito
         onOpenSection(id);
-      }
+      } else {
+        // Desktop: rileva doppio clic
+        const currentTime = Date.now();
+        const delta = currentTime - lastClickTimeRef.current;
 
-      if (delta >= doubleClickTime) {
-        setLastClickTime(currentTime);
+        if (delta < doubleClickTime) {
+          event.preventDefault();
+          onOpenSection(id);
+        }
+
+        if (delta >= doubleClickTime) {
+          lastClickTimeRef.current = currentTime;
+        }
       }
-    }
-  }, [isMobile, onOpenSection, id, lastClickTime]);
+    },
+    [isMobile, onOpenSection, id]
+  );
 
   // Solo su Desktop attachiamo i listener di drag + doppio clic
   const modifiedListeners = !isMobile
@@ -79,7 +81,7 @@ const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      // se mobile → onClick apre modale. se desktop → usiamo i pointerDown
+      // se mobile → onClick apre sezione. se desktop → usiamo i pointerDown
       {...(isMobile ? { onClick: handleClick } : modifiedListeners)}
       className={`folder ${isMobile ? "mobile" : ""}`}
     >
@@ -95,7 +97,16 @@ const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
   );
 };
 
-function Portfolio({ scrollTween }) {
+// Definizione delle PropTypes per il componente Folder
+Folder.propTypes = {
+  id: PropTypes.string.isRequired,
+  left: PropTypes.number.isRequired,
+  top: PropTypes.number.isRequired,
+  isMobile: PropTypes.bool.isRequired,
+  onOpenSection: PropTypes.func.isRequired,
+};
+
+function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default a null
   const isMobile = useIsMobile();
 
   const [folders, setFolders] = useState([
@@ -109,12 +120,12 @@ function Portfolio({ scrollTween }) {
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
 
-   // Salveremo il progress in una ref (o in state)
-   const savedProgressRef = useRef(0);
+  // Salveremo il progress in una ref (o in state)
+  const savedProgressRef = useRef(0);
 
   // Funzione per aprire la sezione
   const openSection = (projectId) => {
-    document.body.classList.add('project-section-open');
+    document.body.classList.add("project-section-open");
 
     if (scrollTween?.scrollTrigger) {
       // Salviamo la posizione corrente (progress) di ScrollTrigger
@@ -128,7 +139,7 @@ function Portfolio({ scrollTween }) {
   };
 
   const closeSection = () => {
-    document.body.classList.remove('project-section-open');
+    document.body.classList.remove("project-section-open");
 
     if (scrollTween?.scrollTrigger) {
       // Riabilitiamo senza resettare
@@ -143,12 +154,11 @@ function Portfolio({ scrollTween }) {
     setSectionIsOpen(false);
   };
 
-
   function handleDragEnd(event) {
     if (isMobile) return;
     const { active, delta } = event;
-    setFolders(
-      folders.map((folder) =>
+    setFolders((prevFolders) =>
+      prevFolders.map((folder) =>
         folder.id === active.id
           ? {
               ...folder,
@@ -173,12 +183,17 @@ function Portfolio({ scrollTween }) {
             onOpenSection={openSection} // Rinominato da onOpenModal a onOpenSection
           />
         ))}
-       {sectionIsOpen && (
-        <ProjectSection onClose={closeSection} project={currentProject} />
-      )}
+        {sectionIsOpen && (
+          <ProjectSection onClose={closeSection} project={currentProject} />
+        )}
       </div>
     </DndContext>
   );
 }
+
+// Definizione delle PropTypes per il componente Portfolio
+Portfolio.propTypes = {
+  scrollTween: PropTypes.object, // Tipizza meglio se possibile (es. PropTypes.shape({...}))
+};
 
 export default Portfolio;

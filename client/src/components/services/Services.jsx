@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Services = ({ scrollTween, isMobile }) => {
+const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) => {
   const servicesRef = useRef(null);
   const lineRef = useRef(null);
 
@@ -27,23 +27,22 @@ const Services = ({ scrollTween, isMobile }) => {
   const applicationListRef = useRef(null);
   const servicesSectionRef = useRef(null);
 
-  // Animazioni esistenti per la linea e il testo "services-text"
+  // Animazione della linea e di services-text
   useLayoutEffect(() => {
+    const servicesElem = servicesRef.current;
+    const lineElem = lineRef.current;
+
+    if (!servicesElem || !lineElem) return;
+
+    // Creazione di un nuovo contesto per gestire le animazioni
     let ctx = gsap.context(() => {
-      const servicesElem = servicesRef.current;
-      const lineElem = lineRef.current;
-
+      // Animazione della linea
       if (isMobile) {
-        // Su mobile, animiamo l'altezza della linea per renderla verticale
-
-        // Otteniamo la posizione iniziale della linea (top)
+        // Animazione su mobile: altezza della linea
         const lineStartY = lineElem.getBoundingClientRect().top + window.scrollY;
-
-        // Otteniamo la posizione finale della linea (il fondo della sezione Services)
         const servicesEndY = servicesElem.getBoundingClientRect().bottom + window.scrollY;
-
-        // Calcoliamo l'altezza totale che la linea deve raggiungere
         const lineHeight = servicesEndY - lineStartY;
+
 
         gsap.fromTo(
           lineElem,
@@ -56,29 +55,28 @@ const Services = ({ scrollTween, isMobile }) => {
               start: "top bottom",
               end: "bottom bottom",
               scrub: true,
+              invalidateOnRefresh: true,
             },
           }
         );
       } else {
-        // Su desktop, animiamo la larghezza della linea per renderla orizzontale
+        // Animazione su desktop: larghezza della linea
         const servicesWidth = servicesElem.scrollWidth;
 
         gsap.to(lineElem, {
           width: `${servicesWidth}px`,
-          ease: "power2.out", // Cambia l'ease per un movimento più naturale
+          ease: "power2.out",
           scrollTrigger: {
             trigger: servicesElem,
             start: "top top",
             end: "bottom top",
             scrub: 5,
-            // Pin temporaneamente disabilitato per il debug
-            // pin: true,
-            pinSpacing: false,
+            invalidateOnRefresh: true,
           },
         });
       }
 
-      // Animazione per 'services-text' (rimane invariata)
+      // Animazione per 'services-text'
       const servicesText = servicesElem.querySelector(".services-text");
 
       if (servicesText) {
@@ -94,20 +92,20 @@ const Services = ({ scrollTween, isMobile }) => {
               start: 'top 100%',
               end: 'top 20%',
               scrub: true,
+              invalidateOnRefresh: true,
             },
           });
         } else {
           // Animazione su desktop
-
           gsap.to(servicesText, {
-            yPercent: 350, // Ridotto da 350 a 100 per evitare di spostare l'elemento fuori schermo
+            yPercent: 380,
             ease: "none",
-            // duration: 0.5, // Rimosso perché 'scrub' è attivo
             scrollTrigger: {
               trigger: servicesElem,
               start: "top top",
               end: "bottom top",
               scrub: 2,
+              invalidateOnRefresh: true,
             },
           });
         }
@@ -115,7 +113,7 @@ const Services = ({ scrollTween, isMobile }) => {
     }, servicesRef);
 
     return () => ctx.revert();
-  }, [isMobile]);
+  }, [isMobile, windowWidth, windowHeight]);
 
   // Animazioni per i servizi
   useLayoutEffect(() => {
@@ -147,11 +145,12 @@ const Services = ({ scrollTween, isMobile }) => {
               trigger: ref.current,
               start: "top 50%",
               toggleActions: "play none none reverse",
+              invalidateOnRefresh: true,
             },
           });
         });
       } else {
-        // Animazioni su desktop (rimangono invariate)
+        // Animazioni su desktop
         macroAreas.forEach(({ ref, listRef, className }) => {
           // Animazioni di entrata per i servizi
           gsap.to(q(className), {
@@ -164,6 +163,7 @@ const Services = ({ scrollTween, isMobile }) => {
               containerAnimation: scrollTween,
               start: "left center",
               toggleActions: "play none none reverse",
+              invalidateOnRefresh: true,
             },
           });
 
@@ -177,6 +177,7 @@ const Services = ({ scrollTween, isMobile }) => {
               end: "right center",
               scrub: true,
               containerAnimation: scrollTween,
+              invalidateOnRefresh: true,
             },
           });
         });
@@ -299,6 +300,8 @@ const Services = ({ scrollTween, isMobile }) => {
 Services.propTypes = {
   scrollTween: PropTypes.object,
   isMobile: PropTypes.bool.isRequired,
+  windowWidth: PropTypes.number.isRequired,
+  windowHeight: PropTypes.number.isRequired,
 };
 
 export default Services;

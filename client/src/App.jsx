@@ -1,3 +1,4 @@
+// App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { gsap } from "gsap";
@@ -26,76 +27,81 @@ function App() {
   // Riferimenti per le sezioni
   const scrollContainerRef = useRef(null);
 
-  // Stato per gestire la responsività
+  // Stato per gestire la responsività e le dimensioni della finestra
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const windowWidthRef = useRef(window.innerWidth);
-  const windowHeightRef = useRef(window.innerHeight);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
-  
-  // Gestione del resize per aggiornare isMobile
+  // Stato per l'animazione dello scroll orizzontale
+  const [scrollTween, setScrollTween] = useState(null);
+
+  // Gestione del resize per aggiornare isMobile e le dimensioni della finestra
   useLayoutEffect(() => {
     const handleResize = () => {
       const isMobileNow = window.innerWidth <= 768;
       if (isMobile !== isMobileNow) {
         setIsMobile(isMobileNow);
       }
-      
+
       if (
-        window.innerWidth !== windowWidthRef.current ||
-        window.innerHeight !== windowHeightRef.current
+        window.innerWidth !== windowWidth ||
+        window.innerHeight !== windowHeight
       ) {
-        windowWidthRef.current = window.innerWidth;
-        windowHeightRef.current = window.innerHeight;
+        setWindowWidth(window.innerWidth);
+        setWindowHeight(window.innerHeight);
         ScrollTrigger.refresh();
       }
     };
     
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isMobile]);
-  
-  // Riferimento per l'animazione dello scroll orizzontale
-  const [scrollTween, setScrollTween] = useState(null);
+  }, [isMobile, windowWidth, windowHeight]);
 
   // Centralizzazione delle animazioni in App.jsx
   useLayoutEffect(() => {
-  let ctx = gsap.context(() => {
-    if (!isMobile && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const totalWidth = container.scrollWidth - window.innerWidth;
+    let ctx = gsap.context(() => {
+      if (!isMobile && scrollContainerRef.current) {
+        const container = scrollContainerRef.current;
+        const totalWidth = container.scrollWidth - window.innerWidth;
 
-      // Crea l'animazione dello scroll orizzontale
-      const tween = gsap.to(container, {
-        x: -totalWidth,
-        ease: "none",
-        scrollTrigger: {
-          trigger: container,
-          start: "top top",
-          end: "bottom top",
-          scrub: 2,
-          pin: true,
-          anticipatePin: 1,
-        },
-      });
+        // Se esiste già un tween precedente, lo uccidiamo
+        if (scrollTween) {
+          scrollTween.kill();
+        }
 
-      setScrollTween(tween);
-    } else {
-      // Se siamo su mobile, resettiamo lo scroll e rimuoviamo l'animazione dello scroll orizzontale
-      if (scrollContainerRef.current) {
-        gsap.set(scrollContainerRef.current, { clearProps: 'all' });
+        // Crea l'animazione dello scroll orizzontale
+        const tween = gsap.to(container, {
+          x: -totalWidth,
+          ease: "none",
+          scrollTrigger: {
+            trigger: container,
+            start: "top top",
+            end: "bottom top",
+            scrub: 2,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true, // Ricalcola il tween su refresh
+          },
+        });
+
+        setScrollTween(tween);
+      } else {
+        // Se siamo su mobile, resettiamo lo scroll e rimuoviamo l'animazione dello scroll orizzontale
+        if (scrollContainerRef.current) {
+          gsap.set(scrollContainerRef.current, { clearProps: 'all' });
+        }
+        if (scrollTween) {
+          scrollTween.kill();
+          setScrollTween(null);
+        }
       }
-      if (scrollTween) {
-        scrollTween.kill();
-        setScrollTween(null);
-      }
-    }
 
-    ScrollTrigger.refresh();
-  }, scrollContainerRef);
+      ScrollTrigger.refresh();
+    }, scrollContainerRef);
 
-  return () => ctx.revert();
-}, [isMobile]/* eslint-disable-line react-hooks/exhaustive-deps */);
-
+    return () => ctx.revert();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, windowWidth, windowHeight]); // Non includiamo scrollTween per evitare loop
 
   // Gestione del tema (aggiunge un attributo al body)
   useEffect(() => {
@@ -120,15 +126,20 @@ function App() {
             <Home />
           </div>
 
-            <div className="section">
-              <Services scrollTween={scrollTween} isMobile={isMobile} />
-            </div>
+          <div className="section">
+            <Services 
+              scrollTween={scrollTween} 
+              isMobile={isMobile} 
+              windowWidth={windowWidth} 
+              windowHeight={windowHeight} 
+            />
+          </div>
 
-            <div className="section">
-              <DndProvider backend={HTML5Backend}>
+          <div className="section">
+            <DndProvider backend={HTML5Backend}>
               <Portfolio scrollTween={scrollTween} />
-              </DndProvider>
-            </div>
+            </DndProvider>
+          </div>
           
           <div className="section">
             <Contacts />
