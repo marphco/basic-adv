@@ -202,7 +202,7 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
       } else {
         // Animazione su desktop (orizzontale)
         gsap.to(portfolioText, {
-          yPercent: 45,
+          yPercent: 30,
           ease: "none",
           scrollTrigger: {
             trigger: portfolioElem,
@@ -222,9 +222,9 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
   return (
     <div className="portfolio-section" ref={portfolioRef}>
       {/* Barra Portfolio Text */}
-      <div className="chi-siamo portfolio-siamo">
+      <div className="portfolio">
         <div className="portfolio-text">
-          Ci piacerebbe avere un desktop così ordinato.
+          Abbiamo riordinato il desktop solo per te.
         </div>
       </div>
 
