@@ -10,7 +10,7 @@
   display: flex;
 }
 
-.chi-siamo.portfolio-siamo {
+.portfolio {
   background-color: #ff4003;
   display: flex;
   margin: 0;
@@ -132,7 +132,7 @@ body.project-section-open {
 .intro-portfolio {
   position: fixed;
   bottom: 10%;
-  padding-left: 7em;
+  padding-left: 10em;
   font-size: 2rem;
   max-width: 80vw;
   font-weight: 100;
@@ -162,7 +162,7 @@ body[data-theme="dark"] .folder-name, .intro-portfolio .intro-mobile {
     overflow: visible;
   }
 
-  .chi-siamo.portfolio-siamo {
+  .portfolio {
     width: 100%;
     height: auto;
     flex-direction: row;
