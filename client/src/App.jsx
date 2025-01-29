@@ -10,6 +10,7 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
 import Services from "./components/services/Services";
 import Portfolio from "./components/portfolio/Portfolio";
+import AboutUs from "./components/about-us/AboutUs";
 import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -125,6 +126,8 @@ function App() {
           <div className="section">
             <Home />
           </div>
+            
+            <AboutUs />
 
           <div className="section">
             <Services 
@@ -141,6 +144,7 @@ function App() {
             </DndProvider>
           </div>
           
+
           <div className="section">
             <Contacts />
           </div>

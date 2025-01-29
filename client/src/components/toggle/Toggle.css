@@ -29,7 +29,7 @@
   /* Cerchio nero */
   .black-circle {
     background-color: #161616;
-    border: solid .7px #fefefa !important;
+    border: solid .7px #fafafa !important;
   }
   
   /* Cerchio attivo (più grande) */
@@ -45,5 +45,5 @@
   
   /* Bordo per il cerchio nero su sfondo nero */
   body[data-theme='dark'] .black-circle {
-    border: 1px solid #fefefa;
+    border: 1px solid #fafafa;
   }
