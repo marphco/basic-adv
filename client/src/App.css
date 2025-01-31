@@ -3,6 +3,34 @@ body, .App, .section, .home-container, .about-us-container, .portfolio-container
   transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
 }
 
+.aboutus-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Se hai contenuto più grande dell'area */
+  background-color: #fff;
+  z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
+  overflow-x: auto; /* permette lo scroll orizzontale nativo */
+  overflow-y: hidden; /* se vuoi evitare scroll verticale */
+}
+
+.aboutus-overlay-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
+  cursor: none; 
+}
+
+.site-frozen .aboutus-overlay {
+  pointer-events: auto !important;
+}
+
 /* Altri stili globali */
 body, html, #root {
   margin: 0;

@@ -5,7 +5,7 @@ import Toggle from '../toggle/Toggle';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-const Navbar = ({ isDark, setIsDark }) => {
+const Navbar = ({ isDark, setIsDark, openAboutUs }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleToggleChange = () => {
@@ -32,6 +32,12 @@ const Navbar = ({ isDark, setIsDark }) => {
     }
   };
 
+  const handleAboutUsClick = (e) => {
+    e.preventDefault(); // Previene la navigazione
+    openAboutUs(); // Apre l'Overlay
+    setIsMenuOpen(false); // Chiude il menu se aperto
+  };
+
   return (
     <div className="navbar-block">
       <nav className={classNames('navbar', { 'dark-mode': isDark })}>
@@ -44,8 +50,11 @@ const Navbar = ({ isDark, setIsDark }) => {
             <Link to="/" onClick={() => setIsMenuOpen(false)}>HOME</Link>
           </li>
           <li>
-            <Link to="/about-us" onClick={() => setIsMenuOpen(false)}>ABOUT US</Link>
-          </li>
+  <a href="#" onClick={e => {
+    e.preventDefault();
+    openAboutUs();
+  }}>ABOUT US</a>
+</li>
           <li>
             <Link to="/portfolio" onClick={() => setIsMenuOpen(false)}>PORTFOLIO</Link>
           </li>
@@ -62,6 +71,7 @@ const Navbar = ({ isDark, setIsDark }) => {
 Navbar.propTypes = {
   isDark: PropTypes.bool.isRequired,
   setIsDark: PropTypes.func.isRequired,
+  openAboutUs: PropTypes.func.isRequired, // Definisci PropTypes per openAboutUs
 };
 
 export default Navbar;

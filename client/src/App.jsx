@@ -10,10 +10,15 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
 import Services from "./components/services/Services";
 import Portfolio from "./components/portfolio/Portfolio";
-import AboutUs from "./components/about-us/AboutUs";
+// import AboutUs from "./components/about-us/AboutUs";
 import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import AboutUsOverlay from "./components/about-us/AboutUsOverlay";
+import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
+import AboutUsContent from "./components/about-us/AboutUsContent"; // i contenuti
+
+
 
 // Registra il plugin ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -24,6 +29,21 @@ function App() {
   // Gestione del tema (light/dark)
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
+
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+
+  // Funzione per aprire l'Overlay About Us
+  const openAboutUs = () => {
+    console.log("openAboutUs called!");
+
+    setIsAboutUsOpen(true);
+  };
+
+  // Funzione per chiudere l'Overlay About Us
+  const closeAboutUs = () => {
+    setIsAboutUsOpen(false);
+  };
+
 
   // Riferimenti per le sezioni
   const scrollContainerRef = useRef(null);
@@ -121,13 +141,13 @@ function App() {
     <Router>
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
-        <Navbar isDark={isDark} setIsDark={setIsDark} />
+        <Navbar isDark={isDark} setIsDark={setIsDark} openAboutUs={openAboutUs}/>
         <div className="App" ref={scrollContainerRef}>
           <div className="section">
             <Home />
           </div>
             
-            <AboutUs />
+            {/* <AboutUs /> */}
 
           <div className="section">
             <Services 
@@ -143,11 +163,18 @@ function App() {
               <Portfolio scrollTween={scrollTween} />
             </DndProvider>
           </div>
-          
+
+          {/* <AboutUsOverlay isOpen={isAboutUsOpen} onClose={closeAboutUs} />        */}
 
           <div className="section">
             <Contacts />
           </div>
+
+          {/* Portal overlay */}
+        <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
+          <AboutUsContent />
+        </AboutUsPortal>
+
         </div>
       </div>
     </Router>
