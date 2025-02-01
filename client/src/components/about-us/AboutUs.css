@@ -1,183 +1,212 @@
 /* src/components/about-us/AboutUs.css */
 
 .aboutus-section {
-    width: 200vw; /* 100vw per slider-section + 200vw per storia */
+    width: 250vw;
     height: 100vh;
     display: flex;
-    flex-direction: row; /* Disposizione orizzontale */
-    background-color: rgb(238, 238, 238); /* Cambia lo sfondo secondo il tuo design */
+    flex-direction: row;
+    background-color: rgb(238, 238, 238);
     transition: background-color 0.5s ease;
     font-family: "Inter", Arial, Helvetica, sans-serif;
-}
+  }
 
-.slider-section {
+  /* slider-section: 100vw per le immagini */
+  .slider-section, .storia, .window {
     width: 100vw;
     height: 100vh;
+    flex-shrink: 0;
+  }
+
+  .slider-section {
     position: relative;
-    /* overflow: hidden; */
-    overflow: visible; /* TEST */
+    overflow: visible;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.aboutus-container {
+  }
+  
+  .aboutus-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     height: 100vh;
     width: 100vw;
-}
-
-.aboutus-images {
+  }
+  
+  .aboutus-images {
     display: flex;
     margin-left: 2vw;
     flex-direction: row;
-    gap: 30px; /* Gap tra le immagini */
-    padding: 0 10px; /* Padding per evitare che le immagini tocchino i bordi */
-    width: max-content; /* Assicura che il contenitore si estenda per tutte le immagini */
-}
-
-.aboutus-images img {
-    width: 40vh; /* Ogni immagine occupa la metà della viewport */
+    gap: 30px;
+    padding: 0 10px;
+    width: max-content; /* per far scorrere tutte le immagini orizzontalmente */
+  }
+  
+  .aboutus-images img {
+    width: 40vh;
     height: auto;
     object-fit: cover;
     flex-shrink: 0;
-    /* border-radius: 10px; */
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    display: block; /* Rimuove eventuali spazi bianchi sotto le immagini */
-}
-
-.aboutus-title-container {
+    display: block;
+  }
+  
+  .aboutus-title-container {
     margin-top: 20px;
     text-align: center;
-}
-
-.aboutus-title {
+  }
+  
+  .aboutus-title {
     font-size: 4rem;
     font-weight: 700;
     line-height: 1em;
     color: var(--primary-text-color);
-    transition: color 0.5s ease;
     margin: 0;
     padding: 0;
-}
-
-.aboutus-subtitle {
+  }
+  
+  .aboutus-subtitle {
     font-size: 1.2rem !important;
     font-weight: 100 !important;
-    color: var(--primary-text-color); /* Definisci questa variabile nel CSS globale */
-    transition: color 0.5s ease;
+    color: var(--primary-text-color);
     margin: 0;
     padding: 0;
-}
-
-.storia {
-    background-color: var(--background-color);
-    transition: background-color 0.5s ease;
-    width: 200vw; /* Corretto da 60vw a 200vw */
+  }
+  
+  /* SEZIONE STORIA: la seconda "metà" di 100vw, 
+     se vuoi tutta la sezione = 200vw totali. */
+     .storia {
+        background-color: var(--background-color);
+        transition: background-color 0.5s ease;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+  
+  .storia-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
     height: 100vh;
-    z-index: 100;
-    display: flex;
-    flex-direction: row; /* Disposizione orizzontale per testo e immagine */
-    align-items: center;
-    justify-content: center;
-    padding: 0; /* Rimosso il padding */
-    box-sizing: border-box; /* Assicura che il padding non aumenti la larghezza totale */
-}
-
-.storia-content {
-    display: flex;
-    flex-direction: column; /* Mantieni il testo in colonna */
-    flex: 1; /* Occupa metà della larghezza disponibile */
-    padding-right: 20px; /* Aggiungi padding se necessario */
-}
-
-.storia-text {
+    padding-right: 20px;
+    position: relative; /* per positionare i testi in absolute se vuoi */
+  }
+  
+  .storia-text {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente il testo */
+    justify-content: space-between;
     color: var(--primary-text-color);
     transition: color 0.5s ease;
-}
-
-.storia-text h2 {
-    position: fixed;
-    top: 10vh;
-    padding-left: 5vw;
-    font-size: 4.4vw;
+    position: relative; /* container per i testi "relative" */
+  }
+  
+  /* Prima erano fixed. Ora li facciamo "relative" 
+     (o absolute) in modo che stiano nel flusso orizzontale. */
+  .storia-text h2 {
+    /* position: relative; */
+    top: 7vh;  /* offset dall'alto del container .storia-text */
+    /* left: 5vw; */
+    font-size: 4vw;
+    padding-left: 3vw;
     margin-bottom: 20px;
     font-weight: 200;
     line-height: 1;
-}
-
-.storia-text p {
-    position: fixed;
-    bottom: 10vh;
-    padding-left: 5vw;
+  }
+  
+  .storia-text p {
+    /* position: relative; */
+    bottom: 7vh; /* cambia se vuoi spostarlo più in basso */
+    /* left: 5vw; */
     font-weight: 100;
+    padding-left: 3vw;
     max-width: 40vw;
-    font-size: 1.5vw;
+    font-size: 1.3vw;
     color: var(--primary-text-color);
     transition: color 0.5s ease;
-}
-
-.accent {
+    margin-top: 20px;
+  }
+  
+  .accent {
     color: var(--foreground-color);
     font-weight: 700;
-}
-
-.wall {
+  }
+  
+  .wall {
     flex: 1;
     height: 100vh;
     max-width: 35vw;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0; /* Rimosso il padding */
-    margin: 0; /* Rimosso il margine */
-    /* border-radius: 100px 0 0 0 !important; */
-}
-
-.wall-content {
+    padding: 0 2vw !important;
+    margin: 0;
+  }
+  
+  .wall-content {
     position: relative;
-    overflow: hidden; /* Nasconde le parti dell'immagine che escono dal contenitore */
-    width: 100%;
-    height: 100%;
-    background-image: url('../../assets/wall.jpg'); /* Imposta l'immagine di sfondo */
-    background-size: cover; /* Copre l'intero contenitore */
-    background-position: center; /* Centra l'immagine */
-    background-repeat: no-repeat; /* Evita la ripetizione dell'immagine */
-    /* transition: background-position 0.5s ease; Transizione morbida per eventuali cambiamenti */
-}
-
-.marco-content {
+    overflow: hidden;
+    /* width: 100%; */
+    /* height: 100%; */
+    background-image: url('../../assets/wall.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .marco-content {
     display: flex;
-    flex-direction: column; /* Mantieni il testo in colonna */
-    flex: 1; /* Occupa metà della larghezza disponibile */
-    padding-right: 20px; /* Aggiungi padding se necessario */
-}
-
-.marco-text {
+    flex-direction: column;
+    flex: 1;
+    padding-right: 20px;
+  }
+  
+  .marco-text {
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente il testo */
-    color: var(--primary-text-color); /* Assicura che il testo sia visibile */
-    transition: color 0.5s ease;
-}
-
-.marco-text p {
-    position: fixed;
-    top: 40vh;
-    padding-left: 5vw;
-    font-weight: 100;
-    max-width: 42vw;
-    font-size: 1.5vw;
+    justify-content: center;
     color: var(--primary-text-color);
     transition: color 0.5s ease;
-}
+    position: relative;
+  }
+  
+  .marco-text p {
+    position: relative;
+    display: flex;
+    justify-content: center; 
+    /* left: 5vw; */
+    padding-left: 3vw;
+    font-weight: 100;
+    max-width: 42vw;
+    font-size: 1.3vw;
+    color: var(--primary-text-color);
+  }
+
+  .window {
+    /* Nessun padding o margin per assicurare che sia attaccata alla sezione precedente */
+    width: 50vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .window-content {
+    width: 100%;
+    height: 100%;
+    background-image: url('../../assets/window.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-position 0.5s ease;
+    z-index: 99;
+  }
 
 /* Rimuovere eventuali padding/margin indesiderati */
 .storia, .storia-content, .wall, .wall-content {
@@ -197,25 +226,25 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 }
 
 /* Responsività */
-@media screen and (max-width: 1024px) {
+/* @media screen and (max-width: 1024px) {
     .storia-content {
         flex-direction: column;
-        height: auto;
-        padding-right: 0; /* Rimuovi padding per dispositivi piccoli */
+        height: 100vh;
+        padding-right: 0; Rimuovi padding per dispositivi piccoli
     }
 
     .wall {
-        padding-left: 0; /* Rimuovi padding per dispositivi piccoli */
+        padding-left: 0; Rimuovi padding per dispositivi piccoli
     }
 
     .wall-content {
-        background-position: center; /* Assicura che l'immagine sia centrata */
+        background-position: center; Assicura che l'immagine sia centrata
     }
 
     .storia-text {
         margin-bottom: 20px;
     }
-}
+} */
 
 @media screen and (max-width: 768px) {
     .aboutus-section {
