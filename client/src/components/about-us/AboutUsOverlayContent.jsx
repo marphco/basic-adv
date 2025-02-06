@@ -1,5 +1,5 @@
 // src/components/about-us/AboutUsOverlayContent.jsx
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { gsap } from "gsap";
 import storica1 from "../../assets/storica1.jpg";
@@ -8,6 +8,7 @@ import storica3 from "../../assets/storica3.jpg";
 import storica4 from "../../assets/storica4.jpg";
 import storica5 from "../../assets/storica5.jpg";
 import storica6 from "../../assets/storica6.jpg";
+import marcoImage from "../../assets/marco.jpg"; // Importa la foto di Marco
 import "./AboutUs.css";
 
 export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
@@ -22,9 +23,9 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
   useEffect(() => {
     if (!isOpen || !overlayRef.current) return;
 
-    const container = overlayRef.current;       // Overlay (scroller)
-    const aboutSection = aboutRef.current;        // L'intera sezione (ora 300vw: slider, storia, window)
-    const imagesContainer = imagesRef.current;    // Container delle immagini (slider)
+    const container = overlayRef.current; // Overlay (scroller)
+    const aboutSection = aboutRef.current; // L'intera sezione (ora 300vw: slider, storia, window)
+    const imagesContainer = imagesRef.current; // Container delle immagini (slider)
 
     // *** Ripristina eventuali trasformazioni residue ***
     gsap.set(aboutSection, { clearProps: "all", x: 0 });
@@ -34,7 +35,10 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
       gsap.set(wallContent, { clearProps: "all" });
     }
     if (windowSectionRef.current) {
-      gsap.set(windowSectionRef.current, { clearProps: "all", backgroundPosition: "50% center" });
+      gsap.set(windowSectionRef.current, {
+        clearProps: "all",
+        backgroundPosition: "50% center",
+      });
     }
 
     // Crea una timeline GSAP paused
@@ -43,7 +47,7 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
 
     // La sezione complessiva è di 300vw, e il container (overlay) è 100vw;
     // il totale scorribile è quindi (300vw - 100vw) = 200vw.
-    totalWidthRef.current = container.clientWidth * 2;
+    totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
 
     // Funzione per impostare la timeline in modo che:
     // - Segmento 1 (progress 0-0.5): anima lo slider (le immagini) e applica il parallax su .wall-content
@@ -52,28 +56,40 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
       tl.clear();
       // Segmento 1: anima le immagini.
       // Qui spostiamo il container delle immagini di un importo pari a container.clientWidth (circa 100vw)
-      tl.to(imagesContainer, {
-        x: -container.clientWidth,
-        ease: "none",
-        duration: 1,
-      }, 0);
-      // Parallax su .wall-content nello stesso segmento
-      if (wallContent) {
-        tl.to(wallContent, {
-          backgroundPosition: "60% 80%", // effetto identico a quello attuale per wall
+      tl.to(
+        imagesContainer,
+        {
+          x: -container.clientWidth,
           ease: "none",
           duration: 1,
-        }, 0);
+        },
+        0
+      );
+      // Parallax su .wall-content nello stesso segmento
+      if (wallContent) {
+        tl.to(
+          wallContent,
+          {
+            backgroundPosition: "60% 80%", // effetto identico a quello attuale per wall
+            ease: "none",
+            duration: 1,
+          },
+          0
+        );
       }
       // Segmento 2: anima la nuova sezione window.
       // L'effetto parallax orizzontale: cambiamo il backgroundPosition lungo l'asse X, mantenendo Y invariato.
       if (windowSectionRef.current) {
-        tl.to(windowSectionRef.current, {
-          // Partiamo da "50% center" (impostato nel reset) e arriviamo a "60% center"
-          backgroundPosition: "90% center",
-          ease: "none",
-          duration: 1,
-        }, 1); // parte all'inizio del secondo segmento (progress circa 0.5)
+        tl.to(
+          windowSectionRef.current,
+          {
+            // Partiamo da "50% center" (impostato nel reset) e arriviamo a "60% center"
+            backgroundPosition: "90% center",
+            ease: "none",
+            duration: 1,
+          },
+          1
+        ); // parte all'inizio del secondo segmento (progress circa 0.5)
       }
     }
 
@@ -92,16 +108,20 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
       if (container.scrollLeft > totalWidthRef.current) {
         container.scrollLeft = totalWidthRef.current;
       }
-      const prog = totalWidthRef.current ? (container.scrollLeft / totalWidthRef.current) : 0;
+      const prog = totalWidthRef.current
+        ? container.scrollLeft / totalWidthRef.current
+        : 0;
       tl.progress(prog);
     }
     container.addEventListener("wheel", onWheel, { passive: false });
 
     // Listener per il resize: conserva il progresso relativo
     function handleResize() {
-      const oldProg = totalWidthRef.current ? (container.scrollLeft / totalWidthRef.current) : 0;
+      const oldProg = totalWidthRef.current
+        ? container.scrollLeft / totalWidthRef.current
+        : 0;
       // Ricalcola il totale scrollabile basato sul nuovo container (sempre 200vw in pixel, ovvero 2*clientWidth)
-      totalWidthRef.current = container.clientWidth * 2;
+      totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
       buildTimeline();
       const newScrollLeft = totalWidthRef.current * oldProg;
       container.scrollLeft = newScrollLeft;
@@ -131,7 +151,9 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
           </div>
           <div className="aboutus-title-container">
             <h1 className="aboutus-title">
-              MAGARI LEGGILA<br />UN PO' DI STORIA
+              MAGARI LEGGILA
+              <br />
+              UN PO' DI STORIA
             </h1>
             <p className="aboutus-subtitle">se fai skip sei senza cuore</p>
           </div>
@@ -143,17 +165,39 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
         <div className="storia-content">
           <div className="storia-text">
             <h2>
-              Dall'Inchiostro<br />al Digitale:<br />La nostra passione,<br /><span className="accent">le nostre radici</span>
+              Dall'Inchiostro
+              <br />
+              al Digitale:
+              <br />
+              La nostra passione,
+              <br />
+              <span className="accent">le nostre radici</span>
             </h2>
-            <p>Siamo nati e cresciuti tra le macchine da stampa della piccola bottega di nostro padre, Crescenzo. Da lui abbiamo ereditato non solo la passione per la comunicazione, ma anche il cuore di chi non si ferma mai davanti a una sfida. Dopo la sua scomparsa, abbiamo deciso di trasformare quella scintilla in un fuoco creativo, portando avanti la sua visione con innovazione e coraggio.</p>
+            <p>
+              Siamo nati e cresciuti tra le macchine da stampa della piccola
+              bottega di nostro padre, Crescenzo. Da lui abbiamo ereditato non
+              solo la passione per la comunicazione, ma anche il cuore di chi
+              non si ferma mai davanti a una sfida. Dopo la sua scomparsa,
+              abbiamo deciso di trasformare quella scintilla in un fuoco
+              creativo, portando avanti la sua visione con innovazione e
+              coraggio.
+            </p>
           </div>
         </div>
         <div className="wall">
           <div className="wall-content" />
         </div>
-        <div className="marco-content">
-          <div className="marco-text">
-            <p>Basic è il punto d'incontro tra tradizione e tecnologia. Il nostro team, giovane ma con esperienza da vendere, domina l'arte della comunicazione a 360 gradi, dal web alla stampa, fino alle app. Siamo professionisti con un pizzico di audacia, pronti a rivoluzionare il mercato con strategie digitali vincenti e design che fanno parlare di sé. Perché per noi, fare la differenza non è solo un lavoro, è uno stile di vita.</p>
+        <div className="storia-moderna">
+          <div className="storia-moderna-text">
+            <p>
+              Basic è il punto d'incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l'arte della
+              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+              Siamo professionisti con un pizzico di audacia, pronti a
+              rivoluzionare il mercato con strategie digitali vincenti e design
+              che fanno parlare di sé. Perché per noi, fare la differenza non è
+              solo un lavoro, è uno stile di vita.
+            </p>
           </div>
         </div>
       </div>
@@ -162,6 +206,28 @@ export default function AboutUsOverlayContent({ overlayRef, isOpen }) {
       <div className="window">
         <div className="window-content" ref={windowSectionRef} />
       </div>
+
+      <div className="marco-content">
+  {/* Colonna Sinistra */}
+  <div className="marco-left">
+    <div className="marco-text">
+      <p>
+        Un innovatore nel campo digitale, con una mente che vede oltre l'orizzonte, ha trasformato ogni progetto in una missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è universale, creando con la precisione di un artigiano del futuro.
+      </p>
+    </div>
+    <div className="marco-title">
+      <h2>MARCO</h2>
+    </div>
+  </div>
+
+  {/* Colonna Destra */}
+  <div className="marco-right">
+    <div className="foto-marco">
+      <img src={marcoImage} alt="Foto Marco" />
+    </div>
+  </div>
+</div>
+
     </section>
   );
 }
