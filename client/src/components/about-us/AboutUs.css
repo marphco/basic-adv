@@ -1,7 +1,7 @@
 /* src/components/about-us/AboutUs.css */
 
 .aboutus-section {
-    width: 320vw;
+    width: 350vw;
     height: 100vh;
     display: flex;
     flex-direction: row;
@@ -249,7 +249,7 @@
 
   .window {
     /* Nessun padding o margin per assicurare che sia attaccata alla sezione precedente */
-    width: 50vw;
+    max-width: 50vw;
     height: 100vh;
     display: flex;
     align-items: center;
@@ -286,26 +286,77 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
     transition: color 0.5s ease-in-out;
 }
 
-/* Responsività */
-/* @media screen and (max-width: 1024px) {
-    .storia-content {
-        flex-direction: column;
-        height: 100vh;
-        padding-right: 0; Rimuovi padding per dispositivi piccoli
-    }
+/* Le prime 3 sezioni mantengono 100vw */
+.slider-section, .storia, .window {
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+}
 
-    .wall {
-        padding-left: 0; Rimuovi padding per dispositivi piccoli
-    }
+/* --- Accordion (Sezione 4) --- */
+.accordion-container {
+    width: 100vw;  /* la quarta colonna */
+    height: 100vh;
+    position: relative;
+    flex-shrink: 0;
+}
 
-    .wall-content {
-        background-position: center; Assicura che l'immagine sia centrata
-    }
+/* I pulsanti occupano 30vw a sinistra */
+.accordion-buttons {
+    position: relative;
+    width: 30vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;  /* o row se li vuoi affiancati, a seconda del design */
+    /* Se vuoi che i pulsanti siano disposti verticalmente, usa flex-direction: column */
+    /* Se invece li vuoi orizzontali, usa row */
+    /* Adattare in base al design */
+    flex-shrink: 0;
+}
 
-    .storia-text {
-        margin-bottom: 20px;
-    }
-} */
+.accordion-button {
+    width: 100%;  /* occuperà tutta la larghezza dei pulsanti, ossia 30vw */
+    height: 100vh;  /* se ne hai 3 e li vuoi equamente distribuiti */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: #ccc;
+    transition: background-color 0.3s ease;
+    z-index: 9999;
+}
+
+.accordion-button:hover {
+    background-color: #bbb;
+}
+
+.accordion-button span {
+    transform: rotate(-90deg);
+    font-size: 1.5rem;
+    white-space: nowrap;
+}
+
+/* I pannelli: occuperanno il rimanente 70vw, posizionati assolutamente */
+.accordion-panels {
+    position: absolute;
+    top: 0;
+    left: 30vw;  /* a destra dei pulsanti */
+    width: 70vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* I pannelli stessi: partono da fuori a destra (xPercent: 100) */
+.accordion-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
+}
+
 
 @media screen and (max-width: 768px) {
     .aboutus-section {
