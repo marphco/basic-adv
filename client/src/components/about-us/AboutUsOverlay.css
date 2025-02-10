@@ -49,6 +49,6 @@
   }
   
   .close-button:hover {
-    color: #ff4003;
+    color: var(--foreground-color);
   }
   

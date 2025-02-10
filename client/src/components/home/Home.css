@@ -114,7 +114,7 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
 .stripe {
   flex: 1;
   height: 100%;
-  background-color: rgb(238, 238, 238);
+  background-color: var(--foreground-color);
   transform: scaleX(0);
   margin-left: -2px;
   transition: background-color 0.5s ease;

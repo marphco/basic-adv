@@ -11,7 +11,7 @@
 }
 
 .portfolio {
-  background-color: #ff4003;
+  background-color: var(--foreground-color);
   display: flex;
   margin: 0;
   width: 10vw;

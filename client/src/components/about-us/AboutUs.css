@@ -11,7 +11,7 @@
   }
 
   /* slider-section: 100vw per le immagini */
-  .slider-section, .storia, .marco-content {
+  .slider-section, .storia {
     width: 100vw;
     height: 100vh;
     flex-shrink: 0;
@@ -24,24 +24,31 @@
     padding: 10vh 5vw; /* Padding superiore e inferiore */
     box-sizing: border-box;
   }
+
+  .content-inner {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+  }
   
   /* Colonna Sinistra */
-  .marco-left {
+  .team-left {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between; /* Distribuisce testo in alto e "MARCO" in basso */
-    padding-right: 2vw; /* Spazio tra le colonne */
+    padding: 8vw;
   }
 
-  .marco-text {
+  .team-text {
     justify-content: flex-start;
   }
   
   /* Testo in alto */
-  .marco-text p {
+  .team-text p {
     margin: 0;
     padding: 0;
+    font-weight: 100;
     font-size: 1.3vw;
     color: var(--primary-text-color);
     max-width: 90%;
@@ -49,32 +56,34 @@
   }
   
   /* Scritta MARCO in basso */
-  .marco-title {
+  .team-title {
     margin-bottom: 0;
   }
   
-  .marco-title h2 {
+  .team-title h2 {
     font-size: 6vw;
     font-weight: 700;
     color: #ff3b00; /* Colore arancione come nello screenshot */
     margin: 0;
+    line-height: .8;
   }
   
   /* Colonna Destra */
-  .marco-right {
+  .team-right {
     flex: 1;
     display: flex;
     align-items: flex-end; /* Allinea la foto in basso */
-    justify-content: flex-end;
-    padding-left: 2vw; /* Spazio tra le colonne */
+    padding-left: 2vw;
+    padding-bottom: 8vw;
   }
   
   /* Foto allineata in basso */
-  .foto-marco img {
+  .foto-team img {
     max-height: 45vh; /* Mantieni proporzioni */
     width: auto;
     object-fit: cover;
     margin-bottom: 0; /* Allineamento preciso */
+    border-radius: 1vw;
   }
 
   .slider-section {
@@ -315,24 +324,97 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 }
 
 .accordion-button {
-    width: 100%;  /* occuperà tutta la larghezza dei pulsanti, ossia 30vw */
+    width: 10vw;  /* occuperà tutta la larghezza dei pulsanti, ossia 30vw */
     height: 100vh;  /* se ne hai 3 e li vuoi equamente distribuiti */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    background-color: #ccc;
+    background-color: var(--foreground-color);
     transition: background-color 0.3s ease;
     z-index: 9999;
 }
 
+.accordion-button.active {
+    filter: blur(0) !important;
+  }
+  
+  .accordion-button.active::before {
+    background-color: rgba(0, 0, 0, 0) !important;
+  }
+
+/* Regole comuni per tutti e tre i pulsanti */
+.accordion-button:nth-child(1),
+.accordion-button:nth-child(2),
+.accordion-button:nth-child(3) {
+  position: relative;
+  background-size: cover;
+  overflow: hidden;
+  filter: blur(3px);
+  transition: filter 0.5s ease;
+}
+
+/* Pseudo-elemento ::before per l'overlay, comune a tutti */
+.accordion-button:nth-child(1)::before,
+.accordion-button:nth-child(2)::before,
+.accordion-button:nth-child(3)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  transition: background-color 0.5s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover comune: annulla il blur e rende trasparente l'overlay */
+.accordion-button:nth-child(1):hover,
+.accordion-button:nth-child(2):hover,
+.accordion-button:nth-child(3):hover {
+  filter: blur(0);
+}
+
+.accordion-button:nth-child(1):hover::before,
+.accordion-button:nth-child(2):hover::before,
+.accordion-button:nth-child(3):hover::before {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+/* Specifiche per ciascun pulsante */
+
+/* Child 1: Marco */
+.accordion-button:nth-child(1) {
+  background-image: url('../../assets/marco.jpg');
+  background-position: 70%;
+}
+
+/* Child 2: Alessio */
+.accordion-button:nth-child(2) {
+  /* Qui utilizziamo lo shorthand background per comodità,
+     ma l'effetto è lo stesso */
+  background: url('../../assets/alessio.jpg');
+  background-size: cover;
+  background-position: 70%;
+}
+
+/* Child 3: Giorgia */
+.accordion-button:nth-child(3) {
+  background-image: url('../../assets/giorgia.jpg');
+  background-position: 75%;
+}
+
 .accordion-button:hover {
-    background-color: #bbb;
+    background-color: var(--background-color);
 }
 
 .accordion-button span {
     transform: rotate(-90deg);
-    font-size: 1.5rem;
+    font-size: 3.5rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
     white-space: nowrap;
 }
 
@@ -353,7 +435,7 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #fff;
+    background-color: var(--background-color);
     /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
 }
 

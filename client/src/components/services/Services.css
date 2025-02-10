@@ -10,7 +10,7 @@
 }
 
 .chi-siamo {
-  background-color: #ff4003;
+  background-color: var(--foreground-color);
   display: flex;
   margin: 0;
   width: 10vw;
@@ -63,7 +63,7 @@
   left: 0;
   height: 1px;
   width: 0;
-  background-color: #ff4003;
+  background-color: var(--foreground-color);
   transition: width 0.2s ease-in-out;
 }
 
@@ -185,7 +185,7 @@ body[data-theme="dark"] .services-list-section {
     left: 20px;
     width: 1px;  /* La linea diventa verticale */
     height: 0;   /* Altezza iniziale zero */
-    background-color: #ff4003;
+    background-color: var(--foreground-color);
     transition: height 0.3s ease-in-out; /* Anima l'altezza */
   }
 
