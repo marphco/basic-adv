@@ -172,7 +172,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
             <h1 className="aboutus-title">
               MAGARI LEGGILA
               <br />
-              UN PO' DI STORIA
+              UN PO&apos; DI STORIA
             </h1>
             <p className="aboutus-subtitle">se fai skip sei senza cuore</p>
           </div>
@@ -184,7 +184,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
         <div className="storia-content">
           <div className="storia-text">
             <h2>
-              Dall'Inchiostro
+              Dall&apos;Inchiostro
               <br />
               al Digitale:
               <br />
@@ -209,8 +209,8 @@ export default function AboutUs({ overlayRef, isOpen }) {
         <div className="storia-moderna">
           <div className="storia-moderna-text">
             <p>
-              Basic è il punto d'incontro tra tradizione e tecnologia. Il nostro
-              team, giovane ma con esperienza da vendere, domina l'arte della
+              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l&apos;arte della
               comunicazione a 360 gradi, dal web alla stampa, fino alle app.
               Siamo professionisti con un pizzico di audacia, pronti a
               rivoluzionare il mercato con strategie digitali vincenti e design
@@ -257,7 +257,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
                 <div className="team-text">
                   <p>
                     Un innovatore nel campo digitale, con una mente che vede
-                    oltre l'orizzonte, ha trasformato ogni progetto in una
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
                     missione di scoperta, dove ogni pixel è un passo verso nuovi
                     mondi. A New York, trova ispirazione, ma la sua visione è
                     universale, creando con la precisione di un artigiano del
@@ -281,7 +281,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
                 <div className="team-text">
                   <p>
                     Un innovatore nel campo digitale, con una mente che vede
-                    oltre l'orizzonte, ha trasformato ogni progetto in una
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
                     missione di scoperta, dove ogni pixel è un passo verso nuovi
                     mondi. A New York, trova ispirazione, ma la sua visione è
                     universale, creando con la precisione di un artigiano del
@@ -305,7 +305,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
                 <div className="team-text">
                   <p>
                     Un innovatore nel campo digitale, con una mente che vede
-                    oltre l'orizzonte, ha trasformato ogni progetto in una
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
                     missione di scoperta, dove ogni pixel è un passo verso nuovi
                     mondi. A New York, trova ispirazione, ma la sua visione è
                     universale, creando con la precisione di un artigiano del
