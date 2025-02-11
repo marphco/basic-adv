@@ -1,10 +1,10 @@
 // src/components/about-us/AboutUsPortal.jsx
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
-import AboutUsOverlayContent from "./AboutUsOverlayContent";
+import AboutUs from "./AboutUs";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -43,8 +43,13 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
       // Animazione entrata overlay
       if (overlayRef.current) {
-        overlayRef.current.scrollLeft = 0;
-      }
+        gsap.fromTo(
+        overlayRef.current,
+        { x: "-100%" },
+        { x: "0", duration: 0.5, ease: "power3.out" }
+      );
+      overlayRef.current.scrollLeft = 0;
+    }
     } else {
       window.removeEventListener("keydown", handleEsc);
 
@@ -60,6 +65,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
   }, [isOpen]);
 
   const handleClose = () => {
+    console.log("handleClose triggered");
     if (overlayRef.current) {
       gsap.to(overlayRef.current, {
         x: "-100%",
@@ -77,15 +83,17 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
   return ReactDOM.createPortal(
     <div className="aboutus-overlay" ref={overlayRef}>
-      <button
-        type="button"
-        className="aboutus-overlay-close"
-        onClick={handleClose}
-      >
-        &times;
-      </button>
-      {/* Passiamo isOpen e overlayRef al contenuto animato */}
-      <AboutUsOverlayContent overlayRef={overlayRef} isOpen={isOpen} />
+      <div className="aboutus-overlay-header">
+        <button
+          type="button"
+          className="aboutus-overlay-close"
+          onClick={handleClose}
+        >
+          [CHIUDI]
+        </button>
+      </div>
+      {/* Il contenuto scrollabile */}
+      <AboutUs overlayRef={overlayRef} isOpen={isOpen} />
     </div>,
     portalRef.current
   );

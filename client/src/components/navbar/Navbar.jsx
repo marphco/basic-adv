@@ -32,11 +32,11 @@ const Navbar = ({ isDark, setIsDark, openAboutUs }) => {
     }
   };
 
-  const handleAboutUsClick = (e) => {
-    e.preventDefault(); // Previene la navigazione
-    openAboutUs(); // Apre l'Overlay
-    setIsMenuOpen(false); // Chiude il menu se aperto
-  };
+  // const handleAboutUsClick = (e) => {
+  //   e.preventDefault(); // Previene la navigazione
+  //   openAboutUs(); // Apre l'Overlay
+  //   setIsMenuOpen(false); // Chiude il menu se aperto
+  // };
 
   return (
     <div className="navbar-block">

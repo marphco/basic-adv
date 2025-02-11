@@ -14,9 +14,9 @@ import Portfolio from "./components/portfolio/Portfolio";
 import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import AboutUsOverlay from "./components/about-us/AboutUsOverlay";
+// import AboutUsOverlay from "./components/about-us/AboutUsOverlay";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
-import AboutUsContent from "./components/about-us/AboutUsContent"; // i contenuti
+import AboutUs from "./components/about-us/AboutUs"; // i contenuti
 
 
 
@@ -172,7 +172,7 @@ function App() {
 
           {/* Portal overlay */}
         <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-          <AboutUsContent />
+          <AboutUs />
         </AboutUsPortal>
 
         </div>

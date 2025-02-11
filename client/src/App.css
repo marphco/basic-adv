@@ -16,15 +16,30 @@ body, .App, .section, .home-container, .about-us-container, .portfolio-container
   overflow-y: hidden; /* se vuoi evitare scroll verticale */
 }
 
+/* La header non scrollabile, che rimane attaccata al top dell'overlay */
+.aboutus-overlay-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100000000; /* Deve stare sopra il contenuto scrollabile */
+  background-color: #fff; /* Opzionale, per evitare trasparenze */
+}
+
+/* Pulsante di chiusura, posizionato in alto a destra all'interno della header */
 .aboutus-overlay-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 2rem;
-  background: none;
-  border: none;
-  z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
-  cursor: none; 
+    position: absolute;  /* Relativo a .aboutus-section */
+    top: 52px;
+    right: 72px;
+    font-size: .8rem;
+    background: none;
+    border: none;
+    z-index: 1000;  /* Assicurati che sia sopra il contenuto */
+    cursor: pointer !important;
+    color: var(--primary-text-color);
+    transition: color 0.5s ease-in-out;
+    pointer-events: auto !important; /* Assicurati che i clic vengano ricevuti */
+    z-index: 100000000000000000000000000000000000000000 !important;
 }
 
 .site-frozen .aboutus-overlay {

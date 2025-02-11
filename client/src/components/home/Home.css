@@ -120,10 +120,6 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   transition: background-color 0.5s ease;
 }
 
-body[data-theme="dark"] .stripe {
-  background-color: black;
-}
-
 @media screen and (max-width: 768px) {
   .home-text p {
     font-size: 1.2em;

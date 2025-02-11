@@ -152,6 +152,7 @@
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
+        z-index: 999;
       }
   
   .storia-content {
@@ -161,6 +162,7 @@
     height: 100vh;
     padding-right: 20px;
     position: relative; /* per positionare i testi in absolute se vuoi */
+    padding: 10vh 0 !important;
   }
   
   .storia-text {
@@ -219,8 +221,8 @@
   .wall-content {
     position: relative;
     overflow: hidden;
-    /* width: 100%; */
-    /* height: 100%; */
+    width: 100%;
+    height: 100%;
     background-image: url('../../assets/wall.jpg');
     background-size: cover;
     background-position: center;
@@ -250,6 +252,7 @@
     justify-content: center; 
     /* left: 5vw; */
     padding-left: 3vw;
+    padding-right: 3vw;
     font-weight: 100;
     max-width: 42vw;
     font-size: 1.3vw;
@@ -351,6 +354,7 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   background-size: cover;
   overflow: hidden;
   filter: blur(3px);
+  transform: scale(1.1);
   transition: filter 0.5s ease;
 }
 
@@ -387,7 +391,7 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 
 /* Child 1: Marco */
 .accordion-button:nth-child(1) {
-  background-image: url('../../assets/marco.jpg');
+  background-image: url('../../assets/marco-button.jpg');
   background-position: 70%;
 }
 
@@ -395,14 +399,14 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 .accordion-button:nth-child(2) {
   /* Qui utilizziamo lo shorthand background per comodità,
      ma l'effetto è lo stesso */
-  background: url('../../assets/alessio.jpg');
+  background: url('../../assets/alessio-button.jpg');
   background-size: cover;
   background-position: 70%;
 }
 
 /* Child 3: Giorgia */
 .accordion-button:nth-child(3) {
-  background-image: url('../../assets/giorgia.jpg');
+  background-image: url('../../assets/giorgia-button.jpg');
   background-position: 75%;
 }
 
@@ -437,6 +441,10 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
     height: 100%;
     background-color: var(--background-color);
     /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
+}
+
+button {
+    border: 0;
 }
 
 
