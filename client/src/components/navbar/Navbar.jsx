@@ -53,6 +53,7 @@ const Navbar = ({ isDark, setIsDark, openAboutUs }) => {
   <a href="#" onClick={e => {
     e.preventDefault();
     openAboutUs();
+    setIsMenuOpen(false); // Chiude il menu
   }}>ABOUT US</a>
 </li>
           <li>

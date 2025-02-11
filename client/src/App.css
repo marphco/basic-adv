@@ -114,4 +114,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   .navbar {
     padding: 10px 20px;
   }
+
+  .aboutus-overlay {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .aboutus-overlay-close {
+    top: 55px;
+    right: 36px;
+}
 }

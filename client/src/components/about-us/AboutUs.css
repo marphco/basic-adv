@@ -455,9 +455,10 @@ button {
 
 @media screen and (max-width: 768px) {
     .aboutus-section {
-        width: 300vw; /* 100vw slider + 200vw storia */
-        flex-direction: row; /* Mantieni la direzione orizzontale */
-    }
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+      }
 
     .aboutus-title {
         font-size: 2rem;

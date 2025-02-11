@@ -28,8 +28,8 @@ export default function AboutUs({ overlayRef, isOpen }) {
     const aboutSection = aboutRef.current;
     const imagesContainer = imagesRef.current;
     const wallContent = aboutSection.querySelector(".wall-content");
-    gsap.set(aboutSection, { clearProps: "all", x: 0 });
-    gsap.set(imagesContainer, { clearProps: "all", x: 0 });
+    gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
+    gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
     if (wallContent) {
       gsap.set(wallContent, { clearProps: "all" });
     }
@@ -41,14 +41,24 @@ export default function AboutUs({ overlayRef, isOpen }) {
     }
     const tl = gsap.timeline({ paused: true });
     tlRef.current = tl;
-    totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
+    const isMobile = window.innerWidth <= 768;
+    // Calcola il "totale scrollabile": per mobile useremo scrollHeight
+    if (isMobile) {
+      totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+    } else {
+      totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
+    }
     function buildTimeline() {
       tl.clear();
-      tl.to(
-        imagesContainer,
-        { x: -container.clientWidth, ease: "none", duration: 1 },
-        0
-      );
+      // L'animazione del contenuto (ad esempio, spostamento di immaginiContainer) potrebbe non avere senso in verticale
+      // Se vuoi mantenere lo stesso effetto solo su desktop, lo lasciamo invariato
+      if (!isMobile) {
+        tl.to(
+          imagesContainer,
+          { x: -container.clientWidth, ease: "none", duration: 1 },
+          0
+        );
+      }
       if (wallContent) {
         tl.to(
           wallContent,
@@ -65,29 +75,48 @@ export default function AboutUs({ overlayRef, isOpen }) {
       }
     }
     buildTimeline();
-    container.scrollLeft = 0;
+    if (isMobile) {
+      container.scrollTop = 0;
+    } else {
+      container.scrollLeft = 0;
+    }
     tl.progress(0);
     function onWheel(e) {
       e.preventDefault();
-      container.scrollLeft += e.deltaY;
-      if (container.scrollLeft < 0) container.scrollLeft = 0;
-      if (container.scrollLeft > totalWidthRef.current) {
-        container.scrollLeft = totalWidthRef.current;
+      if (isMobile) {
+        container.scrollTop += e.deltaY;
+        if (container.scrollTop < 0) container.scrollTop = 0;
+        if (container.scrollTop > totalWidthRef.current) {
+          container.scrollTop = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        tl.progress(prog);
+      } else {
+        container.scrollLeft += e.deltaY;
+        if (container.scrollLeft < 0) container.scrollLeft = 0;
+        if (container.scrollLeft > totalWidthRef.current) {
+          container.scrollLeft = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
+        tl.progress(prog);
       }
-      const prog = totalWidthRef.current
-        ? container.scrollLeft / totalWidthRef.current
-        : 0;
-      tl.progress(prog);
     }
     container.addEventListener("wheel", onWheel, { passive: false });
     function handleResize() {
-      const oldProg = totalWidthRef.current
-        ? container.scrollLeft / totalWidthRef.current
-        : 0;
-      totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
-      buildTimeline();
-      container.scrollLeft = totalWidthRef.current * oldProg;
-      tl.progress(oldProg);
+      let oldProg;
+      if (isMobile) {
+        oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+        buildTimeline();
+        container.scrollTop = totalWidthRef.current * oldProg;
+        tl.progress(oldProg);
+      } else {
+        oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
+        totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
+        buildTimeline();
+        container.scrollLeft = totalWidthRef.current * oldProg;
+        tl.progress(oldProg);
+      }
     }
     window.addEventListener("resize", handleResize);
     return () => {
@@ -96,6 +125,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
       tl.kill();
     };
   }, [isOpen, overlayRef]);
+  
 
   /* --- NUOVA SEZIONE PER L'ACCORDION --- */
   const [activeAccordion, setActiveAccordion] = useState("marco");
