@@ -1,355 +1,360 @@
 /* src/components/about-us/AboutUs.css */
 
 .aboutus-section {
-    width: 350vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: row;
-    background-color: rgb(238, 238, 238);
-    transition: background-color 0.5s ease-in-out;
-    font-family: "Inter", Arial, Helvetica, sans-serif;
-  }
+  width: 350vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  background-color: rgb(238, 238, 238);
+  transition: background-color 0.5s ease-in-out;
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+}
 
-  /* slider-section: 100vw per le immagini */
-  .slider-section, .storia {
-    width: 100vw;
-    height: 100vh;
-    flex-shrink: 0;
-  }
+/* slider-section: 100vw per le immagini */
+.slider-section,
+.storia {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
+}
 
-  .marco-content {
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    padding: 10vh 5vw; /* Padding superiore e inferiore */
-    box-sizing: border-box;
-  }
+.marco-content {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  padding: 10vh 5vw; /* Padding superiore e inferiore */
+  box-sizing: border-box;
+}
 
-  .content-inner {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    background-color: var(--background-color);
-    transition: background-color 0.5s ease-in-out;
-  }
-  
-  /* Colonna Sinistra */
-  .team-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Distribuisce testo in alto e "MARCO" in basso */
-    padding: 8vw;
-  }
+.content-inner {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  background-color: var(--background-color);
+  transition: background-color 0.5s ease-in-out;
+}
 
-  .team-text {
-    justify-content: flex-start;
-  }
-  
-  /* Testo in alto */
-  .team-text p {
-    margin: 0;
-    padding: 0;
-    font-weight: 100;
-    font-size: 1.3vw;
-    color: var(--primary-text-color);
-    max-width: 90%;
-    transition: color 0.5s ease-in-out;
-  }
-  
-  /* Scritta MARCO in basso */
-  .team-title {
-    margin-bottom: 0;
-  }
-  
-  .team-title h2 {
-    font-size: 6vw;
-    font-weight: 700;
-    color: #ff3b00; /* Colore arancione come nello screenshot */
-    margin: 0;
-    line-height: .8;
-  }
-  
-  /* Colonna Destra */
-  .team-right {
-    flex: 1;
-    display: flex;
-    align-items: flex-end; /* Allinea la foto in basso */
-    padding-left: 2vw;
-    padding-bottom: 8vw;
-  }
-  
-  /* Foto allineata in basso */
-  .foto-team img {
-    max-height: 45vh; /* Mantieni proporzioni */
-    width: auto;
-    object-fit: cover;
-    margin-bottom: 0; /* Allineamento preciso */
-    border-radius: 1vw;
-  }
+/* Colonna Sinistra */
+.team-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Distribuisce testo in alto e "MARCO" in basso */
+  padding: 8vw;
+}
 
-  .slider-section {
-    position: relative;
-    overflow: visible;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .aboutus-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw;
-  }
-  
-  .aboutus-images {
-    display: flex;
-    margin-left: 2vw;
-    flex-direction: row;
-    gap: 30px;
-    padding: 0 10px;
-    width: max-content; /* per far scorrere tutte le immagini orizzontalmente */
-  }
-  
-  .aboutus-images img {
-    width: 40vh;
-    height: auto;
-    object-fit: cover;
-    flex-shrink: 0;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    display: block;
-  }
-  
-  .aboutus-title-container {
-    margin-top: 20px;
-    text-align: center;
-  }
-  
-  .aboutus-title {
-    font-size: 4rem;
-    font-weight: 700;
-    line-height: 1em;
-    color: var(--primary-text-color);
-    margin: 0;
-    padding: 0;
-    transition: color 0.5s ease-in-out;
-  }
-  
-  .aboutus-subtitle {
-    font-size: 1.2rem !important;
-    font-weight: 100 !important;
-    color: var(--primary-text-color);
-    margin: 0;
-    padding: 0;
-    transition: color 0.5s ease-in-out;
-  }
-  
-  /* SEZIONE STORIA: la seconda "metà" di 100vw, 
+.team-text {
+  justify-content: flex-start;
+}
+
+/* Testo in alto */
+.team-text p {
+  margin: 0;
+  padding: 0;
+  font-weight: 100;
+  font-size: 1.3vw;
+  color: var(--primary-text-color);
+  max-width: 90%;
+  transition: color 0.5s ease-in-out;
+}
+
+/* Scritta MARCO in basso */
+.team-title {
+  margin-bottom: 0;
+}
+
+.team-title h2 {
+  font-size: 6vw;
+  font-weight: 700;
+  color: #ff3b00; /* Colore arancione come nello screenshot */
+  margin: 0;
+  line-height: 0.8;
+}
+
+/* Colonna Destra */
+.team-right {
+  flex: 1;
+  display: flex;
+  align-items: flex-end; /* Allinea la foto in basso */
+  padding-left: 2vw;
+  padding-bottom: 8vw;
+}
+
+/* Foto allineata in basso */
+.foto-team img {
+  max-height: 45vh; /* Mantieni proporzioni */
+  width: auto;
+  object-fit: cover;
+  margin-bottom: 0; /* Allineamento preciso */
+  border-radius: 1vw;
+}
+
+.slider-section {
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aboutus-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.aboutus-images {
+  display: flex;
+  margin-left: 2vw;
+  flex-direction: row;
+  gap: 30px;
+  padding: 0 10px;
+  width: max-content; /* per far scorrere tutte le immagini orizzontalmente */
+}
+
+.aboutus-images img {
+  width: 40vh;
+  height: auto;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  display: block;
+}
+
+.aboutus-title-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.aboutus-title {
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1em;
+  color: var(--primary-text-color);
+  margin: 0;
+  padding: 0;
+  transition: color 0.5s ease-in-out;
+}
+
+.aboutus-subtitle {
+  font-size: 1.2rem !important;
+  font-weight: 100 !important;
+  color: var(--primary-text-color);
+  margin: 0;
+  padding: 0;
+  transition: color 0.5s ease-in-out;
+}
+
+/* SEZIONE STORIA: la seconda "metà" di 100vw, 
      se vuoi tutta la sezione = 200vw totali. */
-     .storia {
-        background-color: var(--background-color);
-        transition: background-color 0.5s ease;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        z-index: 999;
-      }
-  
-  .storia-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    height: 100vh;
-    padding-right: 20px;
-    position: relative; /* per positionare i testi in absolute se vuoi */
-    padding: 10vh 0 !important;
-  }
-  
-  .storia-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    color: var(--primary-text-color);
-    transition: color 0.5s ease;
-    position: relative; /* container per i testi "relative" */
-  }
-  
-  /* Prima erano fixed. Ora li facciamo "relative" 
+.storia {
+  background-color: var(--background-color);
+  transition: background-color 0.5s ease;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 999;
+}
+
+.storia-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100vh;
+  padding-right: 20px;
+  position: relative; /* per positionare i testi in absolute se vuoi */
+  padding: 10vh 0 !important;
+}
+
+.storia-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+  position: relative; /* container per i testi "relative" */
+}
+
+/* Prima erano fixed. Ora li facciamo "relative" 
      (o absolute) in modo che stiano nel flusso orizzontale. */
-  .storia-text h2 {
-    /* position: relative; */
-    top: 7vh;  /* offset dall'alto del container .storia-text */
-    /* left: 5vw; */
-    font-size: 4vw;
-    padding-left: 3vw;
-    margin-bottom: 20px;
-    font-weight: 200;
-    line-height: 1;
-  }
+.storia-text h2 {
+  /* position: relative; */
+  top: 7vh; /* offset dall'alto del container .storia-text */
+  /* left: 5vw; */
+  font-size: 4vw;
+  padding-left: 3vw;
+  margin-bottom: 20px;
+  font-weight: 200;
+  line-height: 1;
+}
 
-  
-  .storia-text p {
-    /* position: relative; */
-    bottom: 7vh; /* cambia se vuoi spostarlo più in basso */
-    /* left: 5vw; */
-    font-weight: 100;
-    padding-left: 3vw;
-    max-width: 40vw;
-    font-size: 1.3vw;
-    color: var(--primary-text-color);
-    transition: color 0.5s ease;
-    margin-top: 20px;
-  }
-  
-  .accent {
-    color: var(--foreground-color);
-    font-weight: 700;
-  }
-  
-  .wall {
-    flex: 1;
-    height: 100vh;
-    max-width: 35vw;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 2vw !important;
-    margin: 0;
-  }
-  
-  .wall-content {
-    position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-    background-image: url('../../assets/wall.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-  
-  .storia-moderna {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding-right: 20px;
-  }
-  
-  .storia-moderna-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    color: var(--primary-text-color);
-    transition: color 0.5s ease;
-    position: relative;
-    transition: color 0.5s ease-in-out;
-  }
-  
-  .storia-moderna-text p {
-    position: relative;
-    display: flex;
-    justify-content: center; 
-    /* left: 5vw; */
-    padding-left: 3vw;
-    padding-right: 3vw;
-    font-weight: 100;
-    max-width: 42vw;
-    font-size: 1.3vw;
-    color: var(--primary-text-color);
-  }
+.storia-text p {
+  /* position: relative; */
+  bottom: 7vh; /* cambia se vuoi spostarlo più in basso */
+  /* left: 5vw; */
+  font-weight: 100;
+  padding-left: 3vw;
+  max-width: 40vw;
+  font-size: 1.3vw;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+  margin-top: 20px;
+}
 
-  .window {
-    /* Nessun padding o margin per assicurare che sia attaccata alla sezione precedente */
-    max-width: 50vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .window-content {
-    width: 100%;
-    height: 100%;
-    background-image: url('../../assets/window.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-position 0.5s ease;
-    z-index: 99;
-  }
+.accent {
+  color: var(--foreground-color);
+  font-weight: 700;
+}
+
+.wall {
+  flex: 1;
+  height: 100vh;
+  max-width: 35vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2vw !important;
+  margin: 0;
+}
+
+.wall-content {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background-image: url("../../assets/wall.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.storia-moderna {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-right: 20px;
+}
+
+.storia-moderna-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+  position: relative;
+  transition: color 0.5s ease-in-out;
+}
+
+.storia-moderna-text p {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  /* left: 5vw; */
+  padding-left: 3vw;
+  padding-right: 3vw;
+  font-weight: 100;
+  max-width: 42vw;
+  font-size: 1.3vw;
+  color: var(--primary-text-color);
+}
+
+.window {
+  /* Nessun padding o margin per assicurare che sia attaccata alla sezione precedente */
+  max-width: 50vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.window-content {
+  width: 100%;
+  height: 100%;
+  background-image: url("../../assets/window.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-position 0.5s ease;
+  z-index: 99;
+}
 
 /* Rimuovere eventuali padding/margin indesiderati */
-.storia, .storia-content, .wall, .wall-content {
-    padding: 0;
-    margin: 0;
+.storia,
+.storia-content,
+.wall,
+.wall-content {
+  padding: 0;
+  margin: 0;
 }
 
 body[data-theme="dark"] .aboutus-section {
-    background-color: black;
-    transition: background-color 0.5s ease;
+  background-color: black;
+  transition: background-color 0.5s ease;
 }
 
-body[data-theme="dark"] .folder-name, 
+body[data-theme="dark"] .folder-name,
 body[data-theme="dark"] .intro-portfolio .intro-mobile {
-    color: white;
-    transition: color 0.5s ease-in-out;
+  color: white;
+  transition: color 0.5s ease-in-out;
 }
 
 /* Le prime 3 sezioni mantengono 100vw */
-.slider-section, .storia, .window {
-    width: 100vw;
-    height: 100vh;
-    flex-shrink: 0;
+.slider-section,
+.storia,
+.window {
+  width: 100vw;
+  height: 100vh;
+  flex-shrink: 0;
 }
 
 /* --- Accordion (Sezione 4) --- */
 .accordion-container {
-    width: 100vw;  /* la quarta colonna */
-    height: 100vh;
-    position: relative;
-    flex-shrink: 0;
+  width: 100vw; /* la quarta colonna */
+  height: 100vh;
+  position: relative;
+  flex-shrink: 0;
 }
 
 /* I pulsanti occupano 30vw a sinistra */
 .accordion-buttons {
-    position: relative;
-    width: 30vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: row;  /* o row se li vuoi affiancati, a seconda del design */
-    /* Se vuoi che i pulsanti siano disposti verticalmente, usa flex-direction: column */
-    /* Se invece li vuoi orizzontali, usa row */
-    /* Adattare in base al design */
-    flex-shrink: 0;
+  position: relative;
+  width: 30vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row; /* o row se li vuoi affiancati, a seconda del design */
+  /* Se vuoi che i pulsanti siano disposti verticalmente, usa flex-direction: column */
+  /* Se invece li vuoi orizzontali, usa row */
+  /* Adattare in base al design */
+  flex-shrink: 0;
 }
 
 .accordion-button {
-    width: 10vw;  /* occuperà tutta la larghezza dei pulsanti, ossia 30vw */
-    height: 100vh;  /* se ne hai 3 e li vuoi equamente distribuiti */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    background-color: var(--foreground-color);
-    transition: background-color 0.3s ease;
-    z-index: 9999;
+  width: 10vw; /* occuperà tutta la larghezza dei pulsanti, ossia 30vw */
+  height: 100vh; /* se ne hai 3 e li vuoi equamente distribuiti */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: var(--foreground-color);
+  transition: background-color 0.3s ease;
+  z-index: 9999;
 }
 
 .accordion-button.active {
-    filter: blur(0) !important;
-  }
-  
-  .accordion-button.active::before {
-    background-color: rgba(0, 0, 0, 0) !important;
-  }
+  filter: blur(0) !important;
+}
+
+.accordion-button.active::before {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
 
 /* Regole comuni per tutti e tre i pulsanti */
 .accordion-button:nth-child(1),
@@ -396,7 +401,7 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 
 /* Child 1: Marco */
 .accordion-button:nth-child(1) {
-  background-image: url('../../assets/marco-button.jpg');
+  background-image: url("../../assets/marco-button.jpg");
   background-position: 70%;
 }
 
@@ -404,94 +409,118 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
 .accordion-button:nth-child(2) {
   /* Qui utilizziamo lo shorthand background per comodità,
      ma l'effetto è lo stesso */
-  background: url('../../assets/alessio-button.jpg');
+  background: url("../../assets/alessio-button.jpg");
   background-size: cover;
   background-position: 70%;
 }
 
 /* Child 3: Giorgia */
 .accordion-button:nth-child(3) {
-  background-image: url('../../assets/giorgia-button.jpg');
+  background-image: url("../../assets/giorgia-button.jpg");
   background-position: 75%;
 }
 
 .accordion-button:hover {
-    background-color: var(--background-color);
+  background-color: var(--background-color);
 }
 
 .accordion-button span {
-    transform: rotate(-90deg);
-    font-size: 3.5rem;
-    font-weight: 600;
-    color: var(--primary-text-color);
-    white-space: nowrap;
+  transform: rotate(-90deg);
+  font-size: 3.5rem;
+  font-weight: 600;
+  color: var(--primary-text-color);
+  white-space: nowrap;
 }
 
 /* I pannelli: occuperanno il rimanente 70vw, posizionati assolutamente */
 .accordion-panels {
-    position: absolute;
-    top: 0;
-    left: 30vw;  /* a destra dei pulsanti */
-    width: 70vw;
-    height: 100vh;
-    overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 30vw; /* a destra dei pulsanti */
+  width: 70vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* I pannelli stessi: partono da fuori a destra (xPercent: 100) */
 .accordion-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: var(--background-color);
-    /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--background-color);
+  /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
 }
 
 button {
-    border: 0;
+  border: 0;
 }
 
-
 @media screen and (max-width: 768px) {
-    .aboutus-section {
-        flex-direction: column;
-        width: 100%;
-        height: auto;
-      }
+  .aboutus-overlay {
+    /* Per Firefox */
+    scrollbar-width: none !important;
+    /* Per IE, Edge */
+    -ms-overflow-style: none !important;
+  }
 
-    .aboutus-title {
-        font-size: 2rem;
-        padding: 0 10px;
-    }
+  .aboutus-section {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    overflow-y: auto; /* Scroll verticale per il resto dell'overlay */
+    overflow-x: hidden;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
 
-    .aboutus-images img {
-        width: calc(100vw - 20px); /* Su mobile, ogni immagine occupa la larghezza della viewport meno il padding */
-    }
+  .aboutus-section::-webkit-scrollbar {
+    display: none !important;
+  }
 
-    .aboutus-images {
-        gap: 10px; /* Riduce il gap su dispositivi mobili */
-        padding: 0 5px;
-    }
+  .aboutus-images {
+    display: flex;
+    overflow-x: auto; /* Abilita lo scroll orizzontale per il carosello */
+    gap: 10px;
+    padding: 0 5px;
+    width: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-    .storia {
-        width: 200vw; /* Mantieni la larghezza orizzontale */
-    }
+  .aboutus-images::-webkit-scrollbar {
+    display: none;
+  }
 
-    .storia-content {
-        flex-direction: column;
-        padding: 20px;
-    }
+  .aboutus-images img {
+    width: 80vw; /* Ogni immagine occupa l'80% della viewport */
+    flex-shrink: 0;
+  }
 
-    .storia-text h2 {
-        font-size: 2rem;
-    }
+  .aboutus-title {
+    font-size: 2rem;
+    padding: 0 10px;
+  }
 
-    .storia-text p {
-        font-size: 1rem;
-    }
+  .storia {
+    width: 200vw; /* Mantieni la larghezza orizzontale */
+  }
 
-    .wall-content {
-        background-position: center; /* Centra l'immagine */
-    }
+  .storia-content {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .storia-text h2 {
+    font-size: 2rem;
+  }
+
+  .storia-text p {
+    font-size: 1rem;
+  }
+
+  .wall-content {
+    background-position: center; /* Centra l'immagine */
+  }
 }

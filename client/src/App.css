@@ -1,5 +1,17 @@
 /* Transizioni globali per background-color e color */
-body, .App, .section, .home-container, .about-us-container, .portfolio-container, .contact-container, .dashboard-container, .navbar, .navbar-menu li a, .home-intro, .title, .box {
+body,
+.App,
+.section,
+.home-container,
+.about-us-container,
+.portfolio-container,
+.contact-container,
+.dashboard-container,
+.navbar,
+.navbar-menu li a,
+.home-intro,
+.title,
+.box {
   transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
 }
 
@@ -28,18 +40,18 @@ body, .App, .section, .home-container, .about-us-container, .portfolio-container
 
 /* Pulsante di chiusura, posizionato in alto a destra all'interno della header */
 .aboutus-overlay-close {
-    position: absolute;  /* Relativo a .aboutus-section */
-    top: 52px;
-    right: 72px;
-    font-size: .8rem;
-    background: none;
-    border: none;
-    z-index: 1000;  /* Assicurati che sia sopra il contenuto */
-    cursor: pointer !important;
-    color: var(--primary-text-color);
-    transition: color 0.5s ease-in-out;
-    pointer-events: auto !important; /* Assicurati che i clic vengano ricevuti */
-    z-index: 100000000000000000000000000000000000000000 !important;
+  position: absolute; /* Relativo a .aboutus-section */
+  top: 52px;
+  right: 72px;
+  font-size: 0.8rem;
+  background: none;
+  border: none;
+  z-index: 1000; /* Assicurati che sia sopra il contenuto */
+  cursor: pointer !important;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease-in-out;
+  pointer-events: auto !important; /* Assicurati che i clic vengano ricevuti */
+  z-index: 100000000000000000000000000000000000000000 !important;
 }
 
 .site-frozen .aboutus-overlay {
@@ -47,7 +59,9 @@ body, .App, .section, .home-container, .about-us-container, .portfolio-container
 }
 
 /* Altri stili globali */
-body, html, #root {
+body,
+html,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -56,7 +70,8 @@ body, html, #root {
   overscroll-behavior: none;
 }
 
-html::-webkit-scrollbar, body::-webkit-scrollbar {
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
   display: none;
 }
 
@@ -107,7 +122,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     flex-shrink: 0;
   }
 
-  body, html, #root {
+  body,
+  html,
+  #root {
     cursor: default !important; /* Usa il cursore di default su mobile */
   }
 
@@ -118,10 +135,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   .aboutus-overlay {
     overflow-x: hidden;
     overflow-y: auto;
+    /* Per Firefox */
+    scrollbar-width: none !important;
+    /* Per IE, Edge */
+    -ms-overflow-style: none !important;
+  }
+
+  .aboutus-overlay::-webkit-scrollbar {
+    display: none !important;
   }
 
   .aboutus-overlay-close {
     top: 55px;
     right: 36px;
-}
+  }
 }
