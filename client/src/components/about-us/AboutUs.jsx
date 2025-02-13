@@ -154,7 +154,6 @@ export default function AboutUs({ overlayRef, isOpen }) {
     if (name === "marco") panel = marcoPanelRef.current;
     else if (name === "alessio") panel = alessioPanelRef.current;
     else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    console.log("openPanel:", name, panel);
     if (panel) {
       gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
     }
@@ -165,7 +164,6 @@ export default function AboutUs({ overlayRef, isOpen }) {
     if (name === "marco") panel = marcoPanelRef.current;
     else if (name === "alessio") panel = alessioPanelRef.current;
     else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    console.log("closePanel:", name, panel);
     if (panel) {
       gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
     }
@@ -236,7 +234,8 @@ export default function AboutUs({ overlayRef, isOpen }) {
         <div className="wall">
           <div className="wall-content" />
         </div>
-        <div className="storia-moderna">
+        <div   className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}
+        >
           <div className="storia-moderna-text">
             <p>
               Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
@@ -254,6 +253,18 @@ export default function AboutUs({ overlayRef, isOpen }) {
       {/* === Sezione 3: Window === */}
       <div className="window">
         <div className="window-content" ref={windowSectionRef} />
+
+        <div className="window-text">
+            <p>
+              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l&apos;arte della
+              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+              Siamo professionisti con un pizzico di audacia, pronti a
+              rivoluzionare il mercato con strategie digitali vincenti e design
+              che fanno parlare di sé. Perché per noi, fare la differenza non è
+              solo un lavoro, è uno stile di vita.
+            </p>
+          </div>
       </div>
 
       {/* === Sezione 4: Accordion (la nuova colonna) === */}
