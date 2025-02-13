@@ -450,20 +450,12 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   width: 100%;
   height: 100%;
   background-color: var(--background-color);
-  z-index: 9999;
+  /* Non impostare qui transform: translateX(-100%); lo gestiamo via GSAP */
 }
 
 button {
   border: 0;
 }
-
-.mobile-hidden {
-    display: none;
-  }
-
-  .window-text {
-    display: none;
-  }
 
 @media screen and (max-width: 768px) {
   .aboutus-overlay {
@@ -512,7 +504,7 @@ button {
   }
 
   .storia {
-    width: 103vw; /* Mantieni la larghezza orizzontale */
+    width: 180vw; /* Mantieni la larghezza orizzontale */
     height: 80vh;
   }
 
@@ -536,29 +528,6 @@ button {
     padding-left: 7%;
     max-width: 67vw;
   }
-
-  .window {
-    max-width: 100vw; /* Mantieni la larghezza orizzontale */
-    height: 80vh;
-  }
-
-  .window-content {
-    max-width: 35vw;
-  }
-
-  .window-text {
-    display: block;
-    font-size: 1rem;
-    font-weight: 100;
-    padding-right: 7% ;
-    max-width: 65vw;
-  }
-
-  .window-text p {
-    font-size: 1rem;
-    padding-left: 7%;
-    max-width: 67vw;
-  }
   
   .wall {
     height: 80vh;
@@ -567,61 +536,4 @@ button {
   .wall-content {
     background-position: center; /* Centra l'immagine */
   }
-
-  .accordion-container {
-    width: 100vw;
-    height: 100vh;
-  }
-
-  .accordion-buttons {
-    width: 100vw;
-    height: 20vh;
-    flex-direction: row; /* Assicura la disposizione orizzontale */
-  }
-
-  .accordion-button {
-    width: 100vw; /* Per 3 pulsanti uguali */
-    height: 20vh;
-  }
-
-  .accordion-panels {
-    left: 0;
-    height: 80vh;
-    width: 100vw;
-    margin-top: 20vh;
-  }
-
-  .content-inner {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .team-left {
-    justify-content: flex-end;
-    flex-direction: column-reverse;
-    margin: 0 auto;
-    max-height: 35vh;
-  }
-
-  .team-title h2 {
-    font-size: 3rem;
-  }
-
-  .team-text p {
-    font-size: 1rem;
-    padding-top: 7%;
-  }
-
-  .team-right {
-    justify-content: center;
-    max-height: 45vh;
-    padding-bottom: 4vh;
-  }
-
-  .accordion-button:nth-child(1),
-.accordion-button:nth-child(2),
-.accordion-button:nth-child(3) {
-  filter: blur(0);
-}
-  
 }
