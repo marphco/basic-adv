@@ -31,15 +31,15 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-      document.body.style.overflow = "hidden"; // Blocca lo scroll del body
+      document.body.style.overflow = "hidden";
 
-      // Su mobile, disabilita lo scroll del body sul container overlay
       if (window.innerWidth <= 768 && overlayRef.current) {
         disableBodyScroll(overlayRef.current);
-        // Aggiungiamo un ulteriore controllo per bloccare lo scroll del sito principale
+        // Blocca lo scroll del sito principale
+        const scrollY = window.scrollY;
         document.body.style.position = 'fixed';
-        document.body.style.top = `-${window.scrollY}px`;
-        document.body.style.width = '100%'; // Evita che il body si allarghi quando diventa fixed
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
       }
 
       // Disabilita gli ScrollTrigger del resto del sito
@@ -56,7 +56,6 @@ export function AboutUsPortal({ isOpen, onClose }) {
           { x: "-100%" },
           { x: "0", duration: 0.5, ease: "power3.out" }
         );
-        // Resetta lo scroll dell'overlay su mobile
         if (window.innerWidth <= 768) {
           overlayRef.current.scrollTop = 0;
         } else {
@@ -65,16 +64,15 @@ export function AboutUsPortal({ isOpen, onClose }) {
       }
     } else {
       window.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = ""; // Riabilita lo scroll del body
+      document.body.style.overflow = "";
 
-      // Su mobile, riabilita lo scroll del body
       if (window.innerWidth <= 768 && overlayRef.current) {
         enableBodyScroll(overlayRef.current);
-        // Rimuoviamo il blocco dello scroll del sito principale
+        // Ripristina lo scroll del sito principale
         const scrollY = document.body.style.top;
         document.body.style.position = '';
         document.body.style.top = '';
-        document.body.style.width = ''; // Ripristina la larghezza del body
+        document.body.style.width = '';
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       }
 
@@ -85,6 +83,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
         }
       });
     }
+
     return () => {
       window.removeEventListener("keydown", handleEsc);
       if (window.innerWidth <= 768 && overlayRef.current) {
@@ -95,6 +94,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
   }, [isOpen, onClose]);
 
   const handleClose = () => {
+    console.log("handleClose triggered");
     if (overlayRef.current) {
       gsap.to(overlayRef.current, {
         x: "-100%",
