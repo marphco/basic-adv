@@ -95,7 +95,6 @@ export function AboutUsPortal({ isOpen, onClose }) {
   }, [isOpen, onClose]);
 
   const handleClose = () => {
-    console.log("handleClose triggered");
     if (overlayRef.current) {
       gsap.to(overlayRef.current, {
         x: "-100%",
