@@ -36,7 +36,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
     if (windowSectionRef.current) {
       gsap.set(windowSectionRef.current, {
         clearProps: "all",
-        backgroundPosition: "50% center",
+        // backgroundPosition: "50% center",
       });
     }
     const tl = gsap.timeline({ paused: true });
@@ -69,7 +69,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
       if (windowSectionRef.current) {
         tl.to(
           windowSectionRef.current,
-          { backgroundPosition: "90% center", ease: "none", duration: 1 },
+          { backgroundPosition: "100% 50%", ease: "none", duration: 1 },
           1
         );
       }

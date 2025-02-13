@@ -1,7 +1,7 @@
 /* src/components/about-us/AboutUs.css */
 
 .aboutus-section {
-  width: 350vw;
+  width: 335vw;
   height: 100vh;
   display: flex;
   flex-direction: row;
@@ -40,7 +40,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* Distribuisce testo in alto e "MARCO" in basso */
-  padding: 8vw;
+  padding: 12vw 8vw;
 }
 
 .team-text {
@@ -77,7 +77,7 @@
   display: flex;
   align-items: flex-end; /* Allinea la foto in basso */
   padding-left: 2vw;
-  padding-bottom: 8vw;
+  padding-bottom: 12vw;
 }
 
 /* Foto allineata in basso */
@@ -266,7 +266,7 @@
 
 .window {
   /* Nessun padding o margin per assicurare che sia attaccata alla sezione precedente */
-  max-width: 50vw;
+  max-width: 35vw;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -282,7 +282,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  transition: background-position 0.5s ease;
+  /* transition: background-position 0.5s ease; */
   z-index: 99;
 }
 
@@ -504,7 +504,8 @@ button {
   }
 
   .storia {
-    width: 200vw; /* Mantieni la larghezza orizzontale */
+    width: 180vw; /* Mantieni la larghezza orizzontale */
+    height: 80vh;
   }
 
   .storia-content {
@@ -512,12 +513,24 @@ button {
     padding: 20px;
   }
 
+  .storia-text {
+    justify-content: flex-start;
+  }
+
   .storia-text h2 {
-    font-size: 2rem;
+    padding-top: 8vh;
+    font-size: 2.9rem;
+    padding-left: 7%;
   }
 
   .storia-text p {
     font-size: 1rem;
+    padding-left: 7%;
+    max-width: 67vw;
+  }
+  
+  .wall {
+    height: 80vh;
   }
 
   .wall-content {
