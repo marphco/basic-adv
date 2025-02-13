@@ -11,6 +11,8 @@ gsap.registerPlugin(ScrollTrigger);
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
+  // Usato per salvare la posizione dello scroll del body (mobile)
+  const scrollYRef = useRef(0);
 
   useEffect(() => {
     portalRef.current = document.createElement("div");

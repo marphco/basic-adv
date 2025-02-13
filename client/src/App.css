@@ -21,11 +21,10 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto; /* Se hai contenuto più grande dell'area */
   background-color: #fff;
   z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
-  overflow-x: auto; /* permette lo scroll orizzontale nativo */
-  overflow-y: hidden; /* se vuoi evitare scroll verticale */
+  overflow-x: hidden; /* permette lo scroll orizzontale nativo */
+  overflow-y: auto; /* se vuoi evitare scroll verticale */
 }
 
 /* La header non scrollabile, che rimane attaccata al top dell'overlay */
@@ -138,13 +137,13 @@ body::-webkit-scrollbar {
     left: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    overflow-x: hidden;
     overflow-y: auto;
     /* Per Firefox */
     scrollbar-width: none !important;
     /* Per IE, Edge */
     -ms-overflow-style: none !important;
+    overflow-x: hidden;
+    z-index: 99999999;
   }
 
   .aboutus-overlay::-webkit-scrollbar {
@@ -153,6 +152,6 @@ body::-webkit-scrollbar {
 
   .aboutus-overlay-close {
     top: 55px;
-    right: 36px;
+    right: 34px;
   }
 }
