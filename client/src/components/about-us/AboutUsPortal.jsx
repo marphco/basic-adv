@@ -1,9 +1,9 @@
+// src/components/about-us/AboutUsPortal.jsx
 import { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
-import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from "body-scroll-lock";
 import AboutUs from "./AboutUs";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,6 +11,8 @@ gsap.registerPlugin(ScrollTrigger);
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
+  // Usato per salvare la posizione dello scroll del body (mobile)
+  const scrollYRef = useRef(0);
 
   useEffect(() => {
     portalRef.current = document.createElement("div");
@@ -31,32 +33,32 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-      document.body.style.overflow = "hidden";
 
-      if (window.innerWidth <= 768 && overlayRef.current) {
-        disableBodyScroll(overlayRef.current);
-        // Blocca lo scroll del sito principale
-        const scrollY = window.scrollY;
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.width = '100%';
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        // Salva la posizione attuale dello scroll
+        scrollYRef.current = window.scrollY;
+        // Blocca lo scroll del body applicando posizione fixed (senza forzare il reset)
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollYRef.current}px`;
+        document.body.style.width = "100%";
+      } else {
+        document.body.style.overflow = "hidden";
       }
 
-      // Disabilita gli ScrollTrigger del resto del sito
+      // Disabilita gli ScrollTrigger del sito sottostante
       ScrollTrigger.getAll().forEach((st) => {
-        if (!st.vars.scroller) {
-          st.disable();
-        }
+        if (!st.vars.scroller) st.disable();
       });
 
-      // Animazione entrata overlay
+      // Animazione di apertura dell'overlay
       if (overlayRef.current) {
         gsap.fromTo(
           overlayRef.current,
           { x: "-100%" },
           { x: "0", duration: 0.5, ease: "power3.out" }
         );
-        if (window.innerWidth <= 768) {
+        if (isMobile) {
           overlayRef.current.scrollTop = 0;
         } else {
           overlayRef.current.scrollLeft = 0;
@@ -64,37 +66,29 @@ export function AboutUsPortal({ isOpen, onClose }) {
       }
     } else {
       window.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = "";
-
-      if (window.innerWidth <= 768 && overlayRef.current) {
-        enableBodyScroll(overlayRef.current);
-        // Ripristina lo scroll del sito principale
-        const scrollY = document.body.style.top;
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        // Ripristina le proprietà del body e torna alla posizione salvata
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+        window.scrollTo(0, scrollYRef.current);
+      } else {
+        document.body.style.overflow = "";
       }
-
-      // Riabilita gli ScrollTrigger del resto del sito
+      // Riabilita gli ScrollTrigger
       ScrollTrigger.getAll().forEach((st) => {
-        if (!st.vars.scroller) {
-          st.enable();
-        }
+        if (!st.vars.scroller) st.enable();
       });
+      ScrollTrigger.refresh(true);
     }
 
     return () => {
       window.removeEventListener("keydown", handleEsc);
-      if (window.innerWidth <= 768 && overlayRef.current) {
-        enableBodyScroll(overlayRef.current);
-      }
-      clearAllBodyScrollLocks();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   const handleClose = () => {
-    console.log("handleClose triggered");
     if (overlayRef.current) {
       gsap.to(overlayRef.current, {
         x: "-100%",
@@ -107,8 +101,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
     }
   };
 
-  if (!isOpen) return null;
-  if (!portalRef.current) return null;
+  if (!isOpen || !portalRef.current) return null;
 
   return ReactDOM.createPortal(
     <div className="aboutus-overlay" ref={overlayRef}>
@@ -121,7 +114,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
           [CHIUDI]
         </button>
       </div>
-      {/* Il contenuto scrollabile */}
+      {/* Contenuto scrollabile dell'overlay */}
       <AboutUs overlayRef={overlayRef} isOpen={isOpen} />
     </div>,
     portalRef.current
