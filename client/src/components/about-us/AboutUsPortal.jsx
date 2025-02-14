@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
+import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from "body-scroll-lock";
 import AboutUs from "./AboutUs";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,80 +12,63 @@ gsap.registerPlugin(ScrollTrigger);
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
-  const scrollYRef = useRef(0);
 
+  // Crea il container del portal
   useEffect(() => {
     portalRef.current = document.createElement("div");
     document.body.appendChild(portalRef.current);
     return () => {
+      clearAllBodyScrollLocks();
       if (portalRef.current) {
         document.body.removeChild(portalRef.current);
       }
     };
   }, []);
 
+  // Blocca lo scroll del background e lascia sbloccato l’overlay
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") {
-        handleClose();
+    if (isOpen && overlayRef.current) {
+      disableBodyScroll(overlayRef.current, { reserveScrollBarGap: true });
+    } else if (overlayRef.current) {
+      enableBodyScroll(overlayRef.current);
+    }
+    return () => {
+      if (overlayRef.current) {
+        enableBodyScroll(overlayRef.current);
       }
     };
+  }, [isOpen]);
 
-    const isMobile = window.innerWidth <= 768;
-
+  // Gestione del tasto Escape per chiudere
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-
-      if (isMobile) {
-        // Salva la posizione attuale dello scroll e blocca il body
-        scrollYRef.current = window.scrollY;
-        document.body.style.overflow = "hidden";
-      }
-
-      // Disabilita gli ScrollTrigger del sito sottostante
-      ScrollTrigger.getAll().forEach((st) => {
-        if (!st.vars.scroller) st.disable();
-      });
-
-      if (overlayRef.current) {
-        if (isMobile) {
-          // Su mobile, rimuovo ogni trasformazione residua
-          gsap.set(overlayRef.current, { clearProps: "transform" });
-        } else {
-          gsap.fromTo(
-            overlayRef.current,
-            { x: "-100%" },
-            { x: "0", duration: 0.5, ease: "power3.out" }
-          );
-        }
-        // Imposta lo scroll iniziale dell'overlay
-        if (isMobile) {
-          overlayRef.current.scrollTop = 0;
-        } else {
-          overlayRef.current.scrollLeft = 0;
-        }
-      }
-    } else {
-      window.removeEventListener("keydown", handleEsc);
-
-      if (isMobile) {
-        // Ripristina lo scroll del body
-        document.body.style.overflow = "";
-        window.scrollTo(0, scrollYRef.current);
-      } else {
-        document.body.style.overflow = "";
-      }
-
-      // Riabilita gli ScrollTrigger
-      ScrollTrigger.getAll().forEach((st) => {
-        if (!st.vars.scroller) st.enable();
-      });
-      ScrollTrigger.refresh(true);
     }
-
     return () => {
       window.removeEventListener("keydown", handleEsc);
     };
+  }, [isOpen, onClose]);
+
+  // Gestione dell'animazione di apertura/chiusura
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isOpen && overlayRef.current) {
+      if (!isMobile) {
+        gsap.fromTo(
+          overlayRef.current,
+          { x: "-100%" },
+          { x: "0", duration: 0.5, ease: "power3.out" }
+        );
+      } else {
+        // Su mobile rimuovo ogni trasformazione residua
+        gsap.set(overlayRef.current, { clearProps: "transform" });
+      }
+      // Assicura che l’overlay parta dallo scroll in alto
+      overlayRef.current.scrollTop = 0;
+    }
   }, [isOpen]);
 
   const handleClose = () => {
@@ -103,7 +87,12 @@ export function AboutUsPortal({ isOpen, onClose }) {
   if (!isOpen || !portalRef.current) return null;
 
   return ReactDOM.createPortal(
-    <div className="aboutus-overlay" ref={overlayRef} tabIndex="-1">
+    <div
+      className="aboutus-overlay"
+      ref={overlayRef}
+      tabIndex="-1"
+      style={{ pointerEvents: "auto" }}
+    >
       <div className="aboutus-overlay-header">
         <button
           type="button"
