@@ -615,12 +615,13 @@ button {
 
   .team-right {
     justify-content: center;
-    max-height: 30vh;
-    padding-bottom: 4vh;
+    align-items: baseline;
+    max-height: 35vh;
+    padding: 4vh 0;
   }
 
   .foto-team img {
-    max-height: 30vh;
+    max-height: 35vh;
   }
 
   .accordion-button:nth-child(1),
