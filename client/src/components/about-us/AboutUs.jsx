@@ -12,7 +12,7 @@ import alessioImage from "../../assets/alessio.jpg";
 import giorgiaImage from "../../assets/giorgia.jpg";
 import "./AboutUs.css";
 
-let velocity = 0;
+// let velocity = 0;
 
 export default function AboutUs({ overlayRef, isOpen }) {
   const aboutRef = useRef(null);
@@ -23,104 +23,95 @@ export default function AboutUs({ overlayRef, isOpen }) {
   const tlRef = useRef(null);
   const totalWidthRef = useRef(0);
 
-  let startY = 0;
-  let isScrolling = false;
+//   let startY = 0;
+//   let isScrolling = false;
 
-  const handleTouchStart = (e) => {
-    startY = e.touches[0].clientY;
-    isScrolling = false;
-  };
+//   const handleTouchStart = (e) => {
+//     startY = e.touches[0].clientY;
+//     isScrolling = false;
+//   };
 
-  let lastMoveY = 0;
-let lastMoveTime = 0;
+//   let lastMoveY = 0;
+// let lastMoveTime = 0;
 
-const handleTouchMove = (e) => {
-  if (window.innerWidth <= 768) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const currentY = touch.clientY;
-    const currentTime = performance.now();
-    const deltaY = startY - currentY;
-    const deltaTime = currentTime - lastMoveTime;
+// const handleTouchMove = (e) => {
+//   if (window.innerWidth <= 768) {
+//     e.preventDefault();
+//     const touch = e.touches[0];
+//     const currentY = touch.clientY;
+//     const currentTime = performance.now();
+//     const deltaY = startY - currentY;
+//     const deltaTime = currentTime - lastMoveTime;
 
-    if (deltaY !== 0) isScrolling = true;
+//     if (deltaY !== 0) isScrolling = true;
 
-    if (deltaTime > 0) {
-      // Calcoliamo la velocità
-      velocity = (currentY - lastMoveY) / deltaTime;
-    }
+//     if (deltaTime > 0) {
+//       // Calcoliamo la velocità
+//       velocity = (currentY - lastMoveY) / deltaTime;
+//     }
 
-    const container = overlayRef.current;
-    container.scrollTop += deltaY;
-    if (container.scrollTop < 0) container.scrollTop = 0;
-    if (container.scrollTop > totalWidthRef.current) {
-      container.scrollTop = totalWidthRef.current;
-    }
-    const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-    tlRef.current.progress(prog);
-    startY = currentY;
-    lastMoveY = currentY;
-    lastMoveTime = currentTime;
-  }
-};
+//     const container = overlayRef.current;
+//     container.scrollTop += deltaY;
+//     if (container.scrollTop < 0) container.scrollTop = 0;
+//     if (container.scrollTop > totalWidthRef.current) {
+//       container.scrollTop = totalWidthRef.current;
+//     }
+//     const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+//     tlRef.current.progress(prog);
+//     startY = currentY;
+//     lastMoveY = currentY;
+//     lastMoveTime = currentTime;
+//   }
+// };
 
-  let lastScrollTop = 0;
-let lastTimestamp = 0;
+//   let lastScrollTop = 0;
+// let lastTimestamp = 0;
 
-function updateScroll(timestamp) {
-    if (!timestamp) timestamp = 0;
-    const elapsed = timestamp - lastTimestamp;
-    if (elapsed > 0) {
-      // Applichiamo la decelerazione
-      velocity *= 0.95; // Decelerazione più lenta per un effetto più naturale
-  
-      // Calcoliamo lo scroll basato sulla velocità
-      let scrollDelta = velocity * elapsed;
-      const container = overlayRef.current;
-  
-      // Aggiorniamo lo scrollTop
-      container.scrollTop += scrollDelta;
-  
-      // Assicuriamoci che lo scroll non vada oltre i limiti
-      if (container.scrollTop < 0) {
-        container.scrollTop = 0;
-        velocity = 0; // Ferma l'inerzia se raggiungiamo il limite superiore
-      }
-      if (container.scrollTop > totalWidthRef.current) {
-        container.scrollTop = totalWidthRef.current;
-        velocity = 0; // Ferma l'inerzia se raggiungiamo il limite inferiore
-      }
-  
-      const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-      tlRef.current.progress(prog);
-  
-      // Continuiamo l'aggiornamento se la velocità è ancora significativa
-      if (Math.abs(velocity) > 0.05) {
-        lastTimestamp = timestamp;
-        requestAnimationFrame(updateScroll);
-      }
-    }
-  }
+// function updateScroll(timestamp) {
+//   if (!timestamp) timestamp = 0;
+//   const elapsed = timestamp - lastTimestamp;
+//   if (elapsed > 0) {
+//     // Calcoliamo la velocità basata sul cambiamento di scrollTop
+//     velocity = (overlayRef.current.scrollTop - lastScrollTop) / elapsed;
+//     velocity *= 0.9; // Decelerazione
 
-  const handleTouchEnd = (e) => {
-    if (!isScrolling) {
-      // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
-    } else {
-      lastScrollTop = overlayRef.current.scrollTop;
-      lastTimestamp = performance.now();
-      requestAnimationFrame(updateScroll);
-    }
-    isScrolling = false;
-  };
+//     lastScrollTop = overlayRef.current.scrollTop;
+//     lastTimestamp = timestamp;
+
+//     // Applichiamo l'inerzia
+//     if (Math.abs(velocity) > 0.1) {
+//       overlayRef.current.scrollTop += velocity * elapsed;
+//       // Assicuriamoci che lo scroll non vada oltre i limiti
+//       if (overlayRef.current.scrollTop < 0) overlayRef.current.scrollTop = 0;
+//       if (overlayRef.current.scrollTop > totalWidthRef.current) overlayRef.current.scrollTop = totalWidthRef.current;
+//       const prog = totalWidthRef.current ? overlayRef.current.scrollTop / totalWidthRef.current : 0;
+//       tlRef.current.progress(prog);
+//       requestAnimationFrame(updateScroll);
+//     }
+//   }
+// }
+
+// const handleTouchEnd = (e) => {
+//   if (!isScrolling) {
+//     // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
+//   } else {
+//     lastScrollTop = overlayRef.current.scrollTop;
+//     lastTimestamp = performance.now();
+//     requestAnimationFrame(updateScroll);
+//   }
+//   isScrolling = false;
+// };
 
   
 
-  useEffect(() => {
+useEffect(() => {
     if (!isOpen || !overlayRef.current) return;
     const container = overlayRef.current;
     const aboutSection = aboutRef.current;
     const imagesContainer = imagesRef.current;
     const wallContent = aboutSection.querySelector(".wall-content");
+  
+    // Setup iniziale con GSAP
     gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
     gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
     if (wallContent) {
@@ -132,19 +123,20 @@ function updateScroll(timestamp) {
         // backgroundPosition: "50% center",
       });
     }
+  
     const tl = gsap.timeline({ paused: true });
     tlRef.current = tl;
     const isMobile = window.innerWidth <= 768;
-    // Calcola il "totale scrollabile": per mobile useremo scrollHeight
+  
+    // Calcola il "totale scrollabile"
     if (isMobile) {
       totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
     } else {
       totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
     }
+  
     function buildTimeline() {
       tl.clear();
-      // L'animazione del contenuto (ad esempio, spostamento di immaginiContainer) potrebbe non avere senso in verticale
-      // Se vuoi mantenere lo stesso effetto solo su desktop, lo lasciamo invariato
       if (!isMobile) {
         tl.to(
           imagesContainer,
@@ -167,6 +159,7 @@ function updateScroll(timestamp) {
         );
       }
     }
+  
     buildTimeline();
     if (isMobile) {
       container.scrollTop = 0;
@@ -174,70 +167,64 @@ function updateScroll(timestamp) {
       container.scrollLeft = 0;
     }
     tl.progress(0);
-
+  
     function onWheel(e) {
-      console.log('onWheel event triggered', e.deltaY);
       e.preventDefault();
       if (isMobile) {
         container.scrollTop += e.deltaY;
-        if (container.scrollTop < 0) container.scrollTop = 0;
-        if (container.scrollTop > totalWidthRef.current) {
-          container.scrollTop = totalWidthRef.current;
-        }
-        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-        tl.progress(prog);
       } else {
         container.scrollLeft += e.deltaY;
-        if (container.scrollLeft < 0) container.scrollLeft = 0;
-        if (container.scrollLeft > totalWidthRef.current) {
-          container.scrollLeft = totalWidthRef.current;
-        }
-        const prog = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
-        tl.progress(prog);
       }
-    }
-    if (isOpen) {
-        container.addEventListener("wheel", onWheel, { passive: false });
-        container.addEventListener("touchstart", handleTouchStart, { passive: false });
-        container.addEventListener("touchmove", handleTouchMove, { passive: false });
-        container.addEventListener("touchend", handleTouchEnd, { passive: false });
+      // Assicuriamoci che lo scroll non vada oltre i limiti
+      if (isMobile) {
+        if (container.scrollTop < 0) container.scrollTop = 0;
+        if (container.scrollTop > totalWidthRef.current) container.scrollTop = totalWidthRef.current;
       } else {
-        container.removeEventListener("wheel", onWheel, { passive: false });
-        container.removeEventListener("touchstart", handleTouchStart);
-        container.removeEventListener("touchmove", handleTouchMove);
-        container.removeEventListener("touchend", handleTouchEnd);
+        if (container.scrollLeft < 0) container.scrollLeft = 0;
+        if (container.scrollLeft > totalWidthRef.current) container.scrollLeft = totalWidthRef.current;
       }
+      // Aggiorna la timeline
+      const prog = isMobile ? 
+        (totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0) : 
+        (totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0);
+      tl.progress(prog);
+    }
   
-      function handleResize() {
-        let oldProg;
-        if (isMobile) {
-          console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
+    // Aggiungiamo solo l'event listener per wheel
+    if (isOpen) {
+      container.addEventListener("wheel", onWheel, { passive: false });
+    } else {
+      container.removeEventListener("wheel", onWheel, { passive: false });
+    }
   
-          oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-          totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
-          buildTimeline();
-          container.scrollTop = totalWidthRef.current * oldProg;
-          tl.progress(oldProg);
-        } else {
-          console.log('Desktop scroll width:', aboutSection.scrollWidth, 'Container width:', container.clientWidth);
-  
-          oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
-          totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
-          buildTimeline();
-          container.scrollLeft = totalWidthRef.current * oldProg;
-          tl.progress(oldProg);
-        }
+    // Gestiamo il resize
+    function handleResize() {
+      let oldProg;
+      if (isMobile) {
+        oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+      } else {
+        oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
+        totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
       }
-      window.addEventListener("resize", handleResize);
-      return () => {
-        container.removeEventListener("wheel", onWheel, { passive: false });
-        container.removeEventListener("touchstart", handleTouchStart);
-        container.removeEventListener("touchmove", handleTouchMove);
-        container.removeEventListener("touchend", handleTouchEnd);
-        window.removeEventListener("resize", handleResize);
-        tlRef.current.kill();
-      };
-    }, [isOpen, overlayRef]);
+      buildTimeline();
+      if (isMobile) {
+        container.scrollTop = totalWidthRef.current * oldProg;
+      } else {
+        container.scrollLeft = totalWidthRef.current * oldProg;
+      }
+      tl.progress(oldProg);
+    }
+  
+    window.addEventListener("resize", handleResize);
+  
+    // Cleanup
+    return () => {
+      container.removeEventListener("wheel", onWheel, { passive: false });
+      window.removeEventListener("resize", handleResize);
+      tl.kill();
+    };
+  }, [isOpen, overlayRef]);
     
     /* --- NUOVA SEZIONE PER L'ACCORDION --- */
     const [activeAccordion, setActiveAccordion] = useState("marco");
