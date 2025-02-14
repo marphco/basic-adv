@@ -1,4 +1,3 @@
-// AboutUs.jsx
 import { useRef, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { gsap } from "gsap";
@@ -19,7 +18,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
   const imagesRef = useRef(null);
   const windowSectionRef = useRef(null);
 
-  // Per la timeline (usata solo su desktop)
+  // Riferimenti per la timeline dello scroll orizzontale
   const tlRef = useRef(null);
   const totalWidthRef = useRef(0);
 
@@ -29,42 +28,37 @@ export default function AboutUs({ overlayRef, isOpen }) {
     const aboutSection = aboutRef.current;
     const imagesContainer = imagesRef.current;
     const wallContent = aboutSection.querySelector(".wall-content");
-    const isMobile = window.innerWidth <= 768;
-
-    // Pulizia iniziale: rimuovo eventuali trasformazioni residue
     gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
     gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
     if (wallContent) {
       gsap.set(wallContent, { clearProps: "all" });
     }
     if (windowSectionRef.current) {
-      gsap.set(windowSectionRef.current, { clearProps: "all" });
+      gsap.set(windowSectionRef.current, {
+        clearProps: "all",
+        // backgroundPosition: "50% center",
+      });
     }
-
+    const tl = gsap.timeline({ paused: true });
+    tlRef.current = tl;
+    const isMobile = window.innerWidth <= 768;
+    // Calcola il "totale scrollabile": per mobile useremo scrollHeight
     if (isMobile) {
-      // Su mobile disabilito le animazioni
-      // 1. Per le immagini: imposto x a 0 (nessun movimento)
-      gsap.set(imagesContainer, { x: 0 });
-      // 2. Per il wall (sfondo): imposto una posizione statica
-      if (wallContent) {
-        gsap.set(wallContent, { backgroundPosition: "center" });
-      }
-      // 3. Per la sezione "window": imposto una posizione statica
-      if (windowSectionRef.current) {
-        gsap.set(windowSectionRef.current, { backgroundPosition: "center" });
-      }
-      // Non creo la timeline e non imposto gestori di scroll per l'animazione.
-      return; // Esco dall'useEffect
+      totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
     } else {
-      // Su desktop: creo la timeline per animare le immagini e gli altri elementi
       totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
-      const tl = gsap.timeline({ paused: true });
-      tlRef.current = tl;
-      tl.to(
-        imagesContainer,
-        { x: -container.clientWidth, ease: "none", duration: 1 },
-        0
-      );
+    }
+    function buildTimeline() {
+      tl.clear();
+      // L'animazione del contenuto (ad esempio, spostamento di immaginiContainer) potrebbe non avere senso in verticale
+      // Se vuoi mantenere lo stesso effetto solo su desktop, lo lasciamo invariato
+      if (!isMobile) {
+        tl.to(
+          imagesContainer,
+          { x: -container.clientWidth, ease: "none", duration: 1 },
+          0
+        );
+      }
       if (wallContent) {
         tl.to(
           wallContent,
@@ -79,46 +73,67 @@ export default function AboutUs({ overlayRef, isOpen }) {
           1
         );
       }
-      tl.progress(0);
-
-      // Gestione dello scroll con il mouse (desktop)
-      function onWheel(e) {
-        e.preventDefault();
+    }
+    buildTimeline();
+    if (isMobile) {
+      container.scrollTop = 0;
+    } else {
+      container.scrollLeft = 0;
+    }
+    tl.progress(0);
+    function onWheel(e) {
+      e.preventDefault();
+      if (isMobile) {
+        container.scrollTop += e.deltaY;
+        if (container.scrollTop < 0) container.scrollTop = 0;
+        if (container.scrollTop > totalWidthRef.current) {
+          container.scrollTop = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        tl.progress(prog);
+      } else {
         container.scrollLeft += e.deltaY;
         if (container.scrollLeft < 0) container.scrollLeft = 0;
         if (container.scrollLeft > totalWidthRef.current) {
           container.scrollLeft = totalWidthRef.current;
         }
-        const prog = totalWidthRef.current
-          ? container.scrollLeft / totalWidthRef.current
-          : 0;
+        const prog = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
         tl.progress(prog);
       }
-      container.addEventListener("wheel", onWheel, { passive: false });
-
-      function handleResize() {
-        let oldProg = totalWidthRef.current
-          ? container.scrollLeft / totalWidthRef.current
-          : 0;
+    }
+    container.addEventListener("wheel", onWheel, { passive: false });
+    function handleResize() {
+      let oldProg;
+      if (isMobile) {
+        oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+        buildTimeline();
+        container.scrollTop = totalWidthRef.current * oldProg;
+        tl.progress(oldProg);
+      } else {
+        oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
+        buildTimeline();
+        container.scrollLeft = totalWidthRef.current * oldProg;
         tl.progress(oldProg);
       }
-      window.addEventListener("resize", handleResize);
-
-      return () => {
-        container.removeEventListener("wheel", onWheel);
-        window.removeEventListener("resize", handleResize);
-        tl.kill();
-      };
     }
+    window.addEventListener("resize", handleResize);
+    return () => {
+      container.removeEventListener("wheel", onWheel, { passive: false });
+      window.removeEventListener("resize", handleResize);
+      tl.kill();
+    };
   }, [isOpen, overlayRef]);
+  
 
-  /* --- Sezione Accordion e altro codice rimane invariato --- */
+  /* --- NUOVA SEZIONE PER L'ACCORDION --- */
   const [activeAccordion, setActiveAccordion] = useState("marco");
   const marcoPanelRef = useRef(null);
   const alessioPanelRef = useRef(null);
   const giorgiaPanelRef = useRef(null);
 
+  // Impostiamo lo stato iniziale dei pannelli (chiusi, fuori dalla vista a destra)
   useEffect(() => {
     if (marcoPanelRef.current)
       gsap.set(marcoPanelRef.current, {
@@ -132,7 +147,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
       gsap.set(giorgiaPanelRef.current, {
         xPercent: activeAccordion === "giorgia" ? 0 : 100,
       });
-  }, []); // Impostazione iniziale
+  }, []); // Nota: qui non mettiamo activeAccordion nelle dipendenze perché vogliamo farlo solo al mount
 
   const openPanel = (name) => {
     let panel;
@@ -155,19 +170,22 @@ export default function AboutUs({ overlayRef, isOpen }) {
   };
 
   const toggleAccordion = (name) => {
+    // Se il pannello cliccato è già attivo, non fare nulla
     if (activeAccordion === name) {
       return;
     }
+    // Se esiste già un pannello attivo diverso, lo chiudiamo
     if (activeAccordion) {
       closePanel(activeAccordion);
     }
+    // Apriamo il nuovo pannello e lo segnaliamo come attivo
     openPanel(name);
     setActiveAccordion(name);
   };
 
   return (
     <section className="aboutus-section" ref={aboutRef}>
-      {/* Sezione 1: Slider */}
+      {/* === Sezione 1: Slider === */}
       <div className="slider-section">
         <div className="aboutus-container">
           <div className="aboutus-images" ref={imagesRef}>
@@ -182,14 +200,14 @@ export default function AboutUs({ overlayRef, isOpen }) {
             <h1 className="aboutus-title">
               MAGARI LEGGILA
               <br />
-              UN PO' DI STORIA
+              UN PO&apos; DI STORIA
             </h1>
             <p className="aboutus-subtitle">se fai skip sei senza cuore</p>
           </div>
         </div>
       </div>
 
-      {/* Sezione 2: Storia */}
+      {/* === Sezione 2: Storia === */}
       <div className="storia">
         <div className="storia-content">
           <div className="storia-text">
@@ -204,59 +222,87 @@ export default function AboutUs({ overlayRef, isOpen }) {
             </h2>
             <p>
               Siamo nati e cresciuti tra le macchine da stampa della piccola
-              bottega di nostro padre, Crescenzo...
+              bottega di nostro padre, Crescenzo. Da lui abbiamo ereditato non
+              solo la passione per la comunicazione, ma anche il cuore di chi
+              non si ferma mai davanti a una sfida. Dopo la sua scomparsa,
+              abbiamo deciso di trasformare quella scintilla in un fuoco
+              creativo, portando avanti la sua visione con innovazione e
+              coraggio.
             </p>
           </div>
         </div>
         <div className="wall">
           <div className="wall-content" />
         </div>
-        <div
-          className={`storia-moderna ${
-            window.innerWidth <= 768 ? "mobile-hidden" : ""
-          }`}
+        <div   className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}
         >
           <div className="storia-moderna-text">
             <p>
-              Basic è il punto d&apos;incontro tra tradizione e tecnologia...
+              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l&apos;arte della
+              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+              Siamo professionisti con un pizzico di audacia, pronti a
+              rivoluzionare il mercato con strategie digitali vincenti e design
+              che fanno parlare di sé. Perché per noi, fare la differenza non è
+              solo un lavoro, è uno stile di vita.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Sezione 3: Window */}
+      {/* === Sezione 3: Window === */}
       <div className="window">
         <div className="window-content" ref={windowSectionRef} />
+
         <div className="window-text">
-          <p>
-            Basic è il punto d&apos;incontro tra tradizione e tecnologia...
-          </p>
-        </div>
+            <p>
+              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l&apos;arte della
+              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+              Siamo professionisti con un pizzico di audacia, pronti a
+              rivoluzionare il mercato con strategie digitali vincenti e design
+              che fanno parlare di sé. Perché per noi, fare la differenza non è
+              solo un lavoro, è uno stile di vita.
+            </p>
+          </div>
       </div>
 
-      {/* Sezione 4: Accordion */}
+      {/* === Sezione 4: Accordion (la nuova colonna) === */}
       <div className="accordion-container">
+        {/* I pulsanti occupano i primi 30vw */}
         <div className="accordion-buttons">
           <button
-            className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
-            onClick={() => toggleAccordion("marco")}
-          />
+  className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
+  onClick={() => toggleAccordion("marco")}
+          >
+            {/* <span>MARCO</span> */}
+          </button>
           <button
-            className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
-            onClick={() => toggleAccordion("alessio")}
-          />
+  className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
+  onClick={() => toggleAccordion("alessio")}
+          >
+            {/* <span>ALESSIO</span> */}
+          </button>
           <button
-            className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
-            onClick={() => toggleAccordion("giorgia")}
-          />
+  className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
+  onClick={() => toggleAccordion("giorgia")}
+          >
+            {/* <span>GIORGIA</span> */}
+          </button>
         </div>
+        {/* I pannelli appariranno nella parte destra: occupano 70vw */}
         <div className="accordion-panels">
           <div className="accordion-panel" ref={marcoPanelRef}>
             <div className="content-inner">
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale...
+                    Un innovatore nel campo digitale, con una mente che vede
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
+                    missione di scoperta, dove ogni pixel è un passo verso nuovi
+                    mondi. A New York, trova ispirazione, ma la sua visione è
+                    universale, creando con la precisione di un artigiano del
+                    futuro.
                   </p>
                 </div>
                 <div className="team-title">
@@ -271,11 +317,16 @@ export default function AboutUs({ overlayRef, isOpen }) {
             </div>
           </div>
           <div className="accordion-panel" ref={alessioPanelRef}>
-            <div className="content-inner">
+          <div className="content-inner">
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale...
+                    Un innovatore nel campo digitale, con una mente che vede
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
+                    missione di scoperta, dove ogni pixel è un passo verso nuovi
+                    mondi. A New York, trova ispirazione, ma la sua visione è
+                    universale, creando con la precisione di un artigiano del
+                    futuro.
                   </p>
                 </div>
                 <div className="team-title">
@@ -290,11 +341,16 @@ export default function AboutUs({ overlayRef, isOpen }) {
             </div>
           </div>
           <div className="accordion-panel" ref={giorgiaPanelRef}>
-            <div className="content-inner">
+          <div className="content-inner">
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale...
+                    Un innovatore nel campo digitale, con una mente che vede
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
+                    missione di scoperta, dove ogni pixel è un passo verso nuovi
+                    mondi. A New York, trova ispirazione, ma la sua visione è
+                    universale, creando con la precisione di un artigiano del
+                    futuro.
                   </p>
                 </div>
                 <div className="team-title">

@@ -25,12 +25,8 @@ body,
   z-index: 99999999;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  /* Assicurati che l'overlay possa scrollare indipendentemente */
-  overscroll-behavior: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; /* per uno scrolling fluido su iOS */
+  touch-action: pan-y; /* assicura che lo scroll verticale sia abilitato */
 }
 
 .aboutus-overlay::-webkit-scrollbar {
@@ -151,12 +147,8 @@ body::-webkit-scrollbar {
     z-index: 99999999;
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    /* Assicurati che l'overlay possa scrollare indipendentemente */
-    overscroll-behavior: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch; /* per uno scrolling fluido su iOS */
+    touch-action: pan-y; /* assicura che lo scroll verticale sia abilitato */
   }
 
   .aboutus-overlay::-webkit-scrollbar {

@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from "react";
+// src/components/about-us/AboutUsPortal.jsx
+import { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
-import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from "body-scroll-lock";
 import AboutUs from "./AboutUs";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,12 +11,12 @@ gsap.registerPlugin(ScrollTrigger);
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
+  const scrollYRef = useRef(0);
 
   useEffect(() => {
     portalRef.current = document.createElement("div");
     document.body.appendChild(portalRef.current);
     return () => {
-      clearAllBodyScrollLocks();
       if (portalRef.current) {
         document.body.removeChild(portalRef.current);
       }
@@ -35,9 +35,10 @@ export function AboutUsPortal({ isOpen, onClose }) {
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
 
-      // Blocca lo scroll del background, lasciando sbloccato overlayRef.current
-      if (overlayRef.current) {
-        disableBodyScroll(overlayRef.current);
+      if (isMobile) {
+        // Salva la posizione attuale dello scroll e blocca il body
+        scrollYRef.current = window.scrollY;
+        document.body.style.overflow = "hidden";
       }
 
       // Disabilita gli ScrollTrigger del sito sottostante
@@ -47,10 +48,8 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
       if (overlayRef.current) {
         if (isMobile) {
-          // Su mobile: non usiamo animazioni con trasformazioni
-          gsap.set(overlayRef.current, { x: "0" });
-          // Forza il reflow/accelerazione hardware
-          overlayRef.current.style.webkitTransform = "translate3d(0,0,0)";
+          // Su mobile, rimuovo ogni trasformazione residua
+          gsap.set(overlayRef.current, { clearProps: "transform" });
         } else {
           gsap.fromTo(
             overlayRef.current,
@@ -58,14 +57,25 @@ export function AboutUsPortal({ isOpen, onClose }) {
             { x: "0", duration: 0.5, ease: "power3.out" }
           );
         }
-        // Assicura che lo scroll parta dall'inizio
-        overlayRef.current.scrollTop = 0;
+        // Imposta lo scroll iniziale dell'overlay
+        if (isMobile) {
+          overlayRef.current.scrollTop = 0;
+        } else {
+          overlayRef.current.scrollLeft = 0;
+        }
       }
     } else {
       window.removeEventListener("keydown", handleEsc);
-      if (overlayRef.current) {
-        enableBodyScroll(overlayRef.current);
+
+      if (isMobile) {
+        // Ripristina lo scroll del body
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollYRef.current);
+      } else {
+        document.body.style.overflow = "";
       }
+
+      // Riabilita gli ScrollTrigger
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.enable();
       });
@@ -79,7 +89,6 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
   const handleClose = () => {
     if (overlayRef.current) {
-      // Su desktop possiamo animare la chiusura; su mobile semplicemente chiudiamo
       gsap.to(overlayRef.current, {
         x: "-100%",
         duration: 0.5,
