@@ -22,13 +22,13 @@ body,
   width: 100%;
   height: 100%;
   background-color: #fff;
-  z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
-  overflow-x: hidden !important; /* permette lo scroll orizzontale nativo */
-  overflow-y: auto !important; /* se vuoi evitare scroll verticale */
-  -webkit-overflow-scrolling: touch; /* Per iOS, rende lo scroll più fluido */
-  scrollbar-width: none; /* Nasconde la scrollbar su Firefox */
-  -ms-overflow-style: none; /* Nasconde la scrollbar su IE */
-  touch-action: pan-y;
+  z-index: 99999999; /* Assicurati che sia sopra ogni altro elemento */
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch; /* Per uno scrolling fluido su iOS */
+  touch-action: pan-y; /* Permette lo scroll verticale */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .aboutus-overlay::-webkit-scrollbar {
