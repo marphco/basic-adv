@@ -82,6 +82,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
     }
     tl.progress(0);
     function onWheel(e) {
+        console.log('onWheel event triggered', e.deltaY);
       e.preventDefault();
       if (isMobile) {
         container.scrollTop += e.deltaY;
@@ -105,12 +106,16 @@ export default function AboutUs({ overlayRef, isOpen }) {
     function handleResize() {
       let oldProg;
       if (isMobile) {
+        console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
+
         oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
         buildTimeline();
         container.scrollTop = totalWidthRef.current * oldProg;
         tl.progress(oldProg);
       } else {
+        console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
+
         oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
         buildTimeline();

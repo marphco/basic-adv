@@ -43,7 +43,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
         document.body.style.top = `-${scrollYRef.current}px`;
         document.body.style.width = "100%";
       } else {
-        document.body.style.overflow = "hidden";
+        // document.body.style.overflow = "hidden";
       }
 
       // Disabilita gli ScrollTrigger del sito sottostante
@@ -104,7 +104,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
   if (!isOpen || !portalRef.current) return null;
 
   return ReactDOM.createPortal(
-    <div className="aboutus-overlay" ref={overlayRef}>
+    <div className="aboutus-overlay" ref={overlayRef} tabIndex="-1">
       <div className="aboutus-overlay-header">
         <button
           type="button"
