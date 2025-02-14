@@ -56,7 +56,15 @@ export function AboutUsPortal({ isOpen, onClose }) {
         gsap.fromTo(
           overlayRef.current,
           { x: "-100%" },
-          { x: "0", duration: 0.5, ease: "power3.out" }
+          { 
+            x: "0", 
+            duration: 0.5, 
+            ease: "power3.out",
+            onComplete: () => {
+              // Rimuovo la trasformazione per permettere lo scrolling nativo su mobile
+              gsap.set(overlayRef.current, { clearProps: "transform" });
+            }
+          }
         );
         if (isMobile) {
           overlayRef.current.scrollTop = 0;

@@ -10,9 +10,8 @@ import storica6 from "../../assets/storica6.jpg";
 import marcoImage from "../../assets/marco.jpg"; 
 import alessioImage from "../../assets/alessio.jpg";
 import giorgiaImage from "../../assets/giorgia.jpg";
-import "./AboutUs.css";
 
-// let velocity = 0;
+import "./AboutUs.css";
 
 export default function AboutUs({ overlayRef, isOpen }) {
   const aboutRef = useRef(null);
@@ -23,95 +22,12 @@ export default function AboutUs({ overlayRef, isOpen }) {
   const tlRef = useRef(null);
   const totalWidthRef = useRef(0);
 
-//   let startY = 0;
-//   let isScrolling = false;
-
-//   const handleTouchStart = (e) => {
-//     startY = e.touches[0].clientY;
-//     isScrolling = false;
-//   };
-
-//   let lastMoveY = 0;
-// let lastMoveTime = 0;
-
-// const handleTouchMove = (e) => {
-//   if (window.innerWidth <= 768) {
-//     e.preventDefault();
-//     const touch = e.touches[0];
-//     const currentY = touch.clientY;
-//     const currentTime = performance.now();
-//     const deltaY = startY - currentY;
-//     const deltaTime = currentTime - lastMoveTime;
-
-//     if (deltaY !== 0) isScrolling = true;
-
-//     if (deltaTime > 0) {
-//       // Calcoliamo la velocità
-//       velocity = (currentY - lastMoveY) / deltaTime;
-//     }
-
-//     const container = overlayRef.current;
-//     container.scrollTop += deltaY;
-//     if (container.scrollTop < 0) container.scrollTop = 0;
-//     if (container.scrollTop > totalWidthRef.current) {
-//       container.scrollTop = totalWidthRef.current;
-//     }
-//     const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-//     tlRef.current.progress(prog);
-//     startY = currentY;
-//     lastMoveY = currentY;
-//     lastMoveTime = currentTime;
-//   }
-// };
-
-//   let lastScrollTop = 0;
-// let lastTimestamp = 0;
-
-// function updateScroll(timestamp) {
-//   if (!timestamp) timestamp = 0;
-//   const elapsed = timestamp - lastTimestamp;
-//   if (elapsed > 0) {
-//     // Calcoliamo la velocità basata sul cambiamento di scrollTop
-//     velocity = (overlayRef.current.scrollTop - lastScrollTop) / elapsed;
-//     velocity *= 0.9; // Decelerazione
-
-//     lastScrollTop = overlayRef.current.scrollTop;
-//     lastTimestamp = timestamp;
-
-//     // Applichiamo l'inerzia
-//     if (Math.abs(velocity) > 0.1) {
-//       overlayRef.current.scrollTop += velocity * elapsed;
-//       // Assicuriamoci che lo scroll non vada oltre i limiti
-//       if (overlayRef.current.scrollTop < 0) overlayRef.current.scrollTop = 0;
-//       if (overlayRef.current.scrollTop > totalWidthRef.current) overlayRef.current.scrollTop = totalWidthRef.current;
-//       const prog = totalWidthRef.current ? overlayRef.current.scrollTop / totalWidthRef.current : 0;
-//       tlRef.current.progress(prog);
-//       requestAnimationFrame(updateScroll);
-//     }
-//   }
-// }
-
-// const handleTouchEnd = (e) => {
-//   if (!isScrolling) {
-//     // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
-//   } else {
-//     lastScrollTop = overlayRef.current.scrollTop;
-//     lastTimestamp = performance.now();
-//     requestAnimationFrame(updateScroll);
-//   }
-//   isScrolling = false;
-// };
-
-  
-
-useEffect(() => {
+  useEffect(() => {
     if (!isOpen || !overlayRef.current) return;
     const container = overlayRef.current;
     const aboutSection = aboutRef.current;
     const imagesContainer = imagesRef.current;
     const wallContent = aboutSection.querySelector(".wall-content");
-  
-    // Setup iniziale con GSAP
     gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
     gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
     if (wallContent) {
@@ -123,20 +39,19 @@ useEffect(() => {
         // backgroundPosition: "50% center",
       });
     }
-  
     const tl = gsap.timeline({ paused: true });
     tlRef.current = tl;
     const isMobile = window.innerWidth <= 768;
-  
-    // Calcola il "totale scrollabile"
+    // Calcola il "totale scrollabile": per mobile useremo scrollHeight
     if (isMobile) {
       totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
     } else {
       totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
     }
-  
     function buildTimeline() {
       tl.clear();
+      // L'animazione del contenuto (ad esempio, spostamento di immaginiContainer) potrebbe non avere senso in verticale
+      // Se vuoi mantenere lo stesso effetto solo su desktop, lo lasciamo invariato
       if (!isMobile) {
         tl.to(
           imagesContainer,
@@ -159,7 +74,6 @@ useEffect(() => {
         );
       }
     }
-  
     buildTimeline();
     if (isMobile) {
       container.scrollTop = 0;
@@ -167,122 +81,107 @@ useEffect(() => {
       container.scrollLeft = 0;
     }
     tl.progress(0);
-  
     function onWheel(e) {
       e.preventDefault();
       if (isMobile) {
         container.scrollTop += e.deltaY;
+        if (container.scrollTop < 0) container.scrollTop = 0;
+        if (container.scrollTop > totalWidthRef.current) {
+          container.scrollTop = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        tl.progress(prog);
       } else {
         container.scrollLeft += e.deltaY;
-      }
-      // Assicuriamoci che lo scroll non vada oltre i limiti
-      if (isMobile) {
-        if (container.scrollTop < 0) container.scrollTop = 0;
-        if (container.scrollTop > totalWidthRef.current) container.scrollTop = totalWidthRef.current;
-      } else {
         if (container.scrollLeft < 0) container.scrollLeft = 0;
-        if (container.scrollLeft > totalWidthRef.current) container.scrollLeft = totalWidthRef.current;
+        if (container.scrollLeft > totalWidthRef.current) {
+          container.scrollLeft = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
+        tl.progress(prog);
       }
-      // Aggiorna la timeline
-      const prog = isMobile ? 
-        (totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0) : 
-        (totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0);
-      tl.progress(prog);
     }
-  
-    // Aggiungiamo solo l'event listener per wheel
-    if (isOpen) {
-      container.addEventListener("wheel", onWheel, { passive: false });
-    } else {
-      container.removeEventListener("wheel", onWheel, { passive: false });
-    }
-  
-    // Gestiamo il resize
+    container.addEventListener("wheel", onWheel, { passive: false });
     function handleResize() {
       let oldProg;
       if (isMobile) {
         oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+        buildTimeline();
+        container.scrollTop = totalWidthRef.current * oldProg;
+        tl.progress(oldProg);
       } else {
         oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
-      }
-      buildTimeline();
-      if (isMobile) {
-        container.scrollTop = totalWidthRef.current * oldProg;
-      } else {
+        buildTimeline();
         container.scrollLeft = totalWidthRef.current * oldProg;
+        tl.progress(oldProg);
       }
-      tl.progress(oldProg);
     }
-  
     window.addEventListener("resize", handleResize);
-  
-    // Cleanup
     return () => {
       container.removeEventListener("wheel", onWheel, { passive: false });
       window.removeEventListener("resize", handleResize);
       tl.kill();
     };
   }, [isOpen, overlayRef]);
-    
-    /* --- NUOVA SEZIONE PER L'ACCORDION --- */
-    const [activeAccordion, setActiveAccordion] = useState("marco");
-    const marcoPanelRef = useRef(null);
-    const alessioPanelRef = useRef(null);
-    const giorgiaPanelRef = useRef(null);
   
-    // Impostiamo lo stato iniziale dei pannelli (chiusi, fuori dalla vista a destra)
-    useEffect(() => {
-      if (marcoPanelRef.current)
-        gsap.set(marcoPanelRef.current, {
-          xPercent: activeAccordion === "marco" ? 0 : 100,
-        });
-      if (alessioPanelRef.current)
-        gsap.set(alessioPanelRef.current, {
-          xPercent: activeAccordion === "alessio" ? 0 : 100,
-        });
-      if (giorgiaPanelRef.current)
-        gsap.set(giorgiaPanelRef.current, {
-          xPercent: activeAccordion === "giorgia" ? 0 : 100,
-        });
-    }, []); // Nota: qui non mettiamo activeAccordion nelle dipendenze perché vogliamo farlo solo al mount
-  
-    const openPanel = (name) => {
-      let panel;
-      if (name === "marco") panel = marcoPanelRef.current;
-      else if (name === "alessio") panel = alessioPanelRef.current;
-      else if (name === "giorgia") panel = giorgiaPanelRef.current;
-      console.log("openPanel:", name, panel);
-      if (panel) {
-        gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
-      }
-    };
-  
-    const closePanel = (name) => {
-      let panel;
-      if (name === "marco") panel = marcoPanelRef.current;
-      else if (name === "alessio") panel = alessioPanelRef.current;
-      else if (name === "giorgia") panel = giorgiaPanelRef.current;
-      console.log("closePanel:", name, panel);
-      if (panel) {
-        gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
-      }
-    };
-  
-    const toggleAccordion = (name) => {
-      // Se il pannello cliccato è già attivo, non fare nulla
-      if (activeAccordion === name) {
-        return;
-      }
-      // Se esiste già un pannello attivo diverso, lo chiudiamo
-      if (activeAccordion) {
-        closePanel(activeAccordion);
-      }
-      // Apriamo il nuovo pannello e lo segnaliamo come attivo
-      openPanel(name);
-      setActiveAccordion(name);
-    };
+
+  /* --- NUOVA SEZIONE PER L'ACCORDION --- */
+  const [activeAccordion, setActiveAccordion] = useState("marco");
+  const marcoPanelRef = useRef(null);
+  const alessioPanelRef = useRef(null);
+  const giorgiaPanelRef = useRef(null);
+
+  // Impostiamo lo stato iniziale dei pannelli (chiusi, fuori dalla vista a destra)
+  useEffect(() => {
+    if (marcoPanelRef.current)
+      gsap.set(marcoPanelRef.current, {
+        xPercent: activeAccordion === "marco" ? 0 : 100,
+      });
+    if (alessioPanelRef.current)
+      gsap.set(alessioPanelRef.current, {
+        xPercent: activeAccordion === "alessio" ? 0 : 100,
+      });
+    if (giorgiaPanelRef.current)
+      gsap.set(giorgiaPanelRef.current, {
+        xPercent: activeAccordion === "giorgia" ? 0 : 100,
+      });
+  }, []); // Nota: qui non mettiamo activeAccordion nelle dipendenze perché vogliamo farlo solo al mount
+
+  const openPanel = (name) => {
+    let panel;
+    if (name === "marco") panel = marcoPanelRef.current;
+    else if (name === "alessio") panel = alessioPanelRef.current;
+    else if (name === "giorgia") panel = giorgiaPanelRef.current;
+    if (panel) {
+      gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
+    }
+  };
+
+  const closePanel = (name) => {
+    let panel;
+    if (name === "marco") panel = marcoPanelRef.current;
+    else if (name === "alessio") panel = alessioPanelRef.current;
+    else if (name === "giorgia") panel = giorgiaPanelRef.current;
+    if (panel) {
+      gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
+    }
+  };
+
+  const toggleAccordion = (name) => {
+    // Se il pannello cliccato è già attivo, non fare nulla
+    if (activeAccordion === name) {
+      return;
+    }
+    // Se esiste già un pannello attivo diverso, lo chiudiamo
+    if (activeAccordion) {
+      closePanel(activeAccordion);
+    }
+    // Apriamo il nuovo pannello e lo segnaliamo come attivo
+    openPanel(name);
+    setActiveAccordion(name);
+  };
 
   return (
     <section className="aboutus-section" ref={aboutRef}>
@@ -335,7 +234,8 @@ useEffect(() => {
         <div className="wall">
           <div className="wall-content" />
         </div>
-        <div className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}>
+        <div   className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}
+        >
           <div className="storia-moderna-text">
             <p>
               Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
@@ -355,16 +255,16 @@ useEffect(() => {
         <div className="window-content" ref={windowSectionRef} />
 
         <div className="window-text">
-          <p>
-            Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
-            team, giovane ma con esperienza da vendere, domina l&apos;arte della
-            comunicazione a 360 gradi, dal web alla stampa, fino alle app.
-            Siamo professionisti con un pizzico di audacia, pronti a
-            rivoluzionare il mercato con strategie digitali vincenti e design
-            che fanno parlare di sé. Perché per noi, fare la differenza non è
-            solo un lavoro, è uno stile di vita.
-          </p>
-        </div>
+            <p>
+              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+              team, giovane ma con esperienza da vendere, domina l&apos;arte della
+              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+              Siamo professionisti con un pizzico di audacia, pronti a
+              rivoluzionare il mercato con strategie digitali vincenti e design
+              che fanno parlare di sé. Perché per noi, fare la differenza non è
+              solo un lavoro, è uno stile di vita.
+            </p>
+          </div>
       </div>
 
       {/* === Sezione 4: Accordion (la nuova colonna) === */}
@@ -372,20 +272,20 @@ useEffect(() => {
         {/* I pulsanti occupano i primi 30vw */}
         <div className="accordion-buttons">
           <button
-            className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
-            onClick={() => toggleAccordion("marco")}
+  className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
+  onClick={() => toggleAccordion("marco")}
           >
             {/* <span>MARCO</span> */}
           </button>
           <button
-            className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
-            onClick={() => toggleAccordion("alessio")}
+  className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
+  onClick={() => toggleAccordion("alessio")}
           >
             {/* <span>ALESSIO</span> */}
           </button>
           <button
-            className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
-            onClick={() => toggleAccordion("giorgia")}
+  className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
+  onClick={() => toggleAccordion("giorgia")}
           >
             {/* <span>GIORGIA</span> */}
           </button>
