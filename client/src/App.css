@@ -23,8 +23,8 @@ body,
   height: 100%;
   background-color: #fff;
   z-index: 99999999; /* Spara alto per superare eventuali z-index di GSAP. */
-  overflow-x: hidden; /* permette lo scroll orizzontale nativo */
-  overflow-y: auto; /* se vuoi evitare scroll verticale */
+  overflow-x: hidden !important; /* permette lo scroll orizzontale nativo */
+  overflow-y: auto !important; /* se vuoi evitare scroll verticale */
 }
 
 /* La header non scrollabile, che rimane attaccata al top dell'overlay */

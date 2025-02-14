@@ -105,17 +105,22 @@ export default function AboutUs({ overlayRef, isOpen }) {
     }
 
     function handleTouchMove(e) {
-      if (window.innerWidth <= 768) {
-        const deltaY = e.touches[0].clientY - e.changedTouches[0].clientY;
-        container.scrollTop += deltaY;
-        if (container.scrollTop < 0) container.scrollTop = 0;
-        if (container.scrollTop > totalWidthRef.current) {
-          container.scrollTop = totalWidthRef.current;
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const startY = touch.clientY;
+          const endY = e.changedTouches[0].clientY;
+          const deltaY = startY - endY; // Invertiamo il calcolo per avere un comportamento naturale dello scroll
+          const container = overlayRef.current;
+          container.scrollTop += deltaY;
+          if (container.scrollTop < 0) container.scrollTop = 0;
+          if (container.scrollTop > totalWidthRef.current) {
+            container.scrollTop = totalWidthRef.current;
+          }
+          const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+          tlRef.current.progress(prog);
         }
-        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-        tl.progress(prog);
       }
-    }
 
     container.addEventListener("wheel", onWheel, { passive: false });
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
