@@ -466,18 +466,14 @@ button {
   }
 
 @media screen and (max-width: 768px) {
-  .aboutus-overlay {
-    /* Per Firefox */
-    scrollbar-width: none !important;
-    /* Per IE, Edge */
-    -ms-overflow-style: none !important;
-  }
+  
 
   .aboutus-section {
     flex-direction: column;
     width: 100%;
     height: auto;
-    overflow-y: auto; /* Scroll verticale per il resto dell'overlay */
+    min-height: 100vh; /* Assicura che la sezione occupi almeno l'altezza della viewport */
+    overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
