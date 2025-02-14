@@ -10,8 +10,9 @@ import storica6 from "../../assets/storica6.jpg";
 import marcoImage from "../../assets/marco.jpg"; 
 import alessioImage from "../../assets/alessio.jpg";
 import giorgiaImage from "../../assets/giorgia.jpg";
-
 import "./AboutUs.css";
+
+let velocity = 0;
 
 export default function AboutUs({ overlayRef, isOpen }) {
   const aboutRef = useRef(null);
@@ -48,11 +49,45 @@ export default function AboutUs({ overlayRef, isOpen }) {
     }
   };
 
-  const handleTouchEnd = () => {
-    if (!isScrolling) {
-      // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
+  let lastScrollTop = 0;
+let lastTimestamp = 0;
+
+function updateScroll(timestamp) {
+  if (!timestamp) timestamp = 0;
+  const elapsed = timestamp - lastTimestamp;
+  if (elapsed > 0) {
+    // Calcoliamo la velocità basata sul cambiamento di scrollTop
+    velocity = (overlayRef.current.scrollTop - lastScrollTop) / elapsed;
+    velocity *= 0.9; // Decelerazione
+
+    lastScrollTop = overlayRef.current.scrollTop;
+    lastTimestamp = timestamp;
+
+    // Applichiamo l'inerzia
+    if (Math.abs(velocity) > 0.1) {
+      overlayRef.current.scrollTop += velocity * elapsed;
+      // Assicuriamoci che lo scroll non vada oltre i limiti
+      if (overlayRef.current.scrollTop < 0) overlayRef.current.scrollTop = 0;
+      if (overlayRef.current.scrollTop > totalWidthRef.current) overlayRef.current.scrollTop = totalWidthRef.current;
+      const prog = totalWidthRef.current ? overlayRef.current.scrollTop / totalWidthRef.current : 0;
+      tlRef.current.progress(prog);
+      requestAnimationFrame(updateScroll);
     }
-  };
+  }
+}
+
+const handleTouchEnd = (e) => {
+  if (!isScrolling) {
+    // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
+  } else {
+    lastScrollTop = overlayRef.current.scrollTop;
+    lastTimestamp = performance.now();
+    requestAnimationFrame(updateScroll);
+  }
+  isScrolling = false;
+};
+
+  
 
   useEffect(() => {
     if (!isOpen || !overlayRef.current) return;

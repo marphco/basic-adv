@@ -558,6 +558,7 @@ button {
     font-size: .9rem;
     padding-left: 7%;
     max-width: 67vw;
+    color: var(--primary-text-color);
   }
   
   .wall {
@@ -614,12 +615,12 @@ button {
 
   .team-right {
     justify-content: center;
-    max-height: 35vh;
+    max-height: 30vh;
     padding-bottom: 4vh;
   }
 
   .foto-team {
-    max-height: 35vh;
+    max-height: 30vh;
   }
 
   .accordion-button:nth-child(1),
