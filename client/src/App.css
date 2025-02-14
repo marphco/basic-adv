@@ -28,6 +28,7 @@ body,
   -webkit-overflow-scrolling: touch; /* scroll fluido su iOS */
   touch-action: pan-y;
   pointer-events: auto;
+  overscroll-behavior: auto !important;
 }
 
 .aboutus-overlay::-webkit-scrollbar {
@@ -151,6 +152,7 @@ body::-webkit-scrollbar {
     -webkit-overflow-scrolling: touch; /* scroll fluido su iOS */
     touch-action: pan-y;
     pointer-events: auto;
+    overscroll-behavior: auto !important;
   }
 
   .aboutus-overlay::-webkit-scrollbar {
