@@ -31,61 +31,87 @@ export default function AboutUs({ overlayRef, isOpen }) {
     isScrolling = false;
   };
 
-  const handleTouchMove = (e) => {
-    if (window.innerWidth <= 768) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const deltaY = startY - touch.clientY;
-      if (deltaY !== 0) isScrolling = true;
-      const container = overlayRef.current;
-      container.scrollTop += deltaY;
-      if (container.scrollTop < 0) container.scrollTop = 0;
-      if (container.scrollTop > totalWidthRef.current) {
-        container.scrollTop = totalWidthRef.current;
-      }
-      const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-      tlRef.current.progress(prog);
-      startY = touch.clientY;
+  let lastMoveY = 0;
+let lastMoveTime = 0;
+
+const handleTouchMove = (e) => {
+  if (window.innerWidth <= 768) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const currentY = touch.clientY;
+    const currentTime = performance.now();
+    const deltaY = startY - currentY;
+    const deltaTime = currentTime - lastMoveTime;
+
+    if (deltaY !== 0) isScrolling = true;
+
+    if (deltaTime > 0) {
+      // Calcoliamo la velocità
+      velocity = (currentY - lastMoveY) / deltaTime;
     }
-  };
+
+    const container = overlayRef.current;
+    container.scrollTop += deltaY;
+    if (container.scrollTop < 0) container.scrollTop = 0;
+    if (container.scrollTop > totalWidthRef.current) {
+      container.scrollTop = totalWidthRef.current;
+    }
+    const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+    tlRef.current.progress(prog);
+    startY = currentY;
+    lastMoveY = currentY;
+    lastMoveTime = currentTime;
+  }
+};
 
   let lastScrollTop = 0;
 let lastTimestamp = 0;
 
 function updateScroll(timestamp) {
-  if (!timestamp) timestamp = 0;
-  const elapsed = timestamp - lastTimestamp;
-  if (elapsed > 0) {
-    // Calcoliamo la velocità basata sul cambiamento di scrollTop
-    velocity = (overlayRef.current.scrollTop - lastScrollTop) / elapsed;
-    velocity *= 0.9; // Decelerazione
-
-    lastScrollTop = overlayRef.current.scrollTop;
-    lastTimestamp = timestamp;
-
-    // Applichiamo l'inerzia
-    if (Math.abs(velocity) > 0.1) {
-      overlayRef.current.scrollTop += velocity * elapsed;
+    if (!timestamp) timestamp = 0;
+    const elapsed = timestamp - lastTimestamp;
+    if (elapsed > 0) {
+      // Applichiamo la decelerazione
+      velocity *= 0.95; // Decelerazione più lenta per un effetto più naturale
+  
+      // Calcoliamo lo scroll basato sulla velocità
+      let scrollDelta = velocity * elapsed;
+      const container = overlayRef.current;
+  
+      // Aggiorniamo lo scrollTop
+      container.scrollTop += scrollDelta;
+  
       // Assicuriamoci che lo scroll non vada oltre i limiti
-      if (overlayRef.current.scrollTop < 0) overlayRef.current.scrollTop = 0;
-      if (overlayRef.current.scrollTop > totalWidthRef.current) overlayRef.current.scrollTop = totalWidthRef.current;
-      const prog = totalWidthRef.current ? overlayRef.current.scrollTop / totalWidthRef.current : 0;
+      if (container.scrollTop < 0) {
+        container.scrollTop = 0;
+        velocity = 0; // Ferma l'inerzia se raggiungiamo il limite superiore
+      }
+      if (container.scrollTop > totalWidthRef.current) {
+        container.scrollTop = totalWidthRef.current;
+        velocity = 0; // Ferma l'inerzia se raggiungiamo il limite inferiore
+      }
+  
+      const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
       tlRef.current.progress(prog);
-      requestAnimationFrame(updateScroll);
+  
+      // Continuiamo l'aggiornamento se la velocità è ancora significativa
+      if (Math.abs(velocity) > 0.05) {
+        lastTimestamp = timestamp;
+        requestAnimationFrame(updateScroll);
+      }
     }
   }
-}
 
-const handleTouchEnd = (e) => {
-  if (!isScrolling) {
-    // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
-  } else {
-    lastScrollTop = overlayRef.current.scrollTop;
-    lastTimestamp = performance.now();
-    requestAnimationFrame(updateScroll);
-  }
-  isScrolling = false;
-};
+  const handleTouchEnd = (e) => {
+    if (!isScrolling) {
+      // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
+    } else {
+      lastScrollTop = overlayRef.current.scrollTop;
+      lastTimestamp = performance.now();
+      requestAnimationFrame(updateScroll);
+    }
+    isScrolling = false;
+  };
 
   
 
