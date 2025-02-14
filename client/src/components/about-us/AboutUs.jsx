@@ -81,8 +81,9 @@ export default function AboutUs({ overlayRef, isOpen }) {
       container.scrollLeft = 0;
     }
     tl.progress(0);
+
     function onWheel(e) {
-        console.log('onWheel event triggered', e.deltaY);
+      console.log('onWheel event triggered', e.deltaY);
       e.preventDefault();
       if (isMobile) {
         container.scrollTop += e.deltaY;
@@ -102,7 +103,23 @@ export default function AboutUs({ overlayRef, isOpen }) {
         tl.progress(prog);
       }
     }
+
+    function handleTouchMove(e) {
+      if (window.innerWidth <= 768) {
+        const deltaY = e.touches[0].clientY - e.changedTouches[0].clientY;
+        container.scrollTop += deltaY;
+        if (container.scrollTop < 0) container.scrollTop = 0;
+        if (container.scrollTop > totalWidthRef.current) {
+          container.scrollTop = totalWidthRef.current;
+        }
+        const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+        tl.progress(prog);
+      }
+    }
+
     container.addEventListener("wheel", onWheel, { passive: false });
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+
     function handleResize() {
       let oldProg;
       if (isMobile) {
@@ -114,7 +131,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
         container.scrollTop = totalWidthRef.current * oldProg;
         tl.progress(oldProg);
       } else {
-        console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
+        console.log('Desktop scroll width:', aboutSection.scrollWidth, 'Container width:', container.clientWidth);
 
         oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
         totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
@@ -126,12 +143,12 @@ export default function AboutUs({ overlayRef, isOpen }) {
     window.addEventListener("resize", handleResize);
     return () => {
       container.removeEventListener("wheel", onWheel, { passive: false });
+      container.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("resize", handleResize);
-      tl.kill();
+      tlRef.current.kill();
     };
   }, [isOpen, overlayRef]);
   
-
   /* --- NUOVA SEZIONE PER L'ACCORDION --- */
   const [activeAccordion, setActiveAccordion] = useState("marco");
   const marcoPanelRef = useRef(null);
@@ -241,8 +258,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
         <div className="wall">
           <div className="wall-content" />
         </div>
-        <div   className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}
-        >
+        <div className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}>
           <div className="storia-moderna-text">
             <p>
               Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
@@ -262,16 +278,16 @@ export default function AboutUs({ overlayRef, isOpen }) {
         <div className="window-content" ref={windowSectionRef} />
 
         <div className="window-text">
-            <p>
-              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
-              team, giovane ma con esperienza da vendere, domina l&apos;arte della
-              comunicazione a 360 gradi, dal web alla stampa, fino alle app.
-              Siamo professionisti con un pizzico di audacia, pronti a
-              rivoluzionare il mercato con strategie digitali vincenti e design
-              che fanno parlare di sé. Perché per noi, fare la differenza non è
-              solo un lavoro, è uno stile di vita.
-            </p>
-          </div>
+          <p>
+            Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro
+            team, giovane ma con esperienza da vendere, domina l&apos;arte della
+            comunicazione a 360 gradi, dal web alla stampa, fino alle app.
+            Siamo professionisti con un pizzico di audacia, pronti a
+            rivoluzionare il mercato con strategie digitali vincenti e design
+            che fanno parlare di sé. Perché per noi, fare la differenza non è
+            solo un lavoro, è uno stile di vita.
+          </p>
+        </div>
       </div>
 
       {/* === Sezione 4: Accordion (la nuova colonna) === */}
@@ -279,20 +295,20 @@ export default function AboutUs({ overlayRef, isOpen }) {
         {/* I pulsanti occupano i primi 30vw */}
         <div className="accordion-buttons">
           <button
-  className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
-  onClick={() => toggleAccordion("marco")}
+            className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
+            onClick={() => toggleAccordion("marco")}
           >
             {/* <span>MARCO</span> */}
           </button>
           <button
-  className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
-  onClick={() => toggleAccordion("alessio")}
+            className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
+            onClick={() => toggleAccordion("alessio")}
           >
             {/* <span>ALESSIO</span> */}
           </button>
           <button
-  className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
-  onClick={() => toggleAccordion("giorgia")}
+            className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
+            onClick={() => toggleAccordion("giorgia")}
           >
             {/* <span>GIORGIA</span> */}
           </button>
