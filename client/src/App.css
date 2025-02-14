@@ -137,12 +137,12 @@ body::-webkit-scrollbar {
     left: 0;
     width: 100%;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: auto !important;
     /* Per Firefox */
     scrollbar-width: none !important;
     /* Per IE, Edge */
     -ms-overflow-style: none !important;
-    overflow-x: hidden;
+    overflow-x: hidden !important;
     z-index: 99999999;
   }
 

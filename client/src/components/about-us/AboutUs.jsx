@@ -22,6 +22,38 @@ export default function AboutUs({ overlayRef, isOpen }) {
   const tlRef = useRef(null);
   const totalWidthRef = useRef(0);
 
+  let startY = 0;
+  let isScrolling = false;
+
+  const handleTouchStart = (e) => {
+    startY = e.touches[0].clientY;
+    isScrolling = false;
+  };
+
+  const handleTouchMove = (e) => {
+    if (window.innerWidth <= 768) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const deltaY = startY - touch.clientY;
+      if (deltaY !== 0) isScrolling = true;
+      const container = overlayRef.current;
+      container.scrollTop += deltaY;
+      if (container.scrollTop < 0) container.scrollTop = 0;
+      if (container.scrollTop > totalWidthRef.current) {
+        container.scrollTop = totalWidthRef.current;
+      }
+      const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+      tlRef.current.progress(prog);
+      startY = touch.clientY;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isScrolling) {
+      // Qui puoi gestire un tap se necessario, ma per ora lo lasciamo vuoto
+    }
+  };
+
   useEffect(() => {
     if (!isOpen || !overlayRef.current) return;
     const container = overlayRef.current;
@@ -103,114 +135,106 @@ export default function AboutUs({ overlayRef, isOpen }) {
         tl.progress(prog);
       }
     }
-
-    function handleTouchMove(e) {
-        if (window.innerWidth <= 768) {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const startY = touch.clientY;
-          const endY = e.changedTouches[0].clientY;
-          const deltaY = startY - endY; // Invertiamo il calcolo per avere un comportamento naturale dello scroll
-          const container = overlayRef.current;
-          container.scrollTop += deltaY;
-          if (container.scrollTop < 0) container.scrollTop = 0;
-          if (container.scrollTop > totalWidthRef.current) {
-            container.scrollTop = totalWidthRef.current;
-          }
-          const prog = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-          tlRef.current.progress(prog);
+    if (isOpen) {
+        container.addEventListener("wheel", onWheel, { passive: false });
+        container.addEventListener("touchstart", handleTouchStart, { passive: false });
+        container.addEventListener("touchmove", handleTouchMove, { passive: false });
+        container.addEventListener("touchend", handleTouchEnd, { passive: false });
+      } else {
+        container.removeEventListener("wheel", onWheel, { passive: false });
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handleTouchEnd);
+      }
+  
+      function handleResize() {
+        let oldProg;
+        if (isMobile) {
+          console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
+  
+          oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
+          totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
+          buildTimeline();
+          container.scrollTop = totalWidthRef.current * oldProg;
+          tl.progress(oldProg);
+        } else {
+          console.log('Desktop scroll width:', aboutSection.scrollWidth, 'Container width:', container.clientWidth);
+  
+          oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
+          totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
+          buildTimeline();
+          container.scrollLeft = totalWidthRef.current * oldProg;
+          tl.progress(oldProg);
         }
       }
-
-    container.addEventListener("wheel", onWheel, { passive: false });
-    container.addEventListener("touchmove", handleTouchMove, { passive: false });
-
-    function handleResize() {
-      let oldProg;
-      if (isMobile) {
-        console.log('Mobile scroll height:', aboutSection.scrollHeight, 'Container height:', container.clientHeight);
-
-        oldProg = totalWidthRef.current ? container.scrollTop / totalWidthRef.current : 0;
-        totalWidthRef.current = aboutSection.scrollHeight - container.clientHeight;
-        buildTimeline();
-        container.scrollTop = totalWidthRef.current * oldProg;
-        tl.progress(oldProg);
-      } else {
-        console.log('Desktop scroll width:', aboutSection.scrollWidth, 'Container width:', container.clientWidth);
-
-        oldProg = totalWidthRef.current ? container.scrollLeft / totalWidthRef.current : 0;
-        totalWidthRef.current = aboutSection.scrollWidth - container.clientWidth;
-        buildTimeline();
-        container.scrollLeft = totalWidthRef.current * oldProg;
-        tl.progress(oldProg);
-      }
-    }
-    window.addEventListener("resize", handleResize);
-    return () => {
-      container.removeEventListener("wheel", onWheel, { passive: false });
-      container.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("resize", handleResize);
-      tlRef.current.kill();
-    };
-  }, [isOpen, overlayRef]);
+      window.addEventListener("resize", handleResize);
+      return () => {
+        container.removeEventListener("wheel", onWheel, { passive: false });
+        container.removeEventListener("touchstart", handleTouchStart);
+        container.removeEventListener("touchmove", handleTouchMove);
+        container.removeEventListener("touchend", handleTouchEnd);
+        window.removeEventListener("resize", handleResize);
+        tlRef.current.kill();
+      };
+    }, [isOpen, overlayRef]);
+    
+    /* --- NUOVA SEZIONE PER L'ACCORDION --- */
+    const [activeAccordion, setActiveAccordion] = useState("marco");
+    const marcoPanelRef = useRef(null);
+    const alessioPanelRef = useRef(null);
+    const giorgiaPanelRef = useRef(null);
   
-  /* --- NUOVA SEZIONE PER L'ACCORDION --- */
-  const [activeAccordion, setActiveAccordion] = useState("marco");
-  const marcoPanelRef = useRef(null);
-  const alessioPanelRef = useRef(null);
-  const giorgiaPanelRef = useRef(null);
-
-  // Impostiamo lo stato iniziale dei pannelli (chiusi, fuori dalla vista a destra)
-  useEffect(() => {
-    if (marcoPanelRef.current)
-      gsap.set(marcoPanelRef.current, {
-        xPercent: activeAccordion === "marco" ? 0 : 100,
-      });
-    if (alessioPanelRef.current)
-      gsap.set(alessioPanelRef.current, {
-        xPercent: activeAccordion === "alessio" ? 0 : 100,
-      });
-    if (giorgiaPanelRef.current)
-      gsap.set(giorgiaPanelRef.current, {
-        xPercent: activeAccordion === "giorgia" ? 0 : 100,
-      });
-  }, []); // Nota: qui non mettiamo activeAccordion nelle dipendenze perché vogliamo farlo solo al mount
-
-  const openPanel = (name) => {
-    let panel;
-    if (name === "marco") panel = marcoPanelRef.current;
-    else if (name === "alessio") panel = alessioPanelRef.current;
-    else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    console.log("openPanel:", name, panel);
-    if (panel) {
-      gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
-    }
-  };
-
-  const closePanel = (name) => {
-    let panel;
-    if (name === "marco") panel = marcoPanelRef.current;
-    else if (name === "alessio") panel = alessioPanelRef.current;
-    else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    console.log("closePanel:", name, panel);
-    if (panel) {
-      gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
-    }
-  };
-
-  const toggleAccordion = (name) => {
-    // Se il pannello cliccato è già attivo, non fare nulla
-    if (activeAccordion === name) {
-      return;
-    }
-    // Se esiste già un pannello attivo diverso, lo chiudiamo
-    if (activeAccordion) {
-      closePanel(activeAccordion);
-    }
-    // Apriamo il nuovo pannello e lo segnaliamo come attivo
-    openPanel(name);
-    setActiveAccordion(name);
-  };
+    // Impostiamo lo stato iniziale dei pannelli (chiusi, fuori dalla vista a destra)
+    useEffect(() => {
+      if (marcoPanelRef.current)
+        gsap.set(marcoPanelRef.current, {
+          xPercent: activeAccordion === "marco" ? 0 : 100,
+        });
+      if (alessioPanelRef.current)
+        gsap.set(alessioPanelRef.current, {
+          xPercent: activeAccordion === "alessio" ? 0 : 100,
+        });
+      if (giorgiaPanelRef.current)
+        gsap.set(giorgiaPanelRef.current, {
+          xPercent: activeAccordion === "giorgia" ? 0 : 100,
+        });
+    }, []); // Nota: qui non mettiamo activeAccordion nelle dipendenze perché vogliamo farlo solo al mount
+  
+    const openPanel = (name) => {
+      let panel;
+      if (name === "marco") panel = marcoPanelRef.current;
+      else if (name === "alessio") panel = alessioPanelRef.current;
+      else if (name === "giorgia") panel = giorgiaPanelRef.current;
+      console.log("openPanel:", name, panel);
+      if (panel) {
+        gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
+      }
+    };
+  
+    const closePanel = (name) => {
+      let panel;
+      if (name === "marco") panel = marcoPanelRef.current;
+      else if (name === "alessio") panel = alessioPanelRef.current;
+      else if (name === "giorgia") panel = giorgiaPanelRef.current;
+      console.log("closePanel:", name, panel);
+      if (panel) {
+        gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
+      }
+    };
+  
+    const toggleAccordion = (name) => {
+      // Se il pannello cliccato è già attivo, non fare nulla
+      if (activeAccordion === name) {
+        return;
+      }
+      // Se esiste già un pannello attivo diverso, lo chiudiamo
+      if (activeAccordion) {
+        closePanel(activeAccordion);
+      }
+      // Apriamo il nuovo pannello e lo segnaliamo come attivo
+      openPanel(name);
+      setActiveAccordion(name);
+    };
 
   return (
     <section className="aboutus-section" ref={aboutRef}>
