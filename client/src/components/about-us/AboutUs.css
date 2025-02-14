@@ -527,12 +527,12 @@ button {
 
   .storia-text h2 {
     padding-top: 8vh;
-    font-size: 2.9rem;
+    font-size: 2.7rem;
     padding-left: 7%;
   }
 
   .storia-text p {
-    font-size: 1rem;
+    font-size: .9rem;
     padding-left: 7%;
     max-width: 67vw;
   }
@@ -548,14 +548,14 @@ button {
 
   .window-text {
     display: block;
-    font-size: 1rem;
+    font-size: .9rem;
     font-weight: 100;
     padding-right: 7% ;
     max-width: 65vw;
   }
 
   .window-text p {
-    font-size: 1rem;
+    font-size: .9rem;
     padding-left: 7%;
     max-width: 67vw;
   }
@@ -608,14 +608,18 @@ button {
   }
 
   .team-text p {
-    font-size: 1rem;
+    font-size: .9rem;
     padding-top: 7%;
   }
 
   .team-right {
     justify-content: center;
-    max-height: 45vh;
+    max-height: 35vh;
     padding-bottom: 4vh;
+  }
+
+  .foto-team {
+    max-height: 35vh;
   }
 
   .accordion-button:nth-child(1),
