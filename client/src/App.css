@@ -27,6 +27,8 @@ body,
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+  /* Assicurati che l'overlay possa scrollare indipendentemente */
+  overscroll-behavior: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -151,6 +153,8 @@ body::-webkit-scrollbar {
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    /* Assicurati che l'overlay possa scrollare indipendentemente */
+    overscroll-behavior: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }

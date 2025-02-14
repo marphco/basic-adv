@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
-import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock';
+import { disableBodyScroll, enableBodyScroll, clearAllBodyScrollLocks } from "body-scroll-lock";
 import AboutUs from "./AboutUs";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,12 +11,12 @@ gsap.registerPlugin(ScrollTrigger);
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
-  
+
   useEffect(() => {
     portalRef.current = document.createElement("div");
     document.body.appendChild(portalRef.current);
     return () => {
-      clearAllBodyScrollLocks(); // Assicurati di pulire eventuali lock
+      clearAllBodyScrollLocks();
       if (portalRef.current) {
         document.body.removeChild(portalRef.current);
       }
@@ -34,8 +34,8 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-      
-      // Blocca lo scroll del background, ma lascia sbloccato overlayRef.current
+
+      // Blocca lo scroll del background, lasciando sbloccato overlayRef.current
       if (overlayRef.current) {
         disableBodyScroll(overlayRef.current);
       }
@@ -47,9 +47,10 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
       if (overlayRef.current) {
         if (isMobile) {
-          // Su mobile, evita l'animazione con trasformazioni (che potrebbero bloccare il touch)
+          // Su mobile: non usiamo animazioni con trasformazioni
           gsap.set(overlayRef.current, { x: "0" });
-          gsap.set(overlayRef.current, { clearProps: "transform" });
+          // Forza il reflow/accelerazione hardware
+          overlayRef.current.style.webkitTransform = "translate3d(0,0,0)";
         } else {
           gsap.fromTo(
             overlayRef.current,
@@ -57,27 +58,14 @@ export function AboutUsPortal({ isOpen, onClose }) {
             { x: "0", duration: 0.5, ease: "power3.out" }
           );
         }
-        // Imposta lo scroll iniziale dell'overlay
+        // Assicura che lo scroll parta dall'inizio
         overlayRef.current.scrollTop = 0;
-
-        // Facoltativo: intercetta gli eventi touch sull'overlay (ma di solito body-scroll-lock gestisce già bene tutto)
-        overlayRef.current.addEventListener(
-          "touchmove",
-          (e) => {
-            e.stopPropagation();
-          },
-          { passive: false }
-        );
       }
     } else {
       window.removeEventListener("keydown", handleEsc);
-      
-      // Rilascia il blocco dello scroll del background
       if (overlayRef.current) {
         enableBodyScroll(overlayRef.current);
       }
-      
-      // Riabilita gli ScrollTrigger
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.enable();
       });
@@ -91,6 +79,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
   const handleClose = () => {
     if (overlayRef.current) {
+      // Su desktop possiamo animare la chiusura; su mobile semplicemente chiudiamo
       gsap.to(overlayRef.current, {
         x: "-100%",
         duration: 0.5,
