@@ -30,42 +30,40 @@ export function AboutUsPortal({ isOpen, onClose }) {
         handleClose();
       }
     };
-
+  
+    const isMobile = window.innerWidth <= 768;
+  
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-
-      const isMobile = window.innerWidth <= 768;
+  
       if (isMobile) {
-        // Salva la posizione attuale dello scroll
+        // Salva la posizione attuale dello scroll e blocca il body usando overflow hidden
         scrollYRef.current = window.scrollY;
-        // Blocca lo scroll del body applicando posizione fixed (senza forzare il reset)
-        document.body.style.position = "fixed";
-        document.body.style.top = `-${scrollYRef.current}px`;
-        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
       } else {
+        // Per desktop (se vuoi bloccare lo scroll del body)
         // document.body.style.overflow = "hidden";
       }
-
+  
       // Disabilita gli ScrollTrigger del sito sottostante
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.disable();
       });
-
-      // Animazione di apertura dell'overlay
+  
+      // Gestione dell'animazione dell'overlay
       if (overlayRef.current) {
-        gsap.fromTo(
-          overlayRef.current,
-          { x: "-100%" },
-          { 
-            x: "0", 
-            duration: 0.5, 
-            ease: "power3.out",
-            onComplete: () => {
-              // Rimuovo la trasformazione per permettere lo scrolling nativo su mobile
-              gsap.set(overlayRef.current, { clearProps: "transform" });
-            }
-          }
-        );
+        if (isMobile) {
+          // Su mobile, imposta direttamente x a 0 (senza animazione) per evitare problemi di transform
+          gsap.set(overlayRef.current, { x: "0" });
+        } else {
+          // Su desktop usa l'animazione con translateX
+          gsap.fromTo(
+            overlayRef.current,
+            { x: "-100%" },
+            { x: "0", duration: 0.5, ease: "power3.out" }
+          );
+        }
+        // Imposta lo scroll iniziale dell'overlay
         if (isMobile) {
           overlayRef.current.scrollTop = 0;
         } else {
@@ -74,23 +72,23 @@ export function AboutUsPortal({ isOpen, onClose }) {
       }
     } else {
       window.removeEventListener("keydown", handleEsc);
-      const isMobile = window.innerWidth <= 768;
+  
       if (isMobile) {
-        // Ripristina le proprietà del body e torna alla posizione salvata
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
+        // Ripristina lo scroll del body e torna alla posizione salvata
+        document.body.style.overflow = "";
         window.scrollTo(0, scrollYRef.current);
       } else {
+        // Per desktop (se hai usato overflow hidden)
         document.body.style.overflow = "";
       }
+  
       // Riabilita gli ScrollTrigger
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.enable();
       });
       ScrollTrigger.refresh(true);
     }
-
+  
     return () => {
       window.removeEventListener("keydown", handleEsc);
     };

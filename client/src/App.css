@@ -28,6 +28,7 @@ body,
   -webkit-overflow-scrolling: touch; /* Per iOS, rende lo scroll più fluido */
   scrollbar-width: none; /* Nasconde la scrollbar su Firefox */
   -ms-overflow-style: none; /* Nasconde la scrollbar su IE */
+  touch-action: pan-y;
 }
 
 .aboutus-overlay::-webkit-scrollbar {
