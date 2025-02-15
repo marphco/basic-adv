@@ -85,12 +85,26 @@
         width: 90%;
         text-align: left;
         padding: 20px 0;
-    }
-
-    .navbar-menu.open {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      .navbar-menu.open {
         display: flex;
-        animation: fadeIn 0.5s ease-in-out forwards;
-    }
+        opacity: 1;
+      }
+    
+      .hamburger-menu {
+        display: flex;
+      }
+    
+      /* Stile per il link CHIUDI (uguale agli altri link) */
+      .navbar-close a {
+        color: inherit;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: color 0.1s ease-in-out;
+      }
 
     .navbar-menu li {
         opacity: 0;
@@ -146,9 +160,9 @@
         animation: slideOut 0.4s forwards;
     }
 
-    .hamburger-menu {
+    /* .hamburger-menu {
         display: flex;
-    }
+    } */
 
     .navbar {
         padding: 0 10%;

@@ -1,6 +1,7 @@
 // App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
@@ -34,8 +35,6 @@ function App() {
 
   // Funzione per aprire l'Overlay About Us
   const openAboutUs = () => {
-    console.log("openAboutUs called!");
-
     setIsAboutUsOpen(true);
   };
 
@@ -141,40 +140,43 @@ function App() {
     <Router>
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
-        <Navbar isDark={isDark} setIsDark={setIsDark} openAboutUs={openAboutUs}/>
+        <Navbar
+          isDark={isDark}
+          setIsDark={setIsDark}
+          openAboutUs={openAboutUs}
+          closeAboutUs={closeAboutUs}
+          isMobile={isMobile}
+        />
         <div className="App" ref={scrollContainerRef}>
-          <div className="section">
-            <Home />
-          </div>
-            
-            {/* <AboutUs /> */}
-
-          <div className="section">
-            <Services 
-              scrollTween={scrollTween} 
-              isMobile={isMobile} 
-              windowWidth={windowWidth} 
-              windowHeight={windowHeight} 
-            />
-          </div>
-
-          <div className="section">
-            <DndProvider backend={HTML5Backend}>
-              <Portfolio scrollTween={scrollTween} />
-            </DndProvider>
-          </div>
-
-          {/* <AboutUsOverlay isOpen={isAboutUsOpen} onClose={closeAboutUs} />        */}
-
-          <div className="section">
-            <Contacts />
-          </div>
-
-          {/* Portal overlay */}
-        <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-          <AboutUs />
-        </AboutUsPortal>
-
+          <Routes>
+            <Route path="/" element={
+              <>
+                <div className="section"><Home /></div>
+                <div className="section">
+                  <Services
+                    scrollTween={scrollTween}
+                    isMobile={isMobile}
+                    windowWidth={windowWidth}
+                    windowHeight={windowHeight}
+                  />
+                </div>
+                <div className="section">
+                  <DndProvider backend={HTML5Backend}>
+                    <Portfolio scrollTween={scrollTween} />
+                  </DndProvider>
+                </div>
+                <div className="section"><Contacts /></div>
+                {/* Il portal overlay viene renderizzato solo su desktop */}
+                {!isMobile && (
+                  <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
+                    <AboutUs />
+                  </AboutUsPortal>
+                )}
+              </>
+            } />
+            {/* Route dedicata per AboutUs su mobile */}
+            <Route path="/about-us" element={<AboutUs />} />
+          </Routes>
         </div>
       </div>
     </Router>

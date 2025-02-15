@@ -1,0 +1,9 @@
+.mobile-slider-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .swiper-container, .swiper-wrapper {
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+  }

@@ -1,19 +1,28 @@
-// src/components/about-us/AboutUsPortal.jsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
 import AboutUs from "./AboutUs";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function AboutUsPortal({ isOpen, onClose }) {
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
-  // Usato per salvare la posizione dello scroll del body (mobile)
+  // Stato per rilevare se siamo su mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // Salva lo scroll del body (solo per eventuali ripristini su mobile)
   const scrollYRef = useRef(0);
 
+  // Aggiorna lo stato mobile al resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Crea il container del portale
   useEffect(() => {
     portalRef.current = document.createElement("div");
     document.body.appendChild(portalRef.current);
@@ -24,78 +33,38 @@ export function AboutUsPortal({ isOpen, onClose }) {
     };
   }, []);
 
+  // Gestione della chiusura con ESC e blocco dello scroll sul body
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === "Escape") {
-        handleClose();
-      }
+      if (e.key === "Escape") handleClose();
     };
-  
-    const isMobile = window.innerWidth <= 768;
-  
+
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
-  
       if (isMobile) {
-        // Salva la posizione attuale dello scroll e blocca il body usando overflow hidden
         scrollYRef.current = window.scrollY;
         document.body.style.overflow = "hidden";
       } else {
-        // Per desktop (se vuoi bloccare lo scroll del body)
-        // document.body.style.overflow = "hidden";
+        // Per desktop possiamo applicare l'animazione
       }
-  
-      // Disabilita gli ScrollTrigger del sito sottostante
+      // Disabilita eventuali ScrollTrigger del sito sottostante
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.disable();
       });
-  
-      // Gestione dell'animazione dell'overlay
-      if (overlayRef.current) {
-        if (isMobile) {
-          // Su mobile, imposta direttamente x a 0 (senza animazione) per evitare problemi di transform
-          gsap.set(overlayRef.current, { x: "0" });
-        } else {
-          // Su desktop usa l'animazione con translateX
-          gsap.fromTo(
-            overlayRef.current,
-            { x: "-100%" },
-            { x: "0", duration: 0.5, ease: "power3.out" }
-          );
-        }
-        // Imposta lo scroll iniziale dell'overlay
-        if (isMobile) {
-          overlayRef.current.scrollTop = 0;
-        } else {
-          overlayRef.current.scrollLeft = 0;
-        }
-      }
     } else {
       window.removeEventListener("keydown", handleEsc);
-  
-      if (isMobile) {
-        // Ripristina lo scroll del body e torna alla posizione salvata
-        document.body.style.overflow = "";
-        window.scrollTo(0, scrollYRef.current);
-      } else {
-        // Per desktop (se hai usato overflow hidden)
-        document.body.style.overflow = "";
-      }
-  
-      // Riabilita gli ScrollTrigger
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollYRef.current);
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.enable();
       });
       ScrollTrigger.refresh(true);
     }
-  
-    return () => {
-      window.removeEventListener("keydown", handleEsc);
-    };
-  }, [isOpen]);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isOpen, isMobile]);
 
   const handleClose = () => {
-    if (overlayRef.current) {
+    if (!isMobile && overlayRef.current) {
       gsap.to(overlayRef.current, {
         x: "-100%",
         duration: 0.5,
@@ -109,8 +78,71 @@ export function AboutUsPortal({ isOpen, onClose }) {
 
   if (!isOpen || !portalRef.current) return null;
 
+  // Versione Mobile: usa un wrapper scrollabile a schermo intero
+  if (isMobile) {
+    return ReactDOM.createPortal(
+      <div
+        className="aboutus-overlay-mobile"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#fff",
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+          zIndex: 9999999,
+        }}
+      >
+        <div
+          className="aboutus-overlay-header"
+          style={{
+            position: "sticky",
+            top: 0,
+            backgroundColor: "#fff",
+            padding: "10px",
+          }}
+        >
+          <button
+            onClick={handleClose}
+            style={{
+              fontSize: "16px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#161616",
+            }}
+          >
+            [CHIUDI]
+          </button>
+        </div>
+        {/* Il contenuto dell'overlay; qui non applichiamo animazioni GSAP */}
+        <AboutUs isOpen={isOpen} />
+      </div>,
+      portalRef.current
+    );
+  }
+
+  // Versione Desktop: overlay con animazione GSAP
   return ReactDOM.createPortal(
-    <div className="aboutus-overlay" ref={overlayRef} tabIndex="-1">
+    <div
+      className="aboutus-overlay"
+      ref={overlayRef}
+      tabIndex="-1"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#fff",
+        overflowX: "hidden",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
+        zIndex: 99999999,
+      }}
+    >
       <div className="aboutus-overlay-header">
         <button
           type="button"
@@ -120,7 +152,6 @@ export function AboutUsPortal({ isOpen, onClose }) {
           [CHIUDI]
         </button>
       </div>
-      {/* Contenuto scrollabile dell'overlay */}
       <AboutUs overlayRef={overlayRef} isOpen={isOpen} />
     </div>,
     portalRef.current
