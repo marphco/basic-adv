@@ -37,6 +37,5 @@ const MobileSlider = ({ images }) => {
 export default MobileSlider;
 
 MobileSlider.propTypes = {
-  images: PropTypes.images,
-  map: PropTypes.map,
-};
+    images: PropTypes.arrayOf(PropTypes.string).isRequired,
+  };

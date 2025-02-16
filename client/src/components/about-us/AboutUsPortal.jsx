@@ -38,19 +38,26 @@ export function AboutUsPortal({ isOpen, onClose }) {
     const handleEsc = (e) => {
       if (e.key === "Escape") handleClose();
     };
-
+  
     if (isOpen) {
       window.addEventListener("keydown", handleEsc);
       if (isMobile) {
         scrollYRef.current = window.scrollY;
         document.body.style.overflow = "hidden";
-      } else {
-        // Per desktop possiamo applicare l'animazione
       }
-      // Disabilita eventuali ScrollTrigger del sito sottostante
+      // Disabilita i trigger
       ScrollTrigger.getAll().forEach((st) => {
         if (!st.vars.scroller) st.disable();
       });
+  
+      // *** ANIMAZIONE ENTRATA DESKTOP ***
+      if (!isMobile && overlayRef.current) {
+        gsap.fromTo(
+          overlayRef.current,
+          { x: "-100%" },
+          { x: 0, duration: 0.5, ease: "power3.out" }
+        );
+      }
     } else {
       window.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = "";
@@ -60,6 +67,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
       });
       ScrollTrigger.refresh(true);
     }
+  
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, isMobile]);
 

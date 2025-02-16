@@ -18,6 +18,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 // import AboutUsOverlay from "./components/about-us/AboutUsOverlay";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
 import AboutUs from "./components/about-us/AboutUs"; // i contenuti
+import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
+
 
 
 
@@ -138,6 +140,7 @@ function App() {
 
   return (
     <Router>
+            <ScrollToTopOnRouteChange />
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
         <Navbar
