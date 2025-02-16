@@ -202,6 +202,7 @@ body[data-theme="dark"] .folder-name, .intro-portfolio .intro-mobile {
     font-weight: 200;
     line-height: 1.1;
     color: var(--primary-text-color) !important;
+    transition: color 0.5s ease;
     position: static;
     margin: 20px;
   }
