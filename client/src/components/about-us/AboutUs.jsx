@@ -8,9 +8,9 @@ import storica3 from "../../assets/storica3.jpg";
 import storica4 from "../../assets/storica4.jpg";
 import storica5 from "../../assets/storica5.jpg";
 import storica6 from "../../assets/storica6.jpg";
-import marcoImage from "../../assets/marco.jpg"; 
-import alessioImage from "../../assets/alessio.jpg";
-import giorgiaImage from "../../assets/giorgia.jpg";
+// import marcoImage from "../../assets/marco.jpg"; 
+// import alessioImage from "../../assets/alessio.jpg";
+// import giorgiaImage from "../../assets/giorgia.jpg";
 import "./AboutUs.css";
 import MobileSlider from "./MobileSlider";
 
@@ -202,9 +202,9 @@ export default function AboutUs() {
                   </div>
                 </div>
                 <div className="team-right">
-                  <div className="foto-team">
+                  {/* <div className="foto-team">
                     <img src={marcoImage} alt="Foto Marco" />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -223,9 +223,9 @@ export default function AboutUs() {
                   </div>
                 </div>
                 <div className="team-right">
-                  <div className="foto-team">
+                  {/* <div className="foto-team">
                     <img src={alessioImage} alt="Foto Alessio" />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -244,9 +244,9 @@ export default function AboutUs() {
                   </div>
                 </div>
                 <div className="team-right">
-                  <div className="foto-team">
+                  {/* <div className="foto-team">
                     <img src={giorgiaImage} alt="Foto Giorgia" />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

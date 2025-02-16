@@ -31,7 +31,7 @@
   height: 100vh;
   display: flex;
   background-color: var(--background-color);
-  transition: background-color 0.5s ease-in-out;
+  transition: background-color 0.5s ease;
 }
 
 /* Colonna Sinistra */
@@ -672,7 +672,7 @@ button {
 
   .accordion-container {
     width: 100vw;
-    height: 100vh;
+    height: 70vh;
   }
 
   .accordion-buttons {
@@ -690,7 +690,7 @@ button {
     left: 0;
     height: 80vh;
     width: 100vw;
-    margin-top: 20vh;
+    margin-top: 31vh;
   }
 
   .content-inner {
@@ -703,6 +703,7 @@ button {
     flex-direction: column-reverse;
     margin: 0 auto;
     max-height: 35vh;
+    background-color: none !important;
   }
 
   .team-title h2 {
@@ -726,10 +727,47 @@ button {
     max-height: 35vh;
   }
 
+  .accordion-container {
+    background-color: var(--background-color) !important;
+    transition: background-color 0.5s ease !important;
+  }
+
+/* Pulsanti accordion */
+.accordion-button {
+    width: 33.33vw; /* Dimensione di base per tutti */
+    height: 10vh; /* Altezza di base per tutti */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* background-color: var(--foreground-color); */
+    transition: width 0.5s ease, height 0.5s ease; /* Transizione fluida per larghezza e altezza */
+    z-index: 9999;
+  }
+  
+  /* Quando il pulsante è attivo, la sua larghezza sarà 50vw e altezza 20vh */
+  .accordion-button.active {
+    width: 50vw;
+    height: 31vh;
+    border-radius: 10px;
+    z-index: 999999;
+    transition: width 0.5s ease-in-out, height 0.5s ease-in-out;
+    transition: border-radius 0.5s ease-in-out !important;
+    transition:  z-index 0.5s ease-in-out !important;
+  }
+  
+  /* Gli altri pulsanti non attivi diventano più piccoli */
+  .accordion-button:not(.active) {
+    width: 25vw;
+    height: 15vh;
+    transition: width 0.5s ease-in-out, height 0.5s ease-in-out, border-radius 0.5s ease-in-out;
+  }
+  
+  /* Rimozione del blur che avevi richiesto */
   .accordion-button:nth-child(1),
-.accordion-button:nth-child(2),
-.accordion-button:nth-child(3) {
-  filter: blur(0);
-}
+  .accordion-button:nth-child(2),
+  .accordion-button:nth-child(3) {
+    filter: blur(0);
+  }
   
 }
