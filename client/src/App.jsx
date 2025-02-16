@@ -1,4 +1,3 @@
-// App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
@@ -11,17 +10,13 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
 import Services from "./components/services/Services";
 import Portfolio from "./components/portfolio/Portfolio";
-// import AboutUs from "./components/about-us/AboutUs";
 import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-// import AboutUsOverlay from "./components/about-us/AboutUsOverlay";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
-import AboutUs from "./components/about-us/AboutUs"; // i contenuti
+import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // Import the desktop version
+import AboutUs from "./components/about-us/AboutUs"; // Import the mobile version
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
-
-
-
 
 // Registra il plugin ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
@@ -44,7 +39,6 @@ function App() {
   const closeAboutUs = () => {
     setIsAboutUsOpen(false);
   };
-
 
   // Riferimenti per le sezioni
   const scrollContainerRef = useRef(null);
@@ -74,7 +68,7 @@ function App() {
         ScrollTrigger.refresh();
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobile, windowWidth, windowHeight]);
@@ -140,7 +134,7 @@ function App() {
 
   return (
     <Router>
-            <ScrollToTopOnRouteChange />
+      <ScrollToTopOnRouteChange />
       <div className="app-wrapper">
         <Cursor isDark={isDark} />
         <Navbar
@@ -172,7 +166,7 @@ function App() {
                 {/* Il portal overlay viene renderizzato solo su desktop */}
                 {!isMobile && (
                   <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-                    <AboutUs />
+                    <AboutUsDesktop /> {/* Usando la versione desktop */}
                   </AboutUsPortal>
                 )}
               </>

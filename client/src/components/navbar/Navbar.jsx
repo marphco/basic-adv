@@ -50,7 +50,7 @@ const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  openAboutUs();
+                  openAboutUs(); // Per aprire l'overlay About Us su desktop
                   handleLinkClick();
                 }}
               >

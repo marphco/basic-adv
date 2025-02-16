@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import PropTypes from "prop-types";
-import AboutUs from "./AboutUs";
+import AboutUs from "./AboutUs"; // Mobile
+import AboutUsDesktop from "./AboutUsDesktop"; // Desktop
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -125,7 +126,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
             [CHIUDI]
           </button>
         </div>
-        {/* Il contenuto dell'overlay; qui non applichiamo animazioni GSAP */}
+        {/* Il contenuto dell'overlay per la versione mobile */}
         <AboutUs isOpen={isOpen} />
       </div>,
       portalRef.current
@@ -160,7 +161,8 @@ export function AboutUsPortal({ isOpen, onClose }) {
           [CHIUDI]
         </button>
       </div>
-      <AboutUs overlayRef={overlayRef} isOpen={isOpen} />
+      {/* Versione Desktop del contenuto dell'overlay */}
+      <AboutUsDesktop overlayRef={overlayRef} isOpen={isOpen} />
     </div>,
     portalRef.current
   );

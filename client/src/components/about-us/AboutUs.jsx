@@ -16,13 +16,12 @@ import MobileSlider from "./MobileSlider";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function AboutUs({ overlayRef, isOpen }) {
+export default function AboutUs() {
   const aboutRef = useRef(null);
   const imagesRef = useRef(null);
   const wallRef = useRef(null);
   const windowSectionRef = useRef(null);
 
-  // Stato per verificare se siamo su mobile
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
@@ -31,10 +30,9 @@ export default function AboutUs({ overlayRef, isOpen }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Effetto per gestire il parallasse e lo scroll
   useEffect(() => {
-    if (!isOpen || !overlayRef.current) return;
-    const container = overlayRef.current;
+    if (!isMobile) return; // Non eseguire la logica mobile su desktop
+
     const aboutSection = aboutRef.current;
     const imagesContainer = imagesRef.current;
     const wallContent = wallRef.current;
@@ -46,63 +44,34 @@ export default function AboutUs({ overlayRef, isOpen }) {
     if (wallContent) gsap.set(wallContent, { clearProps: "all" });
     if (windowContent) gsap.set(windowContent, { clearProps: "all" });
 
-    if (!isMobile) {
-      // VERSIONE DESKTOP: scroll orizzontale
-      const tl = gsap.timeline({ paused: true });
-      const totalWidth = aboutSection.scrollWidth - container.clientWidth;
-      tl.to(imagesContainer, { x: -container.clientWidth, ease: "none", duration: 1 }, 0)
-        .to(wallContent, { backgroundPosition: "60% 80%", ease: "none", duration: 1 }, 0)
-        .to(windowContent, { backgroundPosition: "100% 50%", ease: "none", duration: 1 }, 1);
-      container.scrollLeft = 0;
-      tl.progress(0);
-      function onWheel(e) {
-        e.preventDefault();
-        container.scrollLeft += e.deltaY;
-        if (container.scrollLeft < 0) container.scrollLeft = 0;
-        if (container.scrollLeft > totalWidth) container.scrollLeft = totalWidth;
-        const prog = totalWidth ? container.scrollLeft / totalWidth : 0;
-        tl.progress(prog);
+    const totalWidth = aboutSection.scrollWidth - window.innerWidth;
+    const mobileTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: aboutSection,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+        markers: false,
       }
-      container.addEventListener("wheel", onWheel, { passive: false });
-      function handleResize() {
-        const oldProg = totalWidth ? container.scrollLeft / totalWidth : 0;
-        const newTotal = aboutSection.scrollWidth - container.clientWidth;
-        tl.clear();
-        tl.to(imagesContainer, { x: -container.clientWidth, ease: "none", duration: 1 }, 0)
-          .to(wallContent, { backgroundPosition: "60% 80%", ease: "none", duration: 1 }, 0)
-          .to(windowContent, { backgroundPosition: "100% 50%", ease: "none", duration: 1 }, 1);
-        container.scrollLeft = newTotal * oldProg;
-        tl.progress(oldProg);
-      }
-      window.addEventListener("resize", handleResize);
-      return () => {
-        container.removeEventListener("wheel", onWheel);
-        window.removeEventListener("resize", handleResize);
-        tl.kill();
-      };
-    } else {
-      // VERSIONE MOBILE: usiamo lo scroll verticale per il parallasse
-      // Assicurati che l'altezza del container AboutUs sia superiore alla viewport
-      const mobileTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: aboutSection,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        }
-      });
-      if (wallContent) {
-        mobileTl.to(wallContent, { backgroundPosition: "60% 80%", ease: "none" }, 0);
-      }
-      if (windowContent) {
-        mobileTl.to(windowContent, { backgroundPosition: "100% 50%", ease: "none" }, 0);
-      }
-      return () => {
-        if (mobileTl.scrollTrigger) mobileTl.scrollTrigger.kill();
-        mobileTl.kill();
-      };
+    });
+
+    if (imagesContainer) {
+      mobileTl.to(imagesContainer, { x: -totalWidth, ease: "none", duration: 1 }, 0);
     }
-  }, [isOpen, overlayRef, isMobile]);
+
+    if (wallContent) {
+      mobileTl.to(wallContent, { backgroundPosition: "10% 70%", ease: "none", duration: 1 }, 0);
+    }
+
+    if (windowContent) {
+      mobileTl.to(windowContent, { backgroundPosition: "90% 10%", ease: "none", duration: 1 }, 0);
+    }
+
+    return () => {
+      if (mobileTl.scrollTrigger) mobileTl.scrollTrigger.kill();
+      mobileTl.kill();
+    };
+  }, [isMobile]);
 
   // Sezione Accordion (rimane invariata)
   const [activeAccordion, setActiveAccordion] = useState("marco");
@@ -148,7 +117,7 @@ export default function AboutUs({ overlayRef, isOpen }) {
     setActiveAccordion(name);
   };
 
-  // Render in base a isMobile
+  // Render per la versione mobile
   if (isMobile) {
     const images = [storica1, storica2, storica3, storica4, storica5, storica6];
     return (
@@ -161,7 +130,6 @@ export default function AboutUs({ overlayRef, isOpen }) {
           <div className="aboutus-title">
             <h1>MAGARI LEGGILA<br/>UN PO&apos; DI STORIA</h1>
             <p className="aboutus-subtitle">Se fai skip sei senza cuore.</p>
-            
           </div>
         </div>
         <div className="storia">
@@ -286,148 +254,6 @@ export default function AboutUs({ overlayRef, isOpen }) {
         </div>
       </section>
     );
-  } else {
-    // Desktop layout (versione invariata)
-    return (
-      <section className="aboutus-section" ref={aboutRef}>
-        <div className="slider-section">
-          <div className="aboutus-container">
-            <div className="aboutus-images" ref={imagesRef}>
-              <img src={storica1} alt="Momento Storico 1" />
-              <img src={storica2} alt="Momento Storico 2" />
-              <img src={storica3} alt="Momento Storico 3" />
-              <img src={storica4} alt="Momento Storico 4" />
-              <img src={storica5} alt="Momento Storico 5" />
-              <img src={storica6} alt="Momento Storico 6" />
-            </div>
-            <div className="aboutus-title-container">
-              <h1 className="aboutus-title">MAGARI LEGGILA<br />UN PO&apos; DI STORIA</h1>
-              <p className="aboutus-subtitle">se fai skip sei senza cuore</p>
-            </div>
-          </div>
-        </div>
-        <div className="storia">
-          <div className="storia-content">
-            <div className="storia-text">
-              <h2>
-                Dall&apos;Inchiostro<br />al Digitale:<br />La nostra passione,<br /><span className="accent">le nostre radici</span>
-              </h2>
-              <p>
-                Siamo nati e cresciuti tra le macchine da stampa della piccola bottega di nostro padre, Crescenzo.
-                Da lui abbiamo ereditato non solo la passione per la comunicazione, ma anche il cuore di chi
-                non si ferma mai davanti a una sfida. Dopo la sua scomparsa, abbiamo deciso di trasformare quella scintilla
-                in un fuoco creativo, portando avanti la sua visione con innovazione e coraggio.
-              </p>
-            </div>
-          </div>
-          <div className="wall">
-            <div className="wall-content" ref={wallRef} />
-          </div>
-          <div className="storia-moderna">
-            <div className="storia-moderna-text">
-              <p>
-                Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro team, giovane ma con esperienza da vendere,
-                domina l&apos;arte della comunicazione a 360 gradi, dal web alla stampa, fino alle app. Siamo professionisti con un
-                pizzico di audacia, pronti a rivoluzionare il mercato con strategie digitali vincenti e design che fanno parlare
-                di sé. Per noi, fare la differenza non è solo un lavoro, è uno stile di vita.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="window">
-          <div className="window-content" ref={windowSectionRef} />
-          <div className="window-text">
-            <p>
-              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro team, giovane ma con esperienza da vendere,
-              domina l&apos;arte della comunicazione a 360 gradi, dal web alla stampa, fino alle app. Siamo professionisti con un
-              pizzico di audacia, pronti a rivoluzionare il mercato con strategie digitali vincenti e design che fanno parlare
-              di sé. Per noi, fare la differenza non è solo un lavoro, è uno stile di vita.
-            </p>
-          </div>
-        </div>
-        <div className="accordion-container">
-          <div className="accordion-buttons">
-            <button
-              className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
-              onClick={() => toggleAccordion("marco")}
-            ></button>
-            <button
-              className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
-              onClick={() => toggleAccordion("alessio")}
-            ></button>
-            <button
-              className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
-              onClick={() => toggleAccordion("giorgia")}
-            ></button>
-          </div>
-          <div className="accordion-panels">
-            <div className="accordion-panel" ref={marcoPanelRef}>
-              <div className="content-inner">
-                <div className="team-left">
-                  <div className="team-text">
-                    <p>
-                      Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                      missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                      universale, creando con la precisione di un artigiano del futuro.
-                    </p>
-                  </div>
-                  <div className="team-title">
-                    <h2>MARCO</h2>
-                  </div>
-                </div>
-                <div className="team-right">
-                  <div className="foto-team">
-                    <img src={marcoImage} alt="Foto Marco" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-panel" ref={alessioPanelRef}>
-              <div className="content-inner">
-                <div className="team-left">
-                  <div className="team-text">
-                    <p>
-                      Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                      missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                      universale, creando con la precisione di un artigiano del futuro.
-                    </p>
-                  </div>
-                  <div className="team-title">
-                    <h2>ALESSIO</h2>
-                  </div>
-                </div>
-                <div className="team-right">
-                  <div className="foto-team">
-                    <img src={alessioImage} alt="Foto Alessio" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="accordion-panel" ref={giorgiaPanelRef}>
-              <div className="content-inner">
-                <div className="team-left">
-                  <div className="team-text">
-                    <p>
-                      Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                      missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                      universale, creando con la precisione di un artigiano del futuro.
-                    </p>
-                  </div>
-                  <div className="team-title">
-                    <h2>GIORGIA</h2>
-                  </div>
-                </div>
-                <div className="team-right">
-                  <div className="foto-team">
-                    <img src={giorgiaImage} alt="Foto Giorgia" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
   }
 }
 
@@ -437,5 +263,3 @@ AboutUs.propTypes = {
   }),
   isOpen: PropTypes.bool,
 };
-
-
