@@ -100,28 +100,40 @@ function ProjectSectionDesktop({ onClose, project }) {
   useEffect(() => {
     const leftCol = leftColumnRef.current;
     if (!leftCol) return;
+  
+    // Attendi il caricamento di tutte le immagini
     const imgs = leftCol.querySelectorAll("img");
-    const promises = Array.from(imgs).map(
+    const waitForImages = Array.from(imgs).map(
       (img) =>
         new Promise((resolve) => {
-          if (img.complete) resolve();
-          else {
+          if (img.complete) {
+            resolve();
+          } else {
             img.addEventListener("load", resolve);
             img.addEventListener("error", resolve);
           }
         })
     );
-    Promise.all(promises).then(() => {
-      leftCol.scrollTop = 0;
+    Promise.all(waitForImages).then(() => {
+      // Dopo che tutte le immagini sono state caricate, calcola l'altezza della prima copia
       const singleContentHeight = leftCol.scrollHeight / 2;
+      // Imposta lo scroll iniziale (opzionale)
+      leftCol.scrollTop = 1; // imposta a 1 px per evitare 0 esatto
+  
+      const TOLERANCE = 1; // Puoi regolare questo valore se necessario
+  
       const handleScroll = () => {
-        if (leftCol.scrollTop >= singleContentHeight) {
-          leftCol.scrollTop -= singleContentHeight;
-        } else if (leftCol.scrollTop < 0) {
-          leftCol.scrollTop += singleContentHeight;
+        if (leftCol.scrollTop < TOLERANCE) {
+          // Se l'utente ha scrollato troppo in alto, riporta alla fine della prima copia
+          leftCol.scrollTop = leftCol.scrollTop + singleContentHeight - TOLERANCE;
+        } else if (leftCol.scrollTop > singleContentHeight - TOLERANCE) {
+          // Se l'utente ha scrollato troppo in basso, riportalo all'inizio della prima copia
+          leftCol.scrollTop = leftCol.scrollTop - singleContentHeight + TOLERANCE;
         }
       };
+  
       leftCol.addEventListener("scroll", handleScroll);
+      // Pulizia del listener quando il componente viene smontato
       return () => leftCol.removeEventListener("scroll", handleScroll);
     });
   }, [duplicatedImages]);
