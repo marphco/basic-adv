@@ -117,6 +117,7 @@
   cursor: pointer;
   background: none;
   border: none;
+  color: var(--primary-text-color);
   z-index: 10001;
 }
 
@@ -160,6 +161,47 @@ body[data-theme="dark"] .folder-name,
   width: 50vw;
   height: 100vh;
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.project-right {
+  background-color: var(--background-color);
+  transition: background-color .5s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0 9vw !important;
+}
+
+.project-right h2 {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary-text-color);
+  padding-bottom: 1vh;
+  transition: all .5s ease;
+}
+
+.project-right p {
+  color: var(--primary-text-color);
+  font-size: 1rem;
+  font-weight: 200;
+  line-height: 1.5;
+  transition: color .5s ease;
+  padding-bottom: 2vh;
+}
+
+.project-right button {
+  padding: 1rem;
+  background-color: var(--foreground-color);
+  color: white;
+  border: 1px solid var(--foreground-color);
+  transition: all .5s ease;
+}
+
+.project-right button:hover {
+  background-color: var(--background-color);
+  color: var(--primary-text-color);
 }
 
 /* Responsività */

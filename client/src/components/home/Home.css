@@ -23,6 +23,7 @@
   font-size: 2rem;
   color: var(--primary-text-color);
   max-width: 40vw;
+  transition: color .5s ease;
 }
 
 .tagline {
