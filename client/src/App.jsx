@@ -1,6 +1,6 @@
+// App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { BrowserRouter as Router } from "react-router-dom";
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
@@ -14,78 +14,47 @@ import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
-import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // Import the desktop version
-import AboutUs from "./components/about-us/AboutUs"; // Import the mobile version
+import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // overlay AboutUs per desktop
+import AboutUs from "./components/about-us/AboutUs"; // pagina AboutUs per mobile
+import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 
-// Registra il plugin ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
-
 ScrollTrigger.normalizeScroll(true);
 
 function App() {
-  // Gestione del tema (light/dark)
   const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const [isDark, setIsDark] = useLocalStorage('isDark', preference);
-
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+  const openAboutUs = () => setIsAboutUsOpen(true);
+  const closeAboutUs = () => setIsAboutUsOpen(false);
 
-  // Funzione per aprire l'Overlay About Us
-  const openAboutUs = () => {
-    setIsAboutUsOpen(true);
-  };
-
-  // Funzione per chiudere l'Overlay About Us
-  const closeAboutUs = () => {
-    setIsAboutUsOpen(false);
-  };
-
-  // Riferimenti per le sezioni
   const scrollContainerRef = useRef(null);
-
-  // Stato per gestire la responsività e le dimensioni della finestra
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-
-  // Stato per l'animazione dello scroll orizzontale
   const [scrollTween, setScrollTween] = useState(null);
 
-  // Gestione del resize per aggiornare isMobile e le dimensioni della finestra
   useLayoutEffect(() => {
     const handleResize = () => {
       const isMobileNow = window.innerWidth <= 768;
-      if (isMobile !== isMobileNow) {
-        setIsMobile(isMobileNow);
-      }
-
-      if (
-        window.innerWidth !== windowWidth ||
-        window.innerHeight !== windowHeight
-      ) {
+      if (isMobile !== isMobileNow) setIsMobile(isMobileNow);
+      if (window.innerWidth !== windowWidth || window.innerHeight !== windowHeight) {
         setWindowWidth(window.innerWidth);
         setWindowHeight(window.innerHeight);
         ScrollTrigger.refresh();
       }
     };
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobile, windowWidth, windowHeight]);
 
-  // Centralizzazione delle animazioni in App.jsx
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
       if (!isMobile && scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const totalWidth = container.scrollWidth - window.innerWidth;
-
-        // Se esiste già un tween precedente, lo uccidiamo
-        if (scrollTween) {
-          scrollTween.kill();
-        }
-
-        // Crea l'animazione dello scroll orizzontale
+        if (scrollTween) scrollTween.kill();
         const tween = gsap.to(container, {
           x: -totalWidth,
           ease: "none",
@@ -96,13 +65,11 @@ function App() {
             scrub: 2,
             pin: true,
             anticipatePin: 1,
-            invalidateOnRefresh: true, // Ricalcola il tween su refresh
+            invalidateOnRefresh: true,
           },
         });
-
         setScrollTween(tween);
       } else {
-        // Se siamo su mobile, resettiamo lo scroll e rimuoviamo l'animazione dello scroll orizzontale
         if (scrollContainerRef.current) {
           gsap.set(scrollContainerRef.current, { clearProps: 'all' });
         }
@@ -111,25 +78,18 @@ function App() {
           setScrollTween(null);
         }
       }
-
       ScrollTrigger.refresh();
     }, scrollContainerRef);
-
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, windowWidth, windowHeight]); // Non includiamo scrollTween per evitare loop
+  }, [isMobile, windowWidth, windowHeight]);
 
-  // Gestione del tema (aggiunge un attributo al body)
   useEffect(() => {
     document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  // Gestione del cursore personalizzato (se applicabile)
   useEffect(() => {
     document.body.classList.add('no-default-cursor');
-    return () => {
-      document.body.classList.remove('no-default-cursor');
-    };
+    return () => document.body.classList.remove('no-default-cursor');
   }, []);
 
   return (
@@ -163,20 +123,69 @@ function App() {
                   </DndProvider>
                 </div>
                 <div className="section"><Contacts /></div>
-                {/* Il portal overlay viene renderizzato solo su desktop */}
+                {/* Overlay AboutUs per desktop */}
                 {!isMobile && (
                   <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-                    <AboutUsDesktop /> {/* Usando la versione desktop */}
+                    <AboutUsDesktop />
                   </AboutUsPortal>
                 )}
               </>
             } />
-            {/* Route dedicata per AboutUs su mobile */}
+            {/* Route per AboutUs su mobile */}
             <Route path="/about-us" element={<AboutUs />} />
+            {/* Route per il project section mobile */}
+            {isMobile && (
+  <Route path="/project/:id" element={<ProjectSectionMobileWrapper />} />
+)}
           </Routes>
         </div>
       </div>
     </Router>
+  );
+}
+
+// Wrapper per leggere il parametro del progetto e passarlo a ProjectSectionMobile
+function ProjectSectionMobileWrapper() {
+  const { id } = useParams();
+
+  // Dati dei progetti (modifica con i tuoi dati reali)
+  const projectData = {
+    Progetto1: {
+      title: "Progetto 1",
+      description: "Descrizione del Progetto 1",
+      images: [
+        "/assets/mockup1.jpg",
+        "/assets/mockup2.jpg",
+        "/assets/mockup3.jpg",
+        "/assets/mockup4.jpg",
+        "/assets/mockup5.jpg",
+        "/assets/mockup6.jpg",
+      ],
+      link: "https://example.com/progetto1",
+    },
+    Progetto2: {
+      title: "Progetto 2",
+      description: "Descrizione del Progetto 2",
+      images: [
+        "/assets/mockup1.jpg",
+        "/assets/mockup2.jpg",
+        "/assets/mockup3.jpg",
+        "/assets/mockup4.jpg",
+        "/assets/mockup5.jpg",
+        "/assets/mockup6.jpg",
+      ],
+      link: null,
+    },
+    // ... altri progetti ...
+  };
+
+  // Non è necessario tenere uno stato isOpen qui, se non lo usi
+  return (
+    <ProjectSectionMobile
+      onClose={() => {}}
+      project={id}
+      projectData={projectData}
+    />
   );
 }
 

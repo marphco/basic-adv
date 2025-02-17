@@ -7,6 +7,8 @@ import ProjectSection from "./ProjectSection"; // Importa il componente ProjectS
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types"; // Importa PropTypes
+import ProjectSectionDesktop from "./ProjectSectionDesktop";
+import ProjectSectionMobile from "./ProjectSectionMobile";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,67 +27,39 @@ const useIsMobile = () => {
 
 const Folder = ({ id, left, top, isMobile, onOpenSection }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: id,
+    id,
     disabled: isMobile,
   });
 
   const style = isMobile
     ? {}
     : {
-        ...(transform
-          ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-          : {}),
         left: left,
         top: top,
         position: "absolute",
+        ...(transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : {}),
       };
 
-  const lastClickTimeRef = useRef(0);
-  const doubleClickTime = 300;
+  // Su desktop usiamo onDoubleClick, mentre su mobile onClick
+  const handleDoubleClick = (e) => {
+    e.preventDefault();
+    onOpenSection(id);
+  };
 
-  const handleClick = useCallback(
-    (event) => {
-      if (isMobile) {
-        // Mobile: apri la sezione subito
-        onOpenSection(id);
-      } else {
-        // Desktop: rileva doppio clic
-        const currentTime = Date.now();
-        const delta = currentTime - lastClickTimeRef.current;
-
-        if (delta < doubleClickTime) {
-          event.preventDefault();
-          onOpenSection(id);
-        }
-
-        if (delta >= doubleClickTime) {
-          lastClickTimeRef.current = currentTime;
-        }
-      }
-    },
-    [isMobile, onOpenSection, id]
-  );
-
-  // Solo su Desktop attachiamo i listener di drag + doppio clic
-  const modifiedListeners = !isMobile
-    ? {
-        ...listeners,
-        onPointerDown: (event) => {
-          // Se clic sinistro, verifichiamo doppio clic
-          if (event.button === 0 && !event.defaultPrevented) {
-            handleClick(event);
-          }
-          listeners.onPointerDown(event);
-        },
-      }
-    : {};
+  const handleClick = () => {
+    if (isMobile) {
+      onOpenSection(id);
+    }
+  };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...(isMobile ? { onClick: handleClick } : modifiedListeners)}
+      {...(isMobile
+        ? { onClick: handleClick }
+        : { onDoubleClick: handleDoubleClick, ...listeners })}
       className={`folder ${isMobile ? "mobile" : ""}`}
     >
       <img
@@ -109,7 +83,7 @@ Folder.propTypes = {
   onOpenSection: PropTypes.func.isRequired,
 };
 
-function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default a null
+const Portfolio = ({ scrollTween = null }) => {
   const isMobile = useIsMobile();
 
   const [folders, setFolders] = useState([
@@ -118,21 +92,48 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
     // ... altri progetti ...
   ]);
 
-  // Stato per la modalità
+  // Stato per la modalità e per la sezione progetto
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
 
-  // Salveremo il progress in una ref (o in state)
+  // Dati dei progetti
+  const projectData = {
+    Progetto1: {
+      title: "Progetto 1",
+      description: "Descrizione del Progetto 1",
+      images: [
+        "/assets/mockup1.jpg",
+        "/assets/mockup2.jpg",
+        "/assets/mockup3.jpg",
+        "/assets/mockup4.jpg",
+        "/assets/mockup5.jpg",
+        "/assets/mockup6.jpg",
+      ],
+      link: "https://example.com/progetto1",
+    },
+    Progetto2: {
+      title: "Progetto 2",
+      description: "Descrizione del Progetto 2",
+      images: [
+        "/assets/mockup1.jpg",
+        "/assets/mockup2.jpg",
+        "/assets/mockup3.jpg",
+        "/assets/mockup4.jpg",
+        "/assets/mockup5.jpg",
+        "/assets/mockup6.jpg",
+      ],
+      link: null,
+    },
+    // ... altri progetti ...
+  };
+
   const savedProgressRef = useRef(0);
 
-  // Funzione per aprire la sezione
   const openSection = (projectId) => {
     document.body.classList.add("project-section-open");
 
     if (scrollTween?.scrollTrigger) {
-      // Salviamo la posizione corrente (progress) di ScrollTrigger
       savedProgressRef.current = scrollTween.scrollTrigger.progress;
-      // Disabilitiamo senza resettare
       scrollTween.scrollTrigger.disable(false, false);
     }
 
@@ -144,11 +145,8 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
     document.body.classList.remove("project-section-open");
 
     if (scrollTween?.scrollTrigger) {
-      // Riabilitiamo senza resettare
       scrollTween.scrollTrigger.enable(false, false);
-      // Impostiamo progress all'esatto valore in cui era prima
       scrollTween.scrollTrigger.progress = savedProgressRef.current;
-      // Aggiorniamo forzando un refresh interno
       scrollTween.scrollTrigger.update();
     }
 
@@ -172,22 +170,15 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
     );
   }
 
-  // Riferimento alla sezione Portfolio Text
   const portfolioRef = useRef(null);
 
-  // Animazione della banda arancione con testo
   useLayoutEffect(() => {
     const portfolioElem = portfolioRef.current;
     const portfolioText = portfolioElem?.querySelector(".portfolio-text");
 
-    // if (!portfolioElem || !portfolioText) return;
-
     let ctx = gsap.context(() => {
-      // Animazione per 'portfolio-text'
       if (isMobile) {
-        // Animazione su mobile
         gsap.set(portfolioText, { x: '90vw' });
-
         gsap.to(portfolioText, {
           x: -200,
           ease: 'none',
@@ -200,7 +191,6 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
           },
         });
       } else {
-        // Animazione su desktop (orizzontale)
         gsap.to(portfolioText, {
           yPercent: 30,
           ease: "none",
@@ -210,7 +200,6 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
             end: "bottom top",
             scrub: 2,
             invalidateOnRefresh: true,
-            // markers:true
           },
         });
       }
@@ -221,14 +210,12 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
 
   return (
     <div className="portfolio-section" ref={portfolioRef}>
-      {/* Barra Portfolio Text */}
       <div className="portfolio">
         <div className="portfolio-text">
           Abbiamo riordinato il desktop solo per te.
         </div>
       </div>
 
-      {/* Introduzione per Desktop */}
       {!isMobile && (
         <div className="intro-portfolio">
           <p>
@@ -238,7 +225,6 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
         </div>
       )}
 
-      {/* Introduzione per Mobile */}
       {isMobile && (
         <div className="intro-mobile">
           <p>
@@ -259,18 +245,30 @@ function Portfolio({ scrollTween = null }) { // Imposta scrollTween con default 
               onOpenSection={openSection}
             />
           ))}
+
           {sectionIsOpen && (
-            <ProjectSection onClose={closeSection} project={currentProject} />
+            isMobile ? (
+              <ProjectSectionMobile 
+                onClose={closeSection}
+                project={currentProject}
+                projectData={projectData}
+              />
+            ) : (
+              <ProjectSectionDesktop 
+                onClose={closeSection}
+                project={currentProject}
+                projectData={projectData}
+              />
+            )
           )}
         </div>
       </DndContext>
     </div>
   );
-}
+};
 
-// Definizione delle PropTypes per il componente Portfolio
 Portfolio.propTypes = {
-  scrollTween: PropTypes.object, // Tipizza meglio se possibile (es. PropTypes.shape({...}))
+  scrollTween: PropTypes.object,
 };
 
 export default Portfolio;
