@@ -17,6 +17,7 @@ import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
 import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // overlay AboutUs per desktop
 import AboutUs from "./components/about-us/AboutUs"; // pagina AboutUs per mobile
 import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
+import ProjectSectionMobilePage from "./components/portfolio/ProjectSectionMobilePage"; // importa il nuovo componente
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -133,59 +134,15 @@ function App() {
             } />
             {/* Route per AboutUs su mobile */}
             <Route path="/about-us" element={<AboutUs />} />
-            {/* Route per il project section mobile */}
+            {/* Route per i progetti su mobile */}
             {isMobile && (
-  <Route path="/project/:id" element={<ProjectSectionMobileWrapper />} />
-)}
+              <Route path="/project/:id" element={<ProjectSectionMobilePage />} />
+            )}
+
           </Routes>
         </div>
       </div>
     </Router>
-  );
-}
-
-// Wrapper per leggere il parametro del progetto e passarlo a ProjectSectionMobile
-function ProjectSectionMobileWrapper() {
-  const { id } = useParams();
-
-  // Dati dei progetti (modifica con i tuoi dati reali)
-  const projectData = {
-    Progetto1: {
-      title: "Progetto 1",
-      description: "Descrizione del Progetto 1",
-      images: [
-        "/assets/mockup1.jpg",
-        "/assets/mockup2.jpg",
-        "/assets/mockup3.jpg",
-        "/assets/mockup4.jpg",
-        "/assets/mockup5.jpg",
-        "/assets/mockup6.jpg",
-      ],
-      link: "https://example.com/progetto1",
-    },
-    Progetto2: {
-      title: "Progetto 2",
-      description: "Descrizione del Progetto 2",
-      images: [
-        "/assets/mockup1.jpg",
-        "/assets/mockup2.jpg",
-        "/assets/mockup3.jpg",
-        "/assets/mockup4.jpg",
-        "/assets/mockup5.jpg",
-        "/assets/mockup6.jpg",
-      ],
-      link: null,
-    },
-    // ... altri progetti ...
-  };
-
-  // Non è necessario tenere uno stato isOpen qui, se non lo usi
-  return (
-    <ProjectSectionMobile
-      onClose={() => {}}
-      project={id}
-      projectData={projectData}
-    />
   );
 }
 
