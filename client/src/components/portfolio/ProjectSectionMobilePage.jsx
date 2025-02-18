@@ -23,7 +23,6 @@ const projectData = {
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
-  // ...altri progetti se necessario...
 };
 
 export default function ProjectSectionMobilePage() {
@@ -32,7 +31,6 @@ export default function ProjectSectionMobilePage() {
   const containerRef = useRef(null);
   const imagesRowRef = useRef(null);
 
-  // Normalizza l'id: ad esempio "progetto1" → "Progetto1"
   const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
   const content = projectData[normalizedId] || {
     title: "Progetto non trovato",
@@ -41,10 +39,8 @@ export default function ProjectSectionMobilePage() {
     link: null,
   };
 
-  // Duplica le immagini per il loop infinito
   const duplicatedImages = content.images.concat(content.images);
 
-  // Effetto fade-in per l'intera pagina
   useEffect(() => {
     if (containerRef.current) {
       gsap.fromTo(
@@ -55,13 +51,11 @@ export default function ProjectSectionMobilePage() {
     }
   }, []);
 
-  // Blocca lo scroll del body (simile a AboutUs)
   useEffect(() => {
     document.body.classList.add("freeze-scroll");
     return () => document.body.classList.remove("freeze-scroll");
   }, []);
 
-  // Attendi il caricamento di tutte le immagini e imposta lo scroll iniziale e il loop
   useEffect(() => {
     const row = imagesRowRef.current;
     if (!row) return;
@@ -76,7 +70,6 @@ export default function ProjectSectionMobilePage() {
       })
     );
     Promise.all(loadPromises).then(() => {
-      // Evita 0 esatto per il loop
       row.scrollLeft = 1;
       const singleContentWidth = row.scrollWidth / 2;
       const TOLERANCE = 1;
@@ -84,7 +77,7 @@ export default function ProjectSectionMobilePage() {
         if (row.scrollLeft < TOLERANCE) {
           row.scrollLeft += singleContentWidth - TOLERANCE;
         } else if (row.scrollLeft >= singleContentWidth - TOLERANCE) {
-          row.scrollLeft -= singleContentWidth - TOLERANCE;
+          row.scrollLeft -= singleContentWidth + TOLERANCE;
         }
       };
       row.addEventListener("scroll", handleScroll);
@@ -92,20 +85,6 @@ export default function ProjectSectionMobilePage() {
     });
   }, [duplicatedImages]);
 
-  // Converte lo scroll verticale in scroll orizzontale per la riga immagini
-  useEffect(() => {
-    const row = imagesRowRef.current;
-    if (!row) return;
-    const onWheelHandler = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      row.scrollLeft += e.deltaY;
-    };
-    row.addEventListener("wheel", onWheelHandler, { passive: false });
-    return () => row.removeEventListener("wheel", onWheelHandler);
-  }, []);
-
-  // Handler per chiudere la pagina e tornare indietro
   const handleClose = () => {
     navigate(-1);
   };
@@ -116,18 +95,17 @@ export default function ProjectSectionMobilePage() {
       className="project-section-mobile-page"
       style={{
         width: "100vw",
-        height: "100vh",
-        overflow: "hidden",
+        minHeight: "100vh", // Permette alla pagina di espandersi oltre 100vh
+        overflowY: "auto", // Abilita lo scroll verticale
+        overflowX: "hidden",
         display: "flex",
         flexDirection: "column",
+        backgroundColor: "#fff",
       }}
     >
-      {/* Riga superiore: titolo, descrizione, link e [CHIUDI] */}
       <div
         className="project-section-mobile-top"
         style={{
-          height: "50vh",
-          overflowY: "auto",
           padding: "20px",
           boxSizing: "border-box",
         }}
@@ -152,13 +130,13 @@ export default function ProjectSectionMobilePage() {
           [CHIUDI]
         </button>
       </div>
-      {/* Riga inferiore: riga immagini con scroll orizzontale (loop infinito) */}
       <div
         className="project-section-mobile-bottom"
         ref={imagesRowRef}
         style={{
           height: "50vh",
-          overflowX: "scroll",
+          overflowX: "auto",
+          overflowY: "hidden", // Solo scroll orizzontale per le immagini
           whiteSpace: "nowrap",
           WebkitOverflowScrolling: "touch",
         }}
@@ -168,7 +146,7 @@ export default function ProjectSectionMobilePage() {
             key={index}
             src={img}
             alt={`${content.title} - ${(index % content.images.length) + 1}`}
-            style={{ display: "inline-block", height: "100%" }}
+            style={{ display: "inline-block", height: "100%", objectFit: "cover" }}
           />
         ))}
       </div>
