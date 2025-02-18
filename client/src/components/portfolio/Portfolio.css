@@ -123,6 +123,10 @@ body.project-section-open {
   overflow: hidden;
 }
 
+body.freeze-scroll {
+  overflow: hidden; /* Blocca lo scroll del body quando applicato */
+}
+
 .project-section-overlay,
 .project-section {
   overscroll-behavior: none;
@@ -202,24 +206,35 @@ body[data-theme="dark"] .folder-name,
   color: var(--primary-text-color);
 }
 
-/* Stili per ProjectSectionMobilePage */
+/* Portfolio.css (solo sezioni modificate) */
+
 .project-section-mobile-page {
   width: 100vw;
-  min-height: 100vh; /* Cambiato da height a min-height per consentire espansione */
-  overflow-y: auto; /* Abilita lo scroll verticale complessivo */
+  min-height: 350vh; /* Altezza totale: 50vh fissa + 300vh immagini */
+  overflow-y: auto; /* Scroll verticale per l’intera pagina */
+  overflow-x: hidden;
   background-color: #fff;
   position: relative;
 }
 
 .project-section-mobile-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 50vh; /* Altezza fissa per la sezione superiore */
   padding: 20px;
   box-sizing: border-box;
+  background-color: #fff;
+  z-index: 10;
+  overflow-y: auto; /* Scroll interno se necessario */
 }
 
 .project-section-mobile-top h2 {
   font-size: 2rem;
   font-weight: 700;
   color: var(--primary-text-color);
+  margin: 0 0 10px 0;
 }
 
 .project-section-mobile-top p {
@@ -227,30 +242,33 @@ body[data-theme="dark"] .folder-name,
   font-weight: 200;
   line-height: 1.5;
   color: var(--primary-text-color);
+  margin: 0 0 10px 0;
 }
 
 .project-section-mobile-bottom {
-  overflow-x: auto;
-  overflow-y: hidden; /* Impedisce scroll verticale nella riga immagini */
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  height: 50vh; /* Mantiene altezza fissa per le immagini */
+  margin-top: 50vh; /* Spazio per la sezione fissa */
+  height: 300vh; /* Altezza totale delle sei immagini */
+  overflow-y: auto; /* Scroll verticale */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Migliora lo scroll su iOS */
 }
 
 .project-section-mobile-bottom img {
-  display: inline-block;
-  height: 100%;
+  display: block;
+  width: 100vw;
+  height: 50vh; /* Ogni immagine occupa 50vh */
   object-fit: cover;
 }
 
 .project-section-mobile-close {
-  margin-top: 20px;
+  margin-top: 10px;
   font-size: 1rem;
   background: none;
   border: none;
   cursor: pointer;
   color: var(--primary-text-color);
 }
+
 
 /* Responsività */
 @media screen and (max-width: 768px) {
@@ -309,5 +327,5 @@ body[data-theme="dark"] .folder-name,
     font-weight: 200;
     max-width: 80vw;
     line-height: 1.1;
-  }
+  } 
 }

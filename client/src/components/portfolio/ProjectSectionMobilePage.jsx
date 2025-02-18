@@ -13,13 +13,13 @@ import mockup6 from "../../assets/mockup6.jpg";
 const projectData = {
   Progetto1: {
     title: "Progetto 1",
-    description: "Descrizione del Progetto 1",
+    description: "Descrizione del Progetto 1.",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: "https://example.com/progetto1",
   },
   Progetto2: {
     title: "Progetto 2",
-    description: "Descrizione del Progetto 2",
+    description: "Descrizione del Progetto 2.",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
@@ -29,7 +29,6 @@ export default function ProjectSectionMobilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const containerRef = useRef(null);
-  const imagesRowRef = useRef(null);
 
   const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
   const content = projectData[normalizedId] || {
@@ -38,8 +37,6 @@ export default function ProjectSectionMobilePage() {
     images: [],
     link: null,
   };
-
-  const duplicatedImages = content.images.concat(content.images);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -51,42 +48,8 @@ export default function ProjectSectionMobilePage() {
     }
   }, []);
 
-  useEffect(() => {
-    document.body.classList.add("freeze-scroll");
-    return () => document.body.classList.remove("freeze-scroll");
-  }, []);
-
-  useEffect(() => {
-    const row = imagesRowRef.current;
-    if (!row) return;
-    const imgs = row.querySelectorAll("img");
-    const loadPromises = Array.from(imgs).map((img) =>
-      new Promise((resolve) => {
-        if (img.complete) resolve();
-        else {
-          img.addEventListener("load", resolve);
-          img.addEventListener("error", resolve);
-        }
-      })
-    );
-    Promise.all(loadPromises).then(() => {
-      row.scrollLeft = 1;
-      const singleContentWidth = row.scrollWidth / 2;
-      const TOLERANCE = 1;
-      const handleScroll = () => {
-        if (row.scrollLeft < TOLERANCE) {
-          row.scrollLeft += singleContentWidth - TOLERANCE;
-        } else if (row.scrollLeft >= singleContentWidth - TOLERANCE) {
-          row.scrollLeft -= singleContentWidth + TOLERANCE;
-        }
-      };
-      row.addEventListener("scroll", handleScroll);
-      return () => row.removeEventListener("scroll", handleScroll);
-    });
-  }, [duplicatedImages]);
-
   const handleClose = () => {
-    navigate(-1);
+    navigate(-1); // Torna indietro senza modificare lo scroll del body
   };
 
   return (
@@ -95,19 +58,26 @@ export default function ProjectSectionMobilePage() {
       className="project-section-mobile-page"
       style={{
         width: "100vw",
-        minHeight: "100vh", // Permette alla pagina di espandersi oltre 100vh
-        overflowY: "auto", // Abilita lo scroll verticale
+        minHeight: "350vh", // Altezza totale per ospitare 50vh fissa + 300vh immagini
+        overflowY: "auto", // Scroll verticale per l’intera pagina
         overflowX: "hidden",
-        display: "flex",
-        flexDirection: "column",
         backgroundColor: "#fff",
+        position: "relative",
       }}
     >
       <div
         className="project-section-mobile-top"
         style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "50vh", // Altezza fissa per la sezione superiore
           padding: "20px",
           boxSizing: "border-box",
+          backgroundColor: "#fff",
+          zIndex: 10,
+          overflowY: "auto", // Scroll interno se il contenuto è lungo
         }}
       >
         <h2>{content.title}</h2>
@@ -125,28 +95,31 @@ export default function ProjectSectionMobilePage() {
         <button
           onClick={handleClose}
           className="project-section-mobile-close"
-          style={{ marginTop: "20px" }}
+          style={{ marginTop: "10px" }}
         >
           [CHIUDI]
         </button>
       </div>
       <div
         className="project-section-mobile-bottom"
-        ref={imagesRowRef}
         style={{
-          height: "50vh",
-          overflowX: "auto",
-          overflowY: "hidden", // Solo scroll orizzontale per le immagini
-          whiteSpace: "nowrap",
-          WebkitOverflowScrolling: "touch",
+          marginTop: "50vh", // Spazio per la sezione fissa sopra
+          height: "300vh", // Altezza totale delle sei immagini
+          overflowY: "auto", // Scroll verticale per le immagini
+          overflowX: "hidden",
         }}
       >
-        {duplicatedImages.map((img, index) => (
+        {content.images.map((img, index) => (
           <img
             key={index}
             src={img}
-            alt={`${content.title} - ${(index % content.images.length) + 1}`}
-            style={{ display: "inline-block", height: "100%", objectFit: "cover" }}
+            alt={`${content.title} - ${index + 1}`}
+            style={{
+              display: "block",
+              width: "100vw",
+              height: "50vh", // Ogni immagine occupa 50vh
+              objectFit: "cover",
+            }}
           />
         ))}
       </div>

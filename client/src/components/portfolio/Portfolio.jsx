@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Hook per determinare se siamo su mobile
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -86,14 +85,11 @@ const Portfolio = ({ scrollTween = null }) => {
   const [folders, setFolders] = useState([
     { id: "Progetto1", left: 300, top: 100 },
     { id: "Progetto2", left: 500, top: 100 },
-    // ... eventuali altri progetti ...
   ]);
 
-  // Stato per gestire l'apertura della sezione progetto e il progetto corrente
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
 
-  // Dati dei progetti
   const projectData = {
     Progetto1: {
       title: "Progetto 1",
@@ -127,10 +123,8 @@ const Portfolio = ({ scrollTween = null }) => {
 
   const openSection = (projectId) => {
     if (isMobile) {
-      // Su mobile, naviga alla pagina dedicata al progetto
-      navigate(`/project/${projectId.toLowerCase()}`); // Assicurati che il path corrisponda
+      navigate(`/project/${projectId.toLowerCase()}`);
     } else {
-      // Su desktop, apri l'overlay
       document.body.classList.add("project-section-open");
       if (scrollTween?.scrollTrigger) {
         savedProgressRef.current = scrollTween.scrollTrigger.progress;
@@ -208,7 +202,7 @@ const Portfolio = ({ scrollTween = null }) => {
     <div className="portfolio-section" ref={portfolioRef}>
       <div className="portfolio">
         <div className="portfolio-text">
-          Abbiamo riordinato il desktop solo per te.
+          abbiamo riordinato il desktop solo per te.
         </div>
       </div>
       {isMobile ? (
