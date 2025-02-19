@@ -167,4 +167,10 @@
     .navbar {
         padding: 0 10%;
     }
+
+    .navbar-close button {
+        background: none;
+        color: var(--primary-text-color);
+        transition: all .5s ease;
+    }
 }

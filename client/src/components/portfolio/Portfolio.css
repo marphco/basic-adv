@@ -117,6 +117,7 @@
   border: none;
   color: var(--primary-text-color);
   z-index: 10001;
+  transition: all .5s ease;
 }
 
 body.project-section-open {
@@ -206,15 +207,24 @@ body[data-theme="dark"] .folder-name,
   color: var(--primary-text-color);
 }
 
-/* Portfolio.css (solo sezioni modificate) */
+.project-text button {
+  padding: 1rem;
+  max-width: fit-content;
+  background-color: var(--foreground-color);
+  color: white;
+  border: 1px solid var(--foreground-color);
+  transition: all .5s ease;
+}
+
 
 .project-section-mobile-page {
   width: 100vw;
   min-height: 350vh; /* Altezza totale: 50vh fissa + 300vh immagini */
   overflow-y: auto; /* Scroll verticale per l’intera pagina */
   overflow-x: hidden;
-  background-color: #fff;
   position: relative;
+  background-color: var(--background-color) !important;
+  transition: all .5s ease !important;
 }
 
 .project-section-mobile-top {
@@ -225,9 +235,10 @@ body[data-theme="dark"] .folder-name,
   height: 50vh; /* Altezza fissa per la sezione superiore */
   padding: 20px;
   box-sizing: border-box;
-  background-color: #fff;
   z-index: 10;
   overflow-y: auto; /* Scroll interno se necessario */
+  background-color: var(--background-color);
+  transition: all .5s ease;
 }
 
 .project-section-mobile-top h2 {
@@ -261,13 +272,30 @@ body[data-theme="dark"] .folder-name,
   padding: 0;
 }
 
-.project-section-mobile-close {
-  margin-top: 10px;
-  font-size: 1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--primary-text-color);
+.project-text-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.project-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 5vw;
+}
+
+.project-title {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary-text-color) !important;
+  padding-bottom: 1vh;
+  transition: color .5s ease !important;
+}
+
+.project-description {
+  color: var(--primary-text-color) !important;
+  transition: all .5s ease !important;
 }
 
 
@@ -328,5 +356,6 @@ body[data-theme="dark"] .folder-name,
     font-weight: 200;
     max-width: 80vw;
     line-height: 1.1;
-  } 
+  }
+
 }

@@ -17,7 +17,7 @@ import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
 import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // overlay AboutUs per desktop
 import AboutUs from "./components/about-us/AboutUs"; // pagina AboutUs per mobile
 // import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
-import ProjectSectionMobilePage from "./components/portfolio/ProjectSectionMobilePage"; // importa il nuovo componente
+import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // importa il nuovo componente
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -136,7 +136,7 @@ function App() {
             <Route path="/about-us" element={<AboutUs />} />
             {/* Route per i progetti su mobile */}
             {isMobile && (
-              <Route path="/project/:id" element={<ProjectSectionMobilePage />} />
+              <Route path="/project/:id" element={<ProjectSectionMobile />} />
             )}
 
           </Routes>

@@ -1,6 +1,6 @@
 // ProjectSectionMobilePage.jsx
 import { useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { gsap } from "gsap";
 import "./Portfolio.css";
 import mockup1 from "../../assets/mockup1.jpg";
@@ -27,7 +27,6 @@ const projectData = {
 
 export default function ProjectSectionMobilePage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const containerRef = useRef(null);
   const imagesRowRef = useRef(null);
 
@@ -78,10 +77,6 @@ export default function ProjectSectionMobilePage() {
     });
   }, []);
 
-  const handleClose = () => {
-    navigate(-1);
-  };
-
   return (
     <div
       ref={containerRef}
@@ -91,7 +86,6 @@ export default function ProjectSectionMobilePage() {
         minHeight: "100vh",
         overflowY: "auto",
         overflowX: "hidden",
-        backgroundColor: "#fff",
         position: "relative",
       }}
     >
@@ -105,30 +99,26 @@ export default function ProjectSectionMobilePage() {
           height: "30vh",
           padding: "20px",
           boxSizing: "border-box",
-          backgroundColor: "#fff",
           zIndex: 10,
           overflowY: "auto",
         }}
       >
-        <h2>{content.title}</h2>
-        <p>{content.description}</p>
-        {content.link && (
-          <a
-            href={content.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="project-link"
-          >
-            Visita il sito
-          </a>
-        )}
-        <button
-          onClick={handleClose}
-          className="project-section-mobile-close"
-          style={{ marginTop: "10px" }}
-        >
-          [CHIUDI]
-        </button>
+        <div className="project-text-container">
+          <div className="project-text">
+            <h2 className="project-title">{content.title}</h2>
+            <p className="project-description">{content.description}</p>
+            {content.link && (
+              <button
+              href={content.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="project-link"
+            >
+              Visita il sito
+            </button>
+            )}
+          </div>
+        </div>
       </div>
       <div
         ref={imagesRowRef}

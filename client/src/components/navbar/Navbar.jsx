@@ -1,56 +1,76 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import './Navbar.css';
-import Toggle from '../toggle/Toggle';
-import PropTypes from 'prop-types';
-import classNames from 'classnames';
+// Navbar.jsx
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+// import { , useParams } from "react-router-dom";
+
+import "./Navbar.css";
+import Toggle from "../toggle/Toggle";
+import PropTypes from "prop-types";
+import classNames from "classnames";
 
 const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Se siamo nella route About Us, mostriamo "[CHIUDI]" al posto dell'hamburger
-  const inAboutUs = location.pathname === "/about-us" || location.pathname === "/about-us/";
+  // Controlla se siamo in About Us o in una pagina progetto
+  const inAboutUsOrProject = 
+    location.pathname === "/about-us" || 
+    location.pathname === "/about-us/" || 
+    /^\/project\/[^/]+$/.test(location.pathname); // Match per /project/:id
 
   const handleToggleChange = () => {
     setIsDark(!isDark);
   };
 
   const toggleMenu = () => {
-    setIsMenuOpen(prev => !prev);
+    setIsMenuOpen((prev) => !prev);
   };
 
-  // Quando un link viene cliccato, chiudiamo il menu immediatamente
   const handleLinkClick = () => {
     setIsMenuOpen(false);
   };
 
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="navbar-block">
-      <nav className={classNames('navbar', { 'dark-mode': isDark })}>
-        {inAboutUs ? (
+      <nav className={classNames("navbar", { "dark-mode": isDark })}>
+        {inAboutUsOrProject ? (
           <div className="navbar-close">
-            <Link to="/" onClick={handleLinkClick}>[CHIUDI]</Link>
+            <button
+          onClick={handleClose}
+        >
+          [CHIUDI]
+        </button>
+            
           </div>
         ) : (
           <div className="hamburger-menu" onClick={toggleMenu}>
-            <div className={classNames('hamburger', { open: isMenuOpen, 'dark-mode': isDark })} />
-            <div className={classNames('hamburger', { open: isMenuOpen, 'dark-mode': isDark })} />
+            <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
+            <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
           </div>
         )}
-        <ul className={classNames('navbar-menu', { open: isMenuOpen })}>
+        <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
           <li>
-            <Link to="/" onClick={handleLinkClick}>HOME</Link>
+            <Link to="/" onClick={handleLinkClick}>
+              HOME
+            </Link>
           </li>
           <li>
             {isMobile ? (
-              <Link to="/about-us" onClick={handleLinkClick}>ABOUT US</Link>
+              <Link to="/about-us" onClick={handleLinkClick}>
+                ABOUT US
+              </Link>
             ) : (
               <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  openAboutUs(); // Per aprire l'overlay About Us su desktop
+                  openAboutUs();
                   handleLinkClick();
                 }}
               >
@@ -59,10 +79,14 @@ const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
             )}
           </li>
           <li>
-            <Link to="/portfolio" onClick={handleLinkClick}>PORTFOLIO</Link>
+            <Link to="/portfolio" onClick={handleLinkClick}>
+              PORTFOLIO
+            </Link>
           </li>
           <li>
-            <Link to="/contacts" onClick={handleLinkClick}>CONTACTS</Link>
+            <Link to="/contacts" onClick={handleLinkClick}>
+              CONTACTS
+            </Link>
           </li>
         </ul>
         <Toggle isChecked={isDark} handleChange={handleToggleChange} />
