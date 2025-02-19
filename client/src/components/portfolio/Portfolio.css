@@ -216,48 +216,99 @@ body[data-theme="dark"] .folder-name,
   transition: all .5s ease;
 }
 
-
-.project-section-mobile-page {
+/* Stili per l'overlay del desktop */
+.project-section-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
-  min-height: 350vh; /* Altezza totale: 50vh fissa + 300vh immagini */
-  overflow-y: auto; /* Scroll verticale per l’intera pagina */
-  overflow-x: hidden;
-  position: relative;
-  background-color: var(--background-color) !important;
-  transition: all .5s ease !important;
+  height: 100vh;
+  z-index: 9999;
+  background-color: rgba(0,0,0,0.5);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Stili per la sezione principale del desktop */
+.project-section {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Stili per il pulsante di chiusura */
+.project-section-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* Stili per il contenitore del contenuto */
+.project-content {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* Stili per la colonna sinistra (immagini) */
+.project-left {
+  width: 50vw;
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.project-left img {
+  width: 100%;
+  display: block;
+}
+
+/* Stili per la colonna destra (testo) */
+.project-right {
+  width: 50vw;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Stili per la pagina mobile */
+.project-section-mobile-page {
+  width: 100vw;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  background-color: var(--background-color);
+  transition: all .5s ease;
+}
+
+/* Stili per la sezione superiore mobile */
 .project-section-mobile-top {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 50vh; /* Altezza fissa per la sezione superiore */
-  padding: 20px;
+  height: 50vh;
+  padding: 10vh 5vh;
   box-sizing: border-box;
   z-index: 10;
-  overflow-y: auto; /* Scroll interno se necessario */
-  background-color: var(--background-color);
-  transition: all .5s ease;
+  overflow-y: auto;
 }
 
-.project-section-mobile-top h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--primary-text-color);
-  margin: 0 0 10px 0;
-}
-
-.project-section-mobile-top p {
-  font-size: 1rem;
-  font-weight: 200;
-  line-height: 1.5;
-  color: var(--primary-text-color);
-  margin: 0 0 10px 0;
-}
-
+/* Stili per la sezione inferiore mobile (immagini) */
 .project-section-mobile-bottom {
-  margin-top: 50vh;
+  margin-top: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -266,36 +317,24 @@ body[data-theme="dark"] .folder-name,
 .project-section-mobile-bottom img {
   display: block;
   width: 100vw;
-  height: 50vh;
+  height: 100vh;
   object-fit: cover;
   margin: 0;
   padding: 0;
 }
 
-.project-text-container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-}
-
-.project-text {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 5vw;
-}
-
-.project-title {
-  font-size: 4rem;
-  font-weight: 700;
-  color: var(--primary-text-color) !important;
+.project-text .project-title {
+  font-size: 2rem;
+  color: var(--primary-text-color);
+  transition: all .5s ease;
   padding-bottom: 1vh;
-  transition: color .5s ease !important;
 }
 
-.project-description {
-  color: var(--primary-text-color) !important;
-  transition: all .5s ease !important;
+.project-text .project-description {
+  color: var(--primary-text-color);
+  transition: all .5s ease;
+  font-weight: 200;
+  padding-bottom: 2vh;
 }
 
 

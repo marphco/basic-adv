@@ -9,7 +9,7 @@ import mockup6 from "../../assets/mockup6.jpg";
 const projectData = {
   Progetto1: {
     title: "Progetto 1",
-    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Natus in eveniet iste. Corporis voluptatibus autem magni voluptates quae eligendi. Nesciunt dolores vero soluta asperiores, natus eos eligendi enim unde ipsam.",
+    description: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Natus in eveniet iste. Corporis voluptatibus autem magni voluptates quae eligendi. Nesciunt dolores vero soluta asperiores, natus eos eligendi enim unde ipsam. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Natus in eveniet iste. Corporis voluptatibus autem magni voluptates quae eligendi.",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: "https://example.com/progetto1",
   },

@@ -61,27 +61,9 @@ export default function ProjectSectionMobilePage() {
     <div
       ref={containerRef}
       className="project-section-mobile-page"
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        overflowY: "auto",
-        overflowX: "hidden",
-        position: "relative",
-      }}
     >
       <div
         className="project-section-mobile-top"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "50vh",
-          padding: "20px",
-          boxSizing: "border-box",
-          zIndex: 10,
-          overflowY: "auto",
-        }}
       >
         <div className="project-text-container">
           <div className="project-text">
@@ -89,13 +71,13 @@ export default function ProjectSectionMobilePage() {
             <p className="project-description">{content.description}</p>
             {content.link && (
               <button
-              href={content.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="project-link"
-            >
-              Visita il sito
-            </button>
+                href={content.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="project-link"
+              >
+                Visita il sito
+              </button>
             )}
           </div>
         </div>
@@ -103,26 +85,12 @@ export default function ProjectSectionMobilePage() {
       <div
         ref={imagesRowRef}
         className="project-section-mobile-bottom"
-        style={{
-          marginTop: "60vh",
-          overflowY: "auto",
-          overflowX: "hidden",
-          WebkitOverflowScrolling: "touch",
-        }}
       >
         {content.images.map((img, index) => (
           <img
             key={index}
             src={img}
             alt={`${content.title} - ${index + 1}`}
-            style={{
-              display: "block",
-              width: "100vw",
-              height: "45vh",
-              objectFit: "cover",
-              margin: 0,
-              padding: 0,
-            }}
           />
         ))}
       </div>

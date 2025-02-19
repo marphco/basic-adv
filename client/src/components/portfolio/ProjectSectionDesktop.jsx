@@ -22,19 +22,6 @@ function ProjectSectionDesktop({ onClose, project }) {
   // Configura l’overlay full‑screen e anima l’entrata dal basso
   useEffect(() => {
     if (!overlayRef.current || !sectionRef.current) return;
-    Object.assign(overlayRef.current.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100vw",
-      height: "100vh",
-      zIndex: "9999",
-      backgroundColor: "rgba(0,0,0,0.5)",
-      overflow: "hidden",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    });
     // Previeni la propagazione dello scroll esterno
     overlayRef.current.addEventListener("wheel", (e) => e.stopPropagation(), {
       passive: false,
@@ -140,53 +127,20 @@ function ProjectSectionDesktop({ onClose, project }) {
       ref={overlayRef}
       className="project-section-overlay"
       onClick={handleClose}
-      // Assicura che l'overlay copra tutta la viewport
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        zIndex: 9999,
-        backgroundColor: "rgba(0,0,0,0.5)",
-        overflow: "hidden",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
     >
       <div
         ref={sectionRef}
         className="project-section"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "row",
-          overflow: "hidden",
-          position: "relative",
-        }}
       >
         <button
           className="project-section-close"
           onClick={handleClose}
-          style={{
-            position: "absolute",
-            top: "20px",
-            right: "20px",
-            zIndex: 10000,
-            background: "none",
-            border: "none",
-            fontSize: "1rem",
-            cursor: "pointer",
-          }}
         >
           [CHIUDI]
         </button>
         <div
           className="project-content"
-          style={{ display: "flex", width: "100%", height: "100%" }}
           onWheel={(e) => {
             // Impedisci lo scroll predefinito sull'overlay
             e.preventDefault();
@@ -200,34 +154,18 @@ function ProjectSectionDesktop({ onClose, project }) {
           <div
             className="project-left"
             ref={leftColumnRef}
-            style={{
-              width: "50vw",
-              height: "100vh",
-              overflowY: "auto",
-              WebkitOverflowScrolling: "touch",
-            }}
           >
             {duplicatedImages.map((img, index) => (
               <img
                 key={index}
                 src={img}
-                alt={`${content.title} - ${
-                  (index % content.images.length) + 1
-                }`}
-                style={{ width: "100%", display: "block" }}
+                alt={`${content.title} - ${(index % content.images.length) + 1}`}
               />
             ))}
           </div>
           {/* Colonna destra: testo e pulsante */}
           <div
             className="project-right"
-            style={{
-              width: "50vw",
-              height: "100vh",
-              overflowY: "auto",
-              padding: "20px",
-              boxSizing: "border-box",
-            }}
           >
             <h2>{content.title}</h2>
             <p>{content.description}</p>
