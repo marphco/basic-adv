@@ -3,28 +3,8 @@ import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import PropTypes from "prop-types";
-import mockup1 from "../../assets/mockup1.jpg";
-import mockup2 from "../../assets/mockup2.jpg";
-import mockup3 from "../../assets/mockup3.jpg";
-import mockup4 from "../../assets/mockup4.jpg";
-import mockup5 from "../../assets/mockup5.jpg";
-import mockup6 from "../../assets/mockup6.jpg";
+import projectData from "./projectData"; // Importa i dati centralizzati
 import "./Portfolio.css";
-
-const projectData = {
-  Progetto1: {
-    title: "Progetto 1",
-    description: "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ratione architecto laborum beatae, pariatur aspernatur optio quos repellat molestias iusto quisquam voluptates est magni nemo eligendi cupiditate adipisci fugiat nam mollitia. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ratione architecto laborum beatae, pariatur aspernatur optio quos repellat molestias iusto quisquam voluptates est magni nemo eligendi cupiditate adipisci fugiat nam mollitia.",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: "https://example.com",
-  },
-  Progetto2: {
-    title: "Progetto 2",
-    description: "Descrizione del Progetto 2",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-  },
-  // ... altri progetti se necessario ...
-};
 
 function ProjectSectionDesktop({ onClose, project }) {
   const overlayRef = useRef(null);

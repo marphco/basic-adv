@@ -1,4 +1,3 @@
-// Portfolio.jsx
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { DndContext, useDraggable, closestCenter } from "@dnd-kit/core";
 import "./Portfolio.css";
@@ -8,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
 import ProjectSectionDesktop from "./ProjectSectionDesktop";
 import { useNavigate } from "react-router-dom";
+import projectData from "./projectData"; // Importa i dati centralizzati
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -88,35 +88,6 @@ const Portfolio = ({ scrollTween = null }) => {
 
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
-
-  const projectData = {
-    Progetto1: {
-      title: "Progetto 1",
-      description: "Descrizione del Progetto 1",
-      images: [
-        "/assets/mockup1.jpg",
-        "/assets/mockup2.jpg",
-        "/assets/mockup3.jpg",
-        "/assets/mockup4.jpg",
-        "/assets/mockup5.jpg",
-        "/assets/mockup6.jpg",
-      ],
-      link: "https://example.com/progetto1",
-    },
-    Progetto2: {
-      title: "Progetto 2",
-      description: "Descrizione del Progetto 2",
-      images: [
-        "/assets/mockup1.jpg",
-        "/assets/mockup2.jpg",
-        "/assets/mockup3.jpg",
-        "/assets/mockup4.jpg",
-        "/assets/mockup5.jpg",
-        "/assets/mockup6.jpg",
-      ],
-      link: null,
-    },
-  };
 
   const savedProgressRef = useRef(0);
 

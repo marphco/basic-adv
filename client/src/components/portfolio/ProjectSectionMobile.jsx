@@ -3,27 +3,7 @@ import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { gsap } from "gsap";
 import "./Portfolio.css";
-import mockup1 from "../../assets/mockup1.jpg";
-import mockup2 from "../../assets/mockup2.jpg";
-import mockup3 from "../../assets/mockup3.jpg";
-import mockup4 from "../../assets/mockup4.jpg";
-import mockup5 from "../../assets/mockup5.jpg";
-import mockup6 from "../../assets/mockup6.jpg";
-
-const projectData = {
-  Progetto1: {
-    title: "Progetto 1",
-    description: "Descrizione del Progetto 1.",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: "https://example.com/progetto1",
-  },
-  Progetto2: {
-    title: "Progetto 2",
-    description: "Descrizione del Progetto 2.",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-};
+import projectData from "./projectData"; // Importa i dati centralizzati
 
 export default function ProjectSectionMobilePage() {
   const { id } = useParams();
@@ -96,7 +76,7 @@ export default function ProjectSectionMobilePage() {
           top: 0,
           left: 0,
           width: "100vw",
-          height: "30vh",
+          height: "50vh",
           padding: "20px",
           boxSizing: "border-box",
           zIndex: 10,
@@ -138,7 +118,7 @@ export default function ProjectSectionMobilePage() {
             style={{
               display: "block",
               width: "100vw",
-              height: "60vh",
+              height: "45vh",
               objectFit: "cover",
               margin: 0,
               padding: 0,
