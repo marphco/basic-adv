@@ -8,7 +8,7 @@ const InitialForm = ({ formData, handleFormInputChange, businessFields }) => {
   return (
     <div>
       <div className="form-group">
-        <label>Nome del Brand:</label>
+        <label>Nome del Brand </label>
         <input
           type="text"
           name="brandName"
@@ -19,7 +19,7 @@ const InitialForm = ({ formData, handleFormInputChange, businessFields }) => {
       </div>
 
       <div className="form-group">
-        <label>Tipo di Progetto:</label>
+        <label>Tipo di Progetto </label>
         <select
           name="projectType"
           value={projectType}
@@ -34,7 +34,7 @@ const InitialForm = ({ formData, handleFormInputChange, businessFields }) => {
       {/* Render condizionale dell'input per l'upload del logo */}
       {projectType === "restyling" && (
         <div className="form-group">
-          <label>Carica il tuo logo attuale (opzionale):</label>
+          <label>Carica il tuo logo attuale (opzionale): </label>
           <input
             type="file"
             name="currentLogo"
@@ -45,7 +45,7 @@ const InitialForm = ({ formData, handleFormInputChange, businessFields }) => {
       )}
 
       <div className="form-group">
-        <label>Settore Aziendale:</label>
+        <label>Settore Aziendale </label>
         <select
           name="businessField"
           value={businessField}
@@ -63,7 +63,7 @@ const InitialForm = ({ formData, handleFormInputChange, businessFields }) => {
       {/* Se "Altro" è selezionato, mostra il campo per specificare il settore */}
       {businessField === "Altro" && (
         <div className="form-group">
-          <label>Specificare il settore:</label>
+          <label>Specificare il settore </label>
           <input
             type="text"
             name="otherBusinessField"

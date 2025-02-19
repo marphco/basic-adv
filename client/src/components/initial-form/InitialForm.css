@@ -1,0 +1,4 @@
+.form-group {
+    color: var(--primary-text-color);
+    transition: all .5s ease;
+}

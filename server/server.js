@@ -62,7 +62,7 @@ const upload = multer({
   },
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 8080;
 
 // Controlla se un server è già in esecuzione
 if (!global.serverRunning) {
@@ -260,8 +260,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     formData.contactInfo = {}; // Inizializza come oggetto vuoto se non esiste
   }
 
-// Se un file è stato caricato, aggiungi il percorso del file a 'formData'
-if (req.file) {
+  // Se un file è stato caricato, aggiungi il percorso del file a 'formData'
+  if (req.file) {
     formData.currentLogo = req.file.path; // Salva il percorso del file
     console.log("Percorso del logo caricato:", formData.currentLogo);
   }
@@ -506,16 +506,10 @@ app.post("/api/submitLog", async (req, res) => {
     res.status(200).json({ message: "Log inviato e salvato" });
 
     // Genera il project plan in background
-    // Genera il project plan in background
     try {
-      // Verifica che tutte le risposte essenziali siano presenti
-      if (
-        !logEntry.formData.contactInfo.name ||
-        !logEntry.formData.contactInfo.email
-      ) {
-        throw new Error(
-          "Nome ed email sono obbligatori per generare il project plan."
-        );
+      console.log(`Session ${sessionId} - Verifica contactInfo:`, logEntry.formData.contactInfo); // Log per debug
+      if (!logEntry.formData.contactInfo.name || !logEntry.formData.contactInfo.email) {
+        throw new Error("Nome ed email sono obbligatori per generare il project plan.");
       }
 
       // Struttura le risposte in modo leggibile
@@ -592,12 +586,10 @@ ${formattedAnswers}
 
       // Aggiorna il project plan nel database
       logEntry.projectPlan = projectPlan;
-
       await logEntry.save();
-
-      console.log(`Session ${sessionId} - Project plan generated and saved.`);
+      console.log(`Session ${sessionId} - Project plan generated and saved.`); // Spostato qui
     } catch (error) {
-      console.error("Error generating project plan:", error);
+      console.error(`Session ${sessionId} - Error generating project plan:`, error);
       // Non inviare errori al client, poiché la risposta è già stata inviata
     }
   } catch (error) {

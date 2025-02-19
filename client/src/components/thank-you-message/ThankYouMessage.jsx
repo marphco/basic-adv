@@ -5,7 +5,7 @@ const ThankYouMessage = ({ handleRestart }) => (
   <div className="thank-you-message">
     <h3>Grazie! Ti contatteremo a breve.</h3>
     <button className="restart-btn" onClick={handleRestart}>
-      Torna all'inizio
+      Torna all&apos;inizio
     </button>
   </div>
 );
