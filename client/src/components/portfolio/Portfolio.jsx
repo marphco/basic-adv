@@ -7,7 +7,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import PropTypes from "prop-types";
 import ProjectSectionDesktop from "./ProjectSectionDesktop";
-import ProjectSectionMobile from "./ProjectSectionMobile";
 import { useNavigate } from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -207,15 +206,13 @@ const Portfolio = ({ scrollTween = null }) => {
       </div>
       {isMobile ? (
         <div className="intro-mobile">
-          <p>
-            Non hai scuse, dai un&apos;occhiata al contenuto delle cartelle.
-          </p>
+          <p>Non hai scuse, dai un&apos;occhiata al contenuto delle cartelle.</p>
         </div>
       ) : (
         <div className="intro-portfolio">
           <p>
-            Puoi giocare a spostare le cartelle. Serve a qualcosa? No.
-            Però non dimenticare di dare un&apos;occhiata al contenuto.
+            Puoi giocare a spostare le cartelle. Serve a qualcosa? No. Però non
+            dimenticare di dare un&apos;occhiata al contenuto.
           </p>
         </div>
       )}
@@ -231,20 +228,13 @@ const Portfolio = ({ scrollTween = null }) => {
               onOpenSection={openSection}
             />
           ))}
-          {sectionIsOpen &&
-            (isMobile ? (
-              <ProjectSectionMobile
-                onClose={closeSection}
-                project={currentProject}
-                projectData={projectData}
-              />
-            ) : (
-              <ProjectSectionDesktop
-                onClose={closeSection}
-                project={currentProject}
-                projectData={projectData}
-              />
-            ))}
+          {sectionIsOpen && !isMobile && (
+            <ProjectSectionDesktop
+              onClose={closeSection}
+              project={currentProject}
+              projectData={projectData}
+            />
+          )}
         </div>
       </DndContext>
     </div>

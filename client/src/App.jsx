@@ -1,6 +1,6 @@
 // App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
@@ -16,7 +16,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
 import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // overlay AboutUs per desktop
 import AboutUs from "./components/about-us/AboutUs"; // pagina AboutUs per mobile
-import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
+// import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
 import ProjectSectionMobilePage from "./components/portfolio/ProjectSectionMobilePage"; // importa il nuovo componente
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 
