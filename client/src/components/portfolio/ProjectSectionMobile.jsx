@@ -1,14 +1,17 @@
-// ProjectSectionMobilePage.jsx
 import { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Portfolio.css";
-import projectData from "./projectData"; // Importa i dati centralizzati
+import projectData from "./projectData";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function ProjectSectionMobilePage() {
   const { id } = useParams();
   const containerRef = useRef(null);
   const imagesRowRef = useRef(null);
+  const topSectionRef = useRef(null);
 
   const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
   const content = projectData[normalizedId] || {
@@ -45,26 +48,33 @@ export default function ProjectSectionMobilePage() {
     );
 
     Promise.all(loadPromises).then(() => {
-      const viewportHeight = window.innerHeight;
       imagesRow.scrollTop = 896; // Inizia con immagine 4 visibile
+      console.log("Immagini caricate, scrollTop:", imagesRow.scrollTop);
+    });
+  }, []);
 
-      console.log(
-        "Inizializzazione - scrollTop:",
-        imagesRow.scrollTop,
-        "viewportHeight:",
-        viewportHeight
-      );
+  useEffect(() => {
+    const imagesRow = imagesRowRef.current;
+    const topSection = topSectionRef.current;
+    if (!imagesRow || !topSection) return;
+
+    gsap.to(topSection, {
+      x: "-100vw", // Sposta a sinistra fuori dallo schermo
+      opacity: 0, // Scompare
+      ease: "power2.easeOut",
+      scrollTrigger: {
+        trigger: imagesRow, // L'animazione è legata allo scroll di imagesRow
+        start: "top center", // Inizia quando il top di imagesRow è al centro dello schermo
+        end: "+=500", // Finisce dopo 500px di scroll
+        scrub: 1, // Scrub fluido con un leggero ritardo (1 secondo)
+        markers: false, // Lascia i marker per debug
+      },
     });
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="project-section-mobile-page"
-    >
-      <div
-        className="project-section-mobile-top"
-      >
+    <div ref={containerRef} className="project-section-mobile-page">
+      <div ref={topSectionRef} className="project-section-mobile-top">
         <div className="project-text-container">
           <div className="project-text">
             <h2 className="project-title">{content.title}</h2>
@@ -82,10 +92,7 @@ export default function ProjectSectionMobilePage() {
           </div>
         </div>
       </div>
-      <div
-        ref={imagesRowRef}
-        className="project-section-mobile-bottom"
-      >
+      <div ref={imagesRowRef} className="project-section-mobile-bottom">
         {content.images.map((img, index) => (
           <img
             key={index}
