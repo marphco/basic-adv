@@ -246,18 +246,19 @@ body[data-theme="dark"] .folder-name,
 }
 
 .project-section-mobile-bottom {
-  margin-top: 50vh; /* Spazio per la sezione fissa */
-  height: 300vh; /* Altezza totale delle sei immagini */
-  overflow-y: auto; /* Scroll verticale */
+  margin-top: 50vh;
+  overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch; /* Migliora lo scroll su iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 .project-section-mobile-bottom img {
   display: block;
   width: 100vw;
-  height: 50vh; /* Ogni immagine occupa 50vh */
+  height: 50vh;
   object-fit: cover;
+  margin: 0;
+  padding: 0;
 }
 
 .project-section-mobile-close {

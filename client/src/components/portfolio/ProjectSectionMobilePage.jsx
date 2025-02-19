@@ -29,6 +29,7 @@ export default function ProjectSectionMobilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const imagesRowRef = useRef(null);
 
   const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
   const content = projectData[normalizedId] || {
@@ -48,8 +49,37 @@ export default function ProjectSectionMobilePage() {
     }
   }, []);
 
+  useEffect(() => {
+    const imagesRow = imagesRowRef.current;
+    if (!imagesRow) return;
+
+    const images = imagesRow.querySelectorAll("img");
+    const loadPromises = Array.from(images).map(
+      (img) =>
+        new Promise((resolve) => {
+          if (img.complete) resolve();
+          else {
+            img.addEventListener("load", resolve);
+            img.addEventListener("error", resolve);
+          }
+        })
+    );
+
+    Promise.all(loadPromises).then(() => {
+      const viewportHeight = window.innerHeight;
+      imagesRow.scrollTop = 896; // Inizia con immagine 4 visibile
+
+      console.log(
+        "Inizializzazione - scrollTop:",
+        imagesRow.scrollTop,
+        "viewportHeight:",
+        viewportHeight
+      );
+    });
+  }, []);
+
   const handleClose = () => {
-    navigate(-1); // Torna indietro senza modificare lo scroll del body
+    navigate(-1);
   };
 
   return (
@@ -58,8 +88,8 @@ export default function ProjectSectionMobilePage() {
       className="project-section-mobile-page"
       style={{
         width: "100vw",
-        minHeight: "350vh", // Altezza totale per ospitare 50vh fissa + 300vh immagini
-        overflowY: "auto", // Scroll verticale per l’intera pagina
+        minHeight: "100vh",
+        overflowY: "auto",
         overflowX: "hidden",
         backgroundColor: "#fff",
         position: "relative",
@@ -72,12 +102,12 @@ export default function ProjectSectionMobilePage() {
           top: 0,
           left: 0,
           width: "100vw",
-          height: "50vh", // Altezza fissa per la sezione superiore
+          height: "30vh",
           padding: "20px",
           boxSizing: "border-box",
           backgroundColor: "#fff",
           zIndex: 10,
-          overflowY: "auto", // Scroll interno se il contenuto è lungo
+          overflowY: "auto",
         }}
       >
         <h2>{content.title}</h2>
@@ -101,12 +131,13 @@ export default function ProjectSectionMobilePage() {
         </button>
       </div>
       <div
+        ref={imagesRowRef}
         className="project-section-mobile-bottom"
         style={{
-          marginTop: "50vh", // Spazio per la sezione fissa sopra
-          height: "300vh", // Altezza totale delle sei immagini
-          overflowY: "auto", // Scroll verticale per le immagini
+          marginTop: "60vh",
+          overflowY: "auto",
           overflowX: "hidden",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {content.images.map((img, index) => (
@@ -117,8 +148,10 @@ export default function ProjectSectionMobilePage() {
             style={{
               display: "block",
               width: "100vw",
-              height: "50vh", // Ogni immagine occupa 50vh
+              height: "60vh",
               objectFit: "cover",
+              margin: 0,
+              padding: 0,
             }}
           />
         ))}
