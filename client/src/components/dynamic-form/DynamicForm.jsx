@@ -68,17 +68,22 @@ const DynamicForm = () => {
 
   const toggleCategory = useCallback((category) => {
     setSelectedCategories((prev) => {
-      const newCategories = prev.includes(category)
+      const wasSelected = prev.includes(category);
+      const newCategories = wasSelected
         ? prev.filter((c) => c !== category)
         : [...prev, category];
       return newCategories;
     });
     setSelectedServices((prev) => {
       const allServices = services[category];
-      const newServices = prev.includes(category)
-        ? prev.filter((s) => !allServices.includes(s))
-        : [...new Set([...prev, ...allServices])];
-      return newServices;
+      const wasSelected = allServices.every((service) => prev.includes(service));
+      if (wasSelected) {
+        // Se tutti i servizi erano selezionati, li rimuoviamo
+        return prev.filter((s) => !allServices.includes(s));
+      } else {
+        // Altrimenti, aggiungiamo tutti i servizi della categoria
+        return [...new Set([...prev, ...allServices])];
+      }
     });
   }, [services]);
 
@@ -90,17 +95,6 @@ const DynamicForm = () => {
       return newServices;
     });
   }, []);
-
-  const toggleAllServicesInCategory = useCallback((category) => {
-    const allServices = services[category];
-    setSelectedServices((prev) => {
-      const allSelected = allServices.every((service) => prev.includes(service));
-      const newServices = allSelected
-        ? prev.filter((s) => !allServices.includes(s))
-        : [...new Set([...prev, ...allServices])];
-      return newServices;
-    });
-  }, [services]);
 
   const handleFormInputChange = useCallback((e) => {
     e.preventDefault();
@@ -329,7 +323,6 @@ const DynamicForm = () => {
             toggleCategory={toggleCategory}
             selectedServices={selectedServices}
             toggleService={toggleService}
-            toggleAllServicesInCategory={toggleAllServicesInCategory}
             services={services}
             categoriesRequiringBrand={categoriesRequiringBrand}
           />

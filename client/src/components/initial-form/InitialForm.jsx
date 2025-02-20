@@ -9,7 +9,6 @@ const InitialForm = ({
   toggleCategory,
   selectedServices,
   toggleService,
-  toggleAllServicesInCategory,
   services,
   categoriesRequiringBrand,
 }) => {
@@ -38,19 +37,6 @@ const InitialForm = ({
                 className="form-services-list"
                 style={{ display: "flex", flexDirection: "column" }}
               >
-                <label className="service-item all-services">
-                  <input
-                    type="checkbox"
-                    checked={services[category].every((service) =>
-                      selectedServices.includes(service)
-                    )}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      toggleAllServicesInCategory(category);
-                    }}
-                  />
-                  <span>All {category}</span>
-                </label>
                 {services[category].map((service) => (
                   <label
                     key={service}
@@ -153,7 +139,6 @@ InitialForm.propTypes = {
   toggleCategory: PropTypes.func.isRequired,
   selectedServices: PropTypes.arrayOf(PropTypes.string).isRequired,
   toggleService: PropTypes.func.isRequired,
-  toggleAllServicesInCategory: PropTypes.func.isRequired,
   services: PropTypes.object.isRequired,
   categoriesRequiringBrand: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

@@ -36,8 +36,8 @@
   .category-box.selected {
     background: transparent;
     border: 2px solid var(--foreground-color);
-    color: var(--primary-text-color); /* Imposta il colore di base per il box selezionato */
-    transition: all .5s ease;
+    color: var(--primary-text-color);
+    transition: all 0.5s ease;
   }
   
   /* Span nei box selezionati */
@@ -106,37 +106,31 @@
     color: #333;
   }
   
-  .service-item.all-services {
-    font-weight: 400;
-    color: #000;
-  }
-  
   /* Testi dei checkbox nei box selezionati */
-  .category-box.selected .service-item,
-  .category-box.selected .service-item.all-services {
+  .category-box.selected .service-item {
     color: var(--primary-text-color);
   }
   
   /* Stile base per i checkbox (non selezionati) */
   .service-item input[type="checkbox"] {
-    appearance: none; /* Rimuove lo stile predefinito */
+    appearance: none;
     width: 1rem;
     height: 1rem;
-    border: 1px solid grey; /* Bordo grigio per i non selezionati */
-    border-radius: 2px; /* Leggermente arrotondato */
+    border: 1px solid grey;
+    border-radius: 2px;
     cursor: pointer;
     background-color: transparent;
   }
   
   /* Stile per i checkbox selezionati */
   .service-item input[type="checkbox"]:checked {
-    background-color: var(--foreground-color); /* Quadrato pieno foreground */
-    border: 1px solid var(--foreground-color); /* Bordo uguale al riempimento */
+    background-color: var(--foreground-color);
+    border: 1px solid var(--foreground-color);
   }
   
   /* Rimuove l'accent-color predefinito */
   .service-item input[type="checkbox"]:focus {
-    outline: none; /* Rimuove il focus predefinito */
+    outline: none;
   }
   
   .form-group label {
