@@ -148,13 +148,6 @@ const DynamicForm = () => {
         alert("Devi selezionare almeno un servizio.");
         return;
       }
-      const requiresBrand = selectedCategories.some((cat) =>
-        categoriesRequiringBrand.includes(cat)
-      );
-      if (requiresBrand && !formData.brandName.trim()) {
-        alert("Per favore, inserisci il nome del brand.");
-        return;
-      }
       if (!formData.businessField || formData.businessField === "Seleziona un settore") {
         alert("Per favore, seleziona il settore aziendale.");
         return;
@@ -163,7 +156,7 @@ const DynamicForm = () => {
         alert("Per favore, specifica il tuo settore aziendale.");
         return;
       }
-
+  
       setLoading(true);
       try {
         const formDataToSend = new FormData();
@@ -180,13 +173,13 @@ const DynamicForm = () => {
             }
           }
         }
-
+  
         const response = await axios.post(
           `${API_URL.replace(/\/$/, "")}/api/generate`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-
+  
         if (response.data.question && response.data.question.type === "font_selection") {
           setIsFontQuestionAsked(true);
         }

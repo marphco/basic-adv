@@ -1,4 +1,6 @@
 import PropTypes from "prop-types";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { useRef } from "react";
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -18,6 +20,16 @@ const InitialForm = ({
     categoriesRequiringBrand.includes(cat)
   );
 
+  // Creiamo un ref per il form section
+  const formSectionRef = useRef(null);
+  // Creiamo un oggetto di ref per tutte le categorie all'inizio
+  const servicesRefs = useRef(
+    Object.keys(services).reduce((acc, category) => {
+      acc[category] = null; // Inizializziamo ogni ref come null
+      return acc;
+    }, {})
+  );
+
   return (
     <div className="initial-form">
       <div className="category-grid">
@@ -31,102 +43,116 @@ const InitialForm = ({
             <div className="category-label">
               <span>{category}</span>
             </div>
-            {selectedCategories.includes(category) && (
-              <div
-                key={`services-${category}`}
-                className="form-services-list"
-                style={{ display: "flex", flexDirection: "column" }}
-              >
-                {services[category].map((service) => (
-                  <label
-                    key={service}
-                    className="service-item"
-                    onClick={(e) => e.stopPropagation()}
+            <TransitionGroup component={null}>
+              {selectedCategories.includes(category) && (
+                <CSSTransition
+                  key={`services-${category}`}
+                  timeout={600}
+                  classNames="services"
+                  nodeRef={{ current: servicesRefs.current[category] }} // Passiamo il ref
+                >
+                  <div
+                    ref={(node) => (servicesRefs.current[category] = node)} // Assegniamo il ref
+                    className="form-services-list"
                   >
-                    <input
-                      type="checkbox"
-                      value={service}
-                      checked={selectedServices.includes(service)}
-                      onChange={() => toggleService(service)}
-                    />
-                    <span>{service}</span>
-                  </label>
-                ))}
-              </div>
-            )}
+                    {services[category].map((service) => (
+                      <label
+                        key={service}
+                        className="service-item"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          value={service}
+                          checked={selectedServices.includes(service)}
+                          onChange={() => toggleService(service)}
+                        />
+                        <span>{service}</span>
+                      </label>
+                    ))}
+                  </div>
+                </CSSTransition>
+              )}
+            </TransitionGroup>
           </button>
         ))}
       </div>
 
-      {requiresBrand && (
-        <>
-          <div className="form-group">
-            <label>Nome del Brand</label>
-            <input
-              type="text"
-              name="brandName"
-              value={brandName}
-              onChange={handleFormInputChange}
-              required={requiresBrand}
-            />
-          </div>
-          <div className="form-group">
-            <label>Tipo di Progetto</label>
-            <select
-              name="projectType"
-              value={projectType}
-              onChange={handleFormInputChange}
-              required={requiresBrand}
-            >
-              <option value="new">Nuovo progetto</option>
-              <option value="restyling">Restyling</option>
-            </select>
-          </div>
-          {projectType === "restyling" && (
-            <div className="form-group">
-              <label>Carica il tuo logo attuale (opzionale):</label>
-              <input
-                type="file"
-                name="currentLogo"
-                accept=".jpg, .jpeg, .png, .tiff, .tif, .svg, .pdf, .heic, .heif"
-                onChange={handleFormInputChange}
-              />
+      <TransitionGroup component={null}>
+        {selectedCategories.length > 0 && (
+          <CSSTransition
+            key="form-section"
+            timeout={500}
+            classNames="form-item"
+            nodeRef={formSectionRef}
+          >
+            <div ref={formSectionRef} className="form-section">
+              {requiresBrand && (
+                <>
+                  <div className="form-group">
+                    <label>Nome del Brand (opzionale)</label>
+                    <input
+                      type="text"
+                      name="brandName"
+                      value={brandName}
+                      onChange={handleFormInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Tipo di Progetto (opzionale)</label>
+                    <select
+                      name="projectType"
+                      value={projectType}
+                      onChange={handleFormInputChange}
+                    >
+                      <option value="new">Nuovo progetto</option>
+                      <option value="restyling">Restyling</option>
+                    </select>
+                  </div>
+                  {projectType === "restyling" && (
+                    <div className="form-group">
+                      <label>Carica il tuo logo attuale (opzionale):</label>
+                      <input
+                        type="file"
+                        name="currentLogo"
+                        accept=".jpg, .jpeg, .png, .tiff, .tif, .svg, .pdf, .heic, .heif"
+                        onChange={handleFormInputChange}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="form-group">
+                <label>Settore Aziendale</label>
+                <select
+                  name="businessField"
+                  value={businessField}
+                  onChange={handleFormInputChange}
+                  required
+                >
+                  {businessFields.map((field) => (
+                    <option key={field} value={field}>
+                      {field}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {businessField === "Altro" && (
+                <div className="form-group">
+                  <label>Specificare il settore</label>
+                  <input
+                    type="text"
+                    name="otherBusinessField"
+                    value={otherBusinessField}
+                    onChange={handleFormInputChange}
+                    required
+                  />
+                </div>
+              )}
             </div>
-          )}
-        </>
-      )}
-
-      {selectedCategories.length > 0 && (
-        <>
-          <div className="form-group">
-            <label>Settore Aziendale</label>
-            <select
-              name="businessField"
-              value={businessField}
-              onChange={handleFormInputChange}
-              required
-            >
-              {businessFields.map((field) => (
-                <option key={field} value={field}>
-                  {field}
-                </option>
-              ))}
-            </select>
-          </div>
-          {businessField === "Altro" && (
-            <div className="form-group">
-              <label>Specificare il settore</label>
-              <input
-                type="text"
-                name="otherBusinessField"
-                value={otherBusinessField}
-                onChange={handleFormInputChange}
-                required
-              />
-            </div>
-          )}
-        </>
-      )}
+          </CSSTransition>
+        )}
+      </TransitionGroup>
     </div>
   );
 };
