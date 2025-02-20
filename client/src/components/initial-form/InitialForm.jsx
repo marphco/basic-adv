@@ -19,22 +19,19 @@ const InitialForm = ({
     categoriesRequiringBrand.includes(cat)
   );
 
-  console.log("Rendering InitialForm with selectedCategories:", selectedCategories);
-  console.log("Rendering InitialForm with selectedServices:", selectedServices);
-
   return (
     <div className="initial-form">
       <div className="category-grid">
         {Object.keys(services).map((category) => (
-          <div key={category} className="category-box">
-            <label className="category-label">
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(category)}
-                onChange={() => toggleCategory(category)}
-              />
+          <button
+            key={category}
+            className={`category-box ${selectedCategories.includes(category) ? "selected" : ""}`}
+            onClick={() => toggleCategory(category)}
+            type="button"
+          >
+            <div className="category-label">
               <span>{category}</span>
-            </label>
+            </div>
             {selectedCategories.includes(category) && (
               <div
                 key={`services-${category}`}
@@ -47,12 +44,19 @@ const InitialForm = ({
                     checked={services[category].every((service) =>
                       selectedServices.includes(service)
                     )}
-                    onChange={() => toggleAllServicesInCategory(category)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      toggleAllServicesInCategory(category);
+                    }}
                   />
                   <span>All {category}</span>
                 </label>
                 {services[category].map((service) => (
-                  <label key={service} className="service-item">
+                  <label
+                    key={service}
+                    className="service-item"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <input
                       type="checkbox"
                       value={service}
@@ -64,7 +68,7 @@ const InitialForm = ({
                 ))}
               </div>
             )}
-          </div>
+          </button>
         ))}
       </div>
 
@@ -106,32 +110,36 @@ const InitialForm = ({
         </>
       )}
 
-      <div className="form-group">
-        <label>Settore Aziendale</label>
-        <select
-          name="businessField"
-          value={businessField}
-          onChange={handleFormInputChange}
-          required
-        >
-          {businessFields.map((field) => (
-            <option key={field} value={field}>
-              {field}
-            </option>
-          ))}
-        </select>
-      </div>
-      {businessField === "Altro" && (
-        <div className="form-group">
-          <label>Specificare il settore</label>
-          <input
-            type="text"
-            name="otherBusinessField"
-            value={otherBusinessField}
-            onChange={handleFormInputChange}
-            required
-          />
-        </div>
+      {selectedCategories.length > 0 && (
+        <>
+          <div className="form-group">
+            <label>Settore Aziendale</label>
+            <select
+              name="businessField"
+              value={businessField}
+              onChange={handleFormInputChange}
+              required
+            >
+              {businessFields.map((field) => (
+                <option key={field} value={field}>
+                  {field}
+                </option>
+              ))}
+            </select>
+          </div>
+          {businessField === "Altro" && (
+            <div className="form-group">
+              <label>Specificare il settore</label>
+              <input
+                type="text"
+                name="otherBusinessField"
+                value={otherBusinessField}
+                onChange={handleFormInputChange}
+                required
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

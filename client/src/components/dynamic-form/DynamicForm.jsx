@@ -45,7 +45,6 @@ const DynamicForm = () => {
   const categoriesRequiringBrand = ["Branding", "Web", "App"];
 
   const handleRestart = () => {
-    console.log("Restarting form...");
     setSessionId(uuidv4());
     setSelectedCategories([]);
     setSelectedServices([]);
@@ -68,12 +67,10 @@ const DynamicForm = () => {
   };
 
   const toggleCategory = useCallback((category) => {
-    console.log(`Toggling category: ${category}`);
     setSelectedCategories((prev) => {
       const newCategories = prev.includes(category)
         ? prev.filter((c) => c !== category)
         : [...prev, category];
-      console.log("New selectedCategories:", newCategories);
       return newCategories;
     });
     setSelectedServices((prev) => {
@@ -81,39 +78,33 @@ const DynamicForm = () => {
       const newServices = prev.includes(category)
         ? prev.filter((s) => !allServices.includes(s))
         : [...new Set([...prev, ...allServices])];
-      console.log("New selectedServices after toggling category:", newServices);
       return newServices;
     });
   }, [services]);
 
   const toggleService = useCallback((service) => {
-    console.log(`Toggling service: ${service}`);
     setSelectedServices((prev) => {
       const newServices = prev.includes(service)
         ? prev.filter((s) => s !== service)
         : [...prev, service];
-      console.log("New selectedServices:", newServices);
       return newServices;
     });
   }, []);
 
   const toggleAllServicesInCategory = useCallback((category) => {
-    console.log(`Toggling all services in category: ${category}`);
     const allServices = services[category];
     setSelectedServices((prev) => {
       const allSelected = allServices.every((service) => prev.includes(service));
       const newServices = allSelected
         ? prev.filter((s) => !allServices.includes(s))
         : [...new Set([...prev, ...allServices])];
-      console.log("New selectedServices after toggle all:", newServices);
       return newServices;
     });
   }, [services]);
 
   const handleFormInputChange = useCallback((e) => {
-    e.preventDefault(); // Previene doppi eventi
+    e.preventDefault();
     const { name, value, type } = e.target;
-    console.log(`Form input changed - ${name}: ${value}`);
     if (type === "file") {
       const file = e.target.files[0];
       setFormData((prev) => ({ ...prev, [name]: file }));
@@ -123,7 +114,6 @@ const DynamicForm = () => {
         if (name === "businessField" && value !== "Altro") {
           updatedFormData.otherBusinessField = "";
         }
-        console.log("Updated formData:", updatedFormData);
         return updatedFormData;
       });
     }
@@ -160,10 +150,7 @@ const DynamicForm = () => {
 
   const generateFirstQuestion = useCallback(
     debounce(async () => {
-      console.log("Attempting to generate first question...");
-      console.log("Current selectedServices:", selectedServices);
       if (selectedServices.length === 0) {
-        console.log("No services selected, showing alert.");
         alert("Devi selezionare almeno un servizio.");
         return;
       }
@@ -171,24 +158,20 @@ const DynamicForm = () => {
         categoriesRequiringBrand.includes(cat)
       );
       if (requiresBrand && !formData.brandName.trim()) {
-        console.log("Brand name required but missing, showing alert.");
         alert("Per favore, inserisci il nome del brand.");
         return;
       }
       if (!formData.businessField || formData.businessField === "Seleziona un settore") {
-        console.log("Business field missing, showing alert.");
         alert("Per favore, seleziona il settore aziendale.");
         return;
       }
       if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
-        console.log("Other business field required but missing, showing alert.");
         alert("Per favore, specifica il tuo settore aziendale.");
         return;
       }
 
       setLoading(true);
       try {
-        console.log("Preparing form data to send...");
         const formDataToSend = new FormData();
         formDataToSend.append("servicesSelected", JSON.stringify(selectedServices));
         formDataToSend.append("sessionId", sessionId);
@@ -204,14 +187,12 @@ const DynamicForm = () => {
           }
         }
 
-        console.log("Sending request to /api/generate...");
         const response = await axios.post(
           `${API_URL.replace(/\/$/, "")}/api/generate`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        console.log("Received response:", response.data);
         if (response.data.question && response.data.question.type === "font_selection") {
           setIsFontQuestionAsked(true);
         }
@@ -316,12 +297,6 @@ const DynamicForm = () => {
     }
   };
 
-  const logState = useCallback(() => {
-    console.log("Current state:");
-    console.log("selectedCategories:", selectedCategories);
-    console.log("selectedServices:", selectedServices);
-  }, [selectedCategories, selectedServices]);
-
   return (
     <div className="dynamic-form">
       <h2>Client Acquisition Form</h2>
@@ -358,24 +333,21 @@ const DynamicForm = () => {
             services={services}
             categoriesRequiringBrand={categoriesRequiringBrand}
           />
-          <button
-            className="submit-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation(); // Previene bubbling
-              generateFirstQuestion();
-            }}
-            disabled={loading}
-          >
-            {loading ? "Caricamento..." : "Inizia"}
-          </button>
-          <button
-            type="button"
-            onClick={logState}
-            style={{ marginLeft: "1rem", padding: "0.5rem" }}
-          >
-            Log Stato
-          </button>
+          {selectedCategories.length > 0 && (
+            <div className="form-actions">
+              <button
+                className="submit-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  generateFirstQuestion();
+                }}
+                disabled={loading}
+              >
+                {loading ? "Caricamento..." : "Inizia"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

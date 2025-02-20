@@ -12,47 +12,90 @@
   }
   
   .category-box {
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid grey;
+    color: grey;
+    border-radius: 4px;
     padding: 1rem;
-    transition: all 0.3s ease;
-    align-self: start; /* Impedisce l’allungamento delle celle vuote */
-  }
-  
-  .category-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    align-self: start;
     cursor: pointer;
-  }
-  
-  .category-label span {
-    font-size: 1.2rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  .category-label input[type="checkbox"] {
-    accent-color: #000;
-    width: 1rem;
-    height: 1rem;
-    cursor: pointer;
+    transition: all 0.5s ease;
   }
   
   .category-box:hover {
-    border-color: #000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-color: var(--foreground-color);
+    color: var(--primary-text-color);
+    transition: all 0.5s ease;
   }
   
+  .category-box:hover .category-label span {
+    color: var(--primary-text-color);
+    transition: color 0.5s ease;
+  }
+  
+  .category-box.selected {
+    background: transparent;
+    border: 2px solid var(--foreground-color);
+    color: var(--primary-text-color); /* Imposta il colore di base per il box selezionato */
+    transition: all .5s ease;
+  }
+  
+  /* Span nei box selezionati */
+  .category-box.selected .category-label span {
+    color: var(--primary-text-color);
+  }
+  
+  /* Animation for microservices list */
   .form-services-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.75rem;
     padding-left: 1.5rem;
-    /* Rimosso background: #f9f9f9 */
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-weight: 200;
+    transform: translateY(-10px);
+    transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* When the category is selected, expand and fade in */
+  .category-box.selected .form-services-list {
+    max-height: 500px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Animation for form fields */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* When fields are visible (based on parent state), animate in */
+  .initial-form:has(.form-group) .form-group {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .category-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .category-label span {
+    font-size: 1.2rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: grey;
+    transition: color 0.5s ease;
   }
   
   .service-item {
@@ -64,21 +107,36 @@
   }
   
   .service-item.all-services {
-    font-weight: 600;
+    font-weight: 400;
     color: #000;
   }
   
-  .service-item input[type="checkbox"] {
-    accent-color: #000;
-    width: 1rem;
-    height: 1rem;
-    cursor: pointer;
+  /* Testi dei checkbox nei box selezionati */
+  .category-box.selected .service-item,
+  .category-box.selected .service-item.all-services {
+    color: var(--primary-text-color);
   }
   
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  /* Stile base per i checkbox (non selezionati) */
+  .service-item input[type="checkbox"] {
+    appearance: none; /* Rimuove lo stile predefinito */
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid grey; /* Bordo grigio per i non selezionati */
+    border-radius: 2px; /* Leggermente arrotondato */
+    cursor: pointer;
+    background-color: transparent;
+  }
+  
+  /* Stile per i checkbox selezionati */
+  .service-item input[type="checkbox"]:checked {
+    background-color: var(--foreground-color); /* Quadrato pieno foreground */
+    border: 1px solid var(--foreground-color); /* Bordo uguale al riempimento */
+  }
+  
+  /* Rimuove l'accent-color predefinito */
+  .service-item input[type="checkbox"]:focus {
+    outline: none; /* Rimuove il focus predefinito */
   }
   
   .form-group label {

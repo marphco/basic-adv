@@ -7,4 +7,5 @@
     background-color: var(--background-color);
     box-sizing: border-box;
     padding: 20px; /* Optional: Adds padding around the DynamicForm */
+    transition: all .5s ease;
   }
