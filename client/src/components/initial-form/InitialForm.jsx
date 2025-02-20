@@ -20,62 +20,67 @@ const InitialForm = ({
     categoriesRequiringBrand.includes(cat)
   );
 
-  // Creiamo un ref per il form section
   const formSectionRef = useRef(null);
-  // Creiamo un oggetto di ref per tutte le categorie all'inizio
-  const servicesRefs = useRef(
-    Object.keys(services).reduce((acc, category) => {
-      acc[category] = null; // Inizializziamo ogni ref come null
-      return acc;
-    }, {})
-  );
+  // Creiamo un ref per ogni categoria usando un oggetto
+  const servicesRefs = useRef({});
 
   return (
     <div className="initial-form">
       <div className="category-grid">
-        {Object.keys(services).map((category) => (
-          <button
-            key={category}
-            className={`category-box ${selectedCategories.includes(category) ? "selected" : ""}`}
-            onClick={() => toggleCategory(category)}
-            type="button"
-          >
-            <div className="category-label">
-              <span>{category}</span>
-            </div>
-            <TransitionGroup component={null}>
-              {selectedCategories.includes(category) && (
-                <CSSTransition
-                  key={`services-${category}`}
-                  timeout={600}
-                  classNames="services"
-                  nodeRef={{ current: servicesRefs.current[category] }} // Passiamo il ref
-                >
-                  <div
-                    ref={(node) => (servicesRefs.current[category] = node)} // Assegniamo il ref
-                    className="form-services-list"
+        {Object.keys(services).map((category) => {
+          // Inizializziamo il ref per questa categoria se non esiste
+          if (!servicesRefs.current[category]) {
+            servicesRefs.current[category] = { current: null };
+          }
+
+          return (
+            <button
+              key={category}
+              className={`category-box ${selectedCategories.includes(category) ? "selected" : ""}`}
+              onClick={() => toggleCategory(category)}
+              type="button"
+            >
+              <div className="category-label">
+                <span>{category}</span>
+              </div>
+              <TransitionGroup component={null}>
+                {selectedCategories.includes(category) && (
+                  <CSSTransition
+                    key={`services-${category}`}
+                    timeout={600}
+                    classNames="services"
+                    nodeRef={servicesRefs.current[category]}
+                    appear={true}
+                    unmountOnExit={true}
+                    onEnter={() => console.log(`Entrata: ${category}`)}
+                    onExit={() => console.log(`Uscita: ${category}`)}
                   >
-                    {services[category].map((service) => (
-                      <label
-                        key={service}
-                        className="service-item"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          type="checkbox"
-                          value={service}
-                          checked={selectedServices.includes(service)}
-                          onChange={() => toggleService(service)}
-                        />
-                        <span>{service}</span>
-                      </label>
-                    ))}
-                  </div>
-                </CSSTransition>
-              )}
-            </TransitionGroup>
-          </button>
-        ))}
+                    <div
+                      ref={servicesRefs.current[category]}
+                      className="form-services-list"
+                    >
+                      {services[category].map((service) => (
+                        <label
+                          key={service}
+                          className="service-item"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            value={service}
+                            checked={selectedServices.includes(service)}
+                            onChange={() => toggleService(service)}
+                          />
+                          <span>{service}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </CSSTransition>
+                )}
+              </TransitionGroup>
+            </button>
+          );
+        })}
       </div>
 
       <TransitionGroup component={null}>
@@ -85,6 +90,8 @@ const InitialForm = ({
             timeout={500}
             classNames="form-item"
             nodeRef={formSectionRef}
+            appear={true}
+            unmountOnExit={true}
           >
             <div ref={formSectionRef} className="form-section">
               {requiresBrand && (

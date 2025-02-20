@@ -72,16 +72,15 @@ const DynamicForm = () => {
       const newCategories = wasSelected
         ? prev.filter((c) => c !== category)
         : [...prev, category];
+      console.log("Nuove categorie selezionate:", newCategories); // Debug
       return newCategories;
     });
     setSelectedServices((prev) => {
       const allServices = services[category];
       const wasSelected = allServices.every((service) => prev.includes(service));
       if (wasSelected) {
-        // Se tutti i servizi erano selezionati, li rimuoviamo
         return prev.filter((s) => !allServices.includes(s));
       } else {
-        // Altrimenti, aggiungiamo tutti i servizi della categoria
         return [...new Set([...prev, ...allServices])];
       }
     });
