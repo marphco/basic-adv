@@ -37,8 +37,8 @@ const InitialForm = ({
             </label>
             {selectedCategories.includes(category) && (
               <div
-                key={`services-${category}`} // Forza rerender con chiave univoca
-                className="services-list"
+                key={`services-${category}`}
+                className="form-services-list" // Nome univoco
                 style={{ display: "flex", flexDirection: "column", minHeight: "50px" }}
               >
                 <label className="service-item all-services">

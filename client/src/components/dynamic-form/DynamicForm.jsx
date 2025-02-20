@@ -361,7 +361,8 @@ const DynamicForm = () => {
           <button
             className="submit-btn"
             onClick={(e) => {
-              e.preventDefault(); // Previene doppi click
+              e.preventDefault();
+              e.stopPropagation(); // Previene bubbling
               generateFirstQuestion();
             }}
             disabled={loading}
