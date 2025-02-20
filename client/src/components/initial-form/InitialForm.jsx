@@ -38,8 +38,8 @@ const InitialForm = ({
             {selectedCategories.includes(category) && (
               <div
                 key={`services-${category}`}
-                className="form-services-list" // Nome univoco
-                style={{ display: "flex", flexDirection: "column", minHeight: "50px" }}
+                className="form-services-list"
+                style={{ display: "flex", flexDirection: "column" }}
               >
                 <label className="service-item all-services">
                   <input

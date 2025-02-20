@@ -17,6 +17,7 @@
     border-radius: 8px;
     padding: 1rem;
     transition: all 0.3s ease;
+    align-self: start; /* Impedisce l’allungamento delle celle vuote */
   }
   
   .category-label {
@@ -45,14 +46,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
-  .form-services-list { /* Nome univoco */
+  .form-services-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.75rem;
     padding-left: 1.5rem;
-    min-height: 50px;
-    background: #f9f9f9; /* Debug visivo */
+    /* Rimosso background: #f9f9f9 */
   }
   
   .service-item {
