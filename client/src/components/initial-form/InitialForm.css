@@ -5,6 +5,16 @@
     color: var(--primary-text-color);
   }
   
+  /* Colore di default per il tema light */
+  :root {
+    --error-color: #1976D2; /* Blu scuro per tema light */
+  }
+  
+  /* Colore per il tema dark */
+  .dark-theme {
+    --error-color: #FFC107; /* Giallo medio per tema dark */
+  }
+  
   .category-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -50,6 +60,7 @@
     margin-top: 0.75rem;
     padding-left: 1.5rem;
     font-weight: 200;
+    position: relative;
   }
   
   .services-enter {
@@ -92,6 +103,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    position: relative;
   }
   
   .form-group input,
@@ -130,7 +142,7 @@
     background: transparent;
     font-size: 1rem;
     font-weight: 300;
-    color: #999; /* Colore placeholder */
+    color: #999;
     cursor: pointer;
     transition: border-color 0.3s ease, color 0.3s ease;
   }
@@ -149,6 +161,25 @@
   
   .file-upload-btn:hover .upload-icon {
     color: var(--foreground-color);
+  }
+  
+  /* Stile per i messaggi di errore */
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--error-color);
+    margin-top: 0.25rem;
+    text-align: left;
+    transition: color 0.5s ease;
+  }
+  
+  .error-message .error-icon {
+    font-size: 0.9rem;
+    color: var(--error-color);
+    transition: color 0.5s ease;
   }
   
   .category-label {

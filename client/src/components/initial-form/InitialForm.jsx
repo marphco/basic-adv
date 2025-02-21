@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useRef } from "react";
+import { FaExclamationCircle } from "react-icons/fa"; // Icona di attenzione
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -13,6 +14,7 @@ const InitialForm = ({
   toggleService,
   services,
   categoriesRequiringBrand,
+  errors = {},
 }) => {
   const { brandName, projectType, businessField, otherBusinessField } = formData;
 
@@ -22,9 +24,8 @@ const InitialForm = ({
 
   const formSectionRef = useRef(null);
   const servicesRefs = useRef({});
-  const fileInputRef = useRef(null); // Ref per il campo file nascosto
+  const fileInputRef = useRef(null);
 
-  // Funzione per triggerare il click sull’input file nascosto
   const handleFileButtonClick = () => {
     fileInputRef.current.click();
   };
@@ -76,6 +77,12 @@ const InitialForm = ({
                           <span>{service}</span>
                         </label>
                       ))}
+                      {errors.services && (
+                        <span className="error-message">
+                          <FaExclamationCircle className="error-icon" />
+                          {errors.services}
+                        </span>
+                      )}
                     </div>
                   </CSSTransition>
                 )}
@@ -106,6 +113,12 @@ const InitialForm = ({
                       onChange={handleFormInputChange}
                       placeholder="Nome del brand"
                     />
+                    {errors.brandName && (
+                      <span className="error-message">
+                        <FaExclamationCircle className="error-icon" />
+                        {errors.brandName}
+                      </span>
+                    )}
                   </div>
                   <div className="form-group">
                     <select
@@ -117,6 +130,12 @@ const InitialForm = ({
                       <option value="new">Nuovo progetto</option>
                       <option value="restyling">Restyling</option>
                     </select>
+                    {errors.projectType && (
+                      <span className="error-message">
+                        <FaExclamationCircle className="error-icon" />
+                        {errors.projectType}
+                      </span>
+                    )}
                   </div>
                   {projectType === "restyling" && (
                     <div className="form-group">
@@ -134,8 +153,14 @@ const InitialForm = ({
                         ref={fileInputRef}
                         accept=".jpg, .jpeg, .png, .tiff, .tif, .svg, .pdf, .heic, .heif"
                         onChange={handleFormInputChange}
-                        style={{ display: "none" }} // Nascondiamo l’input nativo
+                        style={{ display: "none" }}
                       />
+                      {errors.currentLogo && (
+                        <span className="error-message">
+                          <FaExclamationCircle className="error-icon" />
+                          {errors.currentLogo}
+                        </span>
+                      )}
                     </div>
                   )}
                 </>
@@ -154,6 +179,12 @@ const InitialForm = ({
                     </option>
                   ))}
                 </select>
+                {errors.businessField && (
+                  <span className="error-message">
+                    <FaExclamationCircle className="error-icon" />
+                    {errors.businessField}
+                  </span>
+                )}
               </div>
               {businessField === "Altro" && (
                 <div className="form-group">
@@ -165,6 +196,12 @@ const InitialForm = ({
                     required
                     placeholder="Specifica il settore"
                   />
+                  {errors.otherBusinessField && (
+                    <span className="error-message">
+                      <FaExclamationCircle className="error-icon" />
+                      {errors.otherBusinessField}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -185,6 +222,7 @@ InitialForm.propTypes = {
   toggleService: PropTypes.func.isRequired,
   services: PropTypes.object.isRequired,
   categoriesRequiringBrand: PropTypes.arrayOf(PropTypes.string).isRequired,
+  errors: PropTypes.object,
 };
 
 export default InitialForm;

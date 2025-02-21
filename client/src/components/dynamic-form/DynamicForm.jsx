@@ -30,6 +30,7 @@ const DynamicForm = () => {
   const [answers, setAnswers] = useState({});
   const [isLogoSelected, setIsLogoSelected] = useState(false);
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const businessFields = ["Seleziona un settore", "Tecnologia", "Moda", "Alimentare", "Altro"];
 
@@ -64,6 +65,7 @@ const DynamicForm = () => {
     setAnswers({});
     setIsLogoSelected(false);
     setIsFontQuestionAsked(false);
+    setErrors({});
   };
 
   const toggleCategory = useCallback((category) => {
@@ -74,15 +76,18 @@ const DynamicForm = () => {
         : [...prev, category];
       return newCategories;
     });
+    // Non aggiungiamo più i servizi automaticamente quando una categoria viene selezionata
     setSelectedServices((prev) => {
       const allServices = services[category];
-      const wasSelected = allServices.every((service) => prev.includes(service));
+      const wasSelected = prev.some((service) => allServices.includes(service));
       if (wasSelected) {
+        // Se la categoria era selezionata, rimuovi solo i servizi di quella categoria
         return prev.filter((s) => !allServices.includes(s));
-      } else {
-        return [...new Set([...prev, ...allServices])];
       }
+      // Se la categoria è stata appena selezionata, non aggiungere nulla
+      return prev;
     });
+    setErrors({});
   }, [services]);
 
   const toggleService = useCallback((service) => {
@@ -109,6 +114,7 @@ const DynamicForm = () => {
         return updatedFormData;
       });
     }
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   }, []);
 
   const handleAnswerChange = (e) => {
@@ -142,19 +148,24 @@ const DynamicForm = () => {
 
   const generateFirstQuestion = useCallback(
     debounce(async () => {
+      let newErrors = {};
+
       if (selectedServices.length === 0) {
-        alert("Devi selezionare almeno un servizio.");
-        return;
+        newErrors.services = "Seleziona almeno un servizio.";
       }
       if (!formData.businessField || formData.businessField === "Seleziona un settore") {
-        alert("Per favore, seleziona il settore aziendale.");
-        return;
+        newErrors.businessField = "Seleziona un settore aziendale.";
       }
       if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
-        alert("Per favore, specifica il tuo settore aziendale.");
+        newErrors.otherBusinessField = "Specifica il settore.";
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        setLoading(false);
         return;
       }
-  
+
       setLoading(true);
       try {
         const formDataToSend = new FormData();
@@ -171,13 +182,13 @@ const DynamicForm = () => {
             }
           }
         }
-  
+
         const response = await axios.post(
           `${API_URL.replace(/\/$/, "")}/api/generate`,
           formDataToSend,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-  
+
         if (response.data.question && response.data.question.type === "font_selection") {
           setIsFontQuestionAsked(true);
         }
@@ -185,7 +196,7 @@ const DynamicForm = () => {
         setQuestionNumber(1);
       } catch (error) {
         console.error("Errore nella generazione della prima domanda AI:", error);
-        alert("Errore nella generazione della domanda. Riprova più tardi.");
+        setErrors({ general: "Errore nella generazione della domanda. Riprova più tardi." });
       } finally {
         setLoading(false);
       }
@@ -228,7 +239,7 @@ const DynamicForm = () => {
       }
     } catch (error) {
       console.error("Errore nel recupero della prossima domanda:", error);
-      alert("Errore nel recupero della prossima domanda. Riprova più tardi.");
+      setErrors({ general: "Errore nel recupero della domanda. Riprova più tardi." });
     } finally {
       setLoading(false);
     }
@@ -240,32 +251,46 @@ const DynamicForm = () => {
     const userAnswer = answers[questionText] || {};
     const selectedOptions = userAnswer.options || [];
     const inputAnswer = userAnswer.input || "";
+    let newErrors = {};
 
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        alert("Per favore, seleziona un font o inserisci il nome di uno.");
-        return;
+        newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
       }
     } else if (currentQuestion.requiresInput) {
       if (inputAnswer.trim() === "") {
-        alert("Per favore, inserisci una risposta.");
-        return;
+        newErrors[questionText] = "Inserisci una risposta.";
       }
     } else {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        alert("Per favore, seleziona almeno una risposta o inserisci un commento.");
-        return;
+        newErrors[questionText] = "Seleziona almeno una risposta o inserisci un commento.";
       }
     }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     fetchNextQuestion();
   };
 
   const handleSubmitContactInfo = async (e) => {
     e.preventDefault();
-    if (!formData.contactInfo.name || !formData.contactInfo.email) {
-      alert("Nome ed email sono obbligatori!");
+    let newErrors = {};
+
+    if (!formData.contactInfo.name) {
+      newErrors.name = "Il nome è obbligatorio.";
+    }
+    if (!formData.contactInfo.email) {
+      newErrors.email = "L’email è obbligatoria.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
+
     setLoading(true);
     try {
       await axios.post(
@@ -276,7 +301,7 @@ const DynamicForm = () => {
       setShowThankYou(true);
     } catch (error) {
       console.error("Errore nell'invio dei contatti:", error);
-      alert("Errore nell'invio dei contatti. Riprova più tardi.");
+      setErrors({ general: "Errore nell'invio dei contatti. Riprova più tardi." });
     } finally {
       setLoading(false);
     }
@@ -294,6 +319,7 @@ const DynamicForm = () => {
           setFormData={setFormData}
           handleSubmitContactInfo={handleSubmitContactInfo}
           loading={loading}
+          errors={errors}
         />
       ) : currentQuestion ? (
         <QuestionForm
@@ -304,6 +330,7 @@ const DynamicForm = () => {
           handleInputChange={handleInputChange}
           handleAnswerChange={handleAnswerChange}
           loading={loading}
+          errors={errors}
         />
       ) : (
         <div>
@@ -317,6 +344,7 @@ const DynamicForm = () => {
             toggleService={toggleService}
             services={services}
             categoriesRequiringBrand={categoriesRequiringBrand}
+            errors={errors}
           />
           {selectedCategories.length > 0 && (
             <div className="form-actions">
@@ -331,6 +359,7 @@ const DynamicForm = () => {
               >
                 {loading ? "Caricamento..." : "COMINCIAMO!"}
               </button>
+              {errors.general && <span className="error-message">{errors.general}</span>}
             </div>
           )}
         </div>
