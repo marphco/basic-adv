@@ -52,8 +52,6 @@ const InitialForm = ({
                     nodeRef={servicesRefs.current[category]}
                     appear={true}
                     unmountOnExit={true}
-                    onEnter={() => console.log(`Entrata: ${category}`)}
-                    onExit={() => console.log(`Uscita: ${category}`)}
                   >
                     <div
                       ref={servicesRefs.current[category]}
@@ -87,7 +85,7 @@ const InitialForm = ({
         {selectedCategories.length > 0 && (
           <CSSTransition
             key="form-section"
-            timeout={500}
+            timeout={600}
             classNames="form-item"
             nodeRef={formSectionRef}
             appear={true}

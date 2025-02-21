@@ -134,7 +134,8 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.9rem;
-    color: #333;
+    color: var(--primary-text-color);
+    transition: all .5s ease;
   }
   
   .category-box.selected .service-item {

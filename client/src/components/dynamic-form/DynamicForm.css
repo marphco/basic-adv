@@ -5,6 +5,25 @@
   gap: 1.5rem;
 }
 
+.dynamic-form h2 {
+  font-size: 4rem;
+  color: var(--primary-text-color);
+  transition: all .5s ease;
+}
+
+.dynamic-form p {
+  font-size: 1.2rem;
+  font-weight: 200;
+  padding-bottom: 3vh;
+  color: var(--primary-text-color);
+  transition: all .5s ease;
+}
+
+.dynamic-form p span{
+  font-weight: 400;
+  color: var(--foreground-color);
+}
+
 .selectable-buttons {
   display: flex;
   justify-content: center;

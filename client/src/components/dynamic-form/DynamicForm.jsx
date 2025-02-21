@@ -72,7 +72,6 @@ const DynamicForm = () => {
       const newCategories = wasSelected
         ? prev.filter((c) => c !== category)
         : [...prev, category];
-      console.log("Nuove categorie selezionate:", newCategories); // Debug
       return newCategories;
     });
     setSelectedServices((prev) => {
@@ -285,7 +284,8 @@ const DynamicForm = () => {
 
   return (
     <div className="dynamic-form">
-      <h2>Client Acquisition Form</h2>
+      <h2>Pronto a Fare Sul Serio?</h2>
+      <p><span>Categoria, servizi, clic: fatto.</span> Semplice, no?</p>
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
       ) : isCompleted ? (
