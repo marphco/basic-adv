@@ -329,7 +329,7 @@ const DynamicForm = () => {
                 }}
                 disabled={loading}
               >
-                {loading ? "Caricamento..." : "Inizia"}
+                {loading ? "Caricamento..." : "COMINCIAMO!"}
               </button>
             </div>
           )}

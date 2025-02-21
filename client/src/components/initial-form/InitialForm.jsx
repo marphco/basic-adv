@@ -21,14 +21,18 @@ const InitialForm = ({
   );
 
   const formSectionRef = useRef(null);
-  // Creiamo un ref per ogni categoria usando un oggetto
   const servicesRefs = useRef({});
+  const fileInputRef = useRef(null); // Ref per il campo file nascosto
+
+  // Funzione per triggerare il click sull’input file nascosto
+  const handleFileButtonClick = () => {
+    fileInputRef.current.click();
+  };
 
   return (
     <div className="initial-form">
       <div className="category-grid">
         {Object.keys(services).map((category) => {
-          // Inizializziamo il ref per questa categoria se non esiste
           if (!servicesRefs.current[category]) {
             servicesRefs.current[category] = { current: null };
           }
@@ -95,46 +99,55 @@ const InitialForm = ({
               {requiresBrand && (
                 <>
                   <div className="form-group">
-                    <label>Nome del Brand (opzionale)</label>
                     <input
                       type="text"
                       name="brandName"
                       value={brandName}
                       onChange={handleFormInputChange}
+                      placeholder="Nome del brand"
                     />
                   </div>
                   <div className="form-group">
-                    <label>Tipo di Progetto (opzionale)</label>
                     <select
                       name="projectType"
                       value={projectType}
                       onChange={handleFormInputChange}
                     >
+                      <option value="" disabled hidden>Tipo di progetto (opzionale)</option>
                       <option value="new">Nuovo progetto</option>
                       <option value="restyling">Restyling</option>
                     </select>
                   </div>
                   {projectType === "restyling" && (
                     <div className="form-group">
-                      <label>Carica il tuo logo attuale (opzionale):</label>
+                      <button
+                        type="button"
+                        className="file-upload-btn"
+                        onClick={handleFileButtonClick}
+                      >
+                        <span>Carica il tuo logo attuale</span>
+                        <span className="upload-icon">↑</span>
+                      </button>
                       <input
                         type="file"
                         name="currentLogo"
+                        ref={fileInputRef}
                         accept=".jpg, .jpeg, .png, .tiff, .tif, .svg, .pdf, .heic, .heif"
                         onChange={handleFormInputChange}
+                        style={{ display: "none" }} // Nascondiamo l’input nativo
                       />
                     </div>
                   )}
                 </>
               )}
               <div className="form-group">
-                <label>Settore Aziendale</label>
                 <select
                   name="businessField"
                   value={businessField}
                   onChange={handleFormInputChange}
                   required
                 >
+                  <option value="" disabled hidden>Settore aziendale</option>
                   {businessFields.map((field) => (
                     <option key={field} value={field}>
                       {field}
@@ -144,13 +157,13 @@ const InitialForm = ({
               </div>
               {businessField === "Altro" && (
                 <div className="form-group">
-                  <label>Specificare il settore</label>
                   <input
                     type="text"
                     name="otherBusinessField"
                     value={otherBusinessField}
                     onChange={handleFormInputChange}
                     required
+                    placeholder="Specifica il settore"
                   />
                 </div>
               )}

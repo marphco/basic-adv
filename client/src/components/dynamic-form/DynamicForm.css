@@ -52,17 +52,21 @@
 
 .submit-btn {
   padding: 0.75rem 2rem; /* Increased padding for larger size */
-  background: #000;
-  color: #fff;
+  background-color: var(--foreground-color);
+  color: white;
   border: none;
   border-radius: 4px;
+  font-weight: 200;
   cursor: pointer;
-  transition: background 0.3s ease;
+  border: solid 1px var(--foreground-color);
+  transition: background-color 0.5s ease;
   font-size: 1.2rem; /* Larger text */
 }
 
 .submit-btn:hover {
-  background: var(--foreground-color);
+  background: var(--background-color);
+  border: solid 1px var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 .submit-btn:disabled {
@@ -71,6 +75,7 @@
 }
 
 .form-actions {
+  padding-top: 2vh;
   display: flex;
   justify-content: center; /* Center the button */
   gap: 1rem;

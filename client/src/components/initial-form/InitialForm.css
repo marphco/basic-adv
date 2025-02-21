@@ -13,14 +13,14 @@
   
   .category-box {
     background: transparent;
-    border: 1px solid grey;
+    border: 1px solid #d1d1d1;
     color: grey;
     border-radius: 4px;
     padding: 1rem;
     align-self: start;
     cursor: pointer;
     transition: all 0.5s ease;
-    width: 260px; /* Impostato a 260px come richiesto */
+    min-width: 260px;
     box-sizing: border-box;
   }
   
@@ -34,7 +34,7 @@
   }
   
   .category-box.selected {
-    border: 2px solid var(--foreground-color);
+    border: 1px solid var(--foreground-color);
     color: var(--primary-text-color);
   }
   
@@ -83,35 +83,72 @@
   .form-section {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding-top: 3vh;
   }
   
-  .form-item-enter {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-  }
-  
-  .form-item-enter-active {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    transition: opacity 500ms ease-out, transform 500ms ease-out;
-  }
-  
-  .form-item-exit {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  
-  .form-item-exit-active {
-    opacity: 0;
-    transform: translateY(30px) scale(0.98);
-    transition: opacity 500ms ease-out, transform 500ms ease-out;
-  }
-  
+  /* Stile minimale per i campi */
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 0.75rem 0.5rem;
+    border: none;
+    border-bottom: 1px solid #d1d1d1;
+    border-radius: 0;
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--primary-text-color);
+    background: transparent;
+    outline: none;
+    transition: all 0.5s ease;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    border-bottom-color: var(--foreground-color);
+  }
+  
+  .form-group input::placeholder,
+  .form-group select:invalid {
+    color: #999;
+    font-weight: 300;
+  }
+  
+  /* Stile per il pulsante di upload */
+  .file-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.5rem;
+    border: none;
+    border-bottom: 1px solid #d1d1d1;
+    background: transparent;
+    font-size: 1rem;
+    font-weight: 300;
+    color: #999; /* Colore placeholder */
+    cursor: pointer;
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .file-upload-btn:hover,
+  .file-upload-btn:focus {
+    border-bottom-color: var(--foreground-color);
+    color: var(--primary-text-color);
+  }
+  
+  .file-upload-btn .upload-icon {
+    font-size: 1.2rem;
+    color: #999;
+    transition: color 0.3s ease;
+  }
+  
+  .file-upload-btn:hover .upload-icon {
+    color: var(--foreground-color);
   }
   
   .category-label {
@@ -135,7 +172,7 @@
     gap: 0.5rem;
     font-size: 0.9rem;
     color: var(--primary-text-color);
-    transition: all .5s ease;
+    transition: all 0.5s ease;
   }
   
   .category-box.selected .service-item {
@@ -159,19 +196,6 @@
   
   .service-item input[type="checkbox"]:focus {
     outline: none;
-  }
-  
-  .form-group label {
-    font-size: 1rem;
-    font-weight: 500;
-  }
-  
-  .form-group input,
-  .form-group select {
-    padding: 0.5rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    font-size: 1rem;
   }
   
   @media (max-width: 768px) {
