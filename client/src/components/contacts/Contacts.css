@@ -1,11 +1,21 @@
 .contacts-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
-    background-color: var(--background-color);
-    box-sizing: border-box;
-    padding: 20px; /* Optional: Adds padding around the DynamicForm */
-    transition: all .5s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Altezza fissa per desktop */
+  width: 100vw;
+  background-color: var(--background-color);
+  box-sizing: border-box;
+  padding: 20px; /* Padding opzionale per desktop */
+  transition: all .5s ease;
+}
+
+/* Media query per dispositivi mobili */
+@media screen and (max-width: 768px) {
+  .contacts-container {
+    height: auto; /* Rimuove l’altezza fissa su mobile */
+    min-height: 100vh; /* Mantiene un’altezza minima per coerenza */
+    align-items: flex-start; /* Allinea il contenuto dall’alto */
+    padding: 20px 20px 60px 20px; /* Padding solo in basso per il pulsante */
   }
+}
