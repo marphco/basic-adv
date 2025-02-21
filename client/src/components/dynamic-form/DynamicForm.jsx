@@ -21,8 +21,8 @@ const DynamicForm = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     brandName: "",
-    projectType: "new",
-    businessField: "",
+    projectType: "Tipo di progetto", // Valore neutro esplicito
+    businessField: "Ambito", // Valore neutro esplicito
     otherBusinessField: "",
     projectObjectives: "",
     contactInfo: { name: "", email: "", phone: "" },
@@ -32,7 +32,16 @@ const DynamicForm = () => {
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const businessFields = ["Seleziona un settore", "Tecnologia", "Moda", "Alimentare", "Altro"];
+  const businessFields = [
+    "Ambito",
+    "Tech",
+    "Food",
+    "Shop",
+    "Eventi",
+    "Servizi",
+    "Produzione",
+    "Altro"
+  ];
 
   const services = {
     Branding: ["Logo", "Brand Identity", "Packaging"],
@@ -56,8 +65,8 @@ const DynamicForm = () => {
     setLoading(false);
     setFormData({
       brandName: "",
-      projectType: "new",
-      businessField: "",
+      projectType: "Tipo di progetto",
+      businessField: "Ambito",
       otherBusinessField: "",
       projectObjectives: "",
       contactInfo: { name: "", email: "", phone: "" },
@@ -76,15 +85,12 @@ const DynamicForm = () => {
         : [...prev, category];
       return newCategories;
     });
-    // Non aggiungiamo più i servizi automaticamente quando una categoria viene selezionata
     setSelectedServices((prev) => {
       const allServices = services[category];
       const wasSelected = prev.some((service) => allServices.includes(service));
       if (wasSelected) {
-        // Se la categoria era selezionata, rimuovi solo i servizi di quella categoria
         return prev.filter((s) => !allServices.includes(s));
       }
-      // Se la categoria è stata appena selezionata, non aggiungere nulla
       return prev;
     });
     setErrors({});
@@ -153,11 +159,14 @@ const DynamicForm = () => {
       if (selectedServices.length === 0) {
         newErrors.services = "Seleziona almeno un servizio.";
       }
-      if (!formData.businessField || formData.businessField === "Seleziona un settore") {
-        newErrors.businessField = "Seleziona un settore aziendale.";
+      if (formData.businessField === "Ambito") {
+        newErrors.businessField = "Seleziona un ambito.";
       }
       if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
-        newErrors.otherBusinessField = "Specifica il settore.";
+        newErrors.otherBusinessField = "Specifica l’ambito.";
+      }
+      if (formData.projectType === "Tipo di progetto") {
+        newErrors.projectType = "Seleziona un tipo di progetto.";
       }
 
       if (Object.keys(newErrors).length > 0) {
@@ -309,7 +318,7 @@ const DynamicForm = () => {
 
   return (
     <div className="dynamic-form">
-      <h2>Pronto a fare sul serio?</h2>
+      <h2>Pronto a Fare Sul Serio?</h2>
       <p><span>Categoria, servizi, clic: fatto.</span> Semplice, no?</p>
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />

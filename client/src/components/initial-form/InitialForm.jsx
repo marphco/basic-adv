@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useRef } from "react";
-import { FaExclamationCircle } from "react-icons/fa"; // Icona di attenzione
+import { FaExclamationCircle } from "react-icons/fa";
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -125,8 +125,9 @@ const InitialForm = ({
                       name="projectType"
                       value={projectType}
                       onChange={handleFormInputChange}
+                      required
                     >
-                      <option value="" disabled hidden>Tipo di progetto (opzionale)</option>
+                      <option value="Tipo di progetto" disabled>Tipo di progetto</option>
                       <option value="new">Nuovo progetto</option>
                       <option value="restyling">Restyling</option>
                     </select>
@@ -172,8 +173,8 @@ const InitialForm = ({
                   onChange={handleFormInputChange}
                   required
                 >
-                  <option value="" disabled hidden>Settore aziendale</option>
-                  {businessFields.map((field) => (
+                  <option value="Ambito" disabled>Ambito</option>
+                  {businessFields.filter(field => field !== "Ambito").map((field) => (
                     <option key={field} value={field}>
                       {field}
                     </option>
@@ -194,7 +195,7 @@ const InitialForm = ({
                     value={otherBusinessField}
                     onChange={handleFormInputChange}
                     required
-                    placeholder="Specifica il settore"
+                    placeholder="Specifica l’ambito"
                   />
                   {errors.otherBusinessField && (
                     <span className="error-message">
