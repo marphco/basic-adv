@@ -1,4 +1,3 @@
-// App.jsx
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { gsap } from "gsap";
@@ -14,10 +13,9 @@ import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
-import AboutUsDesktop from "./components/about-us/AboutUsDesktop"; // overlay AboutUs per desktop
-import AboutUs from "./components/about-us/AboutUs"; // pagina AboutUs per mobile
-// import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // componente progetto mobile
-import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile"; // importa il nuovo componente
+import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
+import AboutUs from "./components/about-us/AboutUs";
+import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -85,6 +83,7 @@ function App() {
   }, [isMobile, windowWidth, windowHeight]);
 
   useEffect(() => {
+    // Applica l’attributo data-theme al body per il tema
     document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
@@ -96,7 +95,7 @@ function App() {
   return (
     <Router>
       <ScrollToTopOnRouteChange />
-      <div className="app-wrapper">
+      <div className={`app-wrapper ${isDark ? 'dark-theme' : 'light-theme'}`}>
         <Cursor isDark={isDark} />
         <Navbar
           isDark={isDark}
@@ -107,38 +106,37 @@ function App() {
         />
         <div className="App" ref={scrollContainerRef}>
           <Routes>
-            <Route path="/" element={
-              <>
-                <div className="section"><Home /></div>
-                <div className="section">
-                  <Services
-                    scrollTween={scrollTween}
-                    isMobile={isMobile}
-                    windowWidth={windowWidth}
-                    windowHeight={windowHeight}
-                  />
-                </div>
-                <div className="section">
-                  <DndProvider backend={HTML5Backend}>
-                    <Portfolio scrollTween={scrollTween} />
-                  </DndProvider>
-                </div>
-                <div className="section"><Contacts /></div>
-                {/* Overlay AboutUs per desktop */}
-                {!isMobile && (
-                  <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-                    <AboutUsDesktop />
-                  </AboutUsPortal>
-                )}
-              </>
-            } />
-            {/* Route per AboutUs su mobile */}
+            <Route
+              path="/"
+              element={
+                <>
+                  <div className="section"><Home /></div>
+                  <div className="section">
+                    <Services
+                      scrollTween={scrollTween}
+                      isMobile={isMobile}
+                      windowWidth={windowWidth}
+                      windowHeight={windowHeight}
+                    />
+                  </div>
+                  <div className="section">
+                    <DndProvider backend={HTML5Backend}>
+                      <Portfolio scrollTween={scrollTween} />
+                    </DndProvider>
+                  </div>
+                  <div className="section"><Contacts /></div>
+                  {!isMobile && (
+                    <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
+                      <AboutUsDesktop />
+                    </AboutUsPortal>
+                  )}
+                </>
+              }
+            />
             <Route path="/about-us" element={<AboutUs />} />
-            {/* Route per i progetti su mobile */}
             {isMobile && (
               <Route path="/project/:id" element={<ProjectSectionMobile />} />
             )}
-
           </Routes>
         </div>
       </div>

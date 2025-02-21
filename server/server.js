@@ -7,8 +7,9 @@ const ProjectLog = require("./models/ProjectLog");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid"); // Aggiungiamo uuid
 
-dotenv.config(); // Carica le variabili d'ambiente dal file .env
+dotenv.config();
 
 console.log("Chiave OpenAI:", process.env.OPEN_AI_KEY ? "PRESENTE" : "NON TROVATA");
 
@@ -16,10 +17,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Per sviluppo locale
-      "https://basic-adv.vercel.app", // Il frontend in produzione
-    ],
+    origin: ["http://localhost:5173", "https://basic-adv.vercel.app"],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -31,10 +29,10 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Configura multer per gestire l'upload dei file
+// Configura multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Assicurati che la cartella 'uploads' esista
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -43,17 +41,11 @@ const storage = multer.diskStorage({
   },
 });
 
-// Aggiungi limitazioni e filtraggio dei file (opzionale)
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite di 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/svg+xml",
-      "application/pdf",
-    ];
+    const allowedTypes = ["image/jpeg", "image/png", "image/svg+xml", "application/pdf"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -64,10 +56,8 @@ const upload = multer({
 
 const PORT = process.env.PORT || 8080;
 
-// Controlla se un server è già in esecuzione
 if (!global.serverRunning) {
-  global.serverRunning = true; // Imposta il flag per evitare doppi avvii
-
+  global.serverRunning = true;
   const server = app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
   });
@@ -75,47 +65,46 @@ if (!global.serverRunning) {
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
       console.error(`❌ Porta ${PORT} già in uso. Uscita forzata.`);
-      process.exit(1); // Esce e impedisce loop infiniti
+      process.exit(1);
     } else {
       console.error("❌ Errore sconosciuto:", err);
     }
   });
 }
 
-// Connessione a MongoDB
-const dbUri = process.env.MONGO_URI;
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connesso al database MongoDB"))
+  .catch((err) => console.error("Errore di connessione al database:", err));
 
-// Connessione a MongoDB
-mongoose.connect(dbUri)
-  .then(() => console.log('Connesso al database MongoDB'))
-  .catch(err => console.error('Errore di connessione al database:', err));
-
-// Funzione di sanitizzazione per le chiavi
 const sanitizeKey = (key) => key.replace(/\./g, "_");
 
-// Funzione per generare una domanda per un servizio specifico
-const generateQuestionForService = async (
-  service,
-  formData,
-  answers,
-  askedQuestions
-) => {
-  // Crea una stringa con le domande già poste
+const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
+  console.log("generateQuestionForService called with:", {
+    service,
+    formData,
+    answers,
+    askedQuestions,
+  });
+
+  const brandName = formData.brandName || "non specificato";
+  const projectType = formData.projectType || "non specificato";
+  const businessField = formData.businessField || "non specificato";
+
   const askedQuestionsList = askedQuestions.join("\n");
 
-  // Includi la descrizione dell'immagine se disponibile
   let imageInfo = "";
   if (formData.currentLogoDescription) {
     imageInfo = `\nIl cliente ha fornito una descrizione del logo attuale: ${formData.currentLogoDescription}`;
   }
 
-  const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto per il brand "${
-    formData.brandName
-  }". Le seguenti informazioni sono già state raccolte:
+  const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto ${
+    brandName !== "non specificato" ? `per il brand "${brandName}"` : "senza un brand specifico"
+  }. Le seguenti informazioni sono già state raccolte:
 
-- Nome del Brand: ${formData.brandName}
-- Tipo di Progetto: ${formData.projectType}
-- Settore Aziendale: ${formData.businessField}
+- Nome del Brand: ${brandName}
+- Tipo di Progetto: ${projectType}
+- Settore Aziendale: ${businessField}
 ${imageInfo}
 
 Servizio Attuale: ${service}
@@ -140,7 +129,7 @@ Per ogni domanda:
 {
   "question": "La tua domanda qui",
   "options": ["Opzione1", "Opzione2", "Opzione3", "Opzione4"],
-  "type": "tipo_di_domanda", // Questo campo è opzionale e presente solo per domande speciali come la selezione dei font
+  "type": "tipo_di_domanda",
   "requiresInput": true o false
 }
 
@@ -152,6 +141,7 @@ Assicurati che il JSON sia valido e non includa altro testo o caratteri.
 Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecniche. Mantieni le domande e le opzioni concise e facili da comprendere.`;
 
   try {
+    console.log("Invio richiesta a OpenAI con prompt:", promptBase);
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -174,174 +164,165 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     );
 
     const aiResponseText = response.data.choices[0].message.content;
+    console.log("Risposta da OpenAI:", aiResponseText);
 
-    // Parse the response as JSON
     let aiQuestion;
-
     try {
       aiQuestion = JSON.parse(aiResponseText);
+      console.log("Domanda AI parsata:", aiQuestion);
     } catch (error) {
-      // Try to extract the JSON from the response
+      console.error("Errore nel parsing della risposta JSON da OpenAI:", error);
       const jsonStartIndex = aiResponseText.indexOf("{");
       const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1;
       if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        const jsonString = aiResponseText.substring(
-          jsonStartIndex,
-          jsonEndIndex
-        );
+        const jsonString = aiResponseText.substring(jsonStartIndex, jsonEndIndex);
         try {
           aiQuestion = JSON.parse(jsonString);
+          console.log("Domanda AI estratta con successo:", aiQuestion);
         } catch (error) {
-          console.error("Error parsing extracted JSON:", error);
+          console.error("Errore nel parsing del JSON estratto:", error);
           throw new Error("Errore nel parsing della risposta AI");
         }
       } else {
-        console.error("No JSON found in AI response");
+        console.error("Nessun JSON valido trovato nella risposta AI");
         throw new Error("Errore nel parsing della risposta AI");
       }
     }
 
-    // Rimuovi il punto finale dalla domanda, se presente
-    if (aiQuestion.question.endsWith(".")) {
+    if (aiQuestion.question && aiQuestion.question.endsWith(".")) {
       aiQuestion.question = aiQuestion.question.slice(0, -1);
     }
 
-    // Verifica che 'question' sia presente
     if (!aiQuestion.question) {
-      console.error("La risposta dell'AI non contiene una domanda valida.");
-      throw new Error("La risposta dell'AI non contiene una domanda valida.");
+      console.error("La risposta dell'AI non contiene una domanda valida:", aiResponseText);
+      throw new Error("La risposta dell'AI non contiene una domanda valida");
     }
 
-    // Imposta 'requiresInput' su false se non è presente
     if (typeof aiQuestion.requiresInput === "undefined") {
       aiQuestion.requiresInput = false;
     }
 
-    // Se 'options' non è un array, impostalo su array vuoto
     if (!Array.isArray(aiQuestion.options)) {
       aiQuestion.options = [];
     }
 
-    // Verifica che la domanda non sia duplicata
     if (askedQuestions.includes(aiQuestion.question)) {
-      // Genera una nuova domanda se è già stata posta
-      return await generateQuestionForService(
-        service,
-        formData,
-        answers,
-        askedQuestions
-      );
+      console.log("Domanda duplicata rilevata, rigenerazione...");
+      return await generateQuestionForService(service, formData, answers, askedQuestions);
     }
 
     return aiQuestion;
   } catch (error) {
-    console.error("Error generating AI question:", error);
-    throw new Error("Errore nella generazione della domanda AI");
+    console.error("Errore in generateQuestionForService:", error.message, error.stack);
+    throw error; // Rilanciamo l’errore per essere catturato dal chiamante
   }
 };
 
-// Endpoint per generare la prima domanda
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
-  console.log("Received /api/generate request:", req.body); // Log per debugging
-
-  // Estrai i campi dal corpo della richiesta
-  const servicesSelected = JSON.parse(req.body.servicesSelected);
-  const formData = { ...req.body };
-  const sessionId = req.body.sessionId;
-
-  // Rimuovi 'servicesSelected' e 'sessionId' da formData per evitare duplicati
-  delete formData.servicesSelected;
-  delete formData.sessionId;
-
-  // Se 'contactInfo' è presente, parsalo
-  if (formData.contactInfo) {
-    formData.contactInfo = JSON.parse(formData.contactInfo);
-  } else {
-    formData.contactInfo = {}; // Inizializza come oggetto vuoto se non esiste
-  }
-
-  // Se un file è stato caricato, aggiungi il percorso del file a 'formData'
-  if (req.file) {
-    formData.currentLogo = req.file.path; // Salva il percorso del file
-    console.log("Percorso del logo caricato:", formData.currentLogo);
-  }
+  console.log("Richiesta ricevuta per /api/generate:", req.body);
 
   try {
-    // Determina il limite di domande per servizio
-    const minQuestionsPerService = 8;
-    let maxQuestionsPerService;
-    let totalQuestions;
-
-    if (servicesSelected.length === 1) {
-      maxQuestionsPerService = 10;
-      totalQuestions = 10;
-    } else {
-      maxQuestionsPerService = minQuestionsPerService;
-      totalQuestions = minQuestionsPerService * servicesSelected.length;
+    let servicesSelected;
+    try {
+      servicesSelected = JSON.parse(req.body.servicesSelected || "[]");
+    } catch (e) {
+      console.error("Errore nel parsing di servicesSelected:", e);
+      return res.status(400).json({ error: "Formato servicesSelected non valido" });
     }
 
-    // Inizializza la sessione
+    const formData = { ...req.body };
+    const sessionId = req.body.sessionId || uuidv4();
+
+    delete formData.servicesSelected;
+    delete formData.sessionId;
+
+    if (formData.contactInfo) {
+      try {
+        formData.contactInfo = JSON.parse(formData.contactInfo);
+      } catch (e) {
+        console.error("Errore nel parsing di contactInfo:", e);
+        formData.contactInfo = {};
+      }
+    } else {
+      formData.contactInfo = {};
+    }
+
+    if (req.file) {
+      formData.currentLogo = req.file.path;
+      console.log("Percorso del logo caricato:", formData.currentLogo);
+    }
+
+    formData.brandName = formData.brandName || "";
+    formData.projectType = formData.projectType || "non specificato";
+    formData.businessField = formData.businessField || "non specificato";
+    formData.otherBusinessField = formData.otherBusinessField || "";
+
+    if (!servicesSelected.length) {
+      console.error("Nessun servizio selezionato");
+      return res.status(400).json({ error: "Nessun servizio selezionato" });
+    }
+
+    console.log("Dati preparati per ProjectLog:", { sessionId, formData, servicesSelected });
+
     const newLogEntry = new ProjectLog({
       sessionId,
       formData,
       questions: [],
-      answers: {},
+      answers: new Map(),
       questionCount: 0,
       servicesQueue: servicesSelected,
       currentServiceIndex: 0,
-      serviceQuestionCount: {},
-      maxQuestionsPerService,
-      totalQuestions,
-      askedQuestions: {},
+      serviceQuestionCount: new Map(),
+      maxQuestionsPerService: servicesSelected.length === 1 ? 10 : 8,
+      totalQuestions: servicesSelected.length === 1 ? 10 : 8 * servicesSelected.length,
+      askedQuestions: new Map(),
     });
 
-    // Inizializza il conteggio delle domande per servizio e l'elenco delle domande già poste
     servicesSelected.forEach((service) => {
       newLogEntry.serviceQuestionCount.set(service, 0);
       newLogEntry.askedQuestions.set(service, []);
     });
 
-    // Genera la prima domanda per il primo servizio
     const firstService = servicesSelected[0];
-    const askedQuestionsForService =
-      newLogEntry.askedQuestions.get(firstService) || [];
+    const askedQuestionsForService = newLogEntry.askedQuestions.get(firstService) || [];
+    console.log("Chiamata a generateQuestionForService con:", {
+      firstService,
+      formData,
+      answers: Object.fromEntries(newLogEntry.answers),
+      askedQuestionsForService,
+    });
+
     const aiQuestion = await generateQuestionForService(
       firstService,
       formData,
-      newLogEntry.answers,
+      Object.fromEntries(newLogEntry.answers),
       askedQuestionsForService
     );
 
-    // Aggiungi la domanda al log
+    console.log("Domanda generata:", aiQuestion);
+
     newLogEntry.questions.push(aiQuestion);
-    newLogEntry.questionCount += 1; // Incremento solo per la domanda posta
+    newLogEntry.questionCount += 1;
     newLogEntry.serviceQuestionCount.set(
       firstService,
       (newLogEntry.serviceQuestionCount.get(firstService) || 0) + 1
     );
+    newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question);
 
-    // Aggiungi la domanda all'elenco delle domande già poste (con il testo originale)
-    newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question); // Conserva la domanda originale
-
-    // Salva nel database
+    console.log("Salvataggio del log entry su MongoDB...");
     await newLogEntry.save();
+    console.log("Log entry salvato con successo");
 
-    console.log(
-      `Session ${sessionId} - Generated first question for service: ${firstService}`
-    );
-    console.log(
-      `Service Question Count [${firstService}]: ${newLogEntry.serviceQuestionCount.get(
-        firstService
-      )}`
-    );
-    console.log(`Total Question Count: ${newLogEntry.questionCount}`);
-
+    console.log(`Sessione ${sessionId} - Generata prima domanda per servizio: ${firstService}`);
     res.json({ question: aiQuestion });
   } catch (error) {
-    console.error("Error generating AI question:", error);
-    res
-      .status(500)
-      .json({ error: "Errore nella generazione delle domande AI" });
+    console.error("Errore dettagliato in /api/generate:", {
+      message: error.message,
+      stack: error.stack,
+      requestBody: req.body,
+      formData: req.body,
+    });
+    res.status(500).json({ error: "Errore nella generazione delle domande AI" });
   }
 });
 
