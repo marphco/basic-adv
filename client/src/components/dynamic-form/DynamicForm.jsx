@@ -203,7 +203,6 @@ const DynamicForm = () => {
       ...prev,
       [questionText]: { ...prev[questionText], input: value },
     }));
-    // Rimuovi l’errore se il testo è valido
     setErrors((prev) => {
       const updatedErrors = { ...prev };
       if (value.trim() && updatedErrors[questionText]) {
@@ -446,7 +445,7 @@ const DynamicForm = () => {
           </p>
         </div>
       )}
-
+  
       <CSSTransition
         in={!!currentQuestion}
         timeout={1000}
@@ -464,13 +463,14 @@ const DynamicForm = () => {
               handleAnswerChange={handleAnswerChange}
               loading={loading}
               errors={errors}
+              formData={formData} // Passiamo formData per brandName
             />
           ) : (
             <div />
           )}
         </div>
       </CSSTransition>
-
+  
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
       ) : isCompleted ? (

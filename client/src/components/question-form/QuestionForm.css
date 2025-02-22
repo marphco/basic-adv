@@ -76,6 +76,7 @@
     font-size: 0.9rem;
     color: var(--primary-text-color);
     transition: all 0.5s ease;
+    font-weight: 200;
     width: 100%;
     padding-left: 0.5rem;
   }
