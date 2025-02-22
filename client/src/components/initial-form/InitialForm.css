@@ -147,6 +147,11 @@
     transition: border-color 0.3s ease, color 0.3s ease;
   }
   
+  .file-upload-btn.uploaded {
+    color: var(--primary-text-color);
+    border-bottom-color: var(--foreground-color);
+  }
+  
   .file-upload-btn:hover,
   .file-upload-btn:focus {
     border-bottom-color: var(--foreground-color);
@@ -159,7 +164,7 @@
     transition: color 0.3s ease;
   }
   
-  .file-upload-btn:hover .upload-icon {
+  .file-upload-btn.uploaded .upload-icon {
     color: var(--foreground-color);
   }
   
