@@ -326,7 +326,7 @@ const DynamicForm = () => {
 
   return (
     <div className="dynamic-form">
-      <h2>Pronto a Fare Sul Serio?</h2>
+      <h2>Pronto a fare sul serio?</h2>
       <p><span>Categoria, servizi, clic: fatto.</span> Semplice, no?</p>
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
