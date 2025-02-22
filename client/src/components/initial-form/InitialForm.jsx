@@ -156,20 +156,30 @@ const InitialForm = ({
                           className={`file-upload-btn ${
                             currentLogo ? "uploaded" : ""
                           }`}
-                          onClick={handleFileButtonClick}
+                          onClick={handleFileButtonClick} // Clic sul nome apre il selettore
                         >
                           {currentLogo ? (
                             <>
                               <span className="file-icon-left">
                                 <FaPaperclip />
                               </span>
-                              <span className="file-name">
-                                {currentLogo.name}
+                              <span className="file-name-wrapper">
+                                <span className="file-name-text">
+                                  {currentLogo.name.substring(
+                                    0,
+                                    currentLogo.name.lastIndexOf(".")
+                                  )}
+                                </span>
+                                <span className="file-extension">
+                                  {currentLogo.name.substring(
+                                    currentLogo.name.lastIndexOf(".")
+                                  )}
+                                </span>
                               </span>
                               <span
                                 className="file-icon-right"
                                 onClick={(e) => {
-                                  e.stopPropagation();
+                                  e.stopPropagation(); // Impedisce l’apertura del selettore
                                   handleFormInputChange({
                                     target: {
                                       name: "currentLogo",
@@ -183,10 +193,10 @@ const InitialForm = ({
                               </span>
                             </>
                           ) : (
-                            <>
-                              <span>Carica il tuo logo attuale</span>
-                              <span className="file-icon-right">↑</span>
-                            </>
+                            <span>Carica il tuo logo attuale</span>
+                          )}
+                          {!currentLogo && (
+                            <span className="file-icon-right">↑</span>
                           )}
                         </button>
                       </div>
