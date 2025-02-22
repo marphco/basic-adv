@@ -137,6 +137,23 @@ input:-webkit-autofill:active {
   transition: color 0.5s ease;
 }
 
+.dynamic-form .error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--error-color); /* Uniformato, rimosso #ff0000 */
+  text-align: center !important;
+  transition: color 0.5s ease;
+}
+
+.dynamic-form .error-icon {
+  font-size: 0.9rem;
+  color: var(--error-color);
+  transition: color 0.5s ease;
+}
+
 @media screen and (max-width: 768px) {
   .dynamic-form h2 {
     font-size: 3rem;
