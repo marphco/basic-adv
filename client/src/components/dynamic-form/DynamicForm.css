@@ -7,6 +7,7 @@
 
 .dynamic-form h2 {
   font-size: 4rem;
+  font-weight: 300;
   color: var(--primary-text-color);
   transition: all .5s ease;
 }

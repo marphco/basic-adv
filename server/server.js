@@ -70,6 +70,21 @@ if (!global.serverRunning) {
       console.error("❌ Errore sconosciuto:", err);
     }
   });
+
+  // Gestione chiusura pulita con Promise, eseguita una sola volta
+  let isClosing = false;
+  process.on('SIGINT', async () => {
+    if (isClosing) return; // Ignora segnali ripetuti
+    isClosing = true;
+
+    console.log('🔴 Ricevuto SIGINT. Chiusura server...');
+    server.close(() => {
+      console.log('✅ Server chiuso correttamente');
+    });
+    await mongoose.connection.close();
+    console.log('✅ Connessione MongoDB chiusa');
+    process.exit(0);
+  });
 }
 
 mongoose
