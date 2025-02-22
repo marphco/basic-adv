@@ -1,4 +1,3 @@
-// src/components/dynamic-form/DynamicForm.jsx
 import { useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
@@ -7,6 +6,7 @@ import InitialForm from "../initial-form/InitialForm";
 import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
+import { CSSTransition } from "react-transition-group";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -49,7 +49,7 @@ const DynamicForm = () => {
     "Eventi",
     "Servizi",
     "Produzione",
-    "Altro"
+    "Altro",
   ];
 
   // Memoizziamo l'oggetto services
@@ -335,8 +335,39 @@ const DynamicForm = () => {
 
   return (
     <div className="dynamic-form">
-      <h2>Pronto a fare sul serio?</h2>
-      <p><span>Categoria, servizi, clic: fatto.</span> Semplice, no?</p>
+      {!currentQuestion && !isCompleted && !showThankYou && (
+        <div>
+          <h2>Pronto a fare sul serio?</h2>
+          <p>
+            <span>Categoria, servizi, clic: fatto.</span> Semplice, no?
+          </p>
+        </div>
+      )}
+
+      <CSSTransition
+        in={!!currentQuestion}
+        timeout={1000}
+        classNames="fade-question"
+        unmountOnExit
+      >
+        <div>
+          {currentQuestion ? (
+            <QuestionForm
+              currentQuestion={currentQuestion}
+              questionNumber={questionNumber}
+              answers={answers}
+              handleAnswerSubmit={handleAnswerSubmit}
+              handleInputChange={handleInputChange}
+              handleAnswerChange={handleAnswerChange}
+              loading={loading}
+              errors={errors}
+            />
+          ) : (
+            <div /> // Placeholder vuoto quando non c’è domanda
+          )}
+        </div>
+      </CSSTransition>
+
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
       ) : isCompleted ? (
@@ -347,18 +378,7 @@ const DynamicForm = () => {
           loading={loading}
           errors={errors}
         />
-      ) : currentQuestion ? (
-        <QuestionForm
-          currentQuestion={currentQuestion}
-          questionNumber={questionNumber}
-          answers={answers}
-          handleAnswerSubmit={handleAnswerSubmit}
-          handleInputChange={handleInputChange}
-          handleAnswerChange={handleAnswerChange}
-          loading={loading}
-          errors={errors}
-        />
-      ) : (
+      ) : !currentQuestion && (
         <div>
           <InitialForm
             formData={formData}
