@@ -186,84 +186,84 @@ const DynamicForm = () => {
   };
 
   // Separazione di generateFirstQuestion da useCallback
-  const generateFirstQuestion = useMemo(
-    () =>
-      debounce(async () => {
-        let newErrors = {};
-
-        if (selectedServices.length === 0) {
-          newErrors.services = "Seleziona almeno un servizio.";
-        }
-        if (formData.businessField === "Ambito") {
-          newErrors.businessField = "Seleziona un ambito.";
-        }
-        if (
-          formData.businessField === "Altro" &&
-          !formData.otherBusinessField.trim()
-        ) {
-          newErrors.otherBusinessField = "Specifica l’ambito.";
-        }
-        if (formData.projectType === "Tipo di progetto") {
-          newErrors.projectType = "Seleziona un tipo di progetto.";
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-          setErrors(newErrors);
-          setLoading(false);
-          return;
-        }
-
-        setLoading(true);
-        try {
-          const formDataToSend = new FormData();
-          formDataToSend.append(
-            "servicesSelected",
-            JSON.stringify(selectedServices)
-          );
-          formDataToSend.append("sessionId", sessionId);
-          for (const key in formData) {
-            if (Object.prototype.hasOwnProperty.call(formData, key)) {
-              if (key === "currentLogo" && formData[key]) {
-                formDataToSend.append(key, formData[key]);
-              } else if (key === "contactInfo") {
-                formDataToSend.append(key, JSON.stringify(formData[key]));
-              } else {
-                formDataToSend.append(key, formData[key]);
-              }
-            }
+  const generateFirstQuestion = useMemo(() => debounce(async () => {
+    let newErrors = {};
+  
+    if (selectedServices.length === 0) {
+      newErrors.services = "Seleziona almeno un servizio.";
+    }
+    if (formData.businessField === "Ambito") {
+      newErrors.businessField = "Seleziona un ambito.";
+    }
+    if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
+      newErrors.otherBusinessField = "Specifica l’ambito.";
+    }
+    if (formData.projectType === "Tipo di progetto") {
+      newErrors.projectType = "Seleziona un tipo di progetto.";
+    }
+    if (formData.projectType === "restyling" && !formData.currentLogo) {
+      newErrors.currentLogo = "Carica un’immagine per il restyling.";
+    } else if (formData.projectType === "restyling" && formData.currentLogo) {
+      const file = formData.currentLogo;
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/tiff",
+        "image/svg+xml",
+        "application/pdf",
+        "image/heic",
+        "image/heif",
+      ];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (!allowedTypes.includes(file.type)) {
+        newErrors.currentLogo = "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.";
+      } else if (file.size > maxSize) {
+        newErrors.currentLogo = "Il file supera i 5MB.";
+      }
+    }
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("servicesSelected", JSON.stringify(selectedServices));
+      formDataToSend.append("sessionId", sessionId);
+      for (const key in formData) {
+        if (Object.prototype.hasOwnProperty.call(formData, key)) {
+          if (key === "currentLogo" && formData[key]) {
+            formDataToSend.append(key, formData[key]);
+          } else if (key === "contactInfo") {
+            formDataToSend.append(key, JSON.stringify(formData[key]));
+          } else {
+            formDataToSend.append(key, formData[key]);
           }
-
-          const response = await axios.post(
-            `${API_URL.replace(/\/$/, "")}/api/generate`,
-            formDataToSend,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
-
-          if (
-            response.data.question &&
-            response.data.question.type === "font_selection"
-          ) {
-            setIsFontQuestionAsked(true);
-          }
-          setCurrentQuestion(response.data.question);
-          setQuestionNumber(1);
-        } catch (error) {
-          console.error(
-            "Errore nella generazione della prima domanda AI:",
-            error
-          );
-          setErrors({
-            general:
-              "Errore nella generazione della domanda. Riprova più tardi.",
-          });
-        } finally {
-          setLoading(false);
         }
-         
-      }, 300),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedServices, selectedCategories, formData, sessionId]
-  );
+      }
+  
+      const response = await axios.post(
+        `${API_URL.replace(/\/$/, "")}/api/generate`,
+        formDataToSend,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+  
+      if (response.data.question && response.data.question.type === "font_selection") {
+        setIsFontQuestionAsked(true);
+      }
+      setCurrentQuestion(response.data.question);
+      setQuestionNumber(1);
+    } catch (error) {
+      console.error("Errore nella generazione della prima domanda AI:", error);
+      setErrors({ general: error.response?.data?.error || "Errore nella generazione della domanda. Riprova più tardi." });
+    } finally {
+      setLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, 300), [selectedServices, selectedCategories, formData, sessionId]);
 
   const fetchNextQuestion = async () => {
     setLoading(true);
