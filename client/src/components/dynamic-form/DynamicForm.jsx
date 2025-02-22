@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react"; // Aggiunto useRef
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./DynamicForm.css";
@@ -40,6 +40,8 @@ const DynamicForm = () => {
   const [isLogoSelected, setIsLogoSelected] = useState(false);
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const questionRef = useRef(null); // Aggiunto ref per CSSTransition
 
   const businessFields = [
     "Ambito",
@@ -404,19 +406,19 @@ const DynamicForm = () => {
   const handleSubmitContactInfo = async (e) => {
     e.preventDefault();
     let newErrors = {};
-
+  
     if (!formData.contactInfo.name) {
       newErrors.name = "Il nome è obbligatorio.";
     }
     if (!formData.contactInfo.email) {
       newErrors.email = "L’email è obbligatoria.";
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
     setLoading(true);
     try {
       await axios.post(
@@ -451,8 +453,9 @@ const DynamicForm = () => {
         timeout={1000}
         classNames="fade-question"
         unmountOnExit
+        nodeRef={questionRef}
       >
-        <div>
+        <div ref={questionRef}>
           {currentQuestion ? (
             <QuestionForm
               currentQuestion={currentQuestion}
@@ -463,7 +466,7 @@ const DynamicForm = () => {
               handleAnswerChange={handleAnswerChange}
               loading={loading}
               errors={errors}
-              formData={formData} // Passiamo formData per brandName
+              formData={formData}
             />
           ) : (
             <div />
@@ -480,6 +483,7 @@ const DynamicForm = () => {
           handleSubmitContactInfo={handleSubmitContactInfo}
           loading={loading}
           errors={errors}
+          setErrors={setErrors} // Passato per aggiornare gli errori
         />
       ) : (
         !currentQuestion && (
@@ -512,9 +516,7 @@ const DynamicForm = () => {
                 {errors.general && (
                   <span className="error-message">
                     <FaExclamationCircle className="error-icon" />
-                    <span
-                      dangerouslySetInnerHTML={{ __html: errors.general }}
-                    />
+                    <span dangerouslySetInnerHTML={{ __html: errors.general }} />
                   </span>
                 )}
                 {Object.keys(errors).length > 0 && !errors.general && (
