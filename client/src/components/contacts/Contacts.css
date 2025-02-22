@@ -10,12 +10,11 @@
   transition: all .5s ease;
 }
 
-/* Media query per dispositivi mobili */
 @media screen and (max-width: 768px) {
   .contacts-container {
     height: auto; /* Rimuove l’altezza fissa su mobile */
     min-height: 100vh; /* Mantiene un’altezza minima per coerenza */
-    align-items: flex-start; /* Allinea il contenuto dall’alto */
+    align-items: center; /* Centra verticalmente come su desktop */
     padding: 20px 20px 60px 20px; /* Padding solo in basso per il pulsante */
   }
 }
