@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import "./QuestionForm.css";
 import FontSelection from "../font-selection/FontSelection";
-import { FaExclamationCircle } from "react-icons/fa"; // Importa l’icona
+import { FaExclamationCircle } from "react-icons/fa";
 
 const QuestionForm = ({
   currentQuestion,
@@ -11,17 +11,9 @@ const QuestionForm = ({
   handleInputChange,
   handleAnswerChange,
   loading,
-  errors = {}, // Aggiunto come prop con default vuoto
+  errors = {},
+  formData, // Aggiunto per brandName
 }) => {
-  const fontOptionImages = {
-    "Serif": "/fonts/serif.png",
-    "Sans-serif": "/fonts/sans-serif.png",
-    "Script": "/fonts/script.png",
-    "Monospaced": "/fonts/monospaced.png",
-    "Manoscritto": "/fonts/manoscritto.png",
-    "Decorativo": "/fonts/decorativo.png",
-  };
-
   return (
     <div className="question-form">
       <h3 className="question-title">{currentQuestion.question}</h3>
@@ -30,9 +22,10 @@ const QuestionForm = ({
           <FontSelection
             currentQuestion={currentQuestion}
             answers={answers}
-            handleInputChange={handleInputChange}
             handleAnswerChange={handleAnswerChange}
-            fontOptionImages={fontOptionImages}
+            handleInputChange={handleInputChange}
+            errors={errors}
+            formData={formData} // Passiamo formData
           />
         ) : currentQuestion.requiresInput ? (
           <div className="form-group">
@@ -118,7 +111,8 @@ QuestionForm.propTypes = {
   handleInputChange: PropTypes.func.isRequired,
   handleAnswerChange: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
-  errors: PropTypes.object, // PropTypes per errors
+  errors: PropTypes.object,
+  formData: PropTypes.object.isRequired, // Aggiunto per brandName
 };
 
 export default QuestionForm;
