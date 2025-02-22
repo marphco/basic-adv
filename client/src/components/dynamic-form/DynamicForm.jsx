@@ -53,14 +53,21 @@ const DynamicForm = () => {
   ];
 
   // Memoizziamo l'oggetto services
-  const services = useMemo(() => ({
-    Branding: ["Logo", "Brand Identity", "Packaging"],
-    Social: ["Content Creation", "Social Media Management", "Advertising"],
-    Photo: ["Product Photography", "Fashion Photography", "Event Photography"],
-    Video: ["Promo Video", "Corporate Video", "Motion Graphics"],
-    Web: ["Website Design", "E-commerce", "Landing Page"],
-    App: ["Mobile App", "Web App", "UI/UX Design"],
-  }), []);
+  const services = useMemo(
+    () => ({
+      Branding: ["Logo", "Brand Identity", "Packaging"],
+      Social: ["Content Creation", "Social Media Management", "Advertising"],
+      Photo: [
+        "Product Photography",
+        "Fashion Photography",
+        "Event Photography",
+      ],
+      Video: ["Promo Video", "Corporate Video", "Motion Graphics"],
+      Web: ["Website Design", "E-commerce", "Landing Page"],
+      App: ["Mobile App", "Web App", "UI/UX Design"],
+    }),
+    []
+  );
 
   const categoriesRequiringBrand = ["Branding", "Web", "App"];
 
@@ -87,24 +94,29 @@ const DynamicForm = () => {
     setErrors({});
   };
 
-  const toggleCategory = useCallback((category) => {
-    setSelectedCategories((prev) => {
-      const wasSelected = prev.includes(category);
-      const newCategories = wasSelected
-        ? prev.filter((c) => c !== category)
-        : [...prev, category];
-      return newCategories;
-    });
-    setSelectedServices((prev) => {
-      const allServices = services[category];
-      const wasSelected = prev.some((service) => allServices.includes(service));
-      if (wasSelected) {
-        return prev.filter((s) => !allServices.includes(s));
-      }
-      return prev;
-    });
-    setErrors({});
-  }, [services]);
+  const toggleCategory = useCallback(
+    (category) => {
+      setSelectedCategories((prev) => {
+        const wasSelected = prev.includes(category);
+        const newCategories = wasSelected
+          ? prev.filter((c) => c !== category)
+          : [...prev, category];
+        return newCategories;
+      });
+      setSelectedServices((prev) => {
+        const allServices = services[category];
+        const wasSelected = prev.some((service) =>
+          allServices.includes(service)
+        );
+        if (wasSelected) {
+          return prev.filter((s) => !allServices.includes(s));
+        }
+        return prev;
+      });
+      setErrors({});
+    },
+    [services]
+  );
 
   const toggleService = useCallback((service) => {
     setSelectedServices((prev) => {
@@ -157,7 +169,10 @@ const DynamicForm = () => {
       const newOptions = checked
         ? [...prevOptions, value]
         : prevOptions.filter((opt) => opt !== value);
-      return { ...prev, [questionText]: { ...prev[questionText], options: newOptions } };
+      return {
+        ...prev,
+        [questionText]: { ...prev[questionText], options: newOptions },
+      };
     });
   };
 
@@ -171,69 +186,91 @@ const DynamicForm = () => {
   };
 
   // Separazione di generateFirstQuestion da useCallback
-  const generateFirstQuestion = useMemo(() => debounce(async () => {
-    let newErrors = {};
+  const generateFirstQuestion = useMemo(
+    () =>
+      debounce(async () => {
+        let newErrors = {};
 
-    if (selectedServices.length === 0) {
-      newErrors.services = "Seleziona almeno un servizio.";
-    }
-    if (formData.businessField === "Ambito") {
-      newErrors.businessField = "Seleziona un ambito.";
-    }
-    if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
-      newErrors.otherBusinessField = "Specifica l’ambito.";
-    }
-    if (formData.projectType === "Tipo di progetto") {
-      newErrors.projectType = "Seleziona un tipo di progetto.";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("servicesSelected", JSON.stringify(selectedServices));
-      formDataToSend.append("sessionId", sessionId);
-      for (const key in formData) {
-        if (Object.prototype.hasOwnProperty.call(formData, key)) {
-          if (key === "currentLogo" && formData[key]) {
-            formDataToSend.append(key, formData[key]);
-          } else if (key === "contactInfo") {
-            formDataToSend.append(key, JSON.stringify(formData[key]));
-          } else {
-            formDataToSend.append(key, formData[key]);
-          }
+        if (selectedServices.length === 0) {
+          newErrors.services = "Seleziona almeno un servizio.";
         }
-      }
+        if (formData.businessField === "Ambito") {
+          newErrors.businessField = "Seleziona un ambito.";
+        }
+        if (
+          formData.businessField === "Altro" &&
+          !formData.otherBusinessField.trim()
+        ) {
+          newErrors.otherBusinessField = "Specifica l’ambito.";
+        }
+        if (formData.projectType === "Tipo di progetto") {
+          newErrors.projectType = "Seleziona un tipo di progetto.";
+        }
 
-      const response = await axios.post(
-        `${API_URL.replace(/\/$/, "")}/api/generate`,
-        formDataToSend,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          setLoading(false);
+          return;
+        }
 
-      if (response.data.question && response.data.question.type === "font_selection") {
-        setIsFontQuestionAsked(true);
-      }
-      setCurrentQuestion(response.data.question);
-      setQuestionNumber(1);
-    } catch (error) {
-      console.error("Errore nella generazione della prima domanda AI:", error);
-      setErrors({ general: "Errore nella generazione della domanda. Riprova più tardi." });
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, 300), [selectedServices, selectedCategories, formData, sessionId]);
+        setLoading(true);
+        try {
+          const formDataToSend = new FormData();
+          formDataToSend.append(
+            "servicesSelected",
+            JSON.stringify(selectedServices)
+          );
+          formDataToSend.append("sessionId", sessionId);
+          for (const key in formData) {
+            if (Object.prototype.hasOwnProperty.call(formData, key)) {
+              if (key === "currentLogo" && formData[key]) {
+                formDataToSend.append(key, formData[key]);
+              } else if (key === "contactInfo") {
+                formDataToSend.append(key, JSON.stringify(formData[key]));
+              } else {
+                formDataToSend.append(key, formData[key]);
+              }
+            }
+          }
+
+          const response = await axios.post(
+            `${API_URL.replace(/\/$/, "")}/api/generate`,
+            formDataToSend,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+
+          if (
+            response.data.question &&
+            response.data.question.type === "font_selection"
+          ) {
+            setIsFontQuestionAsked(true);
+          }
+          setCurrentQuestion(response.data.question);
+          setQuestionNumber(1);
+        } catch (error) {
+          console.error(
+            "Errore nella generazione della prima domanda AI:",
+            error
+          );
+          setErrors({
+            general:
+              "Errore nella generazione della domanda. Riprova più tardi.",
+          });
+        } finally {
+          setLoading(false);
+        }
+         
+      }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedServices, selectedCategories, formData, sessionId]
+  );
 
   const fetchNextQuestion = async () => {
     setLoading(true);
     try {
-      const userAnswer = { [currentQuestion.question]: answers[currentQuestion.question] };
+      const userAnswer = {
+        [currentQuestion.question]: answers[currentQuestion.question],
+      };
       const response = await axios.post(
         `${API_URL.replace(/\/$/, "")}/api/nextQuestion`,
         { currentAnswer: userAnswer, sessionId },
@@ -246,7 +283,14 @@ const DynamicForm = () => {
           const fontQuestion = {
             question: "Quale tipo di font preferisci?",
             type: "font_selection",
-            options: ["Serif", "Sans-serif", "Script", "Monospaced", "Manoscritto", "Decorativo"],
+            options: [
+              "Serif",
+              "Sans-serif",
+              "Script",
+              "Monospaced",
+              "Manoscritto",
+              "Decorativo",
+            ],
             requiresInput: false,
           };
           setCurrentQuestion(fontQuestion);
@@ -265,7 +309,9 @@ const DynamicForm = () => {
       }
     } catch (error) {
       console.error("Errore nel recupero della prossima domanda:", error);
-      setErrors({ general: "Errore nel recupero della domanda. Riprova più tardi." });
+      setErrors({
+        general: "Errore nel recupero della domanda. Riprova più tardi.",
+      });
     } finally {
       setLoading(false);
     }
@@ -281,7 +327,8 @@ const DynamicForm = () => {
 
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
+        newErrors[questionText] =
+          "Seleziona un font o inserisci il nome di uno.";
       }
     } else if (currentQuestion.requiresInput) {
       if (inputAnswer.trim() === "") {
@@ -289,7 +336,8 @@ const DynamicForm = () => {
       }
     } else {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] = "Seleziona almeno una risposta o inserisci un commento.";
+        newErrors[questionText] =
+          "Seleziona almeno una risposta o inserisci un commento.";
       }
     }
 
@@ -327,7 +375,9 @@ const DynamicForm = () => {
       setShowThankYou(true);
     } catch (error) {
       console.error("Errore nell'invio dei contatti:", error);
-      setErrors({ general: "Errore nell'invio dei contatti. Riprova più tardi." });
+      setErrors({
+        general: "Errore nell'invio dei contatti. Riprova più tardi.",
+      });
     } finally {
       setLoading(false);
     }
@@ -378,37 +428,45 @@ const DynamicForm = () => {
           loading={loading}
           errors={errors}
         />
-      ) : !currentQuestion && (
-        <div>
-          <InitialForm
-            formData={formData}
-            handleFormInputChange={handleFormInputChange}
-            businessFields={businessFields}
-            selectedCategories={selectedCategories}
-            toggleCategory={toggleCategory}
-            selectedServices={selectedServices}
-            toggleService={toggleService}
-            services={services}
-            categoriesRequiringBrand={categoriesRequiringBrand}
-            errors={errors}
-          />
-          {selectedCategories.length > 0 && (
-            <div className="form-actions">
-              <button
-                className="submit-btn"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  generateFirstQuestion();
-                }}
-                disabled={loading}
-              >
-                {loading ? "Caricamento..." : "COMINCIAMO!"}
-              </button>
-              {errors.general && <span className="error-message">{errors.general}</span>}
-            </div>
-          )}
-        </div>
+      ) : (
+        !currentQuestion && (
+          <div>
+            <InitialForm
+              formData={formData}
+              handleFormInputChange={handleFormInputChange}
+              businessFields={businessFields}
+              selectedCategories={selectedCategories}
+              toggleCategory={toggleCategory}
+              selectedServices={selectedServices}
+              toggleService={toggleService}
+              services={services}
+              categoriesRequiringBrand={categoriesRequiringBrand}
+              errors={errors}
+            />
+            {selectedCategories.length > 0 && (
+              <div className="form-actions">
+                <button
+                  className="submit-btn"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    generateFirstQuestion();
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? "Caricamento..." : "COMINCIAMO!"}
+                </button>
+                {errors.general && (
+                  <span className="error-message">
+                    Errore nella generazione della domanda.
+                    <br />
+                    Riprova più tardi.
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )
       )}
     </div>
   );

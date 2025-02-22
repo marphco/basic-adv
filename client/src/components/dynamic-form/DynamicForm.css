@@ -27,6 +27,21 @@
   color: var(--foreground-color);
 }
 
+/* Rimuove il background giallo dell’autocompletamento con approccio aggressivo */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  background-color: transparent !important;
+  background-image: none !important; /* Rimuove eventuali sfondi immagine */
+  -webkit-background-clip: text !important; /* Per WebKit */
+  background-clip: text !important; /* Standard */
+  -webkit-text-fill-color: var(--primary-text-color) !important;
+  transition: background-color 5000s ease-in-out 0s !important; /* Trucco per forzare la trasparenza */
+}
+
 /* Animazione fade per le domande */
 .fade-question-enter {
   opacity: 0;
@@ -99,9 +114,18 @@
 .form-actions {
   padding-top: 2vh;
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.error-message {
+  font-size: 0.9rem;
+  color: #ff0000;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
 }
 
 @media screen and (max-width: 768px) {
@@ -116,5 +140,9 @@
     font-size: 1.2rem;
     padding-left: 10vw;
     text-align: left;
+  }
+  
+  .error-message {
+    text-align: center !important;
   }
 }
