@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useRef } from "react";
-import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa"; // Sostituiamo FaCheck con FaCheckCircle
+import { FaExclamationCircle, FaPaperclip } from "react-icons/fa"; // Sostituiamo FaCheck con FaCheckCircle
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -16,7 +16,13 @@ const InitialForm = ({
   categoriesRequiringBrand,
   errors = {},
 }) => {
-  const { brandName, projectType, businessField, otherBusinessField, currentLogo } = formData;
+  const {
+    brandName,
+    projectType,
+    businessField,
+    otherBusinessField,
+    currentLogo,
+  } = formData;
 
   const requiresBrand = selectedCategories.some((cat) =>
     categoriesRequiringBrand.includes(cat)
@@ -41,7 +47,9 @@ const InitialForm = ({
           return (
             <button
               key={category}
-              className={`category-box ${selectedCategories.includes(category) ? "selected" : ""}`}
+              className={`category-box ${
+                selectedCategories.includes(category) ? "selected" : ""
+              }`}
               onClick={() => toggleCategory(category)}
               type="button"
             >
@@ -127,7 +135,9 @@ const InitialForm = ({
                       onChange={handleFormInputChange}
                       required
                     >
-                      <option value="Tipo di progetto" disabled>Tipo di progetto</option>
+                      <option value="Tipo di progetto" disabled>
+                        Tipo di progetto
+                      </option>
                       <option value="new">Nuovo progetto</option>
                       <option value="restyling">Restyling</option>
                     </select>
@@ -140,18 +150,46 @@ const InitialForm = ({
                   </div>
                   {projectType === "restyling" && (
                     <div className="form-group">
-                      <button
-                        type="button"
-                        className={`file-upload-btn ${currentLogo ? "uploaded" : ""}`}
-                        onClick={handleFileButtonClick}
-                      >
-                        <span>
-                          {currentLogo ? currentLogo.name : "Carica il tuo logo attuale"}
-                        </span>
-                        <span className="upload-icon">
-                          {currentLogo ? <FaCheckCircle /> : "↑"}
-                        </span>
-                      </button>
+                      <div className="file-upload-wrapper">
+                        <button
+                          type="button"
+                          className={`file-upload-btn ${
+                            currentLogo ? "uploaded" : ""
+                          }`}
+                          onClick={handleFileButtonClick}
+                        >
+                          {currentLogo ? (
+                            <>
+                              <span className="file-icon-left">
+                                <FaPaperclip />
+                              </span>
+                              <span className="file-name">
+                                {currentLogo.name}
+                              </span>
+                              <span
+                                className="file-icon-right"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleFormInputChange({
+                                    target: {
+                                      name: "currentLogo",
+                                      value: null,
+                                    },
+                                  });
+                                  fileInputRef.current.value = "";
+                                }}
+                              >
+                                ✕
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Carica il tuo logo attuale</span>
+                              <span className="file-icon-right">↑</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <input
                         type="file"
                         name="currentLogo"
@@ -177,12 +215,16 @@ const InitialForm = ({
                   onChange={handleFormInputChange}
                   required
                 >
-                  <option value="Ambito" disabled>Ambito</option>
-                  {businessFields.filter(field => field !== "Ambito").map((field) => (
-                    <option key={field} value={field}>
-                      {field}
-                    </option>
-                  ))}
+                  <option value="Ambito" disabled>
+                    Ambito
+                  </option>
+                  {businessFields
+                    .filter((field) => field !== "Ambito")
+                    .map((field) => (
+                      <option key={field} value={field}>
+                        {field}
+                      </option>
+                    ))}
                 </select>
                 {errors.businessField && (
                   <span className="error-message">
