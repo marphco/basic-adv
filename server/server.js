@@ -265,6 +265,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     if (req.file) {
       formData.currentLogo = req.file.path;
       console.log("Percorso del logo caricato:", formData.currentLogo);
+    } else if (formData.projectType === "restyling") {
+      return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
     }
 
     formData.brandName = formData.brandName || "";
@@ -335,9 +337,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       message: error.message,
       stack: error.stack,
       requestBody: req.body,
-      formData: req.body,
+      file: req.file ? { filename: req.file.filename, size: req.file.size, mimetype: req.file.mimetype } : "Nessun file",
     });
-    res.status(500).json({ error: "Errore nella generazione delle domande AI" });
+    res.status(500).json({ error: error.message || "Errore nella generazione della domanda. Riprova più tardi." });
   }
 });
 
