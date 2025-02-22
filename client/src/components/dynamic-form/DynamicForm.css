@@ -10,7 +10,7 @@
   font-weight: 300;
   padding-bottom: 1vh;
   color: var(--primary-text-color);
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 }
 
 .dynamic-form p {
@@ -19,7 +19,7 @@
   padding-bottom: 3vh;
   text-align: center;
   color: var(--primary-text-color);
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 }
 
 .dynamic-form p span {
@@ -27,7 +27,7 @@
   color: var(--foreground-color);
 }
 
-/* Rimuove il background giallo dell’autocompletamento con approccio aggressivo */
+/* Rimuove il background giallo dell’autocompletamento */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
@@ -35,11 +35,11 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
   box-shadow: 0 0 0 1000px transparent inset !important;
   background-color: transparent !important;
-  background-image: none !important; /* Rimuove eventuali sfondi immagine */
-  -webkit-background-clip: text !important; /* Per WebKit */
-  background-clip: text !important; /* Standard */
+  background-image: none !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: var(--primary-text-color) !important;
-  transition: background-color 5000s ease-in-out 0s !important; /* Trucco per forzare la trasparenza */
+  transition: background-color 5000s ease-in-out 0s !important;
 }
 
 /* Animazione fade per le domande */
@@ -49,7 +49,7 @@ input:-webkit-autofill:active {
 
 .fade-question-enter-active {
   opacity: 1;
-  transition: opacity 1000ms ease-in; /* Lento: 1000ms */
+  transition: opacity 1000ms ease-in;
 }
 
 .fade-question-exit {
@@ -121,11 +121,20 @@ input:-webkit-autofill:active {
 }
 
 .error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: #ff0000;
+  text-align: center !important;
+  transition: color 0.5s ease;
+}
+
+.error-icon {
   font-size: 0.9rem;
   color: #ff0000;
-  text-align: center;
-  line-height: 1.2;
-  max-width: 100%;
+  transition: color 0.5s ease;
 }
 
 @media screen and (max-width: 768px) {
@@ -140,9 +149,5 @@ input:-webkit-autofill:active {
     font-size: 1.2rem;
     padding-left: 10vw;
     text-align: left;
-  }
-  
-  .error-message {
-    text-align: center !important;
   }
 }

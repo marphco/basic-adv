@@ -7,6 +7,7 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition } from "react-transition-group";
+import { FaExclamationCircle } from "react-icons/fa"; // Importa l’icona
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -52,7 +53,6 @@ const DynamicForm = () => {
     "Altro",
   ];
 
-  // Memoizziamo l'oggetto services
   const services = useMemo(
     () => ({
       Branding: ["Logo", "Brand Identity", "Packaging"],
@@ -113,7 +113,7 @@ const DynamicForm = () => {
         }
         return prev;
       });
-      setErrors({});
+      setErrors({}); // Resetta errori quando si cambia categoria
     },
     [services]
   );
@@ -138,12 +138,10 @@ const DynamicForm = () => {
     if (e.target) {
       const { name, value, type } = e.target;
       if (type === "file") {
-        const file = e.target.files && e.target.files[0]; // Verifica se c’è un file
+        const file = e.target.files && e.target.files[0];
         if (file) {
-          // Aggiorna solo se un nuovo file è stato selezionato
           setFormData((prev) => ({ ...prev, [name]: file }));
         }
-        // Se file è undefined o null (es. annullato), non fare nulla
       } else {
         setFormData((prev) => {
           const updatedFormData = { ...prev, [name]: value };
@@ -153,11 +151,24 @@ const DynamicForm = () => {
           return updatedFormData;
         });
       }
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => {
+        const updatedErrors = { ...prev, [name]: "" };
+        // Se tutti gli errori specifici sono risolti, resetta anche il generico
+        if (Object.values(updatedErrors).every((err) => !err)) {
+          return {};
+        }
+        return updatedErrors;
+      });
     } else {
       const { name, value } = e;
       setFormData((prev) => ({ ...prev, [name]: value }));
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => {
+        const updatedErrors = { ...prev, [name]: "" };
+        if (Object.values(updatedErrors).every((err) => !err)) {
+          return {};
+        }
+        return updatedErrors;
+      });
     }
   }, []);
 
@@ -186,84 +197,108 @@ const DynamicForm = () => {
   };
 
   // Separazione di generateFirstQuestion da useCallback
-  const generateFirstQuestion = useMemo(() => debounce(async () => {
-    let newErrors = {};
-  
-    if (selectedServices.length === 0) {
-      newErrors.services = "Seleziona almeno un servizio.";
-    }
-    if (formData.businessField === "Ambito") {
-      newErrors.businessField = "Seleziona un ambito.";
-    }
-    if (formData.businessField === "Altro" && !formData.otherBusinessField.trim()) {
-      newErrors.otherBusinessField = "Specifica l’ambito.";
-    }
-    if (formData.projectType === "Tipo di progetto") {
-      newErrors.projectType = "Seleziona un tipo di progetto.";
-    }
-    if (formData.projectType === "restyling" && !formData.currentLogo) {
-      newErrors.currentLogo = "Carica un’immagine per il restyling.";
-    } else if (formData.projectType === "restyling" && formData.currentLogo) {
-      const file = formData.currentLogo;
-      const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/tiff",
-        "image/svg+xml",
-        "application/pdf",
-        "image/heic",
-        "image/heif",
-      ];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (!allowedTypes.includes(file.type)) {
-        newErrors.currentLogo = "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.";
-      } else if (file.size > maxSize) {
-        newErrors.currentLogo = "Il file supera i 5MB.";
-      }
-    }
-  
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setLoading(false);
-      return;
-    }
-  
-    setLoading(true);
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("servicesSelected", JSON.stringify(selectedServices));
-      formDataToSend.append("sessionId", sessionId);
-      for (const key in formData) {
-        if (Object.prototype.hasOwnProperty.call(formData, key)) {
-          if (key === "currentLogo" && formData[key]) {
-            formDataToSend.append(key, formData[key]);
-          } else if (key === "contactInfo") {
-            formDataToSend.append(key, JSON.stringify(formData[key]));
-          } else {
-            formDataToSend.append(key, formData[key]);
+  const generateFirstQuestion = useMemo(
+    () =>
+      debounce(async () => {
+        let newErrors = {};
+
+        if (selectedServices.length === 0) {
+          newErrors.services = "Seleziona almeno un servizio.";
+        }
+        if (formData.businessField === "Ambito") {
+          newErrors.businessField = "Seleziona un ambito.";
+        }
+        if (
+          formData.businessField === "Altro" &&
+          !formData.otherBusinessField.trim()
+        ) {
+          newErrors.otherBusinessField = "Specifica l’ambito.";
+        }
+        if (formData.projectType === "Tipo di progetto") {
+          newErrors.projectType = "Seleziona un tipo di progetto.";
+        }
+        if (formData.projectType === "restyling" && !formData.currentLogo) {
+          newErrors.currentLogo = "Carica un’immagine per il restyling.";
+        } else if (
+          formData.projectType === "restyling" &&
+          formData.currentLogo
+        ) {
+          const file = formData.currentLogo;
+          const allowedTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/tiff",
+            "image/svg+xml",
+            "application/pdf",
+            "image/heic",
+            "image/heif",
+          ];
+          const maxSize = 5 * 1024 * 1024; // 5MB
+          if (!allowedTypes.includes(file.type)) {
+            newErrors.currentLogo =
+              "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.";
+          } else if (file.size > maxSize) {
+            newErrors.currentLogo = "Il file supera i 5MB.";
           }
         }
-      }
-  
-      const response = await axios.post(
-        `${API_URL.replace(/\/$/, "")}/api/generate`,
-        formDataToSend,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-  
-      if (response.data.question && response.data.question.type === "font_selection") {
-        setIsFontQuestionAsked(true);
-      }
-      setCurrentQuestion(response.data.question);
-      setQuestionNumber(1);
-    } catch (error) {
-      console.error("Errore nella generazione della prima domanda AI:", error);
-      setErrors({ general: error.response?.data?.error || "Errore nella generazione della domanda. Riprova più tardi." });
-    } finally {
-      setLoading(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, 300), [selectedServices, selectedCategories, formData, sessionId]);
+
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const formDataToSend = new FormData();
+          formDataToSend.append(
+            "servicesSelected",
+            JSON.stringify(selectedServices)
+          );
+          formDataToSend.append("sessionId", sessionId);
+          for (const key in formData) {
+            if (Object.prototype.hasOwnProperty.call(formData, key)) {
+              if (key === "currentLogo" && formData[key]) {
+                formDataToSend.append(key, formData[key]);
+              } else if (key === "contactInfo") {
+                formDataToSend.append(key, JSON.stringify(formData[key]));
+              } else {
+                formDataToSend.append(key, formData[key]);
+              }
+            }
+          }
+
+          const response = await axios.post(
+            `${API_URL.replace(/\/$/, "")}/api/generate`,
+            formDataToSend,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+
+          if (
+            response.data.question &&
+            response.data.question.type === "font_selection"
+          ) {
+            setIsFontQuestionAsked(true);
+          }
+          setCurrentQuestion(response.data.question);
+          setQuestionNumber(1);
+          setErrors({}); // Reset degli errori quando la richiesta ha successo
+        } catch (error) {
+          console.error(
+            "Errore nella generazione della prima domanda AI:",
+            error
+          );
+          setErrors({
+            general:
+              "Errore nella generazione della domanda.<br />Riprova più tardi.",
+          });
+        } finally {
+          setLoading(false);
+        }
+      }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedServices, selectedCategories, formData, sessionId]
+  );
 
   const fetchNextQuestion = async () => {
     setLoading(true);
@@ -413,7 +448,7 @@ const DynamicForm = () => {
               errors={errors}
             />
           ) : (
-            <div /> // Placeholder vuoto quando non c’è domanda
+            <div />
           )}
         </div>
       </CSSTransition>
@@ -458,9 +493,16 @@ const DynamicForm = () => {
                 </button>
                 {errors.general && (
                   <span className="error-message">
-                    Errore nella generazione della domanda.
-                    <br />
-                    Riprova più tardi.
+                    <FaExclamationCircle className="error-icon" />
+                    <span
+                      dangerouslySetInnerHTML={{ __html: errors.general }}
+                    />
+                  </span>
+                )}
+                {Object.keys(errors).length > 0 && !errors.general && (
+                  <span className="error-message">
+                    <FaExclamationCircle className="error-icon" />
+                    Errore nel form. Controlla i campi sopra.
                   </span>
                 )}
               </div>
