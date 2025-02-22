@@ -127,7 +127,10 @@ const DynamicForm = () => {
     const { name, value, type } = e.target;
     if (type === "file") {
       const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, [name]: file }));
+      if (file) { // Aggiorna solo se c'è un nuovo file
+        setFormData((prev) => ({ ...prev, [name]: file }));
+      }
+      // Se file è undefined (es. "Annulla"), non fare nulla
     } else {
       setFormData((prev) => {
         const updatedFormData = { ...prev, [name]: value };

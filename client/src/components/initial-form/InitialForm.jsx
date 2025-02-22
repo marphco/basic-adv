@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useRef } from "react";
-import { FaExclamationCircle } from "react-icons/fa";
+import { FaExclamationCircle, FaCheckCircle } from "react-icons/fa"; // Sostituiamo FaCheck con FaCheckCircle
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -16,7 +16,7 @@ const InitialForm = ({
   categoriesRequiringBrand,
   errors = {},
 }) => {
-  const { brandName, projectType, businessField, otherBusinessField } = formData;
+  const { brandName, projectType, businessField, otherBusinessField, currentLogo } = formData;
 
   const requiresBrand = selectedCategories.some((cat) =>
     categoriesRequiringBrand.includes(cat)
@@ -142,11 +142,15 @@ const InitialForm = ({
                     <div className="form-group">
                       <button
                         type="button"
-                        className="file-upload-btn"
+                        className={`file-upload-btn ${currentLogo ? "uploaded" : ""}`}
                         onClick={handleFileButtonClick}
                       >
-                        <span>Carica il tuo logo attuale</span>
-                        <span className="upload-icon">↑</span>
+                        <span>
+                          {currentLogo ? currentLogo.name : "Carica il tuo logo attuale"}
+                        </span>
+                        <span className="upload-icon">
+                          {currentLogo ? <FaCheckCircle /> : "↑"}
+                        </span>
                       </button>
                       <input
                         type="file"
