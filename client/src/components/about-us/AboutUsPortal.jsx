@@ -70,6 +70,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
     }
   
     return () => window.removeEventListener("keydown", handleEsc);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isMobile]);
 
   const handleClose = () => {
