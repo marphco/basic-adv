@@ -103,12 +103,12 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    position: relative;
+    position: relative; /* Contenitore relativo per la freccia */
   }
   
   .form-group input,
   .form-group select {
-    padding: 0.75rem 0.5rem;
+    padding: 0.75rem 0.5rem 0.75rem 0.5rem; /* Esplicito: top right bottom left */
     border: none;
     border-bottom: 1px solid #d1d1d1;
     border-radius: 0;
@@ -118,53 +118,127 @@
     background: transparent;
     outline: none;
     transition: all 0.5s ease;
+    text-align: left; /* Forza l'allineamento del testo a sinistra */
+    box-sizing: border-box; /* Assicura che il padding non influisca sulla larghezza */
   }
   
-  .form-group input:focus,
-  .form-group select:focus {
-    border-bottom-color: var(--foreground-color);
-  }
-  
+  /* Uniforma i placeholder */
   .form-group input::placeholder,
   .form-group select:invalid {
     color: #999;
     font-weight: 300;
+    text-align: left; /* Allinea i placeholder a sinistra */
   }
   
-  /* Stile per il pulsante di upload */
+  /* Normalizza il comportamento del select */
+  .form-group select {
+    appearance: none; /* Rimuove lo stile nativo del browser */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 1.5rem; /* Spazio per la freccia */
+  }
+  
+  /* Hover su input e select */
+  .form-group input:hover,
+  .form-group select:hover {
+    border-bottom-color: var(--foreground-color);
+    color: var(--primary-text-color);
+  }
+  
+  /* Focus su input e select */
+  .form-group input:focus,
+  .form-group select:focus {
+    border-bottom-color: var(--foreground-color);
+    color: var(--primary-text-color);
+  }
+  
+  /* Aggiunta della freccia personalizzata */
+  .form-group:has(select)::after {
+    content: "▾"; /* Triangolino verso il basso, più piccolo e elegante */
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem; /* Dimensione più piccola e discreta */
+    color: #999;
+    pointer-events: none; /* Impedisce interferenze con il clic */
+    transition: color 0.3s ease;
+  }
+  
+  /* Hover e focus sulla freccia del select */
+  .form-group:hover:has(select)::after,
+  .form-group select:focus::after {
+    color: var(--foreground-color);
+  }
+  
+  /* Wrapper per allineare il pulsante di upload */
+  .file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
   .file-upload-btn {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem 0.5rem;
     border: none;
-    border-bottom: 1px solid #d1d1d1;
+    border-bottom: 1px solid #d1d1d1; /* Colore di default */
     background: transparent;
     font-size: 1rem;
     font-weight: 300;
     color: #999;
     cursor: pointer;
     transition: border-color 0.3s ease, color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
   }
   
+  /* Stato uploaded: solo il testo cambia colore */
   .file-upload-btn.uploaded {
     color: var(--primary-text-color);
-    border-bottom-color: var(--foreground-color);
   }
   
+  /* Hover: cambia la linea e il testo, ma non la X */
   .file-upload-btn:hover,
   .file-upload-btn:focus {
     border-bottom-color: var(--foreground-color);
     color: var(--primary-text-color);
   }
   
-  .file-upload-btn .upload-icon {
+  /* Icona a sinistra (allegato) */
+  .file-icon-left {
     font-size: 1.2rem;
     color: #999;
+    margin-right: 0.5rem;
     transition: color 0.3s ease;
   }
   
-  .file-upload-btn.uploaded .upload-icon {
+  .file-upload-btn:hover .file-icon-left,
+  .file-upload-btn:focus .file-icon-left {
+    color: var(--foreground-color);
+  }
+  
+  /* Nome del file */
+  .file-name {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Icona a destra (upload o rimozione) */
+  .file-icon-right {
+    font-size: 1.2rem;
+    color: #999;
+    transition: color 0.3s ease;
+    padding-left: 0.5rem; /* Spazio per isolare l'area di hover */
+  }
+  
+  /* Hover solo sulla X */
+  .file-icon-right:hover {
     color: var(--foreground-color);
   }
   

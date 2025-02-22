@@ -57,7 +57,7 @@ const DynamicForm = () => {
     Branding: ["Logo", "Brand Identity", "Packaging"],
     Social: ["Content Creation", "Social Media Management", "Advertising"],
     Photo: ["Product Photography", "Fashion Photography", "Event Photography"],
-    Video: ["Promo Video", "Social Video", "Motion Graphics"],
+    Video: ["Promo Video", "Corporate Video", "Motion Graphics"],
     Web: ["Website Design", "E-commerce", "Landing Page"],
     App: ["Mobile App", "Web App", "UI/UX Design"],
   }), []);
@@ -123,24 +123,30 @@ const DynamicForm = () => {
   }, []);
 
   const handleFormInputChange = useCallback((e) => {
-    e.preventDefault();
-    const { name, value, type } = e.target;
-    if (type === "file") {
-      const file = e.target.files[0];
-      if (file) { // Aggiorna solo se c'è un nuovo file
-        setFormData((prev) => ({ ...prev, [name]: file }));
-      }
-      // Se file è undefined (es. "Annulla"), non fare nulla
-    } else {
-      setFormData((prev) => {
-        const updatedFormData = { ...prev, [name]: value };
-        if (name === "businessField" && value !== "Altro") {
-          updatedFormData.otherBusinessField = "";
+    if (e.target) {
+      const { name, value, type } = e.target;
+      if (type === "file") {
+        const file = e.target.files && e.target.files[0]; // Verifica se c’è un file
+        if (file) {
+          // Aggiorna solo se un nuovo file è stato selezionato
+          setFormData((prev) => ({ ...prev, [name]: file }));
         }
-        return updatedFormData;
-      });
+        // Se file è undefined o null (es. annullato), non fare nulla
+      } else {
+        setFormData((prev) => {
+          const updatedFormData = { ...prev, [name]: value };
+          if (name === "businessField" && value !== "Altro") {
+            updatedFormData.otherBusinessField = "";
+          }
+          return updatedFormData;
+        });
+      }
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    } else {
+      const { name, value } = e;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    setErrors((prev) => ({ ...prev, [name]: "" }));
   }, []);
 
   const handleAnswerChange = (e) => {
