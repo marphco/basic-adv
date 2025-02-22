@@ -80,6 +80,7 @@ function App() {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight]);
 
   useEffect(() => {
