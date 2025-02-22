@@ -4,8 +4,8 @@
     align-items: center;
     gap: 1.5rem;
     width: 100%;
-    padding: 0 0.5rem; /* Uniforma i margini laterali con InitialForm */
-    box-sizing: border-box; /* Assicura che il padding non espanda la larghezza */
+    padding: 0 0.5rem;
+    box-sizing: border-box;
   }
   
   .question-title {
@@ -14,7 +14,7 @@
     color: var(--primary-text-color);
     transition: all 0.5s ease;
     text-align: center;
-    padding: 0 0.5rem; /* Uniforma i margini laterali */
+    padding: 0 0.5rem;
   }
   
   .question-form-content {
@@ -23,7 +23,7 @@
     align-items: center;
     gap: 1rem;
     width: 100%;
-    padding: 0 0.5rem; /* Uniforma i margini laterali */
+    padding: 0 0.5rem;
   }
   
   .form-group {
@@ -34,7 +34,7 @@
   }
   
   .form-textarea {
-    padding: 0.75rem 0.5rem; /* Già uniforme con InitialForm */
+    padding: 0.75rem 0.5rem;
     border: none;
     border-bottom: 1px solid #d1d1d1;
     border-radius: 0;
@@ -62,6 +62,13 @@
     text-align: left;
   }
   
+  .options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
   .service-item {
     display: flex;
     align-items: center;
@@ -70,7 +77,7 @@
     color: var(--primary-text-color);
     transition: all 0.5s ease;
     width: 100%;
-    padding-left: 0.5rem; /* Uniforma il margine sinistro */
+    padding-left: 0.5rem;
   }
   
   .service-item input[type="checkbox"] {
@@ -133,22 +140,44 @@
     transition: all 0.5s ease;
   }
   
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--error-color);
+    margin-top: 0.25rem;
+    text-align: left;
+    transition: color 0.5s ease;
+  }
+  
+  .options-group .error-message {
+    text-align: left !important; /* Allinea a sinistra solo per i checkbox */
+  }
+  
+  .error-icon {
+    font-size: 0.9rem;
+    color: var(--error-color);
+    transition: color 0.5s ease;
+  }
+  
   @media screen and (max-width: 768px) {
     .question-title {
       font-size: 1.2rem;
-      padding-left: 1rem; /* Uniforme con InitialForm su mobile */
+      padding-left: 1rem;
       text-align: left;
     }
   
     .question-form {
-      padding: 0 1rem; /* Uniforme con InitialForm su mobile */
+      padding: 0 1rem;
     }
   
     .question-form-content {
-      padding: 0 1rem; /* Uniforme con InitialForm su mobile */
+      padding: 0 1rem;
     }
   
     .service-item {
-      padding-left: 1rem; /* Uniforme con InitialForm su mobile */
+      padding-left: 1rem;
     }
   }

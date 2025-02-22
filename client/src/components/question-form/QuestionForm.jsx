@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import "./QuestionForm.css";
 import FontSelection from "../font-selection/FontSelection";
+import { FaExclamationCircle } from "react-icons/fa"; // Importa l’icona
 
 const QuestionForm = ({
   currentQuestion,
@@ -10,6 +11,7 @@ const QuestionForm = ({
   handleInputChange,
   handleAnswerChange,
   loading,
+  errors = {}, // Aggiunto come prop con default vuoto
 }) => {
   const fontOptionImages = {
     "Serif": "/fonts/serif.png",
@@ -41,28 +43,43 @@ const QuestionForm = ({
               onChange={handleInputChange}
               className="form-textarea"
             />
+            {errors[currentQuestion.question] && (
+              <span className="error-message">
+                <FaExclamationCircle className="error-icon" />
+                {errors[currentQuestion.question]}
+              </span>
+            )}
           </div>
         ) : (
           <>
             {currentQuestion.options &&
-              currentQuestion.options.length > 0 &&
-              currentQuestion.options.map((option, index) => (
-                <label key={index} className="service-item">
-                  <input
-                    type="checkbox"
-                    id={`option_${index}`}
-                    name={`answer_${questionNumber}`}
-                    value={option}
-                    checked={
-                      answers[currentQuestion.question]?.options
-                        ? answers[currentQuestion.question].options.includes(option)
-                        : false
-                    }
-                    onChange={handleAnswerChange}
-                  />
-                  <span>{option}</span>
-                </label>
-              ))}
+              currentQuestion.options.length > 0 && (
+                <div className="options-group">
+                  {currentQuestion.options.map((option, index) => (
+                    <label key={index} className="service-item">
+                      <input
+                        type="checkbox"
+                        id={`option_${index}`}
+                        name={`answer_${questionNumber}`}
+                        value={option}
+                        checked={
+                          answers[currentQuestion.question]?.options
+                            ? answers[currentQuestion.question].options.includes(option)
+                            : false
+                        }
+                        onChange={handleAnswerChange}
+                      />
+                      <span>{option}</span>
+                    </label>
+                  ))}
+                  {errors[currentQuestion.question] && (
+                    <span className="error-message">
+                      <FaExclamationCircle className="error-icon" />
+                      {errors[currentQuestion.question]}
+                    </span>
+                  )}
+                </div>
+              )}
             <div className="form-group">
               <textarea
                 name="inputAnswer"
@@ -101,6 +118,7 @@ QuestionForm.propTypes = {
   handleInputChange: PropTypes.func.isRequired,
   handleAnswerChange: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
+  errors: PropTypes.object, // PropTypes per errors
 };
 
 export default QuestionForm;

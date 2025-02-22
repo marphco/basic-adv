@@ -7,11 +7,10 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition } from "react-transition-group";
-import { FaExclamationCircle } from "react-icons/fa"; // Importa l’icona
+import { FaExclamationCircle } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-// Funzione debounce separata
 const debounce = (func, wait) => {
   let timeout;
   return (...args) => {
@@ -113,7 +112,7 @@ const DynamicForm = () => {
         }
         return prev;
       });
-      setErrors({}); // Resetta errori quando si cambia categoria
+      setErrors({});
     },
     [services]
   );
@@ -153,7 +152,6 @@ const DynamicForm = () => {
       }
       setErrors((prev) => {
         const updatedErrors = { ...prev, [name]: "" };
-        // Se tutti gli errori specifici sono risolti, resetta anche il generico
         if (Object.values(updatedErrors).every((err) => !err)) {
           return {};
         }
@@ -185,6 +183,17 @@ const DynamicForm = () => {
         [questionText]: { ...prev[questionText], options: newOptions },
       };
     });
+    // Rimuovi l’errore se la selezione è valida
+    setErrors((prev) => {
+      const updatedErrors = { ...prev };
+      if (checked && updatedErrors[questionText]) {
+        delete updatedErrors[questionText];
+      }
+      if (Object.values(updatedErrors).every((err) => !err)) {
+        return {};
+      }
+      return updatedErrors;
+    });
   };
 
   const handleInputChange = (e) => {
@@ -194,9 +203,19 @@ const DynamicForm = () => {
       ...prev,
       [questionText]: { ...prev[questionText], input: value },
     }));
+    // Rimuovi l’errore se il testo è valido
+    setErrors((prev) => {
+      const updatedErrors = { ...prev };
+      if (value.trim() && updatedErrors[questionText]) {
+        delete updatedErrors[questionText];
+      }
+      if (Object.values(updatedErrors).every((err) => !err)) {
+        return {};
+      }
+      return updatedErrors;
+    });
   };
 
-  // Separazione di generateFirstQuestion da useCallback
   const generateFirstQuestion = useMemo(
     () =>
       debounce(async () => {
@@ -282,7 +301,7 @@ const DynamicForm = () => {
           }
           setCurrentQuestion(response.data.question);
           setQuestionNumber(1);
-          setErrors({}); // Reset degli errori quando la richiesta ha successo
+          setErrors({});
         } catch (error) {
           console.error(
             "Errore nella generazione della prima domanda AI:",
@@ -362,8 +381,7 @@ const DynamicForm = () => {
 
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] =
-          "Seleziona un font o inserisci il nome di uno.";
+        newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
       }
     } else if (currentQuestion.requiresInput) {
       if (inputAnswer.trim() === "") {
