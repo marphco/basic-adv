@@ -11,7 +11,6 @@ const QuestionForm = ({
   handleAnswerChange,
   loading,
 }) => {
-  // Mappatura delle immagini dei font
   const fontOptionImages = {
     "Serif": "/fonts/serif.png",
     "Sans-serif": "/fonts/sans-serif.png",
@@ -22,11 +21,10 @@ const QuestionForm = ({
   };
 
   return (
-    <div>
-      <h3>{currentQuestion.question}</h3>
-      <form onSubmit={handleAnswerSubmit}>
+    <div className="question-form">
+      <h3 className="question-title">{currentQuestion.question}</h3>
+      <form onSubmit={handleAnswerSubmit} className="question-form-content">
         {currentQuestion.type === "font_selection" ? (
-          // Componente per la selezione dei font
           <FontSelection
             currentQuestion={currentQuestion}
             answers={answers}
@@ -35,23 +33,21 @@ const QuestionForm = ({
             fontOptionImages={fontOptionImages}
           />
         ) : currentQuestion.requiresInput ? (
-          // Campo di input per domande aperte
           <div className="form-group">
-            <label>Risposta:</label>
             <textarea
               name="inputAnswer"
               placeholder="Inserisci la tua risposta qui..."
               value={answers[currentQuestion.question]?.input || ""}
               onChange={handleInputChange}
-            ></textarea>
+              className="form-textarea"
+            />
           </div>
         ) : (
-          // Opzioni con checkbox e campo di input opzionale
           <>
             {currentQuestion.options &&
               currentQuestion.options.length > 0 &&
               currentQuestion.options.map((option, index) => (
-                <label key={index} className="checkbox-label">
+                <label key={index} className="service-item">
                   <input
                     type="checkbox"
                     id={`option_${index}`}
@@ -64,31 +60,29 @@ const QuestionForm = ({
                     }
                     onChange={handleAnswerChange}
                   />
-                  <span className="custom-checkbox"></span>
-                  {option}
+                  <span>{option}</span>
                 </label>
               ))}
-
-            {/* Campo di input opzionale */}
             <div className="form-group">
-              <label>Vuoi aggiungere qualcosa?</label>
               <textarea
                 name="inputAnswer"
                 placeholder="Inserisci ulteriori dettagli qui..."
                 value={answers[currentQuestion.question]?.input || ""}
                 onChange={handleInputChange}
-              ></textarea>
+                className="form-textarea"
+              />
             </div>
           </>
         )}
-
-        {loading ? (
-          <p>Caricamento...</p>
-        ) : (
-          <button className="submit-btn" type="submit">
-            Invia
-          </button>
-        )}
+        <div className="form-actions">
+          {loading ? (
+            <p className="loading-text">Caricamento...</p>
+          ) : (
+            <button className="submit-btn" type="submit">
+              Invia
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );
