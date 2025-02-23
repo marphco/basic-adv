@@ -13,7 +13,15 @@ const nodemailer = require("nodemailer");
 dotenv.config();
 
 // Controllo variabili .env obbligatorie
-const requiredEnvVars = ["SMTP_USERNAME", "SMTP_PASSWORD", "ADMIN_EMAIL", "SENDER_EMAIL", "MONGO_URI", "OPEN_AI_KEY"];
+const requiredEnvVars = [
+  "SMTP_USERNAME",
+  "SMTP_PASSWORD",
+  "ADMIN_EMAIL",
+  "SENDER_EMAIL",
+  "MONGO_URI",
+  "OPEN_AI_KEY",
+  "FRONTEND_URL",
+];
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 if (missingVars.length > 0) {
   console.error(`❌ Variabili d'ambiente mancanti: ${missingVars.join(", ")}`);
@@ -24,7 +32,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://basic-adv.vercel.app"],
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Usa FRONTEND_URL dal .env
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
