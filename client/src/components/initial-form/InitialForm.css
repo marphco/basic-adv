@@ -398,11 +398,11 @@
       justify-content: center;
     }
     .budget-circle {
-      width: 70px;
-      height: 70px;
+      width: 85px;
+      height: 85px;
     }
     .budget-label {
-      font-size: 0.7rem;
+      font-size: 0.85rem;
     }
     .budget-title {
       font-size: 1rem;
