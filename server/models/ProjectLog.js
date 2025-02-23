@@ -3,17 +3,18 @@ const mongoose = require('mongoose');
 const ProjectLogSchema = new mongoose.Schema({
   sessionId: { type: String, required: true, unique: true },
   formData: {
-    brandName: { type: String, required: false, default: "" }, // Modificato da required: true
+    brandName: { type: String, required: false, default: "" },
     projectType: { type: String, required: true },
     businessField: { type: String, required: true },
-    otherBusinessField: { type: String, default: '' },
-    projectObjectives: { type: String, default: '' },
+    otherBusinessField: { type: String, default: "" },
+    projectObjectives: { type: String, default: "" },
     contactInfo: {
       name: { type: String, required: false },
       email: { type: String, required: false },
-      phone: { type: String, default: '' },
+      phone: { type: String, default: "" },
     },
     currentLogo: { type: String },
+    budget: { type: String, required: true, default: "" }, 
   },
   questions: {
     type: Array,

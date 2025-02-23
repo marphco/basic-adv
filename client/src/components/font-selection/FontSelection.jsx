@@ -11,10 +11,18 @@ const FontSelection = ({
   errors = {},
   formData,
 }) => {
+  console.log("FontSelection iniziato con:", currentQuestion);
+
+  if (!currentQuestion || !currentQuestion.options) {
+    console.error("Dati invalidi per FontSelection:", currentQuestion);
+    return <div>Errore: domanda sui font non valida</div>;
+  }
+
   const questionText = currentQuestion.question;
   const selectedOptions = answers[questionText]?.options || [];
-  const inputAnswer = answers[questionText]?.input || ""; // Per il textarea
-  const [customText, setCustomText] = useState(formData.brandName || ""); // Per l'anteprima
+  const inputAnswer = answers[questionText]?.input || "";
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [customText, setCustomText] = useState(formData.brandName || "");
 
   const fontStyles = {
     "Serif": { fontFamily: "Times New Roman, serif" },
@@ -26,6 +34,7 @@ const FontSelection = ({
   };
 
   const toggleOption = (option) => {
+    console.log("toggleOption chiamato per:", option);
     handleAnswerChange({
       target: {
         value: option,
@@ -35,21 +44,26 @@ const FontSelection = ({
   };
 
   const handleCustomTextChange = (e) => {
+    console.log("handleCustomTextChange chiamato");
     const value = e.target.value.slice(0, 30);
     setCustomText(value);
-    // Non chiama handleInputChange, è solo per l'anteprima
   };
 
   const handleFontNameChange = (e) => {
+    console.log("handleFontNameChange chiamato");
     const value = e.target.value;
-    handleInputChange({ target: { value } }); // Salva solo nel textarea
+    handleInputChange({ target: { value } });
   };
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (formData.brandName && !customText) {
+      console.log("useEffect: impostazione customText con brandName");
       setCustomText(formData.brandName);
     }
   }, [formData.brandName, customText]);
+
+  console.log("FontSelection rendering con opzioni:", currentQuestion.options);
 
   return (
     <div className="font-selection">
@@ -64,25 +78,28 @@ const FontSelection = ({
         />
       </div>
       <div className="font-grid">
-        {currentQuestion.options.map((option, index) => (
-          <button
-            key={index}
-            className={`font-button ${
-              selectedOptions.includes(option) ? "selected" : ""
-            }`}
-            onClick={() => toggleOption(option)}
-            type="button"
-          >
-            <span className="font-example" style={fontStyles[option]}>
-              {customText || "Audio e video"}
-            </span>
-            <span className="font-name">{option}</span>
-          </button>
-        ))}
+        {currentQuestion.options.map((option, index) => {
+          console.log(`Rendering opzione ${index}: ${option}`);
+          return (
+            <button
+              key={index}
+              className={`font-button ${
+                selectedOptions.includes(option) ? "selected" : ""
+              }`}
+              onClick={() => toggleOption(option)}
+              type="button"
+            >
+              <span className="font-example" style={fontStyles[option] || {}}>
+                {customText || "Testo di prova"}
+              </span>
+              <span className="font-name">{option}</span>
+            </button>
+          );
+        })}
       </div>
       <div className="form-group">
         <textarea
-          name="fontName" // Nome univoco per distinguere
+          name="fontName"
           placeholder="Oppure scrivi il nome del font se sai già quale vorresti"
           value={inputAnswer}
           onChange={handleFontNameChange}

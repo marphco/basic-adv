@@ -9,10 +9,15 @@
   
   .thank-you-message h3 {
     font-size: 1.5rem; /* Più piccolo di h2 in InitialForm per gerarchia */
-    font-weight: 300;
+    font-weight: 200;
     color: var(--primary-text-color); /* Uniforme con il tema */
     transition: all 0.5s ease;
     text-align: center !important;
+  }
+
+  .thank-you-message h3 span {
+    color: var(--foreground-color);
+    font-weight: 600;
   }
   
   .thank-you-message .restart-btn {
@@ -37,7 +42,6 @@
   @media screen and (max-width: 768px) {
     .thank-you-message h3 {
       font-size: 1.2rem; /* Uniforme con QuestionForm su mobile */
-      /* padding-left: 1rem; */
       text-align: left; /* Uniforme con altri form su mobile */
     }
   

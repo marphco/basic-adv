@@ -52,13 +52,13 @@ input:-webkit-autofill:active {
   transition: opacity 1000ms ease-in;
 }
 
+/* Rimosso fade-out */
 .fade-question-exit {
-  opacity: 1;
+  display: none; /* Sparizione immediata */
 }
 
 .fade-question-exit-active {
-  opacity: 0;
-  transition: opacity 700ms ease-out;
+  display: none; /* Nessuna transizione visibile */
 }
 
 .selectable-buttons {
@@ -152,6 +152,23 @@ input:-webkit-autofill:active {
   font-size: 0.9rem;
   color: var(--error-color);
   transition: color 0.5s ease;
+}
+
+.submit-btn:disabled {
+  background-color: var(--foreground-color) !important; /* Mantiene il colore del tema */
+  cursor: not-allowed;
+  opacity: 0.7; /* Leggera opacità per stato disabilitato */
+}
+
+.spinner {
+  font-size: 1.2rem; /* Dimensione uniforme con il testo */
+  color: white;
+  animation: spin 1s linear infinite; /* Rotazione infinita */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @media screen and (max-width: 768px) {

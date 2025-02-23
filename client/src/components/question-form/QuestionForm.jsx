@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import "./QuestionForm.css";
 import FontSelection from "../font-selection/FontSelection";
-import { FaExclamationCircle } from "react-icons/fa";
+import { FaExclamationCircle, FaSpinner } from "react-icons/fa"; // Aggiunto FaSpinner
 
 const QuestionForm = ({
   currentQuestion,
@@ -12,7 +12,7 @@ const QuestionForm = ({
   handleAnswerChange,
   loading,
   errors = {},
-  formData, // Aggiunto per brandName
+  formData,
 }) => {
   return (
     <div className="question-form">
@@ -25,7 +25,7 @@ const QuestionForm = ({
             handleAnswerChange={handleAnswerChange}
             handleInputChange={handleInputChange}
             errors={errors}
-            formData={formData} // Passiamo formData
+            formData={formData}
           />
         ) : currentQuestion.requiresInput ? (
           <div className="form-group">
@@ -86,7 +86,9 @@ const QuestionForm = ({
         )}
         <div className="form-actions">
           {loading ? (
-            <p className="loading-text">Caricamento...</p>
+            <button className="submit-btn" disabled>
+              <FaSpinner className="spinner" />
+            </button>
           ) : (
             <button className="submit-btn" type="submit">
               Invia
@@ -112,7 +114,7 @@ QuestionForm.propTypes = {
   handleAnswerChange: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   errors: PropTypes.object,
-  formData: PropTypes.object.isRequired, // Aggiunto per brandName
+  formData: PropTypes.object.isRequired,
 };
 
 export default QuestionForm;

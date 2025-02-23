@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { useRef } from "react";
-import { FaExclamationCircle, FaPaperclip } from "react-icons/fa"; // Sostituiamo FaCheck con FaCheckCircle
+import { FaExclamationCircle, FaPaperclip } from "react-icons/fa";
 import "./InitialForm.css";
 
 const InitialForm = ({
@@ -22,6 +22,7 @@ const InitialForm = ({
     businessField,
     otherBusinessField,
     currentLogo,
+    budget,
   } = formData;
 
   const requiresBrand = selectedCategories.some((cat) =>
@@ -34,6 +35,18 @@ const InitialForm = ({
 
   const handleFileButtonClick = () => {
     fileInputRef.current.click();
+  };
+
+  const budgetOptions = [
+    { label: "Non lo so", value: "unknown" },
+    { label: "0-1.000 €", value: "0-1000" },
+    { label: "1-5.000 €", value: "1000-5000" },
+    { label: "5-10.000 €", value: "5000-10000" },
+    { label: "+10.000 €", value: "10000+" },
+  ];
+
+  const handleBudgetSelect = (value) => {
+    handleFormInputChange({ target: { name: "budget", value } });
   };
 
   return (
@@ -156,7 +169,7 @@ const InitialForm = ({
                           className={`file-upload-btn ${
                             currentLogo ? "uploaded" : ""
                           }`}
-                          onClick={handleFileButtonClick} // Clic sul nome apre il selettore
+                          onClick={handleFileButtonClick}
                         >
                           {currentLogo ? (
                             <>
@@ -179,12 +192,9 @@ const InitialForm = ({
                               <span
                                 className="file-icon-right"
                                 onClick={(e) => {
-                                  e.stopPropagation(); // Impedisce l’apertura del selettore
+                                  e.stopPropagation();
                                   handleFormInputChange({
-                                    target: {
-                                      name: "currentLogo",
-                                      value: null,
-                                    },
+                                    target: { name: "currentLogo", value: null },
                                   });
                                   fileInputRef.current.value = "";
                                 }}
@@ -261,6 +271,30 @@ const InitialForm = ({
                   )}
                 </div>
               )}
+              {/* Campo budget con titolo */}
+              <div className="form-group budget-group">
+                <h3 className="budget-title">Qual è il tuo budget?</h3>
+                <div className="budget-circles">
+                  {budgetOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`budget-circle ${
+                        budget === option.value ? "selected" : ""
+                      }`}
+                      onClick={() => handleBudgetSelect(option.value)}
+                    >
+                      <span className="budget-label">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+                {errors.budget && (
+                  <span className="error-message budget-error">
+                    <FaExclamationCircle className="error-icon" />
+                    {errors.budget}
+                  </span>
+                )}
+              </div>
             </div>
           </CSSTransition>
         )}
