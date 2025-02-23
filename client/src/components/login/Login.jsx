@@ -10,8 +10,9 @@ const Login = ({ isDark }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL; // Nessun fallback qui, si basa su .env
-  const loginUrl = `${API_URL}/api/login`; // Senza slash finale
+  // Fallback per l'URL: usa VITE_API_URL o localhost:8080 in locale
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const loginUrl = `${API_URL}/api/login`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -17,9 +17,8 @@ import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
 import AboutUs from "./components/about-us/AboutUs";
 import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
-import Login from "./components/login/Login"; // Nuovo componente
-import Dashboard from "./components/dashboard/Dashboard"; // Nuovo componente
-import DynamicForm from "./components/dynamic-form/DynamicForm"; // Aggiunta per il form
+import Login from "./components/login/Login";
+import Dashboard from "./components/dashboard/Dashboard";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
@@ -83,7 +82,6 @@ function App() {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight]);
 
   useEffect(() => {
@@ -142,9 +140,8 @@ function App() {
             />
             <Route path="/about-us" element={<AboutUs />} />
             {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
-            <Route path="/form" element={<DynamicForm isDark={isDark} />} /> {/* Nuova route per il form */}
-            <Route path="/login" element={<Login isDark={isDark} />} /> {/* Nuova route per login */}
-            <Route path="/dashboard" element={<Dashboard isDark={isDark} />} /> {/* Nuova route per dashboard */}
+            <Route path="/login" element={<Login isDark={isDark} />} />
+            <Route path="/dashboard" element={<Dashboard isDark={isDark} />} />
           </Routes>
         </div>
       </div>
