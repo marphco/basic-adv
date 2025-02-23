@@ -14,7 +14,7 @@ const QuestionForm = ({
   errors = {},
   formData,
 }) => {
-  console.log("QuestionForm render con:", currentQuestion); // Log di debug
+  // console.log("QuestionForm render con:", currentQuestion); // Log di debug
 
   return (
     <div className="question-form">
