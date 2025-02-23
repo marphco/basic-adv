@@ -16,46 +16,28 @@ dotenv.config();
 console.log("Variabili .env caricate:", {
   SMTP_USERNAME: process.env.SMTP_USERNAME,
   ADMIN_USERNAME: process.env.ADMIN_USERNAME,
-  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
   JWT_SECRET: process.env.JWT_SECRET,
 });
 
-// Controllo variabili .env obbligatorie
-const requiredEnvVars = [
-  "SMTP_USERNAME",
-  "SMTP_PASSWORD",
-  "ADMIN_EMAIL",
-  "SENDER_EMAIL",
-  "MONGO_URI",
-  "OPEN_AI_KEY",
-  "FRONTEND_URL",
-  "JWT_SECRET",
-  "ADMIN_USERNAME",
-  "ADMIN_PASSWORD",
-];
-const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
-if (missingVars.length > 0) {
-  console.error(`❌ Variabili d'ambiente mancanti: ${missingVars.join(", ")}`);
-  process.exit(1);
-}
-
 const app = express();
 
+// Configurazione CORS
 app.use(
   cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Usa FRONTEND_URL dal .env
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Consentiti localhost e produzione
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Se necessario per futuri sviluppi
   })
 );
 
 app.use(express.json());
 
-// Configura il transporter con SMTP di MailerSend
+// Configura il transporter per email
 const transporter = nodemailer.createTransport({
   host: "smtp.mailersend.net",
   port: 587,
-  secure: false, // Usa TLS
+  secure: false,
   auth: {
     user: process.env.SMTP_USERNAME,
     pass: process.env.SMTP_PASSWORD,
@@ -68,7 +50,6 @@ app.post("/api/sendEmails", async (req, res) => {
   const userEmail = contactInfo.email;
   const adminEmail = process.env.ADMIN_EMAIL;
 
-  // Email di cortesia all'utente
   const userMailOptions = {
     from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
     to: userEmail,
@@ -76,7 +57,6 @@ app.post("/api/sendEmails", async (req, res) => {
     text: "Ciao,\n\nGrazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\nTeam BasicAdv",
   };
 
-  // Email di notifica all’amministratore
   const adminMailOptions = {
     from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
     to: adminEmail,
@@ -89,6 +69,7 @@ app.post("/api/sendEmails", async (req, res) => {
     await transporter.sendMail(adminMailOptions);
     res.status(200).json({ message: "Email inviate con successo" });
   } catch (error) {
+    console.error("Errore invio email:", error);
     res.status(500).json({ error: "Errore nell’invio delle email" });
   }
 });
@@ -109,21 +90,16 @@ const authenticateToken = (req, res, next) => {
 // Endpoint login
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  const validUsername = process.env.ADMIN_USERNAME;
-  const validPassword = process.env.ADMIN_PASSWORD;
+  console.log("Richiesta login:", { username, password });
+  console.log("Confronto con:", { expectedUsername: process.env.ADMIN_USERNAME });
 
-  console.log("Richiesta login ricevuta:", { username, password });
-  console.log("Credenziali attese:", { validUsername, validPassword });
-  console.log("Tipi:", { username: typeof username, validUsername: typeof validUsername });
-  console.log("Confronto username:", username === validUsername, username, validUsername);
-  console.log("Confronto password:", password === validPassword, password, validPassword);
-
-  if (username !== validUsername || password !== validPassword) {
+  if (username !== process.env.ADMIN_USERNAME || password !== process.env.ADMIN_PASSWORD) {
     console.log("Credenziali non valide");
     return res.status(401).json({ error: "Credenziali non valide" });
   }
 
   const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  console.log("Login riuscito, token generato");
   res.json({ token });
 });
 
@@ -133,15 +109,17 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
     const logs = await ProjectLog.find().select("sessionId formData createdAt");
     res.json(logs);
   } catch (error) {
+    console.error("Errore getRequests:", error);
     res.status(500).json({ error: "Errore nel recupero delle richieste" });
   }
 });
 
+// Altre route esistenti (non modificate)
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Configura multer
+// Configura multer (non modificato)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -176,21 +154,17 @@ if (!global.serverRunning) {
 
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`❌ Porta ${PORT} già in uso. Uscita forzata.`);
+      console.error(`❌ Porta ${PORT} già in uso`);
       process.exit(1);
     } else {
-      console.error("❌ Errore sconosciuto:", err);
+      console.error("❌ Errore server:", err);
     }
   });
 
-  let isClosing = false;
   process.on("SIGINT", async () => {
-    if (isClosing) return;
-    isClosing = true;
-
-    console.log("🔴 Ricevuto SIGINT. Chiusura server...");
+    console.log("🔴 Chiusura server...");
     server.close(() => {
-      console.log("✅ Server chiuso correttamente");
+      console.log("✅ Server chiuso");
     });
     await mongoose.connection.close();
     console.log("✅ Connessione MongoDB chiusa");
