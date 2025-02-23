@@ -1,0 +1,48 @@
+.login-page {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+  }
+  
+  .login-page .dynamic-form {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .submit-btn:disabled {
+    background-color: var(--foreground-color) !important; /* Mantiene il colore del tema */
+    cursor: not-allowed;
+    opacity: 0.7; /* Leggera opacità per stato disabilitato */
+  }
+  
+  .spinner {
+    font-size: 1.2rem; /* Dimensione uniforme con il testo */
+    color: white;
+    animation: spin 1s linear infinite; /* Rotazione infinita */
+  }
+  
+  @media (max-width: 768px) {
+    .login-page .dynamic-form {
+      max-width: 90%;
+    }
+    .dynamic-form h2 {
+        padding-left: 0;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .login-page {
+      overflow-x: hidden !important;
+    }
+  }
