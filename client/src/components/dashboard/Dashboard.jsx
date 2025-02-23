@@ -9,12 +9,12 @@ const Dashboard = ({ isDark }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Fallback per l’URL API
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL = import.meta.env.VITE_API_URL; // Nessun fallback qui
   const requestsUrl = `${API_URL}/api/getRequests`;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    console.log("Token trovato:", token);
     if (!token) {
       navigate("/login");
       return;
@@ -34,7 +34,7 @@ const Dashboard = ({ isDark }) => {
     };
 
     fetchRequests();
-  }, [navigate, requestsUrl]); // Aggiunto requestsUrl alle dipendenze
+  }, [navigate, requestsUrl]);
 
   return (
     <div className={`dynamic-form ${isDark ? "dark-theme" : "light-theme"}`}>

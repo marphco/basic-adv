@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types"; // Importa PropTypes
+import PropTypes from "prop-types";
 import "../dynamic-form/DynamicForm.css";
 
 const Login = ({ isDark }) => {
@@ -10,23 +10,21 @@ const Login = ({ isDark }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Fallback per l’URL API
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
-  const loginUrl = `${API_URL}/api/login`;
+  const API_URL = import.meta.env.VITE_API_URL; // Nessun fallback qui, si basa su .env
+  const loginUrl = `${API_URL}/api/login`; // Senza slash finale
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Invio richiesta login con:", { username, password, loginUrl }); // Debug
+    console.log("Invio richiesta a:", loginUrl);
+    console.log("Dati inviati:", { username, password });
     try {
-      const response = await axios.post(loginUrl, {
-        username,
-        password,
-      });
+      const response = await axios.post(loginUrl, { username, password });
+      console.log("Risposta ricevuta:", response.data);
       localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
     } catch (err) {
       setError("Credenziali non valide");
-      console.log("Errore login:", err.response?.data || err.message); // Debug
+      console.error("Errore:", err.message, err.response?.data || "Nessun dato di risposta");
     }
   };
 
@@ -63,7 +61,6 @@ const Login = ({ isDark }) => {
   );
 };
 
-// Aggiungi PropTypes
 Login.propTypes = {
   isDark: PropTypes.bool.isRequired,
 };
