@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import "./QuestionForm.css";
 import FontSelection from "../font-selection/FontSelection";
-import { FaExclamationCircle, FaSpinner } from "react-icons/fa"; // Aggiunto FaSpinner
+import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
 const QuestionForm = ({
   currentQuestion,
@@ -14,6 +14,8 @@ const QuestionForm = ({
   errors = {},
   formData,
 }) => {
+  console.log("QuestionForm render con:", currentQuestion); // Log di debug
+
   return (
     <div className="question-form">
       <h3 className="question-title">{currentQuestion.question}</h3>

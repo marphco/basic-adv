@@ -11,10 +11,7 @@ const FontSelection = ({
   errors = {},
   formData,
 }) => {
-  console.log("FontSelection iniziato con:", currentQuestion);
-
   if (!currentQuestion || !currentQuestion.options) {
-    console.error("Dati invalidi per FontSelection:", currentQuestion);
     return <div>Errore: domanda sui font non valida</div>;
   }
 
@@ -34,7 +31,6 @@ const FontSelection = ({
   };
 
   const toggleOption = (option) => {
-    console.log("toggleOption chiamato per:", option);
     handleAnswerChange({
       target: {
         value: option,
@@ -44,13 +40,11 @@ const FontSelection = ({
   };
 
   const handleCustomTextChange = (e) => {
-    console.log("handleCustomTextChange chiamato");
     const value = e.target.value.slice(0, 30);
     setCustomText(value);
   };
 
   const handleFontNameChange = (e) => {
-    console.log("handleFontNameChange chiamato");
     const value = e.target.value;
     handleInputChange({ target: { value } });
   };
@@ -58,15 +52,12 @@ const FontSelection = ({
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (formData.brandName && !customText) {
-      console.log("useEffect: impostazione customText con brandName");
       setCustomText(formData.brandName);
     }
   }, [formData.brandName, customText]);
 
-  console.log("FontSelection rendering con opzioni:", currentQuestion.options);
-
   return (
-    <div className="font-selection">
+    <div className="font-selection fade-in"> {/* Classe per animazione */}
       <div className="form-group">
         <input
           type="text"
@@ -78,24 +69,21 @@ const FontSelection = ({
         />
       </div>
       <div className="font-grid">
-        {currentQuestion.options.map((option, index) => {
-          console.log(`Rendering opzione ${index}: ${option}`);
-          return (
-            <button
-              key={index}
-              className={`font-button ${
-                selectedOptions.includes(option) ? "selected" : ""
-              }`}
-              onClick={() => toggleOption(option)}
-              type="button"
-            >
-              <span className="font-example" style={fontStyles[option] || {}}>
-                {customText || "Testo di prova"}
-              </span>
-              <span className="font-name">{option}</span>
-            </button>
-          );
-        })}
+        {currentQuestion.options.map((option, index) => (
+          <button
+            key={index}
+            className={`font-button ${
+              selectedOptions.includes(option) ? "selected" : ""
+            }`}
+            onClick={() => toggleOption(option)}
+            type="button"
+          >
+            <span className="font-example" style={fontStyles[option] || {}}>
+              {customText || "Testo di prova"}
+            </span>
+            <span className="font-name">{option}</span>
+          </button>
+        ))}
       </div>
       <div className="form-group">
         <textarea

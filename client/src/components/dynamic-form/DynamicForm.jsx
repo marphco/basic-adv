@@ -38,7 +38,9 @@ const DynamicForm = () => {
     budget: "",
   });
   const [answers, setAnswers] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [isLogoSelected, setIsLogoSelected] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -128,6 +130,7 @@ const DynamicForm = () => {
         : [...prev, service];
       if (!prev.includes(service) && newServices.length > 0) {
         setErrors((prevErrors) => {
+          // eslint-disable-next-line no-unused-vars
           const { services, ...rest } = prevErrors;
           return rest;
         });
@@ -449,19 +452,50 @@ const DynamicForm = () => {
   
       <div>
         {currentQuestion ? (
-          <div ref={questionRef}>
-            <QuestionForm
-              currentQuestion={currentQuestion}
-              questionNumber={questionNumber}
-              answers={answers}
-              handleAnswerSubmit={handleAnswerSubmit}
-              handleInputChange={handleInputChange}
-              handleAnswerChange={handleAnswerChange}
-              loading={loading}
-              errors={errors}
-              formData={formData}
-            />
-          </div>
+          currentQuestion.type === "font_selection" ? (
+            <div ref={questionRef}>
+              <QuestionForm
+                currentQuestion={currentQuestion}
+                questionNumber={questionNumber}
+                answers={answers}
+                handleAnswerSubmit={handleAnswerSubmit}
+                handleInputChange={handleInputChange}
+                handleAnswerChange={handleAnswerChange}
+                loading={loading}
+                errors={errors}
+                formData={formData}
+              />
+            </div>
+          ) : (
+            <TransitionGroup>
+              <CSSTransition
+                timeout={1000}
+                classNames="fade-question"
+                nodeRef={questionRef}
+                key={currentQuestion.question + "-" + questionNumber}
+                exit={false}
+                mountOnEnter
+                unmountOnExit
+              >
+                <div
+                  ref={questionRef}
+                  className={questionNumber === 1 ? "first-question-fade" : ""}
+                >
+                  <QuestionForm
+                    currentQuestion={currentQuestion}
+                    questionNumber={questionNumber}
+                    answers={answers}
+                    handleAnswerSubmit={handleAnswerSubmit}
+                    handleInputChange={handleInputChange}
+                    handleAnswerChange={handleAnswerChange}
+                    loading={loading}
+                    errors={errors}
+                    formData={formData}
+                  />
+                </div>
+              </CSSTransition>
+            </TransitionGroup>
+          )
         ) : null}
       </div>
   

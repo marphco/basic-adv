@@ -38,6 +38,19 @@
     border: solid 1px var(--foreground-color);
     color: var(--primary-text-color);
   }
+
+  .thank-you-message.fade-in {
+    animation: fadeIn 1s ease-in forwards;
+  }
+  
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
   
   @media screen and (max-width: 768px) {
     .thank-you-message h3 {
