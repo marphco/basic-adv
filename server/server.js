@@ -8,17 +8,31 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 dotenv.config();
 
-console.log("Chiave OpenAI:", process.env.OPEN_AI_KEY ? "PRESENTE" : "NON TROVATA");
+// Controllo variabili .env obbligatorie
+const requiredEnvVars = [
+  "SMTP_USERNAME",
+  "SMTP_PASSWORD",
+  "ADMIN_EMAIL",
+  "SENDER_EMAIL",
+  "MONGO_URI",
+  "OPEN_AI_KEY",
+  "FRONTEND_URL",
+];
+const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+if (missingVars.length > 0) {
+  console.error(`❌ Variabili d'ambiente mancanti: ${missingVars.join(", ")}`);
+  process.exit(1);
+}
 
 const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://basic-adv.vercel.app"],
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Usa FRONTEND_URL dal .env
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -28,47 +42,45 @@ app.use(express.json());
 
 // Configura il transporter con SMTP di MailerSend
 const transporter = nodemailer.createTransport({
-  host: 'smtp.mailersend.net',
+  host: "smtp.mailersend.net",
   port: 587,
   secure: false, // Usa TLS
   auth: {
-    user: 'MS_sOs1J5@basicadv.com', 
-    pass: 'mssp.WjSTmpu.0r83ql3jqmxgzw1j.grRQjTQ', 
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
   },
 });
 
 // Endpoint per inviare email
-app.post('/api/sendEmails', async (req, res) => {
+app.post("/api/sendEmails", async (req, res) => {
   const { contactInfo, sessionId } = req.body;
   const userEmail = contactInfo.email;
-  const adminEmail = 'marco@basicadv.com'; 
+  const adminEmail = process.env.ADMIN_EMAIL;
 
-  // Email di cortesia all'utente con nome "Basic Adv"
+  // Email di cortesia all'utente
   const userMailOptions = {
-    from: '"Basic Adv" <info@basicadv.com>', // Nome + email
+    from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
     to: userEmail,
-    subject: 'Grazie per averci contattato!',
-    text: 'Ciao,\n\nGrazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\nTeam BasicAdv',
+    subject: "Grazie per averci contattato!",
+    text: "Ciao,\n\nGrazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\nTeam BasicAdv",
   };
 
-  // Email di notifica all’amministratore (puoi lasciare così o modificare anche questa)
+  // Email di notifica all’amministratore
   const adminMailOptions = {
-    from: '"Basic Adv" <info@basicadv.com>', // Nome + email
+    from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
     to: adminEmail,
-    subject: 'Nuova richiesta sul sito',
-    text: `Ciao Admin,\n\nHai ricevuto una nuova richiesta!\n\nNome: ${contactInfo.name}\nEmail: ${contactInfo.email}\nTelefono: ${contactInfo.phone || 'Non fornito'}\nSession ID: ${sessionId}\n\nControlla i dettagli nel database!`,
+    subject: "Nuova richiesta sul sito",
+    text: `Ciao Admin,\n\nHai ricevuto una nuova richiesta!\n\nNome: ${contactInfo.name}\nEmail: ${contactInfo.email}\nTelefono: ${contactInfo.phone || "Non fornito"}\nSession ID: ${sessionId}\n\nControlla i dettagli nel database!`,
   };
 
   try {
     await transporter.sendMail(userMailOptions);
     await transporter.sendMail(adminMailOptions);
-    res.status(200).json({ message: 'Email inviate con successo' });
+    res.status(200).json({ message: "Email inviate con successo" });
   } catch (error) {
-    console.error('Errore invio email:', error);
-    res.status(500).json({ error: 'Errore nell’invio delle email' });
+    res.status(500).json({ error: "Errore nell’invio delle email" });
   }
 });
-
 
 app.get("/", (req, res) => {
   res.send("Server is running!");
@@ -117,16 +129,16 @@ if (!global.serverRunning) {
   });
 
   let isClosing = false;
-  process.on('SIGINT', async () => {
+  process.on("SIGINT", async () => {
     if (isClosing) return;
     isClosing = true;
 
-    console.log('🔴 Ricevuto SIGINT. Chiusura server...');
+    console.log("🔴 Ricevuto SIGINT. Chiusura server...");
     server.close(() => {
-      console.log('✅ Server chiuso correttamente');
+      console.log("✅ Server chiuso correttamente");
     });
     await mongoose.connection.close();
-    console.log('✅ Connessione MongoDB chiusa');
+    console.log("✅ Connessione MongoDB chiusa");
     process.exit(0);
   });
 }
@@ -139,13 +151,6 @@ mongoose
 const sanitizeKey = (key) => key.replace(/\./g, "_");
 
 const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
-  console.log("generateQuestionForService called with:", {
-    service,
-    formData,
-    answers,
-    askedQuestions,
-  });
-
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
@@ -200,7 +205,6 @@ Assicurati che il JSON sia valido e non includa altro testo o caratteri.
 Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecniche. Mantieni le domande e le opzioni concise e facili da comprendere.`;
 
   try {
-    console.log("Invio richiesta a OpenAI con prompt:", promptBase);
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -223,27 +227,17 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     );
 
     const aiResponseText = response.data.choices[0].message.content;
-    console.log("Risposta da OpenAI:", aiResponseText);
 
     let aiQuestion;
     try {
       aiQuestion = JSON.parse(aiResponseText);
-      console.log("Domanda AI parsata:", aiQuestion);
     } catch (error) {
-      console.error("Errore nel parsing della risposta JSON da OpenAI:", error);
       const jsonStartIndex = aiResponseText.indexOf("{");
       const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1;
       if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
         const jsonString = aiResponseText.substring(jsonStartIndex, jsonEndIndex);
-        try {
-          aiQuestion = JSON.parse(jsonString);
-          console.log("Domanda AI estratta con successo:", aiQuestion);
-        } catch (error) {
-          console.error("Errore nel parsing del JSON estratto:", error);
-          throw new Error("Errore nel parsing della risposta AI");
-        }
+        aiQuestion = JSON.parse(jsonString);
       } else {
-        console.error("Nessun JSON valido trovato nella risposta AI");
         throw new Error("Errore nel parsing della risposta AI");
       }
     }
@@ -253,7 +247,6 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     }
 
     if (!aiQuestion.question) {
-      console.error("La risposta dell'AI non contiene una domanda valida:", aiResponseText);
       throw new Error("La risposta dell'AI non contiene una domanda valida");
     }
 
@@ -266,26 +259,21 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     }
 
     if (askedQuestions.includes(aiQuestion.question)) {
-      console.log("Domanda duplicata rilevata, rigenerazione...");
       return await generateQuestionForService(service, formData, answers, askedQuestions);
     }
 
     return aiQuestion;
   } catch (error) {
-    console.error("Errore in generateQuestionForService:", error.message, error.stack);
     throw error;
   }
 };
 
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
-  console.log("Richiesta ricevuta per /api/generate:", req.body);
-
   try {
     let servicesSelected;
     try {
       servicesSelected = JSON.parse(req.body.servicesSelected || "[]");
     } catch (e) {
-      console.error("Errore nel parsing di servicesSelected:", e);
       return res.status(400).json({ error: "Formato servicesSelected non valido" });
     }
 
@@ -299,7 +287,6 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       try {
         formData.contactInfo = JSON.parse(formData.contactInfo);
       } catch (e) {
-        console.error("Errore nel parsing di contactInfo:", e);
         formData.contactInfo = {};
       }
     } else {
@@ -308,7 +295,6 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     if (req.file) {
       formData.currentLogo = req.file.path;
-      console.log("Percorso del logo caricato:", formData.currentLogo);
     } else if (formData.projectType === "restyling") {
       return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
     }
@@ -319,11 +305,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     formData.otherBusinessField = formData.otherBusinessField || "";
 
     if (!servicesSelected.length) {
-      console.error("Nessun servizio selezionato");
       return res.status(400).json({ error: "Nessun servizio selezionato" });
     }
-
-    console.log("Dati preparati per ProjectLog:", { sessionId, formData, servicesSelected });
 
     const newLogEntry = new ProjectLog({
       sessionId,
@@ -346,12 +329,6 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     const firstService = servicesSelected[0];
     const askedQuestionsForService = newLogEntry.askedQuestions.get(firstService) || [];
-    console.log("Chiamata a generateQuestionForService con:", {
-      firstService,
-      formData,
-      answers: Object.fromEntries(newLogEntry.answers),
-      askedQuestionsForService,
-    });
 
     const aiQuestion = await generateQuestionForService(
       firstService,
@@ -359,8 +336,6 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       Object.fromEntries(newLogEntry.answers),
       askedQuestionsForService
     );
-
-    console.log("Domanda generata:", aiQuestion);
 
     newLogEntry.questions.push(aiQuestion);
     newLogEntry.questionCount += 1;
@@ -370,19 +345,10 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     );
     newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question);
 
-    console.log("Salvataggio del log entry su MongoDB...");
     await newLogEntry.save();
-    console.log("Log entry salvato con successo");
 
-    console.log(`Sessione ${sessionId} - Generata prima domanda per servizio: ${firstService}`);
     res.json({ question: aiQuestion });
   } catch (error) {
-    console.error("Errore dettagliato in /api/generate:", {
-      message: error.message,
-      stack: error.stack,
-      requestBody: req.body,
-      file: req.file ? { filename: req.file.filename, size: req.file.size, mimetype: req.file.mimetype } : "Nessun file",
-    });
     res.status(500).json({ error: error.message || "Errore nella generazione della domanda. Riprova più tardi." });
   }
 });
@@ -413,27 +379,17 @@ app.post("/api/nextQuestion", async (req, res) => {
     }
     logEntry.askedQuestions.get(currentService).push(questionText);
 
-    console.log(`Session ${sessionId} - Received answer for service: ${currentService}`);
-    console.log(`Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(currentService) || 0}`);
-    console.log(`Total Question Count: ${logEntry.questionCount}`);
-    console.log(`Answers: ${JSON.stringify(Object.fromEntries(logEntry.answers))}`);
-
-    // Controlla il limite totale di domande
     if (logEntry.questionCount >= logEntry.totalQuestions) {
       await logEntry.save();
-      console.log(`Session ${sessionId} - Limite totale di domande (${logEntry.totalQuestions}) raggiunto. Fine questionario.`);
       return res.json({ question: null });
     }
 
-    // Controlla il limite per il servizio corrente
     const serviceCount = logEntry.serviceQuestionCount.get(currentService) || 0;
     if (serviceCount >= logEntry.maxQuestionsPerService) {
       logEntry.currentServiceIndex += 1;
-      console.log(`Session ${sessionId} - Limite domande per ${currentService} (${logEntry.maxQuestionsPerService}) raggiunto. Passaggio al servizio successivo: ${logEntry.currentServiceIndex}`);
 
       if (logEntry.currentServiceIndex >= logEntry.servicesQueue.length) {
         await logEntry.save();
-        console.log(`Session ${sessionId} - Tutti i servizi completati. Fine questionario.`);
         return res.json({ question: null });
       }
     }
@@ -441,7 +397,6 @@ app.post("/api/nextQuestion", async (req, res) => {
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
     const askedQuestionsForNextService = logEntry.askedQuestions.get(nextService) || [];
 
-    console.log(`Session ${sessionId} - Generazione nuova domanda per ${nextService}`);
     const aiQuestion = await generateQuestionForService(
       nextService,
       logEntry.formData,
@@ -459,13 +414,8 @@ app.post("/api/nextQuestion", async (req, res) => {
 
     await logEntry.save();
 
-    console.log(`Session ${sessionId} - Generated new question for service: ${nextService}`);
-    console.log(`Service Question Count [${nextService}]: ${logEntry.serviceQuestionCount.get(nextService)}`);
-    console.log(`Total Question Count: ${logEntry.questionCount}`);
-
     res.json({ question: aiQuestion });
   } catch (error) {
-    console.error("Error generating next question:", error);
     res.status(500).json({ error: "Errore nella generazione della domanda" });
   }
 });
@@ -499,7 +449,6 @@ app.post("/api/submitLog", async (req, res) => {
     res.status(200).json({ message: "Log inviato e salvato" });
 
     try {
-      console.log(`Session ${sessionId} - Verifica contactInfo:`, logEntry.formData.contactInfo);
       if (!logEntry.formData.contactInfo.name || !logEntry.formData.contactInfo.email) {
         throw new Error("Nome ed email sono obbligatori per generare il project plan.");
       }
@@ -575,17 +524,14 @@ ${formattedAnswers}
 
       logEntry.projectPlan = projectPlan;
       await logEntry.save();
-      console.log(`Session ${sessionId} - Project plan generated and saved.`);
     } catch (error) {
-      console.error(`Session ${sessionId} - Error generating project plan:`, error);
+      // Errore nella generazione del project plan, ma il log è già salvato
     }
   } catch (error) {
-    console.error("Error submitting log:", error);
     res.status(500).json({ error: "Errore nell'invio del log" });
   }
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(500).json({ error: "Errore interno del server" });
 });
