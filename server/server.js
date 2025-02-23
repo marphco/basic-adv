@@ -9,8 +9,16 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
 
 dotenv.config();
+
+console.log("Variabili .env caricate:", {
+  SMTP_USERNAME: process.env.SMTP_USERNAME,
+  ADMIN_USERNAME: process.env.ADMIN_USERNAME,
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+  JWT_SECRET: process.env.JWT_SECRET,
+});
 
 // Controllo variabili .env obbligatorie
 const requiredEnvVars = [
@@ -21,6 +29,9 @@ const requiredEnvVars = [
   "MONGO_URI",
   "OPEN_AI_KEY",
   "FRONTEND_URL",
+  "JWT_SECRET",
+  "ADMIN_USERNAME",
+  "ADMIN_PASSWORD",
 ];
 const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
 if (missingVars.length > 0) {
@@ -79,6 +90,50 @@ app.post("/api/sendEmails", async (req, res) => {
     res.status(200).json({ message: "Email inviate con successo" });
   } catch (error) {
     res.status(500).json({ error: "Errore nell’invio delle email" });
+  }
+});
+
+// Middleware per autenticazione JWT
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Accesso negato" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Token non valido" });
+    req.user = user;
+    next();
+  });
+};
+
+// Endpoint login
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+  const validUsername = process.env.ADMIN_USERNAME;
+  const validPassword = process.env.ADMIN_PASSWORD;
+
+  console.log("Richiesta login ricevuta:", { username, password });
+  console.log("Credenziali attese:", { validUsername, validPassword });
+  console.log("Tipi:", { username: typeof username, validUsername: typeof validUsername });
+  console.log("Confronto username:", username === validUsername, username, validUsername);
+  console.log("Confronto password:", password === validPassword, password, validPassword);
+
+  if (username !== validUsername || password !== validPassword) {
+    console.log("Credenziali non valide");
+    return res.status(401).json({ error: "Credenziali non valide" });
+  }
+
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  res.json({ token });
+});
+
+// Endpoint dashboard
+app.get("/api/getRequests", authenticateToken, async (req, res) => {
+  try {
+    const logs = await ProjectLog.find().select("sessionId formData createdAt");
+    res.json(logs);
+  } catch (error) {
+    res.status(500).json({ error: "Errore nel recupero delle richieste" });
   }
 });
 
