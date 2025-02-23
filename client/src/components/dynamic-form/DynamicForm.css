@@ -171,6 +171,19 @@ input:-webkit-autofill:active {
   100% { transform: rotate(360deg); }
 }
 
+.first-question-fade {
+  animation: fadeIn 1s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .dynamic-form h2 {
     font-size: 3rem;
