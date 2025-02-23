@@ -12,7 +12,7 @@ body,
 .home-intro,
 .title,
 .box {
-  transition: background-color 500ms ease-in-out, color 500ms ease-in-out;
+  transition: background-color 500ms ease, color 500ms ease;
 }
 
 .freeze-scroll {
