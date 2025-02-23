@@ -17,13 +17,16 @@ import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
 import AboutUs from "./components/about-us/AboutUs";
 import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
+import Login from "./components/login/Login"; // Nuovo componente
+import Dashboard from "./components/dashboard/Dashboard"; // Nuovo componente
+import DynamicForm from "./components/dynamic-form/DynamicForm"; // Aggiunta per il form
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
 
 function App() {
-  const preference = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const [isDark, setIsDark] = useLocalStorage('isDark', preference);
+  const preference = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const [isDark, setIsDark] = useLocalStorage("isDark", preference);
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
   const openAboutUs = () => setIsAboutUsOpen(true);
   const closeAboutUs = () => setIsAboutUsOpen(false);
@@ -44,8 +47,8 @@ function App() {
         ScrollTrigger.refresh();
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isMobile, windowWidth, windowHeight]);
 
   useLayoutEffect(() => {
@@ -70,7 +73,7 @@ function App() {
         setScrollTween(tween);
       } else {
         if (scrollContainerRef.current) {
-          gsap.set(scrollContainerRef.current, { clearProps: 'all' });
+          gsap.set(scrollContainerRef.current, { clearProps: "all" });
         }
         if (scrollTween) {
           scrollTween.kill();
@@ -80,23 +83,22 @@ function App() {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight]);
 
   useEffect(() => {
-    // Applica l’attributo data-theme al body per il tema
-    document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.body.setAttribute("data-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
   useEffect(() => {
-    document.body.classList.add('no-default-cursor');
-    return () => document.body.classList.remove('no-default-cursor');
+    document.body.classList.add("no-default-cursor");
+    return () => document.body.classList.remove("no-default-cursor");
   }, []);
 
   return (
     <Router>
       <ScrollToTopOnRouteChange />
-      <div className={`app-wrapper ${isDark ? 'dark-theme' : 'light-theme'}`}>
+      <div className={`app-wrapper ${isDark ? "dark-theme" : "light-theme"}`}>
         <Cursor isDark={isDark} />
         <Navbar
           isDark={isDark}
@@ -111,7 +113,9 @@ function App() {
               path="/"
               element={
                 <>
-                  <div className="section"><Home /></div>
+                  <div className="section">
+                    <Home />
+                  </div>
                   <div className="section">
                     <Services
                       scrollTween={scrollTween}
@@ -125,7 +129,9 @@ function App() {
                       <Portfolio scrollTween={scrollTween} />
                     </DndProvider>
                   </div>
-                  <div className="section"><Contacts /></div>
+                  <div className="section">
+                    <Contacts />
+                  </div>
                   {!isMobile && (
                     <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
                       <AboutUsDesktop />
@@ -135,9 +141,10 @@ function App() {
               }
             />
             <Route path="/about-us" element={<AboutUs />} />
-            {isMobile && (
-              <Route path="/project/:id" element={<ProjectSectionMobile />} />
-            )}
+            {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
+            <Route path="/form" element={<DynamicForm isDark={isDark} />} /> {/* Nuova route per il form */}
+            <Route path="/login" element={<Login isDark={isDark} />} /> {/* Nuova route per login */}
+            <Route path="/dashboard" element={<Dashboard isDark={isDark} />} /> {/* Nuova route per dashboard */}
           </Routes>
         </div>
       </div>
