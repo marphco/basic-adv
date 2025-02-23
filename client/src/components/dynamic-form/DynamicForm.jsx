@@ -303,8 +303,6 @@ const DynamicForm = () => {
             { headers: { "Content-Type": "multipart/form-data" } }
           );
 
-          console.log("Risposta da /api/generate:", response.data);
-
           if (
             response.data.question &&
             response.data.question.type === "font_selection"
@@ -336,22 +334,18 @@ const DynamicForm = () => {
       const userAnswer = {
         [currentQuestion.question]: answers[currentQuestion.question],
       };
-      console.log("Invio risposta al server:", userAnswer);
       const response = await axios.post(
         `${API_URL.replace(/\/$/, "")}/api/nextQuestion`,
         { currentAnswer: userAnswer, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
   
-      console.log("Risposta da /api/nextQuestion:", response.data);
       const nextQuestion = response.data.question;
   
       if (!nextQuestion || questionNumber >= 10) {
-        console.log("Nessuna domanda successiva o limite raggiunto, completamento forzato");
         setIsCompleted(true);
         setCurrentQuestion(null);
       } else {
-        console.log("Nuova domanda ricevuta:", nextQuestion);
         if (nextQuestion.type === "font_selection") {
           setIsFontQuestionAsked(true);
         }
@@ -365,7 +359,6 @@ const DynamicForm = () => {
       });
       setLoading(false); // Assicurati che loading si resetti anche in caso di errore
     } finally {
-      console.log("fetchNextQuestion completato, loading=false");
       setLoading(false);
     }
   };
@@ -377,9 +370,7 @@ const DynamicForm = () => {
     const selectedOptions = userAnswer.options || [];
     const inputAnswer = userAnswer.input || "";
     let newErrors = {};
-  
-    console.log("handleAnswerSubmit chiamato con risposta:", userAnswer);
-  
+    
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
         newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
@@ -396,12 +387,10 @@ const DynamicForm = () => {
     }
   
     if (Object.keys(newErrors).length > 0) {
-      console.log("Errore di validazione:", newErrors);
       setErrors(newErrors);
       return;
     }
   
-    console.log("Risposta valida, procedo con fetchNextQuestion");
     fetchNextQuestion();
   };
 
