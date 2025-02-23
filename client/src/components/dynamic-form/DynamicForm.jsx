@@ -397,19 +397,19 @@ const DynamicForm = () => {
   const handleSubmitContactInfo = async (e) => {
     e.preventDefault();
     let newErrors = {};
-
+  
     if (!formData.contactInfo.name) {
       newErrors.name = "Il nome è obbligatorio.";
     }
     if (!formData.contactInfo.email) {
       newErrors.email = "L’email è obbligatoria.";
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
     setLoading(true);
     try {
       await axios.post(
@@ -417,11 +417,18 @@ const DynamicForm = () => {
         { contactInfo: formData.contactInfo, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
+  
+      await axios.post(
+        `${API_URL.replace(/\/$/, "")}/api/sendEmails`,
+        { contactInfo: formData.contactInfo, sessionId },
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
       setShowThankYou(true);
+    // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.error("Errore nell'invio dei contatti:", error);
       setErrors({
-        general: "Errore nell'invio dei contatti. Riprova più tardi.",
+        general: "Errore nell'invio dei contatti o delle email. Riprova più tardi.",
       });
     } finally {
       setLoading(false);

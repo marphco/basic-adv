@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const nodemailer = require('nodemailer');
 
 dotenv.config();
 
@@ -24,6 +25,50 @@ app.use(
 );
 
 app.use(express.json());
+
+// Configura il transporter con SMTP di MailerSend
+const transporter = nodemailer.createTransport({
+  host: 'smtp.mailersend.net',
+  port: 587,
+  secure: false, // Usa TLS
+  auth: {
+    user: 'MS_sOs1J5@basicadv.com', 
+    pass: 'mssp.WjSTmpu.0r83ql3jqmxgzw1j.grRQjTQ', 
+  },
+});
+
+// Endpoint per inviare email
+app.post('/api/sendEmails', async (req, res) => {
+  const { contactInfo, sessionId } = req.body;
+  const userEmail = contactInfo.email;
+  const adminEmail = 'marco@basicadv.com'; 
+
+  // Email di cortesia all'utente con nome "Basic Adv"
+  const userMailOptions = {
+    from: '"Basic Adv" <info@basicadv.com>', // Nome + email
+    to: userEmail,
+    subject: 'Grazie per averci contattato!',
+    text: 'Ciao,\n\nGrazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\nTeam BasicAdv',
+  };
+
+  // Email di notifica all’amministratore (puoi lasciare così o modificare anche questa)
+  const adminMailOptions = {
+    from: '"Basic Adv" <info@basicadv.com>', // Nome + email
+    to: adminEmail,
+    subject: 'Nuova richiesta sul sito',
+    text: `Ciao Admin,\n\nHai ricevuto una nuova richiesta!\n\nNome: ${contactInfo.name}\nEmail: ${contactInfo.email}\nTelefono: ${contactInfo.phone || 'Non fornito'}\nSession ID: ${sessionId}\n\nControlla i dettagli nel database!`,
+  };
+
+  try {
+    await transporter.sendMail(userMailOptions);
+    await transporter.sendMail(adminMailOptions);
+    res.status(200).json({ message: 'Email inviate con successo' });
+  } catch (error) {
+    console.error('Errore invio email:', error);
+    res.status(500).json({ error: 'Errore nell’invio delle email' });
+  }
+});
+
 
 app.get("/", (req, res) => {
   res.send("Server is running!");
