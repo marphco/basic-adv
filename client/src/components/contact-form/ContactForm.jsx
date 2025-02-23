@@ -32,7 +32,11 @@ const ContactForm = ({
   };
 
   return (
-    <form className="contact-form" onSubmit={handleSubmitContactInfo} noValidate>
+    <form
+      className="contact-form fade-in" // Aggiunto fade-in
+      onSubmit={handleSubmitContactInfo}
+      noValidate
+    >
       <h2 className="contact-cta">
         Ci siamo! Lascia i tuoi contatti e ci sentiamo presto –{" "}
         <span>niente spam, promesso!</span>

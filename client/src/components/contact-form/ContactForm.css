@@ -109,6 +109,19 @@
     color: var(--foreground-color);
   }
   
+  .contact-form.fade-in {
+    animation: fadeIn 1s ease-in forwards;
+  }
+  
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
   @media screen and (max-width: 768px) {
     .contact-form .form-group {
       padding: 0 1rem;
