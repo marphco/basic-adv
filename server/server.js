@@ -7,7 +7,7 @@ const ProjectLog = require("./models/ProjectLog");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const { v4: uuidv4 } = require("uuid"); // Aggiungiamo uuid
+const { v4: uuidv4 } = require("uuid");
 
 dotenv.config();
 
@@ -71,10 +71,9 @@ if (!global.serverRunning) {
     }
   });
 
-  // Gestione chiusura pulita con Promise, eseguita una sola volta
   let isClosing = false;
   process.on('SIGINT', async () => {
-    if (isClosing) return; // Ignora segnali ripetuti
+    if (isClosing) return;
     isClosing = true;
 
     console.log('🔴 Ricevuto SIGINT. Chiusura server...');
@@ -229,7 +228,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     return aiQuestion;
   } catch (error) {
     console.error("Errore in generateQuestionForService:", error.message, error.stack);
-    throw error; // Rilanciamo l’errore per essere catturato dal chiamante
+    throw error;
   }
 };
 
@@ -343,123 +342,80 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   }
 });
 
-// Endpoint per recuperare la prossima domanda
 app.post("/api/nextQuestion", async (req, res) => {
   const { currentAnswer, sessionId } = req.body;
 
-  // Validazione di base
   if (!currentAnswer || !sessionId) {
     return res.status(400).json({ error: "Campi richiesti mancanti" });
   }
 
   try {
-    // Trova il log entry corrispondente al sessionId
     const logEntry = await ProjectLog.findOne({ sessionId });
 
     if (!logEntry) {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
-    // Salva la risposta usando .set() per il Map (sanitized)
     const questionText = Object.keys(currentAnswer)[0];
     const sanitizedQuestionText = sanitizeKey(questionText);
     const answerData = currentAnswer[questionText];
     logEntry.answers.set(sanitizedQuestionText, answerData);
 
-    // Ottieni il servizio corrente
     const currentService = logEntry.servicesQueue[logEntry.currentServiceIndex];
 
-    // Aggiungi la domanda all'elenco delle domande già poste
     if (!logEntry.askedQuestions.has(currentService)) {
       logEntry.askedQuestions.set(currentService, []);
     }
-    logEntry.askedQuestions.get(currentService).push(questionText); // Conserva la domanda originale
+    logEntry.askedQuestions.get(currentService).push(questionText);
 
-    // Log per debugging
-    console.log(
-      `Session ${sessionId} - Received answer for service: ${currentService}`
-    );
-    console.log(
-      `Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(
-        currentService
-      )}`
-    );
+    console.log(`Session ${sessionId} - Received answer for service: ${currentService}`);
+    console.log(`Service Question Count [${currentService}]: ${logEntry.serviceQuestionCount.get(currentService) || 0}`);
     console.log(`Total Question Count: ${logEntry.questionCount}`);
-    console.log(`Answers: ${JSON.stringify(logEntry.answers)}`); // Log delle risposte
+    console.log(`Answers: ${JSON.stringify(Object.fromEntries(logEntry.answers))}`);
 
-    // Controlla se abbiamo raggiunto il minimo di domande per questo servizio
-    if (logEntry.serviceQuestionCount.get(currentService) >= 8) {
-      if (logEntry.servicesQueue.length === 1) {
-        if (logEntry.serviceQuestionCount.get(currentService) >= 10) {
-          // Raggiunto il massimo di 10 domande per 1 servizio, termina il questionario
-          await logEntry.save();
-          console.log(
-            `Session ${sessionId} - Reached max questions for service: ${currentService}. Ending questionnaire.`
-          );
-          return res.json({ question: null });
-        }
-      } else {
-        // Per più servizi, passa al servizio successivo
-        logEntry.currentServiceIndex += 1;
-        console.log(
-          `Session ${sessionId} - Switching to next service. Current Service Index: ${logEntry.currentServiceIndex}`
-        );
+    // Controlla il limite totale di domande
+    if (logEntry.questionCount >= logEntry.totalQuestions) {
+      await logEntry.save();
+      console.log(`Session ${sessionId} - Limite totale di domande (${logEntry.totalQuestions}) raggiunto. Fine questionario.`);
+      return res.json({ question: null });
+    }
 
-        // Se non ci sono più servizi, termina il questionario
-        if (logEntry.currentServiceIndex >= logEntry.servicesQueue.length) {
-          await logEntry.save();
-          console.log(
-            `Session ${sessionId} - All services completed. Ending questionnaire.`
-          );
-          return res.json({ question: null });
-        }
+    // Controlla il limite per il servizio corrente
+    const serviceCount = logEntry.serviceQuestionCount.get(currentService) || 0;
+    if (serviceCount >= logEntry.maxQuestionsPerService) {
+      logEntry.currentServiceIndex += 1;
+      console.log(`Session ${sessionId} - Limite domande per ${currentService} (${logEntry.maxQuestionsPerService}) raggiunto. Passaggio al servizio successivo: ${logEntry.currentServiceIndex}`);
+
+      if (logEntry.currentServiceIndex >= logEntry.servicesQueue.length) {
+        await logEntry.save();
+        console.log(`Session ${sessionId} - Tutti i servizi completati. Fine questionario.`);
+        return res.json({ question: null });
       }
     }
 
-    // Controlla se ha raggiunto il massimo di domande totali
-    if (logEntry.questionCount >= logEntry.totalQuestions) {
-      await logEntry.save();
-      console.log(
-        `Session ${sessionId} - Reached total question limit. Ending questionnaire.`
-      );
-      return res.json({ question: null }); // Indica al frontend che non ci sono più domande
-    }
-
-    // Determina il servizio corrente per la prossima domanda
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-    const askedQuestionsForNextService =
-      logEntry.askedQuestions.get(nextService) || [];
+    const askedQuestionsForNextService = logEntry.askedQuestions.get(nextService) || [];
 
-    // Genera la prossima domanda per il servizio corrente
+    console.log(`Session ${sessionId} - Generazione nuova domanda per ${nextService}`);
     const aiQuestion = await generateQuestionForService(
       nextService,
       logEntry.formData,
-      logEntry.answers,
+      Object.fromEntries(logEntry.answers),
       askedQuestionsForNextService
     );
 
-    // Aggiungi la nuova domanda al log
     logEntry.questions.push(aiQuestion);
-    logEntry.questionCount += 1; // Incremento solo qui
+    logEntry.questionCount += 1;
     logEntry.serviceQuestionCount.set(
       nextService,
       (logEntry.serviceQuestionCount.get(nextService) || 0) + 1
     );
+    logEntry.askedQuestions.get(nextService).push(aiQuestion.question);
 
-    // Aggiungi la domanda all'elenco delle domande già poste
-    logEntry.askedQuestions.get(nextService).push(aiQuestion.question); // Conserva la domanda originale
-
-    // Salva nel database
     await logEntry.save();
 
-    console.log(
-      `Session ${sessionId} - Generated new question for service: ${nextService}`
-    );
-    console.log(
-      `Service Question Count [${nextService}]: ${logEntry.serviceQuestionCount.get(
-        nextService
-      )}`
-    );
+    console.log(`Session ${sessionId} - Generated new question for service: ${nextService}`);
+    console.log(`Service Question Count [${nextService}]: ${logEntry.serviceQuestionCount.get(nextService)}`);
     console.log(`Total Question Count: ${logEntry.questionCount}`);
 
     res.json({ question: aiQuestion });
@@ -469,29 +425,24 @@ app.post("/api/nextQuestion", async (req, res) => {
   }
 });
 
-// Endpoint per inviare e salvare il log finale, generare il project plan
 app.post("/api/submitLog", async (req, res) => {
   const { contactInfo, sessionId } = req.body;
 
-  // Validazione di base
   if (!contactInfo || !sessionId) {
     return res.status(400).json({ error: "Campi richiesti mancanti" });
   }
 
   try {
-    // Trova il log entry corrispondente al sessionId
     const logEntry = await ProjectLog.findOne({ sessionId });
 
     if (!logEntry) {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
-    // Assicurati che 'logEntry.formData.contactInfo' sia un oggetto
     if (!logEntry.formData.contactInfo) {
       logEntry.formData.contactInfo = {};
     }
 
-    // **Aggiorna le informazioni di contatto all'interno di formData**
     logEntry.formData.contactInfo = {
       name: contactInfo.name || logEntry.formData.contactInfo.name || "",
       email: contactInfo.email || logEntry.formData.contactInfo.email || "",
@@ -500,24 +451,19 @@ app.post("/api/submitLog", async (req, res) => {
 
     await logEntry.save();
 
-    // Rispondi immediatamente al client
     res.status(200).json({ message: "Log inviato e salvato" });
 
-    // Genera il project plan in background
     try {
-      console.log(`Session ${sessionId} - Verifica contactInfo:`, logEntry.formData.contactInfo); // Log per debug
+      console.log(`Session ${sessionId} - Verifica contactInfo:`, logEntry.formData.contactInfo);
       if (!logEntry.formData.contactInfo.name || !logEntry.formData.contactInfo.email) {
         throw new Error("Nome ed email sono obbligatori per generare il project plan.");
       }
 
-      // Struttura le risposte in modo leggibile
       const formattedAnswers = Array.from(logEntry.answers.entries())
         .map(([question, response]) => {
           let answerText = "";
           if (response.input && response.options) {
-            answerText = `Opzioni selezionate: ${response.options.join(
-              ", "
-            )}\nRisposta libera: ${response.input}`;
+            answerText = `Opzioni selezionate: ${response.options.join(", ")}\nRisposta libera: ${response.input}`;
           } else if (response.input) {
             answerText = `Risposta libera: ${response.input}`;
           } else if (response.options) {
@@ -570,7 +516,7 @@ ${formattedAnswers}
             },
           ],
           max_tokens: 2000,
-          temperature: 0.8, // Aumentiamo la temperatura per maggiore creatività
+          temperature: 0.8,
         },
         {
           headers: {
@@ -582,13 +528,11 @@ ${formattedAnswers}
 
       const projectPlan = aiResponse.data.choices[0].message.content.trim();
 
-      // Aggiorna il project plan nel database
       logEntry.projectPlan = projectPlan;
       await logEntry.save();
-      console.log(`Session ${sessionId} - Project plan generated and saved.`); // Spostato qui
+      console.log(`Session ${sessionId} - Project plan generated and saved.`);
     } catch (error) {
       console.error(`Session ${sessionId} - Error generating project plan:`, error);
-      // Non inviare errori al client, poiché la risposta è già stata inviata
     }
   } catch (error) {
     console.error("Error submitting log:", error);
@@ -596,7 +540,6 @@ ${formattedAnswers}
   }
 });
 
-// Middleware per la gestione degli errori
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Errore interno del server" });

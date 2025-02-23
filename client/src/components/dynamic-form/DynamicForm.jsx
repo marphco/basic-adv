@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from "react"; // Aggiunto useRef
+import { useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./DynamicForm.css";
@@ -6,8 +6,8 @@ import InitialForm from "../initial-form/InitialForm";
 import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
-import { CSSTransition } from "react-transition-group";
-import { FaExclamationCircle } from "react-icons/fa";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
@@ -35,13 +35,14 @@ const DynamicForm = () => {
     otherBusinessField: "",
     projectObjectives: "",
     contactInfo: { name: "", email: "", phone: "" },
+    budget: "",
   });
   const [answers, setAnswers] = useState({});
   const [isLogoSelected, setIsLogoSelected] = useState(false);
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const questionRef = useRef(null); // Aggiunto ref per CSSTransition
+  const questionRef = useRef(null);
 
   const businessFields = [
     "Ambito",
@@ -88,6 +89,7 @@ const DynamicForm = () => {
       otherBusinessField: "",
       projectObjectives: "",
       contactInfo: { name: "", email: "", phone: "" },
+      budget: "",
     });
     setAnswers({});
     setIsLogoSelected(false);
@@ -126,13 +128,15 @@ const DynamicForm = () => {
         : [...prev, service];
       if (!prev.includes(service) && newServices.length > 0) {
         setErrors((prevErrors) => {
-          // eslint-disable-next-line no-unused-vars
           const { services, ...rest } = prevErrors;
           return rest;
         });
       }
       return newServices;
     });
+    if (service === "Logo") {
+      setIsLogoSelected((prev) => !prev);
+    }
   }, []);
 
   const handleFormInputChange = useCallback((e) => {
@@ -185,7 +189,6 @@ const DynamicForm = () => {
         [questionText]: { ...prev[questionText], options: newOptions },
       };
     });
-    // Rimuovi l’errore se la selezione è valida
     setErrors((prev) => {
       const updatedErrors = { ...prev };
       if (checked && updatedErrors[questionText]) {
@@ -253,13 +256,16 @@ const DynamicForm = () => {
             "image/heic",
             "image/heif",
           ];
-          const maxSize = 5 * 1024 * 1024; // 5MB
+          const maxSize = 5 * 1024 * 1024;
           if (!allowedTypes.includes(file.type)) {
             newErrors.currentLogo =
               "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.";
           } else if (file.size > maxSize) {
             newErrors.currentLogo = "Il file supera i 5MB.";
           }
+        }
+        if (!formData.budget) {
+          newErrors.budget = "Seleziona un budget.";
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -294,6 +300,8 @@ const DynamicForm = () => {
             { headers: { "Content-Type": "multipart/form-data" } }
           );
 
+          console.log("Risposta da /api/generate:", response.data);
+
           if (
             response.data.question &&
             response.data.question.type === "font_selection"
@@ -316,8 +324,7 @@ const DynamicForm = () => {
           setLoading(false);
         }
       }, 300),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedServices, selectedCategories, formData, sessionId]
+    [selectedServices, formData, sessionId]
   );
 
   const fetchNextQuestion = async () => {
@@ -326,36 +333,22 @@ const DynamicForm = () => {
       const userAnswer = {
         [currentQuestion.question]: answers[currentQuestion.question],
       };
+      console.log("Invio risposta al server:", userAnswer);
       const response = await axios.post(
         `${API_URL.replace(/\/$/, "")}/api/nextQuestion`,
         { currentAnswer: userAnswer, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
-
+  
+      console.log("Risposta da /api/nextQuestion:", response.data);
       const nextQuestion = response.data.question;
-      if (!nextQuestion) {
-        if (isLogoSelected && !isFontQuestionAsked) {
-          const fontQuestion = {
-            question: "Quale tipo di font preferisci?",
-            type: "font_selection",
-            options: [
-              "Serif",
-              "Sans-serif",
-              "Script",
-              "Monospaced",
-              "Manoscritto",
-              "Decorativo",
-            ],
-            requiresInput: false,
-          };
-          setCurrentQuestion(fontQuestion);
-          setQuestionNumber((prev) => prev + 1);
-          setIsFontQuestionAsked(true);
-        } else {
-          setIsCompleted(true);
-          setCurrentQuestion(null);
-        }
+  
+      if (!nextQuestion || questionNumber >= 10) {
+        console.log("Nessuna domanda successiva o limite raggiunto, completamento forzato");
+        setIsCompleted(true);
+        setCurrentQuestion(null);
       } else {
+        console.log("Nuova domanda ricevuta:", nextQuestion);
         if (nextQuestion.type === "font_selection") {
           setIsFontQuestionAsked(true);
         }
@@ -367,11 +360,13 @@ const DynamicForm = () => {
       setErrors({
         general: "Errore nel recupero della domanda. Riprova più tardi.",
       });
+      setLoading(false); // Assicurati che loading si resetti anche in caso di errore
     } finally {
+      console.log("fetchNextQuestion completato, loading=false");
       setLoading(false);
     }
   };
-
+  
   const handleAnswerSubmit = (e) => {
     e.preventDefault();
     const questionText = currentQuestion.question;
@@ -379,7 +374,9 @@ const DynamicForm = () => {
     const selectedOptions = userAnswer.options || [];
     const inputAnswer = userAnswer.input || "";
     let newErrors = {};
-
+  
+    console.log("handleAnswerSubmit chiamato con risposta:", userAnswer);
+  
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
         newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
@@ -394,31 +391,33 @@ const DynamicForm = () => {
           "Seleziona almeno una risposta o inserisci un commento.";
       }
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
+      console.log("Errore di validazione:", newErrors);
       setErrors(newErrors);
       return;
     }
-
+  
+    console.log("Risposta valida, procedo con fetchNextQuestion");
     fetchNextQuestion();
   };
 
   const handleSubmitContactInfo = async (e) => {
     e.preventDefault();
     let newErrors = {};
-  
+
     if (!formData.contactInfo.name) {
       newErrors.name = "Il nome è obbligatorio.";
     }
     if (!formData.contactInfo.email) {
       newErrors.email = "L’email è obbligatoria.";
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setLoading(true);
     try {
       await axios.post(
@@ -448,15 +447,9 @@ const DynamicForm = () => {
         </div>
       )}
   
-      <CSSTransition
-        in={!!currentQuestion}
-        timeout={1000}
-        classNames="fade-question"
-        unmountOnExit
-        nodeRef={questionRef}
-      >
-        <div ref={questionRef}>
-          {currentQuestion ? (
+      <div>
+        {currentQuestion ? (
+          <div ref={questionRef}>
             <QuestionForm
               currentQuestion={currentQuestion}
               questionNumber={questionNumber}
@@ -468,11 +461,9 @@ const DynamicForm = () => {
               errors={errors}
               formData={formData}
             />
-          ) : (
-            <div />
-          )}
-        </div>
-      </CSSTransition>
+          </div>
+        ) : null}
+      </div>
   
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
@@ -483,7 +474,7 @@ const DynamicForm = () => {
           handleSubmitContactInfo={handleSubmitContactInfo}
           loading={loading}
           errors={errors}
-          setErrors={setErrors} // Passato per aggiornare gli errori
+          setErrors={setErrors}
         />
       ) : (
         !currentQuestion && (
@@ -511,7 +502,7 @@ const DynamicForm = () => {
                   }}
                   disabled={loading}
                 >
-                  {loading ? "Caricamento..." : "COMINCIAMO!"}
+                  {loading ? <FaSpinner className="spinner" /> : "COMINCIAMO!"}
                 </button>
                 {errors.general && (
                   <span className="error-message">

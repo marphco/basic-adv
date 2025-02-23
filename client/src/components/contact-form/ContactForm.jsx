@@ -8,7 +8,7 @@ const ContactForm = ({
   handleSubmitContactInfo,
   loading,
   errors = {},
-  setErrors, // Aggiunto per aggiornare gli errori
+  setErrors,
 }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,7 +19,6 @@ const ContactForm = ({
         [name]: value,
       },
     }));
-    // Rimuovi l’errore quando l’utente scrive
     setErrors((prev) => {
       const updatedErrors = { ...prev };
       if (value.trim() && updatedErrors[name]) {
@@ -34,6 +33,10 @@ const ContactForm = ({
 
   return (
     <form className="contact-form" onSubmit={handleSubmitContactInfo} noValidate>
+      <h2 className="contact-cta">
+        Ci siamo! Lascia i tuoi contatti e ci sentiamo presto –{" "}
+        <span>niente spam, promesso!</span>
+      </h2>
       <div className="form-group">
         <input
           type="text"
@@ -82,11 +85,7 @@ const ContactForm = ({
         />
       </div>
       <div className="form-actions">
-        <button
-          type="submit"
-          className="submit-btn"
-          disabled={loading}
-        >
+        <button type="submit" className="submit-btn" disabled={loading}>
           {loading ? "Invio..." : "Invia"}
         </button>
       </div>
@@ -100,7 +99,7 @@ ContactForm.propTypes = {
   handleSubmitContactInfo: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   errors: PropTypes.object,
-  setErrors: PropTypes.func.isRequired, // Aggiunto
+  setErrors: PropTypes.func.isRequired,
 };
 
 export default ContactForm;

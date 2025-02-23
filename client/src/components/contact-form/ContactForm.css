@@ -93,6 +93,21 @@
     color: var(--error-color) !important;
     transition: color 0.5s ease;
   }
+
+  .contact-form .contact-cta {
+    font-size: 1.2rem;
+    font-weight: 200;
+    text-align: center;
+    color: var(--primary-text-color);
+    transition: all 0.5s ease;
+    padding-bottom: 1rem;
+    padding-left: 0;
+  }
+  
+  .contact-form .contact-cta span {
+    font-weight: 400;
+    color: var(--foreground-color);
+  }
   
   @media screen and (max-width: 768px) {
     .contact-form .form-group {
