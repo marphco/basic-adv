@@ -1,8 +1,9 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
+import PropTypes from "prop-types"; // Importiamo PropTypes
 import "./App.css";
 import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
@@ -23,24 +24,22 @@ import Dashboard from "./components/dashboard/Dashboard";
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
 
-function App() {
-  const preference = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const [isDark, setIsDark] = useLocalStorage("isDark", preference);
-  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
-  const openAboutUs = () => setIsAboutUsOpen(true);
-  const closeAboutUs = () => setIsAboutUsOpen(false);
-
-  const scrollContainerRef = useRef(null);
+// Componente wrapper per usare useLocation
+function AppContent({ isDark, setIsDark, scrollContainerRef }) {
+  const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+  const openAboutUs = () => setIsAboutUsOpen(true);
+  const closeAboutUs = () => setIsAboutUsOpen(false);
 
   useLayoutEffect(() => {
     const handleResize = () => {
       const isMobileNow = window.innerWidth <= 768;
       if (isMobile !== isMobileNow) setIsMobile(isMobileNow);
-      if (window.innerWidth !== windowWidth || window.innerHeight !== windowHeight) {
+      if (window.innerWidth !== windowWidth || windowHeight !== windowHeight) {
         setWindowWidth(window.innerWidth);
         setWindowHeight(window.innerHeight);
         ScrollTrigger.refresh();
@@ -52,7 +51,8 @@ function App() {
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
-      if (!isMobile && scrollContainerRef.current) {
+      const isHomePage = location.pathname === "/";
+      if (!isMobile && scrollContainerRef.current && isHomePage) {
         const container = scrollContainerRef.current;
         const totalWidth = container.scrollWidth - window.innerWidth;
         if (scrollTween) scrollTween.kill();
@@ -82,7 +82,8 @@ function App() {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
-  }, [isMobile, windowWidth, windowHeight]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, windowWidth, windowHeight, location.pathname]);
 
   useEffect(() => {
     document.body.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -94,56 +95,76 @@ function App() {
   }, []);
 
   return (
+    <>
+      <Cursor isDark={isDark} />
+      <Navbar
+        isDark={isDark}
+        setIsDark={setIsDark}
+        openAboutUs={openAboutUs}
+        closeAboutUs={closeAboutUs}
+        isMobile={isMobile}
+      />
+      <div className="App" ref={scrollContainerRef}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <div className="section">
+                  <Home />
+                </div>
+                <div className="section">
+                  <Services
+                    scrollTween={scrollTween}
+                    isMobile={isMobile}
+                    windowWidth={windowWidth}
+                    windowHeight={windowHeight}
+                  />
+                </div>
+                <div className="section">
+                  <DndProvider backend={HTML5Backend}>
+                    <Portfolio scrollTween={scrollTween} />
+                  </DndProvider>
+                </div>
+                <div className="section">
+                  <Contacts />
+                </div>
+                {!isMobile && (
+                  <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
+                    <AboutUsDesktop />
+                  </AboutUsPortal>
+                )}
+              </>
+            }
+          />
+          <Route path="/about-us" element={<AboutUs />} />
+          {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
+          <Route path="/login" element={<Login isDark={isDark} />} />
+          <Route path="/dashboard" element={<Dashboard isDark={isDark} />} />
+        </Routes>
+      </div>
+    </>
+  );
+}
+
+AppContent.propTypes = {
+  isDark: PropTypes.bool.isRequired,
+  setIsDark: PropTypes.func.isRequired,
+  scrollContainerRef: PropTypes.shape({
+    current: PropTypes.instanceOf(Element),
+  }).isRequired,
+};
+
+function App() {
+  const preference = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const [isDark, setIsDark] = useLocalStorage("isDark", preference);
+  const scrollContainerRef = useRef(null);
+
+  return (
     <Router>
       <ScrollToTopOnRouteChange />
       <div className={`app-wrapper ${isDark ? "dark-theme" : "light-theme"}`}>
-        <Cursor isDark={isDark} />
-        <Navbar
-          isDark={isDark}
-          setIsDark={setIsDark}
-          openAboutUs={openAboutUs}
-          closeAboutUs={closeAboutUs}
-          isMobile={isMobile}
-        />
-        <div className="App" ref={scrollContainerRef}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <div className="section">
-                    <Home />
-                  </div>
-                  <div className="section">
-                    <Services
-                      scrollTween={scrollTween}
-                      isMobile={isMobile}
-                      windowWidth={windowWidth}
-                      windowHeight={windowHeight}
-                    />
-                  </div>
-                  <div className="section">
-                    <DndProvider backend={HTML5Backend}>
-                      <Portfolio scrollTween={scrollTween} />
-                    </DndProvider>
-                  </div>
-                  <div className="section">
-                    <Contacts />
-                  </div>
-                  {!isMobile && (
-                    <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-                      <AboutUsDesktop />
-                    </AboutUsPortal>
-                  )}
-                </>
-              }
-            />
-            <Route path="/about-us" element={<AboutUs />} />
-            {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
-            <Route path="/login" element={<Login isDark={isDark} />} />
-            <Route path="/dashboard" element={<Dashboard isDark={isDark} />} />
-          </Routes>
-        </div>
+        <AppContent isDark={isDark} setIsDark={setIsDark} scrollContainerRef={scrollContainerRef} />
       </div>
     </Router>
   );
