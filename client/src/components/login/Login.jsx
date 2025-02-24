@@ -24,11 +24,8 @@ const Login = ({ isDark }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Invio richiesta a:", loginUrl);
-    console.log("Dati inviati:", { username, password });
     try {
       const response = await axios.post(loginUrl, { username, password });
-      console.log("Risposta ricevuta:", response.data);
       localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
     } catch (err) {

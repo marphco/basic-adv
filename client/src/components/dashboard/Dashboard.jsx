@@ -18,7 +18,6 @@ const Dashboard = ({ isDark }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Token trovato:", token);
     if (!token) {
       navigate("/login");
       return;
@@ -32,10 +31,7 @@ const Dashboard = ({ isDark }) => {
         const sortedRequests = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        console.log(
-          "Chiavi della prima richiesta:",
-          Object.keys(sortedRequests[0])
-        ); // Log per debug
+       
         setRequests(sortedRequests);
       } catch (err) {
         setError(
@@ -51,7 +47,6 @@ const Dashboard = ({ isDark }) => {
   }, [navigate, requestsUrl]);
 
   const handleRowClick = (request) => {
-    console.log("Richiesta selezionata:", request);
     setSelectedRequest(request);
   };
 
@@ -107,10 +102,7 @@ const Dashboard = ({ isDark }) => {
         {selectedRequest && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            {/* Aggiungi i console.log qui dentro */}
-            {console.log("selectedRequest.questions:", selectedRequest.questions)}
-            {console.log("Array.isArray(selectedRequest.questions):", Array.isArray(selectedRequest.questions))}
-            {console.log("selectedRequest.questions.length:", selectedRequest.questions ? selectedRequest.questions.length : "undefined")}
+            
               <button className="modal-close-btn" onClick={closeModal}>
                 Chiudi
               </button>
