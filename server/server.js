@@ -105,11 +105,15 @@ app.post("/api/login", (req, res) => {
 
 // Endpoint dashboard
 app.get("/api/getRequests", authenticateToken, async (req, res) => {
+  console.log("Endpoint /api/getRequests chiamato"); // Log di controllo
   try {
-    const logs = await ProjectLog.find().select("sessionId formData createdAt");
+    const logs = await ProjectLog.find()
+      .select("sessionId formData questions answers projectPlan createdAt")
+      .lean();
+    console.log("Dati inviati al frontend:", logs);
     res.json(logs);
   } catch (error) {
-    console.error("Errore getRequests:", error);
+    console.error("Errore:", error);
     res.status(500).json({ error: "Errore nel recupero delle richieste" });
   }
 });
