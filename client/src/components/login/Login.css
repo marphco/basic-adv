@@ -6,11 +6,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: inherit;
+    background-color: var(--background-color);
     position: absolute;
     top: 0;
     left: 0;
     z-index: 10;
+    transition: all 0.5s ease;
   }
   
   .login-page .dynamic-form {
@@ -19,25 +20,62 @@
     margin: 0 auto;
     padding: 20px;
   }
-
+  
   .submit-btn:disabled {
-    background-color: var(--foreground-color) !important; /* Mantiene il colore del tema */
+    background-color: var(--foreground-color) !important;
     cursor: not-allowed;
-    opacity: 0.7; /* Leggera opacità per stato disabilitato */
+    opacity: 0.7;
   }
   
   .spinner {
-    font-size: 1.2rem; /* Dimensione uniforme con il testo */
+    font-size: 1.2rem;
     color: white;
-    animation: spin 1s linear infinite; /* Rotazione infinita */
+    animation: spin 1s linear infinite;
+  }
+  
+  .login-form h2 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    text-align: center;
+    padding-bottom: 2vh;
+    color: var(--primary-text-color);
+    transition: all 0.5s ease;
+  }
+  
+  /* Gruppo del campo password */
+  .password-group {
+    position: relative;
+  }
+  
+  /* Posizionamento dell'icona */
+  .password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--primary-text-color); /* Colore di default */
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  
+  /* Stile dell'icona */
+  .eye-icon {
+    width: 18px;
+    height: 18px;
+  }
+  
+  /* Effetto hover */
+  .password-toggle-icon:hover {
+    color: var(--foreground-color); /* Colore al passaggio del mouse */
+    transform: translateY(-50%) scale(1.1); /* Leggero ingrandimento */
   }
   
   @media (max-width: 768px) {
     .login-page .dynamic-form {
       max-width: 90%;
     }
-    .dynamic-form h2 {
-        padding-left: 0;
+    .login-form h2 {
+      padding-left: 0;
     }
   }
   
