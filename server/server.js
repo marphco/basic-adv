@@ -13,12 +13,6 @@ const jwt = require("jsonwebtoken");
 
 dotenv.config();
 
-console.log("Variabili .env caricate:", {
-  SMTP_USERNAME: process.env.SMTP_USERNAME,
-  ADMIN_USERNAME: process.env.ADMIN_USERNAME,
-  JWT_SECRET: process.env.JWT_SECRET,
-});
-
 const app = express();
 
 // Configurazione CORS
@@ -90,27 +84,21 @@ const authenticateToken = (req, res, next) => {
 // Endpoint login
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  console.log("Richiesta login:", { username, password });
-  console.log("Confronto con:", { expectedUsername: process.env.ADMIN_USERNAME });
 
   if (username !== process.env.ADMIN_USERNAME || password !== process.env.ADMIN_PASSWORD) {
-    console.log("Credenziali non valide");
     return res.status(401).json({ error: "Credenziali non valide" });
   }
 
   const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: "1h" });
-  console.log("Login riuscito, token generato");
   res.json({ token });
 });
 
 // Endpoint dashboard
 app.get("/api/getRequests", authenticateToken, async (req, res) => {
-  console.log("Endpoint /api/getRequests chiamato"); // Log di controllo
   try {
     const logs = await ProjectLog.find()
       .select("sessionId formData questions answers projectPlan createdAt")
       .lean();
-    console.log("Dati inviati al frontend:", logs);
     res.json(logs);
   } catch (error) {
     console.error("Errore:", error);
