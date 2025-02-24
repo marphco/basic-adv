@@ -1,66 +1,138 @@
 const mongoose = require('mongoose');
 
+// Schema per il modello ProjectLog
 const ProjectLogSchema = new mongoose.Schema({
-  sessionId: { type: String, required: true, unique: true },
-  formData: {
-    brandName: { type: String, required: false, default: "" },
-    projectType: { type: String, required: true },
-    businessField: { type: String, required: true },
-    otherBusinessField: { type: String, default: "" },
-    projectObjectives: { type: String, default: "" },
-    contactInfo: {
-      name: { type: String, required: false },
-      email: { type: String, required: false },
-      phone: { type: String, default: "" },
-    },
-    currentLogo: { type: String },
-    budget: { type: String, required: true, default: "" }, 
+  // ID univoco della sessione
+  sessionId: {
+    type: String,
+    required: true,
+    unique: true,
   },
+
+  // Dati del form compilato dall'utente
+  formData: {
+    // Nome del brand (opzionale)
+    brandName: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    // Tipo di progetto (obbligatorio)
+    projectType: {
+      type: String,
+      required: true,
+    },
+    // Settore aziendale (obbligatorio)
+    businessField: {
+      type: String,
+      required: true,
+    },
+    // Altri dettagli sul settore (opzionale)
+    otherBusinessField: {
+      type: String,
+      default: "",
+    },
+    // Obiettivi del progetto (opzionale)
+    projectObjectives: {
+      type: String,
+      default: "",
+    },
+    // Informazioni di contatto
+    contactInfo: {
+      name: {
+        type: String,
+        required: false,
+      },
+      email: {
+        type: String,
+        required: false,
+      },
+      phone: {
+        type: String,
+        default: "",
+      },
+    },
+    // Path del logo attuale (opzionale)
+    currentLogo: {
+      type: String,
+    },
+    // Budget del progetto (obbligatorio, ma con default vuoto)
+    budget: {
+      type: String,
+      required: true,
+      default: "",
+    },
+  },
+
+  // Array di domande generate per il progetto
   questions: {
     type: Array,
     required: true,
   },
+
+  // Map per le risposte dell'utente (chiave: domanda, valore: risposta)
   answers: {
     type: Map,
-    of: mongoose.Schema.Types.Mixed,
+    of: mongoose.Schema.Types.Mixed, // Permette tipi misti per le risposte
     default: {},
     required: true,
   },
-  projectPlan: { type: String },
+
+  // Piano d'azione generato per il progetto (opzionale)
+  projectPlan: {
+    type: String,
+  },
+
+  // Contatore totale delle domande generate
   questionCount: {
     type: Number,
     default: 0,
   },
+
+  // Data di creazione del log
   createdAt: {
     type: Date,
     default: Date.now,
   },
+
+  // Coda dei servizi selezionati dall'utente
   servicesQueue: {
     type: [String],
     required: true,
   },
+
+  // Indice del servizio corrente nella coda
   currentServiceIndex: {
     type: Number,
     default: 0,
   },
+
+  // Map per il conteggio delle domande per ogni servizio
   serviceQuestionCount: {
     type: Map,
     of: Number,
     default: {},
   },
+
+  // Numero massimo di domande per servizio
   maxQuestionsPerService: {
     type: Number,
     required: true,
   },
+
+  // Numero totale di domande previste per il progetto
   totalQuestions: {
     type: Number,
     required: true,
   },
+
+  // Map per le domande già poste per ogni servizio
   askedQuestions: {
     type: Map,
-    of: [String],
+    of: [String], // Array di stringhe per ogni servizio
     default: {},
   },
 });
 
+// Esporta il modello Mongoose
 module.exports = mongoose.model('ProjectLog', ProjectLogSchema);
