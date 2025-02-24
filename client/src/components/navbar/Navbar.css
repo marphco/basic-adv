@@ -75,6 +75,11 @@
     background-color: white;
 }
 
+.logo-icon {
+    width: 25px; /* Dimensione dell'icona, modificala se necessario */
+    height: 25px;
+  }
+
 @media screen and (max-width: 768px) {
     .navbar-menu {
         display: none;

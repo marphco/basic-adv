@@ -4,21 +4,23 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "../dynamic-form/DynamicForm.css";
 import "./Login.css";
+import { PiEyeClosedBold } from "react-icons/pi"; // Occhio chiuso
+import { RxEyeOpen } from "react-icons/rx"; // Occhio aperto
 
 const Login = ({ isDark }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/$/, "");
   const loginUrl = `${API_URL}/api/login`;
 
   useEffect(() => {
-    // Blocca lo scroll orizzontale solo su questa pagina
     document.body.style.overflowX = "hidden";
     return () => {
-      document.body.style.overflowX = "auto"; // Ripristina esplicitamente per la homepage
+      document.body.style.overflowX = "auto";
     };
   }, []);
 
@@ -36,7 +38,7 @@ const Login = ({ isDark }) => {
 
   return (
     <div className="login-page">
-      <div className={`dynamic-form ${isDark ? "dark-theme" : "light-theme"}`}>
+      <div className={`login-form ${isDark ? "dark-theme" : "light-theme"}`}>
         <h2>Login Admin</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -48,14 +50,24 @@ const Login = ({ isDark }) => {
               className="form-input"
             />
           </div>
-          <div className="form-group">
+          <div className="form-group password-group">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="form-input"
             />
+            <span
+              className="password-toggle-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <RxEyeOpen className="eye-icon" />
+              ) : (
+                <PiEyeClosedBold className="eye-icon" />
+              )}
+            </span>
           </div>
           {error && <p className="error-message">{error}</p>}
           <div className="form-actions">
