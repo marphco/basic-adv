@@ -5,7 +5,7 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import LogoIcon from '../../../public/favicon.svg'; // Importa l'icona
+import LogoIcon from '../../assets/icon.svg'; // Importa l'icona
 
 const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

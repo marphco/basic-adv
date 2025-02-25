@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "../dynamic-form/DynamicForm.css";
 import "./Login.css";
-import { PiEyeClosedBold } from "react-icons/pi"; // Occhio chiuso
-import { RxEyeOpen } from "react-icons/rx"; // Occhio aperto
+import { PiEyeClosedBold } from "react-icons/pi";
+import { RxEyeOpen } from "react-icons/rx";
 
 const Login = ({ isDark }) => {
   const [username, setUsername] = useState("");
@@ -18,11 +18,19 @@ const Login = ({ isDark }) => {
   const loginUrl = `${API_URL}/api/login`;
 
   useEffect(() => {
+    // Blocca lo scroll orizzontale
     document.body.style.overflowX = "hidden";
+
+    // Controlla se l'utente è già loggato
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard"); // Reindirizza a dashboard se il token esiste
+    }
+
     return () => {
       document.body.style.overflowX = "auto";
     };
-  }, []);
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
