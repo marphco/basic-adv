@@ -1,27 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Dashboard.css";
+import SearchBar from "./SearchBar";
+
+// Nuovo componente SearchWrapper per isolare lo stato della searchbar
+const SearchWrapper = ({ onSearch }) => {
+  // eslint-disable-next-line no-unused-vars
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Gestisce l'input e chiama la funzione onSearch del genitore
+  const handleSearch = useCallback((term) => {
+    setSearchTerm(term);
+    onSearch(term);
+  }, [onSearch]);
+
+  return <SearchBar onSearch={handleSearch} />;
+};
+
+SearchWrapper.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+};
 
 const Dashboard = ({ isDark }) => {
   const [requests, setRequests] = useState([]);
-  const [error, setError] = useState("");
-  const [selectedSection, setSelectedSection] = useState("home"); // Stato per la sezione corrente
-  const [selectedRequest, setSelectedRequest] = useState(null); // Stato per la richiesta selezionata
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Stato per sidebar mobile
+  const [selectedSection, setSelectedSection] = useState("home");
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // Stato gestito dal genitore
   const navigate = useNavigate();
-
-  const [filters, setFilters] = useState({ status: "all", dateRange: "all", service: "all" });
-
-  const filteredRequests = requests.filter((request) => {
-    if (filters.status !== "all" && (filters.status === "completed" ? !request.projectPlan : request.projectPlan)) {
-      return false;
-    }
-    // Aggiungi ulteriori condizioni per dateRange e service
-    return true;
-  });
-
 
   const API_URL = (
     import.meta.env.VITE_API_URL || "http://localhost:8080"
@@ -45,9 +53,9 @@ const Dashboard = ({ isDark }) => {
         );
         setRequests(sortedRequests);
       } catch (err) {
-        setError(
-          "Errore nel caricamento delle richieste: " +
-            (err.response?.data?.error || err.message)
+        console.error(
+          "Errore nel caricamento delle richieste: ",
+          err.response?.data?.error || err.message
         );
         localStorage.removeItem("token");
         navigate("/login");
@@ -64,31 +72,60 @@ const Dashboard = ({ isDark }) => {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Componente Home con statistiche rapide (lo implementeremo nella Fase 2)
+  // Stabilizza la funzione per aggiornare searchTerm
+  const handleSearch = useCallback((term) => setSearchTerm(term), []);
+
+  // Funzione per filtrare le richieste in base alla sezione e al termine di ricerca
+  const getFilteredRequests = () => {
+    let filtered = requests;
+    if (selectedSection === "completed") {
+      filtered = requests.filter((req) => req.projectPlan);
+    } else if (selectedSection === "abandoned") {
+      filtered = requests.filter((req) => !req.projectPlan);
+    }
+    if (searchTerm) {
+      filtered = filtered.filter((req) =>
+        req.formData.contactInfo.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+    return filtered;
+  };
+
   const DashboardHome = () => {
     const totalRequests = requests.length;
     const completedRequests = requests.filter((req) => req.projectPlan).length;
     const abandonedRequests = totalRequests - completedRequests;
-  
+
     return (
       <div className="dashboard-home">
         <div
           className="stat-card"
-          onClick={() => setSelectedSection("all")}
+          onClick={() => {
+            setSelectedSection("all");
+            setSelectedRequest(null);
+          }}
         >
           <h3>Numero Richieste</h3>
           <p>{totalRequests}</p>
         </div>
         <div
           className="stat-card"
-          onClick={() => setSelectedSection("completed")}
+          onClick={() => {
+            setSelectedSection("completed");
+            setSelectedRequest(null);
+          }}
         >
           <h3>Completate</h3>
           <p>{completedRequests}</p>
         </div>
         <div
           className="stat-card"
-          onClick={() => setSelectedSection("abandoned")}
+          onClick={() => {
+            setSelectedSection("abandoned");
+            setSelectedRequest(null);
+          }}
         >
           <h3>Abbandonate</h3>
           <p>{abandonedRequests}</p>
@@ -97,8 +134,7 @@ const Dashboard = ({ isDark }) => {
     );
   };
 
-  // Componente Lista Richieste (lo espanderemo nella Fase 3)
-  const RequestList = ({ filteredRequests }) => (
+  const RequestList = () => (
     <div className="requests-table">
       <table>
         <thead>
@@ -107,11 +143,11 @@ const Dashboard = ({ isDark }) => {
             <th>Email</th>
             <th>Data</th>
             <th>Stato</th>
-            <th>Azioni</th>
+            <th>.Status</th>
           </tr>
         </thead>
         <tbody>
-          {filteredRequests.map((req) => (
+          {getFilteredRequests().map((req) => (
             <tr key={req.sessionId}>
               <td>{req.formData.contactInfo.name}</td>
               <td>{req.formData.contactInfo.email}</td>
@@ -138,23 +174,20 @@ const Dashboard = ({ isDark }) => {
     </div>
   );
 
-  
-
   return (
     <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
-      {/* Pulsante per aprire la sidebar su mobile */}
       <button className="sidebar-toggle" onClick={toggleSidebar}>
         ☰
       </button>
 
-      {/* Sidebar */}
       <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <button className="sidebar-close" onClick={toggleSidebar}>
           ×
         </button>
         <ul>
           <li
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               setSelectedSection("home");
               setSelectedRequest(null);
               setIsSidebarOpen(false);
@@ -163,7 +196,8 @@ const Dashboard = ({ isDark }) => {
             Home
           </li>
           <li
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               setSelectedSection("all");
               setSelectedRequest(null);
               setIsSidebarOpen(false);
@@ -172,7 +206,8 @@ const Dashboard = ({ isDark }) => {
             Tutte le Richieste
           </li>
           <li
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               setSelectedSection("completed");
               setSelectedRequest(null);
               setIsSidebarOpen(false);
@@ -181,7 +216,8 @@ const Dashboard = ({ isDark }) => {
             Completate
           </li>
           <li
-            onClick={() => {
+            onClick={(event) => {
+              event.stopPropagation();
               setSelectedSection("abandoned");
               setSelectedRequest(null);
               setIsSidebarOpen(false);
@@ -193,24 +229,20 @@ const Dashboard = ({ isDark }) => {
         </ul>
       </div>
 
-      {/* Area Principale */}
       <div className="main-area">
+        {/* Usa SearchWrapper invece di SearchBar direttamente */}
+        {selectedSection !== "home" && <SearchWrapper onSearch={handleSearch} />}
         {selectedRequest ? (
           <div className="request-details">
             <h2>{selectedRequest.formData.contactInfo.name}</h2>
             <button onClick={() => setSelectedRequest(null)}>Chiudi</button>
-            {/* Qui aggiungeremo i dettagli nella Fase 4 */}
             <p>Dettagli da implementare...</p>
           </div>
         ) : selectedSection === "home" ? (
           <DashboardHome />
-        ) : selectedSection === "all" ? (
-          <RequestList filteredRequests={requests} />
-        ) : selectedSection === "completed" ? (
-          <RequestList filteredRequests={requests.filter((req) => req.projectPlan)} />
-        ) : selectedSection === "abandoned" ? (
-          <RequestList filteredRequests={requests.filter((req) => !req.projectPlan)} />
-        ) : null}
+        ) : (
+          <RequestList />
+        )}
       </div>
     </div>
   );
