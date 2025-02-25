@@ -33,6 +33,7 @@ const Dashboard = ({ isDark }) => {
         const sortedRequests = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
+        console.log("Richieste ricevute:", sortedRequests); // Log per tutte le richieste
         setRequests(sortedRequests);
       } catch (err) {
         console.error(
@@ -127,9 +128,16 @@ const Dashboard = ({ isDark }) => {
         <tbody>
           {getFilteredRequests().map((req) => (
             <tr key={req.sessionId}>
-              <td>{req.formData.contactInfo.name}</td>
+              <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
               <td>{req.formData.contactInfo.email}</td>
-              <td>{new Date(req.createdAt.$date).toLocaleDateString()}</td>
+              <td>
+                {req.createdAt &&
+                (req.createdAt.$date || typeof req.createdAt === "string")
+                  ? new Date(
+                      req.createdAt.$date || req.createdAt
+                    ).toLocaleDateString()
+                  : "Data non disponibile"}
+              </td>
               <td>
                 {req.projectPlan ? (
                   <span className="status-icon completed">✅ Completata</span>
@@ -155,16 +163,23 @@ const Dashboard = ({ isDark }) => {
   const RequestDetails = ({ request }) => {
     const [activeTab, setActiveTab] = useState("info");
 
+    console.log("Dati richiesta ricevuti:", request); // Log per debug
+
     return (
       <div className="request-details">
         <div className="details-sidebar">
-          <button onClick={() => setSelectedRequest(null)} className="close-btn">Chiudi</button>
+          <button
+            onClick={() => setSelectedRequest(null)}
+            className="close-btn"
+          >
+            Chiudi
+          </button>
           <ul>
             <li
               className={activeTab === "info" ? "active" : ""}
               onClick={() => setActiveTab("info")}
             >
-              {request.formData.contactInfo.name}
+              {request.formData.contactInfo.name || "Utente Sconosciuto"}
             </li>
             <li
               className={activeTab === "services" ? "active" : ""}
@@ -195,22 +210,56 @@ const Dashboard = ({ isDark }) => {
         <div className="details-content">
           {activeTab === "info" && (
             <div>
-              <h2>{request.formData.contactInfo.name}</h2>
-              <p><strong>Email:</strong> {request.formData.contactInfo.email}</p>
-              <p><strong>Telefono:</strong> {request.formData.contactInfo.phone}</p>
-              <p><strong>Budget:</strong> {request.formData.budget}</p>
-              <p><strong>Data:</strong> {new Date(request.createdAt.$date).toLocaleDateString()}</p>
-              <p><strong>Stato:</strong> {request.projectPlan ? "Completata" : "In attesa"}</p>
+              <h2>
+                {request.formData.contactInfo.name || "Utente Sconosciuto"}
+              </h2>
+              <p>
+                <strong>Email:</strong>{" "}
+                {request.formData.contactInfo.email || "Non fornito"}
+              </p>
+              <p>
+                <strong>Telefono:</strong>{" "}
+                {request.formData.contactInfo.phone || "Non fornito"}
+              </p>
+              <p>
+                <strong>Budget:</strong>{" "}
+                {request.formData.budget === "unknown"
+                  ? "Non lo so"
+                  : request.formData.budget}
+              </p>
+              <p>
+                <strong>Data:</strong>{" "}
+                {request.createdAt &&
+                (request.createdAt.$date ||
+                  typeof request.createdAt === "string")
+                  ? new Date(
+                      request.createdAt.$date || request.createdAt
+                    ).toLocaleDateString()
+                  : "Data non disponibile"}
+              </p>
+              <p>
+                <strong>Stato:</strong>{" "}
+                {request.projectPlan ? "Completata" : "In attesa"}
+              </p>
             </div>
           )}
           {activeTab === "services" && (
             <div>
               <h3>Servizi Richiesti</h3>
-              <ul>
-                {request.servicesQueue.map((service, index) => (
-                  <li key={index}>{service}</li>
-                ))}
-              </ul>
+              {console.log("servicesQueue:", request.servicesQueue)}
+              {request.servicesQueue && request.servicesQueue.length > 0 ? (
+                <ul>
+                  {Array.isArray(request.servicesQueue) ? (
+                    request.servicesQueue.map((service, index) => (
+                      <li key={index}>{service}</li>
+                    ))
+                  ) : (
+                    <li>{String(request.servicesQueue)}</li>
+                  )}
+                </ul>
+              ) : (
+                <p>Nessun servizio richiesto disponibile</p>
+              )}
             </div>
           )}
           {activeTab === "questions" && (
@@ -218,14 +267,18 @@ const Dashboard = ({ isDark }) => {
               <h3>Domande e Risposte</h3>
               {request.questions.map((q, index) => (
                 <div key={index} className="question-answer">
-                  <p><strong>{q.question}</strong></p>
+                  <p>
+                    <strong>{q.question}</strong>
+                  </p>
                   {q.options.length > 0 ? (
                     <ul>
                       {q.options.map((option, optIndex) => (
                         <li
                           key={optIndex}
                           className={
-                            request.answers[q.question]?.options?.includes(option)
+                            request.answers[q.question]?.options?.includes(
+                              option
+                            )
                               ? "selected"
                               : ""
                           }
@@ -235,7 +288,9 @@ const Dashboard = ({ isDark }) => {
                       ))}
                     </ul>
                   ) : (
-                    <p>{request.answers[q.question]?.input || "Nessuna risposta"}</p>
+                    <p>
+                      {request.answers[q.question]?.input || "Nessuna risposta"}
+                    </p>
                   )}
                 </div>
               ))}
@@ -251,7 +306,9 @@ const Dashboard = ({ isDark }) => {
             <div>
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
-                <a href={request.formData.currentLogo} download>Scarica Logo Attuale</a>
+                <a href={request.formData.currentLogo} download>
+                  Scarica Logo Attuale
+                </a>
               ) : (
                 <p>Nessun allegato disponibile</p>
               )}

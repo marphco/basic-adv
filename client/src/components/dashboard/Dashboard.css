@@ -12,7 +12,7 @@
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  padding-top: 10vh; /* Stesso padding top della dashboard */
+  padding-top: 10vh;
 }
 
 .sidebar ul {
@@ -124,10 +124,16 @@ tr:hover {
 .details-sidebar li {
   padding: 10px;
   cursor: pointer;
+  color: #333;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 5px;
 }
 
 .details-sidebar li.active {
-  background: #ddd;
+  background: #007bff;
+  color: #fff;
   font-weight: bold;
 }
 
