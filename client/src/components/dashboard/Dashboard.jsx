@@ -1,34 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Dashboard.css";
 import SearchBar from "./SearchBar";
 
-// Nuovo componente SearchWrapper per isolare lo stato della searchbar
-const SearchWrapper = ({ onSearch }) => {
-  // eslint-disable-next-line no-unused-vars
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Gestisce l'input e chiama la funzione onSearch del genitore
-  const handleSearch = useCallback((term) => {
-    setSearchTerm(term);
-    onSearch(term);
-  }, [onSearch]);
-
-  return <SearchBar onSearch={handleSearch} />;
-};
-
-SearchWrapper.propTypes = {
-  onSearch: PropTypes.func.isRequired,
-};
-
 const Dashboard = ({ isDark }) => {
   const [requests, setRequests] = useState([]);
   const [selectedSection, setSelectedSection] = useState("home");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // Stato gestito dal genitore
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   const API_URL = (
@@ -72,10 +54,6 @@ const Dashboard = ({ isDark }) => {
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Stabilizza la funzione per aggiornare searchTerm
-  const handleSearch = useCallback((term) => setSearchTerm(term), []);
-
-  // Funzione per filtrare le richieste in base alla sezione e al termine di ricerca
   const getFilteredRequests = () => {
     let filtered = requests;
     if (selectedSection === "completed") {
@@ -143,7 +121,7 @@ const Dashboard = ({ isDark }) => {
             <th>Email</th>
             <th>Data</th>
             <th>Stato</th>
-            <th>.Status</th>
+            <th>Azioni</th>
           </tr>
         </thead>
         <tbody>
@@ -173,6 +151,120 @@ const Dashboard = ({ isDark }) => {
       </table>
     </div>
   );
+
+  const RequestDetails = ({ request }) => {
+    const [activeTab, setActiveTab] = useState("info");
+
+    return (
+      <div className="request-details">
+        <div className="details-sidebar">
+          <button onClick={() => setSelectedRequest(null)} className="close-btn">Chiudi</button>
+          <ul>
+            <li
+              className={activeTab === "info" ? "active" : ""}
+              onClick={() => setActiveTab("info")}
+            >
+              {request.formData.contactInfo.name}
+            </li>
+            <li
+              className={activeTab === "services" ? "active" : ""}
+              onClick={() => setActiveTab("services")}
+            >
+              Servizi Richiesti
+            </li>
+            <li
+              className={activeTab === "questions" ? "active" : ""}
+              onClick={() => setActiveTab("questions")}
+            >
+              Domande
+            </li>
+            <li
+              className={activeTab === "plan" ? "active" : ""}
+              onClick={() => setActiveTab("plan")}
+            >
+              Piano d’Azione
+            </li>
+            <li
+              className={activeTab === "attachments" ? "active" : ""}
+              onClick={() => setActiveTab("attachments")}
+            >
+              Allegati
+            </li>
+          </ul>
+        </div>
+        <div className="details-content">
+          {activeTab === "info" && (
+            <div>
+              <h2>{request.formData.contactInfo.name}</h2>
+              <p><strong>Email:</strong> {request.formData.contactInfo.email}</p>
+              <p><strong>Telefono:</strong> {request.formData.contactInfo.phone}</p>
+              <p><strong>Budget:</strong> {request.formData.budget}</p>
+              <p><strong>Data:</strong> {new Date(request.createdAt.$date).toLocaleDateString()}</p>
+              <p><strong>Stato:</strong> {request.projectPlan ? "Completata" : "In attesa"}</p>
+            </div>
+          )}
+          {activeTab === "services" && (
+            <div>
+              <h3>Servizi Richiesti</h3>
+              <ul>
+                {request.servicesQueue.map((service, index) => (
+                  <li key={index}>{service}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {activeTab === "questions" && (
+            <div>
+              <h3>Domande e Risposte</h3>
+              {request.questions.map((q, index) => (
+                <div key={index} className="question-answer">
+                  <p><strong>{q.question}</strong></p>
+                  {q.options.length > 0 ? (
+                    <ul>
+                      {q.options.map((option, optIndex) => (
+                        <li
+                          key={optIndex}
+                          className={
+                            request.answers[q.question]?.options?.includes(option)
+                              ? "selected"
+                              : ""
+                          }
+                        >
+                          {option}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>{request.answers[q.question]?.input || "Nessuna risposta"}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {activeTab === "plan" && (
+            <div>
+              <h3>Piano d’Azione</h3>
+              <pre>{request.projectPlan || "Non ancora generato"}</pre>
+            </div>
+          )}
+          {activeTab === "attachments" && (
+            <div>
+              <h3>Allegati</h3>
+              {request.formData.currentLogo ? (
+                <a href={request.formData.currentLogo} download>Scarica Logo Attuale</a>
+              ) : (
+                <p>Nessun allegato disponibile</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  RequestDetails.propTypes = {
+    request: PropTypes.object.isRequired,
+  };
 
   return (
     <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
@@ -230,14 +322,9 @@ const Dashboard = ({ isDark }) => {
       </div>
 
       <div className="main-area">
-        {/* Usa SearchWrapper invece di SearchBar direttamente */}
-        {selectedSection !== "home" && <SearchWrapper onSearch={handleSearch} />}
+        {selectedSection !== "home" && <SearchBar onSearch={setSearchTerm} />}
         {selectedRequest ? (
-          <div className="request-details">
-            <h2>{selectedRequest.formData.contactInfo.name}</h2>
-            <button onClick={() => setSelectedRequest(null)}>Chiudi</button>
-            <p>Dettagli da implementare...</p>
-          </div>
+          <RequestDetails request={selectedRequest} />
         ) : selectedSection === "home" ? (
           <DashboardHome />
         ) : (
