@@ -31,7 +31,6 @@ const Dashboard = ({ isDark }) => {
         const sortedRequests = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-       
         setRequests(sortedRequests);
       } catch (err) {
         setError(
@@ -60,153 +59,57 @@ const Dashboard = ({ isDark }) => {
   };
 
   return (
-    <div className="dashboard-page">
-      <div
-        className={`dashboard-container ${
-          isDark ? "dark-theme" : "light-theme"
-        }`}
-      >
-        <h2>Dashboard Richieste</h2>
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
-        {error && <p className="error-message">{error}</p>}
-        <div className="requests-list">
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Stato</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((req) => (
-                <tr
-                  key={req.sessionId}
-                  onClick={() => handleRowClick(req)}
-                  className="request-row"
-                >
-                  <td>{new Date(req.createdAt).toLocaleDateString()}</td>
-                  <td>{req.formData.contactInfo.name || "N/D"}</td>
-                  <td>{req.formData.contactInfo.email || "N/D"}</td>
-                  <td>{req.projectPlan ? "Completata" : "In attesa"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <div className="dashboard">
+      {/* Lista delle Richieste */}
+      <div className="requests-list">
+        {requests.map(req => (
+          <div
+            key={req.sessionId}
+            className={`request-item ${selectedRequest?.sessionId === req.sessionId ? 'selected' : ''}`}
+            onClick={() => setSelectedRequest(req)}
+          >
+            <p>{new Date(req.createdAt.$date).toLocaleDateString()}</p>
+            <p>{req.formData.contactInfo.name}</p>
+            <span>{req.projectPlan ? "✅" : "⏳"}</span>
+          </div>
+        ))}
+      </div>
 
-        {/* Modale per i dettagli */}
-        {selectedRequest && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            
-              <button className="modal-close-btn" onClick={closeModal}>
-                Chiudi
-              </button>
-              <h3>Dettagli Richiesta</h3>
-              <p>
-                <strong>Session ID:</strong>{" "}
-                {selectedRequest.sessionId || "N/D"}
-              </p>
+      {/* Dettagli della Richiesta */}
+      {selectedRequest && (
+        <div className="request-details">
+          <h2>{selectedRequest.formData.contactInfo.name}</h2>
+          <p>Email: {selectedRequest.formData.contactInfo.email}</p>
+          <p>Telefono: {selectedRequest.formData.contactInfo.phone}</p>
+          <p>Budget: {selectedRequest.formData.budget}</p>
+          <p>Data: {new Date(selectedRequest.createdAt.$date).toLocaleDateString()}</p>
+          <p>Stato: {selectedRequest.projectPlan ? "Completata" : "In attesa"}</p>
 
-              <h4>Informazioni di contatto</h4>
-              <ul>
-                <li>
-                  <strong>Nome:</strong>{" "}
-                  {selectedRequest.formData?.contactInfo?.name || "N/D"}
-                </li>
-                <li>
-                  <strong>Email:</strong>{" "}
-                  {selectedRequest.formData?.contactInfo?.email || "N/D"}
-                </li>
-                <li>
-                  <strong>Telefono:</strong>{" "}
-                  {selectedRequest.formData?.contactInfo?.phone || "N/D"}
-                </li>
-              </ul>
-
-              <h4>Dati del progetto</h4>
-              <ul>
-                <li>
-                  <strong>Brand:</strong>{" "}
-                  {selectedRequest.formData?.brandName || "N/D"}
-                </li>
-                <li>
-                  <strong>Tipo:</strong>{" "}
-                  {selectedRequest.formData?.projectType || "N/D"}
-                </li>
-                <li>
-                  <strong>Settore:</strong>{" "}
-                  {selectedRequest.formData?.businessField || "N/D"}
-                </li>
-                {selectedRequest.formData?.currentLogo && (
-                  <li>
-                    <strong>Logo attuale:</strong>{" "}
-                    <a href={selectedRequest.formData.currentLogo} download>
-                      Scarica
-                    </a>
-                  </li>
-                )}
-              </ul>
-
-              <h4>Domande e Risposte</h4>
-              <pre>{JSON.stringify(selectedRequest.questions, null, 2)}</pre>
-              <pre>{JSON.stringify(selectedRequest.answers, null, 2)}</pre>
-              {selectedRequest.questions &&
-              Array.isArray(selectedRequest.questions) &&
-              selectedRequest.questions.length > 0 ? (
+          <h3>Domande e Risposte</h3>
+          {selectedRequest.questions.map((q, index) => (
+            <div key={index} className="question-answer">
+              <p><strong>{q.question}</strong></p>
+              {q.options.length > 0 ? (
                 <ul>
-                  {selectedRequest.questions.map((q, index) => {
-                    const answer =
-                      selectedRequest.answers &&
-                      selectedRequest.answers[q.question];
-                    return (
-                      <li key={index}>
-                        <strong>{q.question}</strong>
-                        {q.options && Array.isArray(q.options) ? (
-                          <ul>
-                            {q.options.map((option, optIndex) => (
-                              <li
-                                key={optIndex}
-                                className={
-                                  answer &&
-                                  answer.options &&
-                                  answer.options.includes(option)
-                                    ? "selected"
-                                    : ""
-                                }
-                              >
-                                {option}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p>
-                            Risposta:{" "}
-                            {answer && answer.input
-                              ? answer.input
-                              : "Nessuna risposta"}
-                          </p>
-                        )}
-                      </li>
-                    );
-                  })}
+                  {q.options.map((option, optIndex) => (
+                    <li
+                      key={optIndex}
+                      className={selectedRequest.answers[q.question]?.options?.includes(option) ? 'selected' : ''}
+                    >
+                      {option}
+                    </li>
+                  ))}
                 </ul>
               ) : (
-                <p>Nessuna domanda disponibile</p>
+                <p>{selectedRequest.answers[q.question]?.input || "Nessuna risposta"}</p>
               )}
-
-              <h4>Piano d’azione</h4>
-              <pre>{JSON.stringify(selectedRequest.projectPlan, null, 2)}</pre>
-
-              <pre>{selectedRequest.projectPlan || "Non ancora generato"}</pre>
             </div>
-          </div>
-        )}
-      </div>
+          ))}
+
+          <h3>Piano d'Azione</h3>
+          <p>{selectedRequest.projectPlan || "Non ancora generato"}</p>
+        </div>
+      )}
     </div>
   );
 };

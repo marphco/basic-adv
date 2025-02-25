@@ -28,6 +28,7 @@ ScrollTrigger.normalizeScroll(true);
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isDashboard = location.pathname === "/dashboard";
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
@@ -104,8 +105,10 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         closeAboutUs={closeAboutUs}
         isMobile={isMobile}
       />
-      <div className="App" ref={scrollContainerRef}>
-        <Routes>
+<div
+        className={`App ${isDashboard ? "dashboard-layout" : ""}`}
+        ref={scrollContainerRef}
+      >        <Routes>
           <Route
             path="/"
             element={
