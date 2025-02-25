@@ -153,7 +153,12 @@ if (!global.serverRunning) {
     }
   });
 
+  // Gestione della chiusura del server
+  let isClosing = false; // Flag per evitare chiamate multiple
   process.on("SIGINT", async () => {
+    if (isClosing) return; // Esci se già in chiusura
+    isClosing = true;
+
     console.log("🔴 Chiusura server...");
     server.close(() => {
       console.log("✅ Server chiuso");
