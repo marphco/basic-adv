@@ -12,6 +12,17 @@ const Dashboard = ({ isDark }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Stato per sidebar mobile
   const navigate = useNavigate();
 
+  const [filters, setFilters] = useState({ status: "all", dateRange: "all", service: "all" });
+
+  const filteredRequests = requests.filter((request) => {
+    if (filters.status !== "all" && (filters.status === "completed" ? !request.projectPlan : request.projectPlan)) {
+      return false;
+    }
+    // Aggiungi ulteriori condizioni per dateRange e service
+    return true;
+  });
+
+
   const API_URL = (
     import.meta.env.VITE_API_URL || "http://localhost:8080"
   ).replace(/\/$/, "");
@@ -88,18 +99,42 @@ const Dashboard = ({ isDark }) => {
 
   // Componente Lista Richieste (lo espanderemo nella Fase 3)
   const RequestList = ({ filteredRequests }) => (
-    <div className="requests-list">
-      {filteredRequests.map((req) => (
-        <div
-          key={req.sessionId}
-          className="request-item"
-          onClick={() => setSelectedRequest(req)}
-        >
-          <p>{new Date(req.createdAt.$date).toLocaleDateString()}</p>
-          <p>{req.formData.contactInfo.name}</p>
-          <span>{req.projectPlan ? "✅" : "⏳"}</span>
-        </div>
-      ))}
+    <div className="requests-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Data</th>
+            <th>Stato</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredRequests.map((req) => (
+            <tr key={req.sessionId}>
+              <td>{req.formData.contactInfo.name}</td>
+              <td>{req.formData.contactInfo.email}</td>
+              <td>{new Date(req.createdAt.$date).toLocaleDateString()}</td>
+              <td>
+                {req.projectPlan ? (
+                  <span className="status-icon completed">✅ Completata</span>
+                ) : (
+                  <span className="status-icon pending">⏳ In attesa</span>
+                )}
+              </td>
+              <td>
+                <button
+                  className="details-btn"
+                  onClick={() => setSelectedRequest(req)}
+                >
+                  Dettagli
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 
