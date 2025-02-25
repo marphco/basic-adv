@@ -99,7 +99,6 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
     const logs = await ProjectLog.find()
       .select("sessionId formData questions answers projectPlan createdAt servicesQueue")
       .lean();
-    console.log("Dati inviati al frontend:", logs); // Aggiungi questo log
     res.json(logs);
   } catch (error) {
     console.error("Errore:", error);

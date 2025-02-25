@@ -33,7 +33,6 @@ const Dashboard = ({ isDark }) => {
         const sortedRequests = response.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        console.log("Richieste ricevute:", sortedRequests); // Log per tutte le richieste
         setRequests(sortedRequests);
       } catch (err) {
         console.error(
@@ -163,7 +162,6 @@ const Dashboard = ({ isDark }) => {
   const RequestDetails = ({ request }) => {
     const [activeTab, setActiveTab] = useState("info");
 
-    console.log("Dati richiesta ricevuti:", request); // Log per debug
 
     return (
       <div className="request-details">
@@ -246,7 +244,6 @@ const Dashboard = ({ isDark }) => {
           {activeTab === "services" && (
             <div>
               <h3>Servizi Richiesti</h3>
-              {console.log("servicesQueue:", request.servicesQueue)}
               {request.servicesQueue && request.servicesQueue.length > 0 ? (
                 <ul>
                   {Array.isArray(request.servicesQueue) ? (
