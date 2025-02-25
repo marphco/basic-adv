@@ -6,27 +6,25 @@ import "../dynamic-form/DynamicForm.css";
 import "./Login.css";
 import { PiEyeClosedBold } from "react-icons/pi";
 import { RxEyeOpen } from "react-icons/rx";
+import { FaExclamationCircle, FaSpinner } from "react-icons/fa"; // Importiamo le icone necessarie
 
 const Login = ({ isDark }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false); // Stato per lo spinner
   const navigate = useNavigate();
 
   const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/$/, "");
   const loginUrl = `${API_URL}/api/login`;
 
   useEffect(() => {
-    // Blocca lo scroll orizzontale
     document.body.style.overflowX = "hidden";
-
-    // Controlla se l'utente è già loggato
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/dashboard"); // Reindirizza a dashboard se il token esiste
+      navigate("/dashboard");
     }
-
     return () => {
       document.body.style.overflowX = "auto";
     };
@@ -34,13 +32,16 @@ const Login = ({ isDark }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Attiva lo spinner
     try {
       const response = await axios.post(loginUrl, { username, password });
       localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      setError("Credenziali non valide");
-      console.error("Errore:", err.message, err.response?.data || "Nessun dato di risposta");
+      setError("Credenziali non valide"); // Messaggio di errore
+    } finally {
+      setLoading(false); // Disattiva lo spinner
     }
   };
 
@@ -77,10 +78,15 @@ const Login = ({ isDark }) => {
               )}
             </span>
           </div>
-          {error && <p className="error-message">{error}</p>}
+          {error && (
+            <span className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {error}
+            </span>
+          )}
           <div className="form-actions">
-            <button type="submit" className="submit-btn">
-              Accedi
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? <FaSpinner className="spinner" /> : "Accedi"}
             </button>
           </div>
         </form>
