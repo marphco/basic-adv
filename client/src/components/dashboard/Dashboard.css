@@ -1,5 +1,6 @@
 .dashboard {
   display: flex;
+  margin-top: 10vh;
   /* Rimuoviamo height: 100vh per permettere alla dashboard di espandersi */
 }
 
@@ -10,8 +11,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh; /* La sidebar occupa l’intera altezza del viewport */
-  overflow-y: auto; /* Permetti lo scroll nella sidebar se necessario */
+  height: 100vh;
+  overflow-y: auto;
+  padding-top: 10vh; /* Aggiungi lo stesso padding top della dashboard */
 }
 
 .sidebar ul {
@@ -132,6 +134,18 @@ tr:hover {
 
 .details-btn:hover {
   background: #0056b3;
+}
+
+.search-bar {
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  padding: 8px;
+  width: 100%;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {
