@@ -1,6 +1,6 @@
 .login-page {
     width: 100vw;
-    min-height: 100vh;
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     display: flex;
@@ -12,6 +12,7 @@
     left: 0;
     z-index: 10;
     transition: all 0.5s ease;
+    margin: 0 auto;
   }
   
   .login-page .dynamic-form {
@@ -54,7 +55,7 @@
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
-    color: var(--primary-text-color); /* Colore di default */
+    color: var(--primary-text-color);
     transition: color 0.3s ease, transform 0.3s ease;
   }
   
@@ -66,8 +67,26 @@
   
   /* Effetto hover */
   .password-toggle-icon:hover {
-    color: var(--foreground-color); /* Colore al passaggio del mouse */
-    transform: translateY(-50%) scale(1.1); /* Leggero ingrandimento */
+    color: var(--foreground-color);
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  /* Messaggio di errore */
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--error-color);
+    text-align: center;
+    transition: color 0.5s ease;
+  }
+  
+  .error-icon {
+    font-size: 0.9rem;
+    color: var(--error-color);
+    transition: color 0.5s ease;
   }
   
   @media (max-width: 768px) {
@@ -83,4 +102,9 @@
     .login-page {
       overflow-x: hidden !important;
     }
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
