@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import "../dynamic-form/DynamicForm.css";
 import "./Dashboard.css";
 
 const Dashboard = ({ isDark }) => {
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedSection, setSelectedSection] = useState("home"); // Stato per la sezione corrente
+  const [selectedRequest, setSelectedRequest] = useState(null); // Stato per la richiesta selezionata
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Stato per sidebar mobile
   const navigate = useNavigate();
 
   const API_URL = (
@@ -45,71 +46,137 @@ const Dashboard = ({ isDark }) => {
     fetchRequests();
   }, [navigate, requestsUrl]);
 
-  const handleRowClick = (request) => {
-    setSelectedRequest(request);
-  };
-
-  const closeModal = () => {
-    setSelectedRequest(null);
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  // Componente Home con statistiche rapide (lo implementeremo nella Fase 2)
+  const DashboardHome = () => {
+    const totalRequests = requests.length;
+    const completedRequests = requests.filter((req) => req.projectPlan).length;
+    const abandonedRequests = totalRequests - completedRequests;
+  
+    return (
+      <div className="dashboard-home">
+        <div
+          className="stat-card"
+          onClick={() => setSelectedSection("all")}
+        >
+          <h3>Numero Richieste</h3>
+          <p>{totalRequests}</p>
+        </div>
+        <div
+          className="stat-card"
+          onClick={() => setSelectedSection("completed")}
+        >
+          <h3>Completate</h3>
+          <p>{completedRequests}</p>
+        </div>
+        <div
+          className="stat-card"
+          onClick={() => setSelectedSection("abandoned")}
+        >
+          <h3>Abbandonate</h3>
+          <p>{abandonedRequests}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // Componente Lista Richieste (lo espanderemo nella Fase 3)
+  const RequestList = ({ filteredRequests }) => (
+    <div className="requests-list">
+      {filteredRequests.map((req) => (
+        <div
+          key={req.sessionId}
+          className="request-item"
+          onClick={() => setSelectedRequest(req)}
+        >
+          <p>{new Date(req.createdAt.$date).toLocaleDateString()}</p>
+          <p>{req.formData.contactInfo.name}</p>
+          <span>{req.projectPlan ? "✅" : "⏳"}</span>
+        </div>
+      ))}
+    </div>
+  );
+
+  
+
   return (
-    <div className="dashboard">
-      {/* Lista delle Richieste */}
-      <div className="requests-list">
-        {requests.map(req => (
-          <div
-            key={req.sessionId}
-            className={`request-item ${selectedRequest?.sessionId === req.sessionId ? 'selected' : ''}`}
-            onClick={() => setSelectedRequest(req)}
+    <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
+      {/* Pulsante per aprire la sidebar su mobile */}
+      <button className="sidebar-toggle" onClick={toggleSidebar}>
+        ☰
+      </button>
+
+      {/* Sidebar */}
+      <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+        <button className="sidebar-close" onClick={toggleSidebar}>
+          ×
+        </button>
+        <ul>
+          <li
+            onClick={() => {
+              setSelectedSection("home");
+              setSelectedRequest(null);
+              setIsSidebarOpen(false);
+            }}
           >
-            <p>{new Date(req.createdAt.$date).toLocaleDateString()}</p>
-            <p>{req.formData.contactInfo.name}</p>
-            <span>{req.projectPlan ? "✅" : "⏳"}</span>
-          </div>
-        ))}
+            Home
+          </li>
+          <li
+            onClick={() => {
+              setSelectedSection("all");
+              setSelectedRequest(null);
+              setIsSidebarOpen(false);
+            }}
+          >
+            Tutte le Richieste
+          </li>
+          <li
+            onClick={() => {
+              setSelectedSection("completed");
+              setSelectedRequest(null);
+              setIsSidebarOpen(false);
+            }}
+          >
+            Completate
+          </li>
+          <li
+            onClick={() => {
+              setSelectedSection("abandoned");
+              setSelectedRequest(null);
+              setIsSidebarOpen(false);
+            }}
+          >
+            Abbandonate
+          </li>
+          <li onClick={handleLogout}>Logout</li>
+        </ul>
       </div>
 
-      {/* Dettagli della Richiesta */}
-      {selectedRequest && (
-        <div className="request-details">
-          <h2>{selectedRequest.formData.contactInfo.name}</h2>
-          <p>Email: {selectedRequest.formData.contactInfo.email}</p>
-          <p>Telefono: {selectedRequest.formData.contactInfo.phone}</p>
-          <p>Budget: {selectedRequest.formData.budget}</p>
-          <p>Data: {new Date(selectedRequest.createdAt.$date).toLocaleDateString()}</p>
-          <p>Stato: {selectedRequest.projectPlan ? "Completata" : "In attesa"}</p>
-
-          <h3>Domande e Risposte</h3>
-          {selectedRequest.questions.map((q, index) => (
-            <div key={index} className="question-answer">
-              <p><strong>{q.question}</strong></p>
-              {q.options.length > 0 ? (
-                <ul>
-                  {q.options.map((option, optIndex) => (
-                    <li
-                      key={optIndex}
-                      className={selectedRequest.answers[q.question]?.options?.includes(option) ? 'selected' : ''}
-                    >
-                      {option}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>{selectedRequest.answers[q.question]?.input || "Nessuna risposta"}</p>
-              )}
-            </div>
-          ))}
-
-          <h3>Piano d'Azione</h3>
-          <p>{selectedRequest.projectPlan || "Non ancora generato"}</p>
-        </div>
-      )}
+      {/* Area Principale */}
+      <div className="main-area">
+        {selectedRequest ? (
+          <div className="request-details">
+            <h2>{selectedRequest.formData.contactInfo.name}</h2>
+            <button onClick={() => setSelectedRequest(null)}>Chiudi</button>
+            {/* Qui aggiungeremo i dettagli nella Fase 4 */}
+            <p>Dettagli da implementare...</p>
+          </div>
+        ) : selectedSection === "home" ? (
+          <DashboardHome />
+        ) : selectedSection === "all" ? (
+          <RequestList filteredRequests={requests} />
+        ) : selectedSection === "completed" ? (
+          <RequestList filteredRequests={requests.filter((req) => req.projectPlan)} />
+        ) : selectedSection === "abandoned" ? (
+          <RequestList filteredRequests={requests.filter((req) => !req.projectPlan)} />
+        ) : null}
+      </div>
     </div>
   );
 };
