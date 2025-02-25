@@ -119,6 +119,15 @@ body {
   z-index: 10;
 }
 
+.App.dashboard-layout {
+  display: block;
+  width: 100vw;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scroll verticale per la pagina */
+}
+
+
 /* Media query per dispositivi mobili */
 @media screen and (max-width: 768px) {
   .App {
@@ -169,5 +178,13 @@ body {
   .aboutus-overlay-close {
     top: 55px;
     right: 34px;
+  }
+
+  .App.dashboard-layout {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
