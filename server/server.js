@@ -26,6 +26,8 @@ app.use(
 );
 
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // Configura il transporter per email
 const transporter = nodemailer.createTransport({
@@ -320,7 +322,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     }
 
     if (req.file) {
-      formData.currentLogo = req.file.path;
+      formData.currentLogo = `/uploads/${req.file.filename}`;
     } else if (formData.projectType === "restyling") {
       return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
     }
