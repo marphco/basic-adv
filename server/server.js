@@ -349,6 +349,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     if (req.file) {
       formData.currentLogo = req.file.filename;
+      console.log("File salvato in:", req.file.path);
     } else if (formData.projectType === "restyling") {
       return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
     }

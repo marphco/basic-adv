@@ -303,7 +303,10 @@ const Dashboard = ({ isDark }) => {
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
                 <a
-                  href={`${API_URL}/api/download/${request.formData.currentLogo}`}
+                  href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
+                    "uploads/",
+                    ""
+                  )}`}
                   download
                 >
                   Scarica Logo Attuale
