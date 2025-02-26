@@ -108,6 +108,25 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
   }
 });
 
+// Endpoint per scaricare i file allegati
+app.get("/api/download/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  if (fs.existsSync(filePath)) {
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.sendFile(filePath);
+  } else {
+    res.status(404).json({ error: "File non trovato" });
+  }
+});
+
+// Altre route esistenti
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
 // Altre route esistenti (non modificate)
 app.get("/", (req, res) => {
   res.send("Server is running!");
