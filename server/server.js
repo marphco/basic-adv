@@ -123,6 +123,47 @@ app.get("/api/download/:filename", (req, res) => {
   }
 });
 
+// Endpoint per elencare i file
+app.get("/api/uploads/list", authenticateToken, async (req, res) => {
+  try {
+    const uploadDir = "/app/uploads"; // Usa il percorso del volume
+    const files = await fs.promises.readdir(uploadDir);
+    const fileDetails = await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(uploadDir, file);
+        const stats = await fs.promises.stat(filePath);
+        return {
+          name: file,
+          size: stats.size,
+          lastModified: stats.mtime,
+        };
+      })
+    );
+    res.json({ files: fileDetails });
+  } catch (error) {
+    console.error("Errore nel recupero dei file:", error);
+    res.status(500).json({ error: "Errore nel recupero dei file" });
+  }
+});
+
+// Endpoint per cancellare un file
+app.delete("/api/uploads/delete/:filename", authenticateToken, async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join("/app/uploads", filename); // Usa il percorso del volume
+
+    if (fs.existsSync(filePath)) {
+      await fs.promises.unlink(filePath);
+      res.status(200).json({ message: `File ${filename} cancellato con successo` });
+    } else {
+      res.status(404).json({ error: "File non trovato" });
+    }
+  } catch (error) {
+    console.error("Errore nella cancellazione del file:", error);
+    res.status(500).json({ error: "Errore nella cancellazione del file" });
+  }
+});
+
 // Altre route esistenti
 app.get("/", (req, res) => {
   res.send("Server is running!");

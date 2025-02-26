@@ -11,6 +11,7 @@ const Dashboard = ({ isDark }) => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [fileList, setFileList] = useState([]); // Stato per la lista dei file
   const navigate = useNavigate();
 
   const API_URL = (
@@ -35,10 +36,7 @@ const Dashboard = ({ isDark }) => {
         );
         setRequests(sortedRequests);
       } catch (err) {
-        console.error(
-          "Errore nel caricamento delle richieste: ",
-          err.response?.data?.error || err.message
-        );
+        console.error("Errore nel caricamento delle richieste:", err);
         localStorage.removeItem("token");
         navigate("/login");
       }
@@ -46,6 +44,38 @@ const Dashboard = ({ isDark }) => {
 
     fetchRequests();
   }, [navigate, requestsUrl]);
+
+  // Funzione per recuperare la lista dei file
+  const fetchFileList = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/api/uploads/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFileList(response.data.files);
+      setSelectedSection("fileList"); // Mostra la sezione della lista
+      setSelectedRequest(null);
+      setIsSidebarOpen(false);
+    } catch (error) {
+      console.error("Errore nel recupero della lista dei file:", error);
+      alert("Errore nel caricamento della lista dei file");
+    }
+  };
+
+  // Funzione per cancellare un file
+  const deleteFile = async (filename) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFileList(fileList.filter((file) => file.name !== filename)); // Aggiorna la lista
+      alert(`File ${filename} cancellato con successo!`);
+    } catch (error) {
+      console.error("Errore nella cancellazione del file:", error);
+      alert("Errore nella cancellazione del file");
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -318,6 +348,30 @@ const Dashboard = ({ isDark }) => {
     );
   };
 
+  const FileListSection = () => (
+    <div className="file-list-section">
+      <h3>Lista Allegati</h3>
+      {fileList.length > 0 ? (
+        <ul>
+          {fileList.map((file, index) => (
+            <li key={index}>
+              {file.name} - {Math.round(file.size / 1024)} KB -{" "}
+              {new Date(file.lastModified).toLocaleDateString()}
+              <button
+                onClick={() => deleteFile(file.name)}
+                style={{ marginLeft: "10px" }}
+              >
+                Cancella
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Nessun file presente nella cartella uploads</p>
+      )}
+    </div>
+  );
+
   RequestDetails.propTypes = {
     request: PropTypes.object.isRequired,
   };
@@ -373,16 +427,28 @@ const Dashboard = ({ isDark }) => {
           >
             Abbandonate
           </li>
+          <li
+            onClick={(event) => {
+              event.stopPropagation();
+              fetchFileList();
+            }}
+          >
+            Lista Allegati
+          </li>
           <li onClick={handleLogout}>Logout</li>
         </ul>
       </div>
 
       <div className="main-area">
-        {selectedSection !== "home" && <SearchBar onSearch={setSearchTerm} />}
+        {selectedSection !== "home" && selectedSection !== "fileList" && (
+          <SearchBar onSearch={setSearchTerm} />
+        )}
         {selectedRequest ? (
           <RequestDetails request={selectedRequest} />
         ) : selectedSection === "home" ? (
           <DashboardHome />
+        ) : selectedSection === "fileList" ? (
+          <FileListSection />
         ) : (
           <RequestList />
         )}
