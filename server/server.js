@@ -132,6 +132,13 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
+// Crea la cartella uploads se non esiste
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  console.log("Cartella uploads creata:", uploadDir); // Log temporaneo per debug
+}
+
 // Configura multer (non modificato)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -341,7 +348,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     }
 
     if (req.file) {
-      formData.currentLogo = `/uploads/${req.file.filename}`;
+      formData.currentLogo = req.file.path; // Ripristina il percorso originale
+      console.log("File salvato in:", req.file.path); // Log temporaneo per debug
     } else if (formData.projectType === "restyling") {
       return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
     }
@@ -396,6 +404,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     res.json({ question: aiQuestion });
   } catch (error) {
+    console.error("Errore in /api/generate:", error);
     res.status(500).json({ error: error.message || "Errore nella generazione della domanda. Riprova più tardi." });
   }
 });
