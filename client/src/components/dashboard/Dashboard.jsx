@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import path from "path";
 import PropTypes from "prop-types";
 import "./Dashboard.css";
 import SearchBar from "./SearchBar";
@@ -304,9 +303,7 @@ const Dashboard = ({ isDark }) => {
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
                 <a
-                  href={`${API_URL}/api/download/${path.basename(
-                    request.formData.currentLogo
-                  )}`}
+                  href={`${API_URL}/api/download/${request.formData.currentLogo}`}
                   download
                 >
                   Scarica Logo Attuale
