@@ -162,7 +162,6 @@ const Dashboard = ({ isDark }) => {
   const RequestDetails = ({ request }) => {
     const [activeTab, setActiveTab] = useState("info");
 
-
     return (
       <div className="request-details">
         <div className="details-sidebar">
@@ -303,7 +302,7 @@ const Dashboard = ({ isDark }) => {
             <div>
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
-                <a href={request.formData.currentLogo} download>
+                <a href={`${API_URL}${request.formData.currentLogo}`} download>
                   Scarica Logo Attuale
                 </a>
               ) : (
