@@ -26,7 +26,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static("/app/uploads"));
 
 
 // Configura il transporter per email
@@ -111,13 +111,14 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
 // Endpoint per scaricare i file allegati
 app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(__dirname, "uploads", filename);
+  const filePath = path.join("/app/uploads", filename); // Usa il percorso assoluto del volume
 
   if (fs.existsSync(filePath)) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.sendFile(filePath);
   } else {
+    console.error("File non trovato:", filePath); // Aggiungi log per debug
     res.status(404).json({ error: "File non trovato" });
   }
 });

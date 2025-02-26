@@ -303,10 +303,7 @@ const Dashboard = ({ isDark }) => {
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
                 <a
-                  href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
-                    "uploads/",
-                    ""
-                  )}`}
+                  href={`${API_URL}/api/download/${request.formData.currentLogo}`}
                   download
                 >
                   Scarica Logo Attuale
@@ -399,4 +396,3 @@ Dashboard.propTypes = {
 };
 
 export default Dashboard;
-
