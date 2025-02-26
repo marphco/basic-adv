@@ -357,6 +357,13 @@ const Dashboard = ({ isDark }) => {
             <li key={index}>
               {file.name} - {Math.round(file.size / 1024)} KB -{" "}
               {new Date(file.lastModified).toLocaleDateString()}
+              <a
+                href={`${API_URL}/api/download/${file.name}`}
+                download
+                style={{ marginLeft: "10px" }}
+              >
+                Scarica
+              </a>
               <button
                 onClick={() => deleteFile(file.name)}
                 style={{ marginLeft: "10px" }}

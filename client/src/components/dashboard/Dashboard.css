@@ -184,6 +184,36 @@ tr:hover {
   background: #f5f5f5;
 }
 
+.file-list-section li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.file-list-section a {
+  color: #007bff;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.file-list-section a:hover {
+  text-decoration: underline;
+}
+
+.file-list-section button {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.file-list-section button:hover {
+  background-color: #cc0000;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 200px;
