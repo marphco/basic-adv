@@ -302,15 +302,38 @@ const Dashboard = ({ isDark }) => {
             <div>
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
-                <a
-                  href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
-                    "uploads/",
-                    ""
-                  )}`}
-                  download
-                >
-                  Scarica Logo Attuale
-                </a>
+                <div>
+                  <a
+                    href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
+                      "uploads/",
+                      ""
+                    )}`}
+                    download
+                  >
+                    Scarica Logo Attuale
+                  </a>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem("token");
+                        await axios.delete(
+                          `${API_URL}/api/uploads/delete/${request.formData.currentLogo}`,
+                          {
+                            headers: { Authorization: `Bearer ${token}` },
+                          }
+                        );
+                        alert("File cancellato con successo!");
+                        // Aggiorna la lista delle richieste o ricarica la pagina
+                        window.location.reload();
+                        // eslint-disable-next-line no-unused-vars
+                      } catch (error) {
+                        alert("Errore nella cancellazione del file");
+                      }
+                    }}
+                  >
+                    Cancella
+                  </button>
+                </div>
               ) : (
                 <p>Nessun allegato disponibile</p>
               )}
