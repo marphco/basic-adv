@@ -161,6 +161,39 @@ const Dashboard = ({ isDark }) => {
 
   const RequestDetails = ({ request }) => {
     const [activeTab, setActiveTab] = useState("info");
+    const [fileList, setFileList] = useState([]);
+
+    // Fetch della lista dei file all'apertura dei dettagli
+    useEffect(() => {
+      const fetchFileList = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.get(`${API_URL}/api/uploads/list`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setFileList(response.data.files);
+        } catch (error) {
+          console.error("Errore nel recupero della lista dei file:", error);
+        }
+      };
+      fetchFileList();
+    }, []);
+
+    // Funzione per cancellare un file
+    const deleteFile = async (filename) => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert(`File ${filename} cancellato con successo!`);
+        // Aggiorna la lista dei file
+        setFileList(fileList.filter((file) => file !== filename));
+      // eslint-disable-next-line no-unused-vars
+      } catch (error) {
+        alert("Errore nella cancellazione del file");
+      }
+    };
 
     return (
       <div className="request-details">
@@ -201,6 +234,12 @@ const Dashboard = ({ isDark }) => {
               onClick={() => setActiveTab("attachments")}
             >
               Allegati
+            </li>
+            <li
+              className={activeTab === "fileList" ? "active" : ""}
+              onClick={() => setActiveTab("fileList")}
+            >
+              Lista File Uploads
             </li>
           </ul>
         </div>
@@ -302,40 +341,39 @@ const Dashboard = ({ isDark }) => {
             <div>
               <h3>Allegati</h3>
               {request.formData.currentLogo ? (
-                <div>
-                  <a
-                    href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
-                      "uploads/",
-                      ""
-                    )}`}
-                    download
-                  >
-                    Scarica Logo Attuale
-                  </a>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const token = localStorage.getItem("token");
-                        await axios.delete(
-                          `${API_URL}/api/uploads/delete/${request.formData.currentLogo}`,
-                          {
-                            headers: { Authorization: `Bearer ${token}` },
-                          }
-                        );
-                        alert("File cancellato con successo!");
-                        // Aggiorna la lista delle richieste o ricarica la pagina
-                        window.location.reload();
-                        // eslint-disable-next-line no-unused-vars
-                      } catch (error) {
-                        alert("Errore nella cancellazione del file");
-                      }
-                    }}
-                  >
-                    Cancella
-                  </button>
-                </div>
+                <a
+                  href={`${API_URL}/api/download/${request.formData.currentLogo.replace(
+                    "uploads/",
+                    ""
+                  )}`}
+                  download
+                >
+                  Scarica Logo Attuale
+                </a>
               ) : (
                 <p>Nessun allegato disponibile</p>
+              )}
+            </div>
+          )}
+          {activeTab === "fileList" && (
+            <div>
+              <h3>Lista File nella Cartella Uploads</h3>
+              {fileList.length > 0 ? (
+                <ul>
+                  {fileList.map((file, index) => (
+                    <li key={index}>
+                      {file}
+                      <button
+                        onClick={() => deleteFile(file)}
+                        style={{ marginLeft: "10px" }}
+                      >
+                        Cancella
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Nessun file presente nella cartella uploads</p>
               )}
             </div>
           )}
