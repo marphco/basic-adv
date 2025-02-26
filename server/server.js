@@ -126,20 +126,25 @@ app.get("/api/download/:filename", (req, res) => {
 // Endpoint per elencare i file
 app.get("/api/uploads/list", authenticateToken, async (req, res) => {
   try {
-    const uploadDir = "/app/uploads"; // Usa il percorso del volume
+    const uploadDir = "/app/uploads";
     const files = await fs.promises.readdir(uploadDir);
     const fileDetails = await Promise.all(
-      files.map(async (file) => {
-        const filePath = path.join(uploadDir, file);
-        const stats = await fs.promises.stat(filePath);
-        return {
-          name: file,
-          size: stats.size,
-          lastModified: stats.mtime,
-        };
-      })
+      files
+        .filter(file => file !== "lost+found") // Esclude lost+found
+        .map(async (file) => {
+          const filePath = path.join(uploadDir, file);
+          const stats = await fs.promises.stat(filePath);
+          if (stats.isFile()) { // Include solo file, non directory
+            return {
+              name: file,
+              size: stats.size,
+              lastModified: stats.mtime,
+            };
+          }
+          return null; // Esclude directory
+        })
     );
-    res.json({ files: fileDetails });
+    res.json({ files: fileDetails.filter(file => file !== null) }); // Rimuove i null
   } catch (error) {
     console.error("Errore nel recupero dei file:", error);
     res.status(500).json({ error: "Errore nel recupero dei file" });
