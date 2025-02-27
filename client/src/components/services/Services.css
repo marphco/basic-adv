@@ -56,12 +56,12 @@
   width: 40vw;
   transition: color 0.5s ease;
   position: absolute;
-  bottom: 0;
+  bottom: -19vh;
 }
 
 .horizontal-line {
   position: absolute;
-  bottom: 25vh;
+  bottom: 20vh;
   left: 0;
   height: 1px;
   width: 0;
@@ -108,7 +108,7 @@
   padding: 0;
   line-height: 1;
   white-space: nowrap;
-  padding-bottom: 10vh;
+  /* padding-bottom: 10vh; */
 }
 
 .services-list {
@@ -182,6 +182,7 @@ body[data-theme="dark"] .services-list-section {
     font-weight: 200;
     width: 80vw;
     line-height: 1.1;
+    top:7vh;
   }
 
   .horizontal-line {
@@ -219,7 +220,7 @@ body[data-theme="dark"] .services-list-section {
   .services-list {
     position: static;
     transform: none;
-    margin-top: 20px;
+    margin-top: 6px;
     align-items: right !important;
   
   }
@@ -234,4 +235,16 @@ body[data-theme="dark"] .services-list-section {
   .services-list-section {
     height: auto;
   }
+}
+
+@media (max-height: 900px) and (min-width: 769px) {
+.macroarea h2 {
+  padding-bottom: 10vh;
+}
+.horizontal-line {
+  bottom: 25vh;
+}
+.intro p {
+  bottom: 0;
+}
 }
