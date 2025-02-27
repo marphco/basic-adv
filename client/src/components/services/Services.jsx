@@ -164,6 +164,7 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
               start: "left center",
               toggleActions: "play none none reverse",
               invalidateOnRefresh: true,
+              markers: false
             },
           });
 

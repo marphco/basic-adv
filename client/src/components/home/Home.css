@@ -13,7 +13,7 @@
 
 .home-text {
   position: absolute;
-  top: 400px;
+  bottom: 45vh;
   right: 80px;
   text-align: right;
 }
@@ -63,7 +63,7 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
 
 .home-logo {
   max-width: 50vw;
-  max-height: 30vh;
+  max-height: 50vh;
   margin-left: 80px;
 }
 
@@ -73,11 +73,11 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   font-weight: 100;
   letter-spacing: 0.1em;
   white-space: nowrap;
-  transform: rotate(-90deg);
+  /* transform: rotate(-90deg); */
   pointer-events: none;
   position: relative;
-  bottom: 88px;
-  right: -8px;
+  /* bottom: 88px; */
+  right: 80px;
 }
 
 .scroll-arrow {

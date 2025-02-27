@@ -1,6 +1,6 @@
 .services-section {
   position: relative;
-  width: 900vw;
+  width: 800vw;
   height: 100vh;
   overflow: hidden;
   background-color: rgb(238, 238, 238);
@@ -33,7 +33,7 @@
 
 .services-content {
   position: relative;
-  width: 20%;
+  width: 40vw;
   height: 100%;
   display: flex;
   justify-content: flex-start;
@@ -53,13 +53,15 @@
   font-weight: 100;
   font-size: 2rem;
   color: var(--primary-text-color);
-  max-width: 40vw;
+  width: 40vw;
   transition: color 0.5s ease;
+  position: absolute;
+  bottom: 0;
 }
 
 .horizontal-line {
   position: absolute;
-  bottom: 20%;
+  bottom: 25vh;
   left: 0;
   height: 1px;
   width: 0;
@@ -82,6 +84,7 @@
   display: flex;
   flex-direction: row;
   height: 100%;
+  padding-left: 30vw;
 }
 
 .macroarea {
@@ -105,11 +108,12 @@
   padding: 0;
   line-height: 1;
   white-space: nowrap;
+  padding-bottom: 10vh;
 }
 
 .services-list {
   position: absolute;
-  bottom: 5%;
+  bottom: 7vh;
   left: 0;
   list-style: none;
   padding: 0;
@@ -148,8 +152,9 @@ body[data-theme="dark"] .services-list-section {
 
   .services-content {
     width: 100%;
-    height: auto;
+    height: 18vh;
     display: block;
+    margin-bottom: 8vh;
   }
 
   .chi-siamo {
@@ -166,7 +171,7 @@ body[data-theme="dark"] .services-list-section {
 
   .intro {
     position: static;
-    top: auto;
+    top: 10vh;
     left: auto;
     padding: 20px;
     font-size: 1.2em;
@@ -175,7 +180,7 @@ body[data-theme="dark"] .services-list-section {
   .intro p {
     font-size: 1em;
     font-weight: 200;
-    max-width: 80vw;
+    width: 80vw;
     line-height: 1.1;
   }
 
@@ -191,6 +196,7 @@ body[data-theme="dark"] .services-list-section {
 
   .macro-areas {
     flex-direction: column;
+    padding-left: 0;
   }
 
   .macroarea {
@@ -207,6 +213,7 @@ body[data-theme="dark"] .services-list-section {
   .macroarea h2 {
     font-size: 16vw;
     text-align: left;
+    padding-bottom: 0;
   }
 
   .services-list {
@@ -214,6 +221,7 @@ body[data-theme="dark"] .services-list-section {
     transform: none;
     margin-top: 20px;
     align-items: right !important;
+  
   }
 
   .services-list li {

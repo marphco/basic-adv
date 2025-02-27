@@ -86,6 +86,7 @@ export default function AboutUs() {
       gsap.set(alessioPanelRef.current, { xPercent: activeAccordion === "alessio" ? 0 : 100 });
     if (giorgiaPanelRef.current)
       gsap.set(giorgiaPanelRef.current, { xPercent: activeAccordion === "giorgia" ? 0 : 100 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Impostazione iniziale
 
   const openPanel = (name) => {

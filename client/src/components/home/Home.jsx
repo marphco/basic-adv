@@ -73,7 +73,7 @@ const Home = () => {
           <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo" />
         </div>
         <div className="scroll-hint">
-          COMINCIAMO? <span className="scroll-arrow">↓</span>
+          COMINCIAMO?<span className="scroll-arrow">↓</span>
         </div>
       </div>
     </div>
