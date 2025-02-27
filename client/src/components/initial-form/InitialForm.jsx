@@ -22,7 +22,6 @@ const InitialForm = ({
     businessField,
     otherBusinessField,
     currentLogo,
-    budget,
   } = formData;
 
   const requiresBrand = selectedCategories.some((cat) =>
@@ -35,18 +34,6 @@ const InitialForm = ({
 
   const handleFileButtonClick = () => {
     fileInputRef.current.click();
-  };
-
-  const budgetOptions = [
-    { label: "Non lo so", value: "unknown" },
-    { label: "0-1.000 €", value: "0-1000" },
-    { label: "1-5.000 €", value: "1000-5000" },
-    { label: "5-10.000 €", value: "5000-10000" },
-    { label: "+10.000 €", value: "10000+" },
-  ];
-
-  const handleBudgetSelect = (value) => {
-    handleFormInputChange({ target: { name: "budget", value } });
   };
 
   return (
@@ -271,30 +258,6 @@ const InitialForm = ({
                   )}
                 </div>
               )}
-              {/* Campo budget con titolo */}
-              <div className="form-group budget-group">
-                <h3 className="budget-title">Qual è il tuo budget?</h3>
-                <div className="budget-circles">
-                  {budgetOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`budget-circle ${
-                        budget === option.value ? "selected" : ""
-                      }`}
-                      onClick={() => handleBudgetSelect(option.value)}
-                    >
-                      <span className="budget-label">{option.label}</span>
-                    </button>
-                  ))}
-                </div>
-                {errors.budget && (
-                  <span className="error-message budget-error">
-                    <FaExclamationCircle className="error-icon" />
-                    {errors.budget}
-                  </span>
-                )}
-              </div>
             </div>
           </CSSTransition>
         )}

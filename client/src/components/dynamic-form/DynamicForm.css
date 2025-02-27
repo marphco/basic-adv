@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .dynamic-form h2 {
@@ -88,7 +88,7 @@ input:-webkit-autofill:active {
 }
 
 .submit-btn {
-  padding: 0.75rem 2rem;
+  padding: 1.70rem 3rem !important;
   background-color: var(--foreground-color);
   color: white;
   border: none;
@@ -97,7 +97,7 @@ input:-webkit-autofill:active {
   cursor: pointer;
   border: solid 1px var(--foreground-color);
   transition: background-color 0.5s ease;
-  font-size: 1.2rem;
+  font-size: 1.5rem !important;
 }
 
 .submit-btn:hover {
@@ -112,12 +112,12 @@ input:-webkit-autofill:active {
 }
 
 .form-actions {
-  padding-top: 2vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end !important;
+  margin-right: 8px !important;
   gap: 0.5rem;
-  margin-top: 1rem;
+  padding-top: 2vh;
 }
 
 .error-message {
@@ -141,9 +141,9 @@ input:-webkit-autofill:active {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Uniformato a 0.8rem */
   font-weight: 300;
-  color: var(--error-color); /* Uniformato, rimosso #ff0000 */
+  color: var(--error-color);
   text-align: center !important;
   transition: color 0.5s ease;
 }
@@ -155,15 +155,15 @@ input:-webkit-autofill:active {
 }
 
 .submit-btn:disabled {
-  background-color: var(--foreground-color) !important; /* Mantiene il colore del tema */
+  background-color: var(--foreground-color) !important;
   cursor: not-allowed;
-  opacity: 0.7; /* Leggera opacità per stato disabilitato */
+  opacity: 0.7;
 }
 
 .spinner {
-  font-size: 1.2rem; /* Dimensione uniforme con il testo */
+  font-size: 1.2rem;
   color: white;
-  animation: spin 1s linear infinite; /* Rotazione infinita */
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -184,6 +184,95 @@ input:-webkit-autofill:active {
   }
 }
 
+.budget-and-submit {
+  width: 100%;
+  padding-top: 2vh;
+}
+
+/* Stili per il budget */
+.budget-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: auto;
+  padding: 0 0.25rem;
+}
+
+.budget-title {
+  font-size: 1.1rem;
+  padding: 2vh 0 1vh 0;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
+  text-align: center;
+}
+
+.budget-circles {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.budget-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 1px solid #d1d1d1;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.budget-circle:hover {
+  border-color: var(--foreground-color);
+  transform: scale(1.1);
+}
+
+.budget-circle.selected {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.1);
+}
+
+.budget-label {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.budget-circle:hover .budget-label,
+.budget-circle.selected .budget-label {
+  color: var(--foreground-color);
+}
+
+.budget-group .budget-error {
+  justify-content: flex-start;
+}
+
+@media screen and (min-width: 769px) {
+  .budget-and-submit {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .budget-title {
+    text-align: left;
+  }
+  .budget-circles {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+  .form-actions {
+    padding-top: 0;
+  }
+}
+
 @media screen and (max-width: 768px) {
   .dynamic-form h2 {
     font-size: 3rem;
@@ -191,10 +280,51 @@ input:-webkit-autofill:active {
     line-height: 1;
     padding-left: 10vw;
   }
-
   .dynamic-form p {
     font-size: 1.2rem;
     padding-left: 10vw;
     text-align: left;
   }
+  .budget-circles {
+    gap: 1rem;
+  }
+  .budget-circle {
+    width: 85px;
+    height: 85px;
+  }
+  .budget-label {
+    font-size: 0.85rem;
+  }
+  .budget-title {
+    font-size: 1rem;
+    text-align: center !important;
+  }
+  .form-actions {
+    padding-top: 4vh !important;
+    align-items: center !important;
+  }
+  .budget-group .budget-error {
+    justify-content: center;
+  }
+}
+
+@media (max-height: 900px) and (min-width: 769px) {
+  /* .form-actions {
+    gap: 0.15rem;
+  } */
+  .budget-and-submit {
+    padding-top: 0.5vh;
+  }
+  .dynamic-form p {
+    padding-bottom: 0;
+  }
+  /* .budget-group {
+    gap: 0.3rem;
+  } */
+  /* .budget-title {
+    padding: 0.5vh 0 0.3vh 0;
+  } */
+  /* .budget-circles {
+    gap: 0.3rem;
+  } */
 }

@@ -339,9 +339,9 @@ const DynamicForm = () => {
         { currentAnswer: userAnswer, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
-  
+
       const nextQuestion = response.data.question;
-  
+
       if (!nextQuestion || questionNumber >= 10) {
         setIsCompleted(true);
         setCurrentQuestion(null);
@@ -362,7 +362,7 @@ const DynamicForm = () => {
       setLoading(false);
     }
   };
-  
+
   const handleAnswerSubmit = (e) => {
     e.preventDefault();
     const questionText = currentQuestion.question;
@@ -370,7 +370,7 @@ const DynamicForm = () => {
     const selectedOptions = userAnswer.options || [];
     const inputAnswer = userAnswer.input || "";
     let newErrors = {};
-    
+
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
         newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
@@ -385,31 +385,31 @@ const DynamicForm = () => {
           "Seleziona almeno una risposta o inserisci un commento.";
       }
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     fetchNextQuestion();
   };
 
   const handleSubmitContactInfo = async (e) => {
     e.preventDefault();
     let newErrors = {};
-  
+
     if (!formData.contactInfo.name) {
       newErrors.name = "Il nome è obbligatorio.";
     }
     if (!formData.contactInfo.email) {
       newErrors.email = "L’email è obbligatoria.";
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setLoading(true);
     try {
       await axios.post(
@@ -417,13 +417,13 @@ const DynamicForm = () => {
         { contactInfo: formData.contactInfo, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
-  
+
       await axios.post(
         `${API_URL.replace(/\/$/, "")}/api/sendEmails`,
         { contactInfo: formData.contactInfo, sessionId },
         { headers: { "Content-Type": "application/json" } }
       );
-  
+
       setShowThankYou(true);
     // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -445,7 +445,7 @@ const DynamicForm = () => {
           </p>
         </div>
       )}
-  
+
       <div>
         {currentQuestion ? (
           currentQuestion.type === "font_selection" ? (
@@ -494,7 +494,7 @@ const DynamicForm = () => {
           )
         ) : null}
       </div>
-  
+
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
       ) : isCompleted ? (
@@ -522,30 +522,71 @@ const DynamicForm = () => {
               errors={errors}
             />
             {selectedCategories.length > 0 && (
-              <div className="form-actions">
-                <button
-                  className="submit-btn"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    generateFirstQuestion();
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? <FaSpinner className="spinner" /> : "COMINCIAMO!"}
-                </button>
-                {errors.general && (
-                  <span className="error-message">
-                    <FaExclamationCircle className="error-icon" />
-                    <span dangerouslySetInnerHTML={{ __html: errors.general }} />
-                  </span>
-                )}
-                {Object.keys(errors).length > 0 && !errors.general && (
-                  <span className="error-message">
-                    <FaExclamationCircle className="error-icon" />
-                    Errore nel form. Controlla i campi sopra.
-                  </span>
-                )}
+              <div className="budget-and-submit">
+                <div className="form-group budget-group">
+                  <h3 className="budget-title">Qual è il tuo budget?</h3>
+                  <div className="budget-circles">
+                    {[
+                      { label: "Non lo so", value: "unknown" },
+                      { label: "0-1.000 €", value: "0-1000" },
+                      { label: "1-5.000 €", value: "1000-5000" },
+                      { label: "5-10.000 €", value: "5000-10000" },
+                      { label: "+10.000 €", value: "10000+" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`budget-circle ${
+                          formData.budget === option.value ? "selected" : ""
+                        }`}
+                        onClick={() =>
+                          handleFormInputChange({
+                            target: { name: "budget", value: option.value },
+                          })
+                        }
+                      >
+                        <span className="budget-label">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {errors.budget && (
+                    <span className="error-message budget-error">
+                      <FaExclamationCircle className="error-icon" />
+                      {errors.budget}
+                    </span>
+                  )}
+                </div>
+                <div className="form-actions">
+                  <button
+                    className="submit-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      generateFirstQuestion();
+                    }}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <FaSpinner className="spinner" />
+                    ) : (
+                      "COMINCIAMO!"
+                    )}
+                  </button>
+                  {errors.general && (
+                    <span className="error-message">
+                      <FaExclamationCircle className="error-icon" />
+                      <span
+                        dangerouslySetInnerHTML={{ __html: errors.general }}
+                      />
+                    </span>
+                  )}
+                  {Object.keys(errors).length > 0 && !errors.general && (
+                    <span className="error-message">
+                      <FaExclamationCircle className="error-icon" />
+                      Errore nel form. Controlla i campi sopra.
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>
