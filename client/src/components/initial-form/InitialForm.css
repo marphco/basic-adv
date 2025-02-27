@@ -341,9 +341,9 @@
     .initial-form {
         gap: 0.5rem;
     }
-    .category-grid {
+    /* .category-grid {
         gap: 0.3rem;
-    }
+    } */
     .category-box {
         padding: 0.5rem;
     }
