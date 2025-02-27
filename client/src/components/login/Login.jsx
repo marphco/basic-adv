@@ -85,7 +85,7 @@ const Login = ({ isDark }) => {
             </span>
           )}
           <div className="form-actions">
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button type="submit" className="login-submit-btn" disabled={loading}>
               {loading ? <FaSpinner className="spinner" /> : "Accedi"}
             </button>
           </div>

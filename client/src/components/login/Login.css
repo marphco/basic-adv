@@ -22,10 +22,37 @@
     padding: 20px;
   }
   
-  .submit-btn:disabled {
-    background-color: var(--foreground-color) !important;
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .login-submit-btn {
+    padding: .5rem .5rem !important;
+    background-color: var(--foreground-color);
+    color: white;
+    border: none;
+    display: flex;
+    justify-content:center;
+    margin: 0 auto;
+    width: 50%;
+    border-radius: 4px;
+    font-weight: 200;
+    cursor: pointer;
+    border: solid 1px var(--foreground-color);
+    transition: background-color 0.5s ease;
+    font-size: 1.2rem !important;
+  }
+  
+  .login-submit-btn:hover {
+    background: var(--background-color);
+    border: solid 1px var(--foreground-color);
+    color: var(--primary-text-color);
+  }
+  
+  .login-submit-btn:disabled {
+    background-color: #ccc;
     cursor: not-allowed;
-    opacity: 0.7;
   }
   
   .spinner {
