@@ -31,9 +31,26 @@ const ContactForm = ({
     });
   };
 
+  // Funzione per filtrare solo numeri e il prefisso "+"
+  const handlePhoneInput = (e) => {
+    const { name, value } = e.target;
+    // Consente solo numeri e il "+" iniziale, rimuovendo tutto il resto
+    const filteredValue = value
+      .replace(/[^0-9+]/g, "") // Rimuove tutto tranne numeri e "+"
+      .replace(/(^\+[^0-9])|(\+.*\+)/g, (match, p1) => (p1 ? "" : "+")); // Assicura che "+" sia solo all'inizio
+
+    setFormData((prevData) => ({
+      ...prevData,
+      contactInfo: {
+        ...prevData.contactInfo,
+        [name]: filteredValue,
+      },
+    }));
+  };
+
   return (
     <form
-      className="contact-form fade-in" // Aggiunto fade-in
+      className="contact-form fade-in"
       onSubmit={handleSubmitContactInfo}
       noValidate
     >
@@ -83,8 +100,9 @@ const ContactForm = ({
           id="phone"
           name="phone"
           value={formData.contactInfo.phone}
-          onChange={handleChange}
+          onChange={handlePhoneInput}
           placeholder="Telefono"
+          pattern="[0-9]*|(\+[0-9]+)" // Solo numeri o formato con "+" iniziale seguito da numeri
           className="form-input"
         />
       </div>

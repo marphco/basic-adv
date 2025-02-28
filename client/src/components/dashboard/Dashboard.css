@@ -1,12 +1,15 @@
 .dashboard {
   display: flex;
   padding-top: 10vh;
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
 }
 
 .sidebar {
   width: 250px;
-  background: #f0f0f0;
-  padding: 20px;
+  background: var(--foreground-color);
+  padding: 20px 0 20px 20px;
   position: fixed;
   top: 0;
   left: 0;
@@ -23,14 +26,86 @@
 .sidebar li {
   cursor: pointer;
   padding: 10px;
+  font-weight: 300;
+  color: white; /* Testo bianco su foreground */
+  transition: all 0.5s ease;
+  padding-left: 30px;
+  border-radius: 20px 0px 0px 20px; /* Angoli arrotondati */
+  transition: all .0s;
 }
 
-.sidebar li:hover {
-  background: #ddd;
+/* .sidebar li:hover {
+  background: var(--background-color);
+  border-radius: 20px 0px 0px 20px; 
+  color: var(--primary-text-color);
+} */
+
+/* Stile dell'elemento attivo nella sidebar */
+.sidebar ul li.active {
+  background: var(--background-color); /* Colore di sfondo dell'elemento attivo */
+  color: black; /* Colore del testo */
+  position: relative; /* Per posizionare i pseudo-elementi */
+  z-index: 1; /* Assicura che l'elemento attivo sia sopra gli altri */
+  border-radius: 40px 0 0 40px; /* Rimuove l'arrotondamento dall'elemento principale */
+  transition: all .0s;
 }
 
-.sidebar-toggle {
-  display: none;
+/* Pseudo-elemento per l'angolo superiore destro */
+.sidebar ul li.active::before {
+  content: '';
+  position: absolute;
+  top: -20px; /* Sopra l'elemento */
+  right: 0;
+  width: 20px; /* Larghezza della parte che sporge */
+  height: 20px; /* Altezza della parte sopra */
+  background: var(--foreground-color); /* Stesso colore dell'elemento attivo */
+  border-bottom-right-radius: 20px; /* Angolo arrotondato in basso a destra */
+  z-index: 2;
+  transition: all .0s;
+}
+
+.sidebar ul li.active .active-before::before {
+  content: '';
+  position: absolute;
+  top: -20px; /* Sopra l'elemento */
+  right: 0;
+  width: 20px; /* Larghezza della parte che sporge */
+  height: 20px; /* Altezza della parte sopra */
+  background: var(--background-color); /* Stesso colore dell'elemento attivo */
+  z-index: 1;
+  transition: all .0s;
+}
+
+
+/* Pseudo-elemento per l'angolo inferiore destro */
+.sidebar ul li.active::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; /* Sotto l'elemento */
+  right: 0;
+  width: 20px; /* Larghezza della parte che sporge */
+  height: 20px; /* Altezza della parte sotto */
+  background: var(--foreground-color); /* Stesso colore dell'elemento attivo */
+  border-top-right-radius: 20px; /* Angolo arrotondato in alto a destra */
+  z-index: 2;
+  transition: all .0s;
+}
+
+.sidebar ul li.active .active-after::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; /* Sopra l'elemento */
+  right: 0;
+  width: 20px; /* Larghezza della parte che sporge */
+  height: 20px; /* Altezza della parte sopra */
+  background: var(--background-color); /* Stesso colore dell'elemento attivo */
+  z-index: 1;
+  transition: all .0s;
+}
+
+.sidebar-toggle,
+.sidebar-close {
+  display: none; /* Nascondi entrambi i pulsanti su desktop */
 }
 
 .main-area {
@@ -39,6 +114,7 @@
   margin-left: 250px;
   overflow-y: auto;
   min-height: 100vh;
+  transition: all 0.5s ease;
 }
 
 .requests-table {
@@ -54,41 +130,47 @@ table {
 th, td {
   padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #d1d1d1;
+  font-weight: 300;
 }
 
 th {
-  background-color: #f4f4f4;
+  background: rgba(var(--foreground-color-rgb), 0.05);
   font-weight: 600;
+  color: var(--primary-text-color);
 }
 
 tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background: rgba(var(--background-color-rgb), 0.95);
 }
 
 tr:hover {
-  background-color: #f5f5f5;
+  background: rgba(var(--foreground-color-rgb), 0.1);
 }
 
 .status-icon.completed {
-  color: green;
+  color: var(--foreground-color);
 }
 
 .status-icon.pending {
-  color: orange;
+  color: var(--error-color);
 }
 
 .details-btn {
   padding: 5px 10px;
-  background: #007bff;
-  color: #fff;
+  background: var(--foreground-color);
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 300;
+  transition: all 0.5s ease;
 }
 
 .details-btn:hover {
-  background: #0056b3;
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--foreground-color);
 }
 
 .search-bar {
@@ -96,19 +178,31 @@ tr:hover {
 }
 
 .search-bar input {
-  padding: 8px;
+  padding: 0.75rem 0.5rem;
   width: 100%;
   max-width: 300px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: none;
+  border-bottom: 1px solid #d1d1d1;
+  border-radius: 0;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  background: transparent;
+  outline: none;
+  transition: all 0.5s ease;
+}
+
+.search-bar input:hover,
+.search-bar input:focus {
+  border-bottom-color: var(--foreground-color);
 }
 
 .request-details {
   display: flex;
-  background: #fff;
+  background: var(--background-color);
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  border: 1px solid #d1d1d1;
 }
 
 .details-sidebar {
@@ -124,21 +218,46 @@ tr:hover {
 .details-sidebar li {
   padding: 10px;
   cursor: pointer;
-  color: #333;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
+  color: var(--primary-text-color);
+  background: transparent;
+  border: 1px solid #d1d1d1;
   border-radius: 4px;
   margin-bottom: 5px;
+  font-weight: 300;
+  transition: all 0.5s ease;
 }
 
 .details-sidebar li.active {
-  background: #007bff;
-  color: #fff;
-  font-weight: bold;
+  background: var(--foreground-color);
+  color: white;
+  border-color: var(--foreground-color);
+}
+
+.details-sidebar li:hover:not(.active) {
+  background: rgba(var(--foreground-color-rgb), 0.1);
+  color: var(--foreground-color);
 }
 
 .details-content {
   flex: 1;
+  padding: 0 20px;
+}
+
+.details-content h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+}
+
+.details-content h3 {
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+}
+
+.details-content p {
+  font-weight: 300;
+  color: var(--primary-text-color);
 }
 
 .question-answer ul {
@@ -147,41 +266,71 @@ tr:hover {
 }
 
 .question-answer li.selected {
-  font-weight: bold;
-  color: green;
+  font-weight: 600;
+  color: var(--foreground-color);
 }
 
 .close-btn {
   margin-bottom: 20px;
   padding: 5px 10px;
-  background: #ff4444;
-  color: #fff;
+  background: var(--error-color);
+  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 300;
+  transition: all 0.5s ease;
 }
 
 .close-btn:hover {
-  background: #cc0000;
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--error-color);
 }
 
 .dashboard-home {
   display: flex;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .stat-card {
-  background: #fff;
+  background: var(--background-color);
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  border: 1px solid #d1d1d1;
   flex: 1;
   text-align: center;
   cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.stat-card h3 {
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+}
+
+.stat-card p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground-color);
 }
 
 .stat-card:hover {
-  background: #f5f5f5;
+  background: rgba(var(--foreground-color-rgb), 0.1);
+}
+
+.file-list-section {
+  padding: 20px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  background: var(--background-color);
+}
+
+.file-list-section h3 {
+  font-size: 1.2rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
 }
 
 .file-list-section li {
@@ -189,13 +338,16 @@ tr:hover {
   align-items: center;
   justify-content: space-between;
   padding: 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #d1d1d1;
+  font-weight: 300;
+  color: var(--primary-text-color);
 }
 
 .file-list-section a {
-  color: #007bff;
+  color: var(--foreground-color);
   text-decoration: none;
   margin-right: 10px;
+  transition: all 0.5s ease;
 }
 
 .file-list-section a:hover {
@@ -203,15 +355,20 @@ tr:hover {
 }
 
 .file-list-section button {
-  background-color: #ff4444;
+  background-color: var(--error-color);
   color: white;
   border: none;
   padding: 5px 10px;
+  border-radius: 4px;
   cursor: pointer;
+  font-weight: 300;
+  transition: all 0.5s ease;
 }
 
 .file-list-section button:hover {
-  background-color: #cc0000;
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--error-color);
 }
 
 @media (max-width: 768px) {
@@ -226,10 +383,6 @@ tr:hover {
   }
   .sidebar-toggle {
     display: block;
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1100;
   }
   .main-area {
     margin-left: 0;

@@ -395,6 +395,7 @@ const Dashboard = ({ isDark }) => {
         </button>
         <ul>
           <li
+            className={selectedSection === "home" ? "active" : ""}
             onClick={(event) => {
               event.stopPropagation();
               setSelectedSection("home");
@@ -402,9 +403,12 @@ const Dashboard = ({ isDark }) => {
               setIsSidebarOpen(false);
             }}
           >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
             Home
           </li>
           <li
+            className={selectedSection === "all" ? "active" : ""}
             onClick={(event) => {
               event.stopPropagation();
               setSelectedSection("all");
@@ -412,9 +416,12 @@ const Dashboard = ({ isDark }) => {
               setIsSidebarOpen(false);
             }}
           >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
             Tutte le Richieste
           </li>
           <li
+            className={selectedSection === "completed" ? "active" : ""}
             onClick={(event) => {
               event.stopPropagation();
               setSelectedSection("completed");
@@ -422,9 +429,12 @@ const Dashboard = ({ isDark }) => {
               setIsSidebarOpen(false);
             }}
           >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
             Completate
           </li>
           <li
+            className={selectedSection === "abandoned" ? "active" : ""}
             onClick={(event) => {
               event.stopPropagation();
               setSelectedSection("abandoned");
@@ -432,14 +442,19 @@ const Dashboard = ({ isDark }) => {
               setIsSidebarOpen(false);
             }}
           >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
             Abbandonate
           </li>
           <li
+            className={selectedSection === "fileList" ? "active" : ""}
             onClick={(event) => {
               event.stopPropagation();
               fetchFileList();
             }}
           >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
             Lista Allegati
           </li>
           <li onClick={handleLogout}>Logout</li>
