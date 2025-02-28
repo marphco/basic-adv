@@ -52,7 +52,7 @@
     width: 100%;
   }
   
-  .contact-form .submit-btn {
+  .contact-form .contact-submit-btn {
     padding: 0.75rem 2rem;
     background-color: var(--foreground-color);
     color: white;
@@ -65,14 +65,14 @@
     font-size: 1.2rem;
   }
   
-  .contact-form .submit-btn:hover {
+  .contact-form .contact-submit-btn:hover {
     background: var(--background-color);
     border: solid 1px var(--foreground-color);
     color: var(--primary-text-color);
   }
   
-  .contact-form .submit-btn:disabled {
-    background-color: #ccc;
+  .contact-form .contact-submit-btn:disabled {
+    background-color: var(--foreground-color);
     cursor: not-allowed;
   }
   

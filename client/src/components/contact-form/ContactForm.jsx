@@ -89,7 +89,7 @@ const ContactForm = ({
         />
       </div>
       <div className="form-actions">
-        <button type="submit" className="submit-btn" disabled={loading}>
+        <button type="submit" className="contact-submit-btn" disabled={loading}>
           {loading ? "Invio..." : "Invia"}
         </button>
       </div>

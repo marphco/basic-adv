@@ -88,11 +88,11 @@ const QuestionForm = ({
         )}
         <div className="form-actions">
           {loading ? (
-            <button className="submit-btn" disabled>
+            <button className="question-btn" disabled>
               <FaSpinner className="spinner" />
             </button>
           ) : (
-            <button className="submit-btn" type="submit">
+            <button className="question-btn" type="submit">
               Invia
             </button>
           )}
