@@ -33,8 +33,13 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Stato per la sidebar
+
   const openAboutUs = () => setIsAboutUsOpen(true);
   const closeAboutUs = () => setIsAboutUsOpen(false);
+
+  // Funzione per gestire l'apertura/chiusura della sidebar
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -104,11 +109,14 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         openAboutUs={openAboutUs}
         closeAboutUs={closeAboutUs}
         isMobile={isMobile}
+        toggleSidebar={toggleSidebar} // Passa toggleSidebar
+        isSidebarOpen={isSidebarOpen} // Passa isSidebarOpen
       />
-<div
+      <div
         className={`App ${isDashboard ? "dashboard-layout" : ""}`}
         ref={scrollContainerRef}
-      >        <Routes>
+      >
+        <Routes>
           <Route
             path="/"
             element={
@@ -143,7 +151,16 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           <Route path="/about-us" element={<AboutUs />} />
           {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
           <Route path="/login" element={<Login isDark={isDark} />} />
-          <Route path="/dashboard" element={<Dashboard isDark={isDark} />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                isDark={isDark}
+                toggleSidebar={toggleSidebar} // Passa toggleSidebar
+                isSidebarOpen={isSidebarOpen} // Passa isSidebarOpen
+              />
+            }
+          />
         </Routes>
       </div>
     </>

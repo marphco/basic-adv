@@ -6,6 +6,16 @@
   transition: all 0.5s ease;
 }
 
+.sidebar-logo {
+  margin-bottom: 9rem;
+}
+
+/* Stile per l'icona SVG */
+.logo-icon {
+  width: 2rem; /* Stessa dimensione delle icone FontAwesome */
+  height: 2rem;
+}
+
 .sidebar {
   width: 15vw; /* Cambia da 250px a 10vw */
   background: var(--foreground-color);
@@ -15,7 +25,7 @@
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  padding-top: 10vh;
+  padding-top: 12px;
 }
 
 .sidebar ul {

@@ -5,15 +5,23 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import LogoIcon from '../../assets/icon.svg'; // Importa l'icona
+import LogoIcon from '../../assets/icon.svg';
 
-const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
+const Navbar = ({
+  isDark,
+  setIsDark,
+  openAboutUs,
+  isMobile,
+  toggleSidebar = () => {}, // Parametro predefinito
+  isSidebarOpen = false,   // Parametro predefinito
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Controlla se siamo in /login o /dashboard
-  const isSpecialPage = location.pathname === "/login" || location.pathname === "/dashboard";
-
+  // Controlla se siamo in /login
+  const isLoginPage = location.pathname === "/login";
+  // Controlla se siamo in /dashboard
+  const isDashboardPage = location.pathname === "/dashboard";
   // Controlla se siamo in About Us o in una pagina progetto
   const inAboutUsOrProject =
     location.pathname === "/about-us" ||
@@ -25,7 +33,13 @@ const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
   };
 
   const toggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
+    if (isDashboardPage && isMobile) {
+      // In /dashboard su mobile, il menu hamburger apre la sidebar
+      toggleSidebar();
+    } else {
+      // Altrimenti, apre il menu a tendina
+      setIsMenuOpen((prev) => !prev);
+    }
   };
 
   const handleLinkClick = () => {
@@ -41,18 +55,30 @@ const Navbar = ({ isDark, setIsDark, openAboutUs, isMobile }) => {
   return (
     <div className="navbar-block">
       <nav className={classNames("navbar", { "dark-mode": isDark })}>
-        {isSpecialPage ? (
-          // Mostra solo l'icona del logo per /login e /dashboard
+        {isLoginPage ? (
+          // Mostra solo l'icona del logo per /login
           <Link to="/" className="navbar-logo">
             <img src={LogoIcon} alt="Logo" className="logo-icon" />
           </Link>
+        ) : isDashboardPage ? (
+          // In /dashboard
+          isMobile ? (
+            // Su mobile, mostra il menu hamburger che apre la sidebar
+            <div className="hamburger-menu" onClick={toggleMenu}>
+              <div className={classNames("hamburger", { open: isSidebarOpen, "dark-mode": isDark })} />
+              <div className={classNames("hamburger", { open: isSidebarOpen, "dark-mode": isDark })} />
+            </div>
+          ) : (
+            // Su desktop, non mostra nulla (contenuto vuoto)
+            <div className="navbar-empty"></div>
+          )
         ) : inAboutUsOrProject ? (
           // Mostra il pulsante [CHIUDI] per About Us e progetti
           <div className="navbar-close">
             <button onClick={handleClose}>[CHIUDI]</button>
           </div>
         ) : (
-          // Mostra il menu hamburger e i link standard
+          // Mostra il menu hamburger e i link standard per le altre pagine
           <>
             <div className="hamburger-menu" onClick={toggleMenu}>
               <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
@@ -107,6 +133,8 @@ Navbar.propTypes = {
   setIsDark: PropTypes.func.isRequired,
   openAboutUs: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
+  toggleSidebar: PropTypes.func,
+  isSidebarOpen: PropTypes.bool,
 };
 
 export default Navbar;

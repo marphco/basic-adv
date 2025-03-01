@@ -80,6 +80,11 @@
     height: 25px;
   }
 
+  .navbar-empty {
+    width: 25px;
+    height: 25px;
+  }
+
 @media screen and (max-width: 768px) {
     .navbar-menu {
         display: none;
