@@ -381,7 +381,9 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     setActiveKey(Date.now());
     setSelectedSection(section);
     setSelectedRequest(null);
-    toggleSidebar();
+    if (window.innerWidth <= 768 && isSidebarOpen) {
+        toggleSidebar();
+      }
   };
 
   const getFilteredRequests = () => {
