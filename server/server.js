@@ -19,7 +19,7 @@ const app = express();
 app.use(
   cors({
     origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Consentiti localhost e produzione
-    methods: ["GET", "POST", "DELETE"], // Aggiunto DELETE
+    methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
