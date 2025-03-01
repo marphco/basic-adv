@@ -7,7 +7,7 @@
 }
 
 .sidebar {
-  width: 250px;
+  width: 15vw; /* Cambia da 250px a 10vw */
   background: var(--foreground-color);
   padding: 20px 0 20px 20px;
   position: fixed;
@@ -25,13 +25,24 @@
 
 .sidebar li {
   cursor: pointer;
-  padding: 10px;
   font-weight: 300;
   color: white; /* Testo bianco su foreground */
-  transition: all 0.5s ease;
-  padding-left: 30px;
   border-radius: 20px 0px 0px 20px; /* Angoli arrotondati */
-  transition: all .0s;
+  display: flex; /* Usa flexbox per il layout in colonna */
+  flex-direction: column; /* Icona sopra, testo sotto */
+  align-items: center; /* Centra orizzontalmente */
+  justify-content: center; /* Centra verticalmente */
+  height: 68px; /* Imposta un'altezza fissa, ajusta se necessario */
+  transition: all 0s;
+}
+
+.sidebar li .icon {
+  font-size: 1rem; /* Dimensione dell'icona */
+  margin-bottom: 10px; /* Spazio tra icona e testo */
+}
+
+.sidebar li .text {
+  font-size: 0.65rem; /* Testo più piccolo */
 }
 
 /* .sidebar li:hover {
@@ -40,14 +51,18 @@
   color: var(--primary-text-color);
 } */
 
+.active {
+  background: var(--background-color);
+}
+
 /* Stile dell'elemento attivo nella sidebar */
 .sidebar ul li.active {
   background: var(--background-color); /* Colore di sfondo dell'elemento attivo */
-  color: black; /* Colore del testo */
+  color: var(--primary-text-color); /* Colore del testo */
   position: relative; /* Per posizionare i pseudo-elementi */
   z-index: 1; /* Assicura che l'elemento attivo sia sopra gli altri */
   border-radius: 40px 0 0 40px; /* Rimuove l'arrotondamento dall'elemento principale */
-  transition: all .0s;
+  transition: color .5s ease;
 }
 
 /* Pseudo-elemento per l'angolo superiore destro */
@@ -71,11 +86,10 @@
   right: 0;
   width: 20px; /* Larghezza della parte che sporge */
   height: 20px; /* Altezza della parte sopra */
-  background: var(--background-color); /* Stesso colore dell'elemento attivo */
+  background-color: var(--background-color); /* Stesso colore dell'elemento attivo */
   z-index: 1;
-  transition: all .0s;
+  transition: background-color .5s ease;
 }
-
 
 /* Pseudo-elemento per l'angolo inferiore destro */
 .sidebar ul li.active::after {
@@ -98,9 +112,24 @@
   right: 0;
   width: 20px; /* Larghezza della parte che sporge */
   height: 20px; /* Altezza della parte sopra */
-  background: var(--background-color); /* Stesso colore dell'elemento attivo */
+  background-color: var(--background-color); /* Stesso colore dell'elemento attivo */
   z-index: 1;
-  transition: all .0s;
+  transition: background-color .5s ease;
+}
+
+.sidebar li:hover:not(.active) {
+  color: black; /* Colore nero per testo e icone in hover */
+  transition: color .5s ease;
+}
+
+.sidebar li:hover:not(.active) .icon,
+.sidebar li:hover:not(.active) .text {
+  color: black; /* Assicura che sia icone che testo siano neri */
+  transition: color .5s ease;
+}
+
+.sidebar ul li.instant-transition.active {
+  transition: background-color 0s, color 0.5s ease;
 }
 
 .sidebar-toggle,
@@ -111,7 +140,7 @@
 .main-area {
   flex: 1;
   padding: 20px;
-  margin-left: 250px;
+  margin-left: 15vw;
   overflow-y: auto;
   min-height: 100vh;
   transition: all 0.5s ease;
@@ -369,6 +398,11 @@ tr:hover {
   background: var(--background-color);
   color: var(--primary-text-color);
   border: 1px solid var(--error-color);
+}
+
+.dashboard.light-theme .sidebar ul li.active,
+.dashboard.dark-theme .sidebar ul li.active {
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 @media (max-width: 768px) {

@@ -3,484 +3,510 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Dashboard.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faHome,
+  faList,
+  faCheck,
+  faTimes,
+  faFolder,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
 
 const Dashboard = ({ isDark }) => {
-  const [requests, setRequests] = useState([]);
-  const [selectedSection, setSelectedSection] = useState("home");
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [fileList, setFileList] = useState([]); // Stato per la lista dei file
-  const navigate = useNavigate();
-
-  const API_URL = (
-    import.meta.env.VITE_API_URL || "http://localhost:8080"
-  ).replace(/\/$/, "");
-  const requestsUrl = `${API_URL}/api/getRequests`;
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const fetchRequests = async () => {
+    const [requests, setRequests] = useState([]);
+    const [selectedSection, setSelectedSection] = useState("home");
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [fileList, setFileList] = useState([]);
+    const [activeKey, setActiveKey] = useState(Date.now()); // Stato per la chiave univoca
+    const navigate = useNavigate();
+  
+    const API_URL = (
+      import.meta.env.VITE_API_URL || "http://localhost:8080"
+    ).replace(/\/$/, "");
+    const requestsUrl = `${API_URL}/api/getRequests`;
+  
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+  
+      const fetchRequests = async () => {
+        try {
+          const response = await axios.get(requestsUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const sortedRequests = response.data.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setRequests(sortedRequests);
+        } catch (err) {
+          console.error("Errore nel caricamento delle richieste:", err);
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      };
+  
+      fetchRequests();
+    }, [navigate, requestsUrl]);
+  
+    // Funzione per recuperare la lista dei file
+    const fetchFileList = async () => {
       try {
-        const response = await axios.get(requestsUrl, {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${API_URL}/api/uploads/list`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const sortedRequests = response.data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setRequests(sortedRequests);
-      } catch (err) {
-        console.error("Errore nel caricamento delle richieste:", err);
-        localStorage.removeItem("token");
-        navigate("/login");
+        setFileList(response.data.files);
+        setActiveKey(Date.now()); // Aggiorna la chiave per forzare rimontaggio
+        setSelectedSection("fileList");
+        setSelectedRequest(null);
+        setIsSidebarOpen(false);
+      } catch (error) {
+        console.error("Errore nel recupero della lista dei file:", error);
+        alert("Errore nel caricamento della lista dei file");
       }
     };
-
-    fetchRequests();
-  }, [navigate, requestsUrl]);
-
-  // Funzione per recuperare la lista dei file
-  const fetchFileList = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/uploads/list`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFileList(response.data.files);
-      setSelectedSection("fileList"); // Mostra la sezione della lista
+  
+    // Funzione per cancellare un file
+    const deleteFile = async (filename) => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFileList(fileList.filter((file) => file.name !== filename));
+        alert(`File ${filename} cancellato con successo!`);
+      } catch (error) {
+        console.error("Errore nella cancellazione del file:", error);
+        alert("Errore nella cancellazione del file");
+      }
+    };
+  
+    const handleLogout = () => {
+      localStorage.removeItem("token");
+      navigate("/login");
+    };
+  
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  
+    // Funzione per gestire il cambio di sezione con rimontaggio
+    const handleSectionChange = (section) => {
+      setActiveKey(Date.now()); // Aggiorna la chiave per forzare rimontaggio
+      setSelectedSection(section);
       setSelectedRequest(null);
       setIsSidebarOpen(false);
-    } catch (error) {
-      console.error("Errore nel recupero della lista dei file:", error);
-      alert("Errore nel caricamento della lista dei file");
-    }
-  };
-
-  // Funzione per cancellare un file
-  const deleteFile = async (filename) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFileList(fileList.filter((file) => file.name !== filename)); // Aggiorna la lista
-      alert(`File ${filename} cancellato con successo!`);
-    } catch (error) {
-      console.error("Errore nella cancellazione del file:", error);
-      alert("Errore nella cancellazione del file");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  const getFilteredRequests = () => {
-    let filtered = requests;
-    if (selectedSection === "completed") {
-      filtered = requests.filter((req) => req.projectPlan);
-    } else if (selectedSection === "abandoned") {
-      filtered = requests.filter((req) => !req.projectPlan);
-    }
-    if (searchTerm) {
-      filtered = filtered.filter((req) =>
-        req.formData.contactInfo.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
+    };
+  
+    const getFilteredRequests = () => {
+      let filtered = requests;
+      if (selectedSection === "completed") {
+        filtered = requests.filter((req) => req.projectPlan);
+      } else if (selectedSection === "abandoned") {
+        filtered = requests.filter((req) => !req.projectPlan);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter((req) =>
+          req.formData.contactInfo.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
+      }
+      return filtered;
+    };
+  
+    const DashboardHome = () => {
+      const totalRequests = requests.length;
+      const completedRequests = requests.filter((req) => req.projectPlan).length;
+      const abandonedRequests = totalRequests - completedRequests;
+  
+      return (
+        <div className="dashboard-home">
+          <div
+            className="stat-card"
+            onClick={() => handleSectionChange("all")}
+          >
+            <h3>Numero Richieste</h3>
+            <p>{totalRequests}</p>
+          </div>
+          <div
+            className="stat-card"
+            onClick={() => handleSectionChange("completed")}
+          >
+            <h3>Completate</h3>
+            <p>{completedRequests}</p>
+          </div>
+          <div
+            className="stat-card"
+            onClick={() => handleSectionChange("abandoned")}
+          >
+            <h3>Abbandonate</h3>
+            <p>{abandonedRequests}</p>
+          </div>
+        </div>
       );
-    }
-    return filtered;
-  };
-
-  const DashboardHome = () => {
-    const totalRequests = requests.length;
-    const completedRequests = requests.filter((req) => req.projectPlan).length;
-    const abandonedRequests = totalRequests - completedRequests;
-
-    return (
-      <div className="dashboard-home">
-        <div
-          className="stat-card"
-          onClick={() => {
-            setSelectedSection("all");
-            setSelectedRequest(null);
-          }}
-        >
-          <h3>Numero Richieste</h3>
-          <p>{totalRequests}</p>
-        </div>
-        <div
-          className="stat-card"
-          onClick={() => {
-            setSelectedSection("completed");
-            setSelectedRequest(null);
-          }}
-        >
-          <h3>Completate</h3>
-          <p>{completedRequests}</p>
-        </div>
-        <div
-          className="stat-card"
-          onClick={() => {
-            setSelectedSection("abandoned");
-            setSelectedRequest(null);
-          }}
-        >
-          <h3>Abbandonate</h3>
-          <p>{abandonedRequests}</p>
-        </div>
+    };
+  
+    const RequestList = () => (
+      <div className="requests-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Data</th>
+              <th>Stato</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getFilteredRequests().map((req) => (
+              <tr key={req.sessionId}>
+                <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
+                <td>{req.formData.contactInfo.email}</td>
+                <td>
+                  {req.createdAt &&
+                  (req.createdAt.$date || typeof req.createdAt === "string")
+                    ? new Date(
+                        req.createdAt.$date || req.createdAt
+                      ).toLocaleDateString()
+                    : "Data non disponibile"}
+                </td>
+                <td>
+                  {req.projectPlan ? (
+                    <span className="status-icon completed">✅ Completata</span>
+                  ) : (
+                    <span className="status-icon pending">⏳ In attesa</span>
+                  )}
+                </td>
+                <td>
+                  <button
+                    className="details-btn"
+                    onClick={() => setSelectedRequest(req)}
+                  >
+                    Dettagli
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
-  };
-
-  const RequestList = () => (
-    <div className="requests-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Data</th>
-            <th>Stato</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          {getFilteredRequests().map((req) => (
-            <tr key={req.sessionId}>
-              <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
-              <td>{req.formData.contactInfo.email}</td>
-              <td>
-                {req.createdAt &&
-                (req.createdAt.$date || typeof req.createdAt === "string")
-                  ? new Date(
-                      req.createdAt.$date || req.createdAt
-                    ).toLocaleDateString()
-                  : "Data non disponibile"}
-              </td>
-              <td>
-                {req.projectPlan ? (
-                  <span className="status-icon completed">✅ Completata</span>
+  
+    const RequestDetails = ({ request }) => {
+      const [activeTab, setActiveTab] = useState("info");
+  
+      return (
+        <div className="request-details">
+          <div className="details-sidebar">
+            <button
+              onClick={() => setSelectedRequest(null)}
+              className="close-btn"
+            >
+              Chiudi
+            </button>
+            <ul>
+              <li
+                className={activeTab === "info" ? "active" : ""}
+                onClick={() => setActiveTab("info")}
+              >
+                {request.formData.contactInfo.name || "Utente Sconosciuto"}
+              </li>
+              <li
+                className={activeTab === "services" ? "active" : ""}
+                onClick={() => setActiveTab("services")}
+              >
+                Servizi Richiesti
+              </li>
+              <li
+                className={activeTab === "questions" ? "active" : ""}
+                onClick={() => setActiveTab("questions")}
+              >
+                Domande
+              </li>
+              <li
+                className={activeTab === "plan" ? "active" : ""}
+                onClick={() => setActiveTab("plan")}
+              >
+                Piano d’Azione
+              </li>
+              <li
+                className={activeTab === "attachments" ? "active" : ""}
+                onClick={() => setActiveTab("attachments")}
+              >
+                Allegati
+              </li>
+            </ul>
+          </div>
+          <div className="details-content">
+            {activeTab === "info" && (
+              <div>
+                <h2>
+                  {request.formData.contactInfo.name || "Utente Sconosciuto"}
+                </h2>
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {request.formData.contactInfo.email || "Non fornito"}
+                </p>
+                <p>
+                  <strong>Telefono:</strong>{" "}
+                  {request.formData.contactInfo.phone || "Non fornito"}
+                </p>
+                <p>
+                  <strong>Budget:</strong>{" "}
+                  {request.formData.budget === "unknown"
+                    ? "Non lo so"
+                    : request.formData.budget}
+                </p>
+                <p>
+                  <strong>Data:</strong>{" "}
+                  {request.createdAt &&
+                  (request.createdAt.$date || typeof request.createdAt === "string")
+                    ? new Date(
+                        request.createdAt.$date || request.createdAt
+                      ).toLocaleDateString()
+                    : "Data non disponibile"}
+                </p>
+                <p>
+                  <strong>Stato:</strong>{" "}
+                  {request.projectPlan ? "Completata" : "In attesa"}
+                </p>
+              </div>
+            )}
+            {activeTab === "services" && (
+              <div>
+                <h3>Servizi Richiesti</h3>
+                {request.servicesQueue && request.servicesQueue.length > 0 ? (
+                  <ul>
+                    {Array.isArray(request.servicesQueue) ? (
+                      request.servicesQueue.map((service, index) => (
+                        <li key={index}>{service}</li>
+                      ))
+                    ) : (
+                      <li>{String(request.servicesQueue)}</li>
+                    )}
+                  </ul>
                 ) : (
-                  <span className="status-icon pending">⏳ In attesa</span>
+                  <p>Nessun servizio richiesto disponibile</p>
                 )}
-              </td>
-              <td>
-                <button
-                  className="details-btn"
-                  onClick={() => setSelectedRequest(req)}
+              </div>
+            )}
+            {activeTab === "questions" && (
+              <div>
+                <h3>Domande e Risposte</h3>
+                {request.questions.map((q, index) => (
+                  <div key={index} className="question-answer">
+                    <p>
+                      <strong>{q.question}</strong>
+                    </p>
+                    {q.options.length > 0 ? (
+                      <ul>
+                        {q.options.map((option, optIndex) => (
+                          <li
+                            key={optIndex}
+                            className={
+                              request.answers[q.question]?.options?.includes(
+                                option
+                              )
+                                ? "selected"
+                                : ""
+                            }
+                          >
+                            {option}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>
+                        {request.answers[q.question]?.input || "Nessuna risposta"}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {activeTab === "plan" && (
+              <div>
+                <h3>Piano d’Azione</h3>
+                <pre>{request.projectPlan || "Non ancora generato"}</pre>
+              </div>
+            )}
+            {activeTab === "attachments" && (
+              <div>
+                <h3>Allegati</h3>
+                {request.formData.currentLogo ? (
+                  <a
+                    href={`${API_URL}/api/download/${request.formData.currentLogo}`}
+                    download
+                  >
+                    Scarica Logo Attuale
+                  </a>
+                ) : (
+                  <p>Nessun allegato disponibile</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+  
+    const FileListSection = () => (
+      <div className="file-list-section">
+        <h3>Lista Allegati</h3>
+        {fileList.length > 0 ? (
+          <ul>
+            {fileList.map((file, index) => (
+              <li key={index}>
+                {file.name} - {Math.round(file.size / 1024)} KB -{" "}
+                {new Date(file.lastModified).toLocaleDateString()}
+                <a
+                  href={`${API_URL}/api/download/${file.name}`}
+                  download
+                  style={{ marginLeft: "10px" }}
                 >
-                  Dettagli
+                  Scarica
+                </a>
+                <button
+                  onClick={() => deleteFile(file.name)}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Cancella
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
-  const RequestDetails = ({ request }) => {
-    const [activeTab, setActiveTab] = useState("info");
-
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Nessun file presente nella cartella uploads</p>
+        )}
+      </div>
+    );
+  
+    RequestDetails.propTypes = {
+      request: PropTypes.object.isRequired,
+    };
+  
     return (
-      <div className="request-details">
-        <div className="details-sidebar">
-          <button
-            onClick={() => setSelectedRequest(null)}
-            className="close-btn"
-          >
-            Chiudi
+      <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
+        <button className="sidebar-toggle" onClick={toggleSidebar}>
+          ☰
+        </button>
+  
+        <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+          <button className="sidebar-close" onClick={toggleSidebar}>
+            ×
           </button>
           <ul>
             <li
-              className={activeTab === "info" ? "active" : ""}
-              onClick={() => setActiveTab("info")}
+              key={`home-${activeKey}`} // Aggiungi key univoca
+              className={selectedSection === "home" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("home");
+              }}
             >
-              {request.formData.contactInfo.name || "Utente Sconosciuto"}
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faHome} />
+              </div>
+              <div className="text">Home</div>
             </li>
             <li
-              className={activeTab === "services" ? "active" : ""}
-              onClick={() => setActiveTab("services")}
+              key={`all-${activeKey}`} // Aggiungi key univoca
+              className={selectedSection === "all" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("all");
+              }}
             >
-              Servizi Richiesti
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faList} />
+              </div>
+              <div className="text">Tutte le Richieste</div>
             </li>
             <li
-              className={activeTab === "questions" ? "active" : ""}
-              onClick={() => setActiveTab("questions")}
+              key={`completed-${activeKey}`} // Aggiungi key univoca
+              className={selectedSection === "completed" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("completed");
+              }}
             >
-              Domande
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faCheck} />
+              </div>
+              <div className="text">Completate</div>
             </li>
             <li
-              className={activeTab === "plan" ? "active" : ""}
-              onClick={() => setActiveTab("plan")}
+              key={`abandoned-${activeKey}`} // Aggiungi key univoca
+              className={selectedSection === "abandoned" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("abandoned");
+              }}
             >
-              Piano d’Azione
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faTimes} />
+              </div>
+              <div className="text">Abbandonate</div>
             </li>
             <li
-              className={activeTab === "attachments" ? "active" : ""}
-              onClick={() => setActiveTab("attachments")}
+              key={`fileList-${activeKey}`} // Aggiungi key univoca
+              className={selectedSection === "fileList" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                fetchFileList();
+              }}
             >
-              Allegati
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faFolder} />
+              </div>
+              <div className="text">Lista Allegati</div>
+            </li>
+            <li key={`logout-${activeKey}`} onClick={handleLogout}>
+              <div className="icon">
+                <FontAwesomeIcon icon={faSignOutAlt} />
+              </div>
+              <div className="text">Logout</div>
             </li>
           </ul>
         </div>
-        <div className="details-content">
-          {activeTab === "info" && (
-            <div>
-              <h2>
-                {request.formData.contactInfo.name || "Utente Sconosciuto"}
-              </h2>
-              <p>
-                <strong>Email:</strong>{" "}
-                {request.formData.contactInfo.email || "Non fornito"}
-              </p>
-              <p>
-                <strong>Telefono:</strong>{" "}
-                {request.formData.contactInfo.phone || "Non fornito"}
-              </p>
-              <p>
-                <strong>Budget:</strong>{" "}
-                {request.formData.budget === "unknown"
-                  ? "Non lo so"
-                  : request.formData.budget}
-              </p>
-              <p>
-                <strong>Data:</strong>{" "}
-                {request.createdAt &&
-                (request.createdAt.$date ||
-                  typeof request.createdAt === "string")
-                  ? new Date(
-                      request.createdAt.$date || request.createdAt
-                    ).toLocaleDateString()
-                  : "Data non disponibile"}
-              </p>
-              <p>
-                <strong>Stato:</strong>{" "}
-                {request.projectPlan ? "Completata" : "In attesa"}
-              </p>
-            </div>
+  
+        <div className="main-area">
+          {selectedSection !== "home" && selectedSection !== "fileList" && (
+            <SearchBar onSearch={setSearchTerm} />
           )}
-          {activeTab === "services" && (
-            <div>
-              <h3>Servizi Richiesti</h3>
-              {request.servicesQueue && request.servicesQueue.length > 0 ? (
-                <ul>
-                  {Array.isArray(request.servicesQueue) ? (
-                    request.servicesQueue.map((service, index) => (
-                      <li key={index}>{service}</li>
-                    ))
-                  ) : (
-                    <li>{String(request.servicesQueue)}</li>
-                  )}
-                </ul>
-              ) : (
-                <p>Nessun servizio richiesto disponibile</p>
-              )}
-            </div>
-          )}
-          {activeTab === "questions" && (
-            <div>
-              <h3>Domande e Risposte</h3>
-              {request.questions.map((q, index) => (
-                <div key={index} className="question-answer">
-                  <p>
-                    <strong>{q.question}</strong>
-                  </p>
-                  {q.options.length > 0 ? (
-                    <ul>
-                      {q.options.map((option, optIndex) => (
-                        <li
-                          key={optIndex}
-                          className={
-                            request.answers[q.question]?.options?.includes(
-                              option
-                            )
-                              ? "selected"
-                              : ""
-                          }
-                        >
-                          {option}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>
-                      {request.answers[q.question]?.input || "Nessuna risposta"}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-          {activeTab === "plan" && (
-            <div>
-              <h3>Piano d’Azione</h3>
-              <pre>{request.projectPlan || "Non ancora generato"}</pre>
-            </div>
-          )}
-          {activeTab === "attachments" && (
-            <div>
-              <h3>Allegati</h3>
-              {request.formData.currentLogo ? (
-                <a
-                  href={`${API_URL}/api/download/${request.formData.currentLogo}`}
-                  download
-                >
-                  Scarica Logo Attuale
-                </a>
-              ) : (
-                <p>Nessun allegato disponibile</p>
-              )}
-            </div>
+          {selectedRequest ? (
+            <RequestDetails request={selectedRequest} />
+          ) : selectedSection === "home" ? (
+            <DashboardHome />
+          ) : selectedSection === "fileList" ? (
+            <FileListSection />
+          ) : (
+            <RequestList />
           )}
         </div>
       </div>
     );
   };
-
-  const FileListSection = () => (
-    <div className="file-list-section">
-      <h3>Lista Allegati</h3>
-      {fileList.length > 0 ? (
-        <ul>
-          {fileList.map((file, index) => (
-            <li key={index}>
-              {file.name} - {Math.round(file.size / 1024)} KB -{" "}
-              {new Date(file.lastModified).toLocaleDateString()}
-              <a
-                href={`${API_URL}/api/download/${file.name}`}
-                download
-                style={{ marginLeft: "10px" }}
-              >
-                Scarica
-              </a>
-              <button
-                onClick={() => deleteFile(file.name)}
-                style={{ marginLeft: "10px" }}
-              >
-                Cancella
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Nessun file presente nella cartella uploads</p>
-      )}
-    </div>
-  );
-
-  RequestDetails.propTypes = {
-    request: PropTypes.object.isRequired,
+  
+  Dashboard.propTypes = {
+    isDark: PropTypes.bool.isRequired,
   };
-
-  return (
-    <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
-      <button className="sidebar-toggle" onClick={toggleSidebar}>
-        ☰
-      </button>
-
-      <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-        <button className="sidebar-close" onClick={toggleSidebar}>
-          ×
-        </button>
-        <ul>
-          <li
-            className={selectedSection === "home" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelectedSection("home");
-              setSelectedRequest(null);
-              setIsSidebarOpen(false);
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            Home
-          </li>
-          <li
-            className={selectedSection === "all" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelectedSection("all");
-              setSelectedRequest(null);
-              setIsSidebarOpen(false);
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            Tutte le Richieste
-          </li>
-          <li
-            className={selectedSection === "completed" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelectedSection("completed");
-              setSelectedRequest(null);
-              setIsSidebarOpen(false);
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            Completate
-          </li>
-          <li
-            className={selectedSection === "abandoned" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelectedSection("abandoned");
-              setSelectedRequest(null);
-              setIsSidebarOpen(false);
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            Abbandonate
-          </li>
-          <li
-            className={selectedSection === "fileList" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              fetchFileList();
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            Lista Allegati
-          </li>
-          <li onClick={handleLogout}>Logout</li>
-        </ul>
-      </div>
-
-      <div className="main-area">
-        {selectedSection !== "home" && selectedSection !== "fileList" && (
-          <SearchBar onSearch={setSearchTerm} />
-        )}
-        {selectedRequest ? (
-          <RequestDetails request={selectedRequest} />
-        ) : selectedSection === "home" ? (
-          <DashboardHome />
-        ) : selectedSection === "fileList" ? (
-          <FileListSection />
-        ) : (
-          <RequestList />
-        )}
-      </div>
-    </div>
-  );
-};
-
-Dashboard.propTypes = {
-  isDark: PropTypes.bool.isRequired,
-};
-
-export default Dashboard;
+  
+  export default Dashboard;
