@@ -110,10 +110,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   return (
     <div className="request-details">
       <div className="details-sidebar">
-        <button
-          onClick={() => setSelectedRequest(null)}
-          className="close-btn"
-        >
+        <button onClick={() => setSelectedRequest(null)} className="close-btn">
           Chiudi
         </button>
         <ul>
@@ -341,7 +338,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     };
 
     fetchRequests();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchFileList = async () => {
@@ -413,9 +410,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         <ul>
           <li className="sidebar-logo">
             <Link to="/">
-              <div className="icon">
-                <img src={LogoIcon} alt="Home Logo" className="logo-icon" />
-              </div>
+              <img src={LogoIcon} alt="Home Logo" className="logo-icon" />
             </Link>
           </li>
           <li

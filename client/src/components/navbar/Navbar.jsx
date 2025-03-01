@@ -1,5 +1,5 @@
 // Navbar.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
@@ -16,7 +16,8 @@ const Navbar = ({
   isSidebarOpen = false,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isHamburgerVisible, setIsHamburgerVisible] = useState(true);
+  const hamburgerRef = useRef(null); // Riferimento per l'elemento hamburger
+
   const location = useLocation();
 
   const isLoginPage = location.pathname === "/login";
@@ -32,8 +33,10 @@ const Navbar = ({
 
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
-      // Nasconde immediatamente l'hamburger al click
-      setIsHamburgerVisible(false);
+      // Applica immediatamente visibility: hidden al click
+      if (hamburgerRef.current) {
+        hamburgerRef.current.style.visibility = "hidden";
+      }
       toggleSidebar();
     } else {
       setIsMenuOpen((prev) => !prev);
@@ -42,8 +45,8 @@ const Navbar = ({
 
   // Sincronizza la visibilità dell'hamburger con la chiusura della sidebar
   useEffect(() => {
-    if (isDashboardPage && isMobile && !isSidebarOpen) {
-      setIsHamburgerVisible(true);
+    if (isDashboardPage && isMobile && hamburgerRef.current) {
+      hamburgerRef.current.style.visibility = isSidebarOpen ? "hidden" : "visible";
     }
   }, [isSidebarOpen, isDashboardPage, isMobile]);
 
@@ -67,9 +70,8 @@ const Navbar = ({
         ) : isDashboardPage ? (
           isMobile ? (
             <div
-              className={classNames("hamburger-menu", {
-                "hamburger-hidden": !isHamburgerVisible,
-              })}
+              ref={hamburgerRef}
+              className="hamburger-menu"
               onClick={toggleMenu}
             >
               <div className={classNames("hamburger", { "dark-mode": isDark })} />

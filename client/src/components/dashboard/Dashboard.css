@@ -6,26 +6,32 @@
   transition: all 0.5s ease;
 }
 
-.sidebar-logo {
-  margin-bottom: 9rem;
-}
-
-/* Stile per l'icona SVG */
-.logo-icon {
-  width: 2rem; /* Stessa dimensione delle icone FontAwesome */
-  height: 2rem;
-}
-
 .sidebar {
   width: 15vw; /* Cambia da 250px a 10vw */
   background: var(--foreground-color);
-  padding: 20px 0 20px 20px;
+  padding: 0px 0 20px 20px;
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  padding-top: 6px;
+  z-index: 999999999;
+}
+
+.sidebar-logo {
+  margin-bottom: 9rem;
+  padding: 0;
+  height: auto;
+}
+
+.sidebar-logo a {
+  display: block;
+}
+
+.logo-icon {
+  width: 2rem;
+  height: 2rem;
+  display: block;
 }
 
 .sidebar ul {
@@ -34,7 +40,6 @@
 }
 
 .sidebar li {
-  cursor: pointer;
   font-weight: 300;
   color: white; /* Testo bianco su foreground */
   border-radius: 20px 0px 0px 20px; /* Angoli arrotondati */
@@ -422,10 +427,11 @@ tr:hover {
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 200px;
+    width: 30vw;
+    padding: 0 10px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    z-index: 1000;
+    z-index: 999999999;
   }
   .sidebar.open {
     transform: translateX(0);
@@ -466,5 +472,30 @@ tr:hover {
     height: 100%;
     background: rgba(0, 0, 0, 0.3); /* Opzionale: sfondo semi-trasparente */
     z-index: 999; /* Sotto la sidebar (z-index: 1000) ma sopra il contenuto */
+  }
+  .sidebar ul li.active {
+    border-radius: 40px 40px 40px 40px; /* Rimuove l'arrotondamento dall'elemento principale */
+    transition: color .5s ease;
+  }
+  
+  /* Pseudo-elemento per l'angolo superiore destro */
+  .sidebar ul li.active::before {
+    display: none;
+  }
+  
+  .sidebar ul li.active .active-before::before {
+    display: none;
+  }
+  
+  /* Pseudo-elemento per l'angolo inferiore destro */
+  .sidebar ul li.active::after {
+    display: none;
+  }
+  
+  .sidebar ul li.active .active-after::after {
+    display: none;
+  }
+  .sidebar li .icon {
+  margin-bottom: 0;
   }
 }
