@@ -25,7 +25,7 @@
   left: 0;
   height: 100vh;
   overflow-y: auto;
-  padding-top: 12px;
+  padding-top: 6px;
 }
 
 .sidebar ul {
@@ -411,6 +411,10 @@ tr:hover {
   border: 1px solid var(--error-color);
 }
 
+.sidebar-overlay {
+  display: none; /* Nascosto di default */
+}
+
 .dashboard.light-theme .sidebar ul li.active,
 .dashboard.dark-theme .sidebar ul li.active {
   transition: background-color 0.5s ease, color 0.5s ease;
@@ -452,5 +456,15 @@ tr:hover {
   }
   .details-sidebar li {
     padding: 8px;
+  }
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Opzionale: sfondo semi-trasparente */
+    z-index: 999; /* Sotto la sidebar (z-index: 1000) ma sopra il contenuto */
   }
 }

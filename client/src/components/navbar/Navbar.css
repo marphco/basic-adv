@@ -85,6 +85,11 @@
     height: 25px;
   }
 
+  .hamburger-hidden {
+    visibility: hidden !important;
+    transition: visibility 0s linear !important;
+  }
+
 @media screen and (max-width: 768px) {
     .navbar-menu {
         display: none;
