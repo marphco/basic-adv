@@ -165,6 +165,7 @@
 .requests-table {
   width: 100%;
   overflow-x: auto;
+  margin-top: 20px;
 }
 
 table {
@@ -183,6 +184,13 @@ th {
   background: rgba(var(--foreground-color-rgb), 0.05);
   font-weight: 600;
   color: var(--primary-text-color);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+/* Rendi la riga cliccabile */
+.request-row {
+  cursor: pointer;
 }
 
 tr:nth-child(even) {
@@ -193,29 +201,73 @@ tr:hover {
   background: rgba(var(--foreground-color-rgb), 0.1);
 }
 
-.status-icon.completed {
-  color: var(--foreground-color);
+/* Stili per Allegati */
+.attachment-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
 }
 
-.status-icon.pending {
-  color: var(--error-color);
-}
-
-.details-btn {
-  padding: 5px 10px;
+.attachment-icon.available {
   background: var(--foreground-color);
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 300;
-  transition: all 0.5s ease;
 }
 
-.details-btn:hover {
+.attachment-icon.unavailable {
+  background: var(--error-color);
+  color: white;
+}
+
+/* Stili per Feedback */
+.feedback-btn {
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feedback-btn.worked {
+  background: var(--foreground-color);
+  color: white;
+}
+
+.feedback-btn.not-worked {
+  background: var(--error-color);
+  color: white;
+}
+
+.feedback-btn:hover {
+  opacity: 0.8;
+}
+
+/* Stili per il pulsante Elimina */
+.delete-btn {
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--error-color);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
   background: var(--background-color);
-  color: var(--primary-text-color);
-  border: 1px solid var(--foreground-color);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
 }
 
 .search-bar {

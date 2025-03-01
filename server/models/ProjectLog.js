@@ -132,6 +132,12 @@ const ProjectLogSchema = new mongoose.Schema({
     of: [String], // Array di stringhe per ogni servizio
     default: {},
   },
+
+  // Stato visualizzazione delle richieste ricevute
+  feedback: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Esporta il modello Mongoose

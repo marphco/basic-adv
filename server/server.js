@@ -169,6 +169,58 @@ app.delete("/api/uploads/delete/:filename", authenticateToken, async (req, res) 
   }
 });
 
+// Endpoint per aggiornare il feedback di una richiesta
+app.put("/api/requests/:sessionId/feedback", authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { feedback } = req.body;
+
+    if (typeof feedback !== "boolean") {
+      return res.status(400).json({ error: "Il campo feedback deve essere un booleano" });
+    }
+
+    const projectLog = await ProjectLog.findOne({ sessionId });
+    if (!projectLog) {
+      return res.status(404).json({ error: "Richiesta non trovata" });
+    }
+
+    projectLog.feedback = feedback;
+    await projectLog.save();
+
+    res.status(200).json({ message: "Feedback aggiornato con successo" });
+  } catch (error) {
+    console.error("Errore nell'aggiornamento del feedback:", error);
+    res.status(500).json({ error: "Errore nell'aggiornamento del feedback" });
+  }
+});
+
+// Endpoint per eliminare una richiesta
+app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const projectLog = await ProjectLog.findOne({ sessionId });
+    if (!projectLog) {
+      return res.status(404).json({ error: "Richiesta non trovata" });
+    }
+
+    // Se la richiesta ha un file allegato, eliminalo
+    if (projectLog.formData.currentLogo) {
+      const filePath = path.join("/app/uploads", projectLog.formData.currentLogo);
+      if (fs.existsSync(filePath)) {
+        await fs.promises.unlink(filePath);
+      }
+    }
+
+    await ProjectLog.deleteOne({ sessionId });
+
+    res.status(200).json({ message: "Richiesta eliminata con successo" });
+  } catch (error) {
+    console.error("Errore nella cancellazione della richiesta:", error);
+    res.status(500).json({ error: "Errore nella cancellazione della richiesta" });
+  }
+});
+
 // Altre route esistenti
 app.get("/", (req, res) => {
   res.send("Server is running!");

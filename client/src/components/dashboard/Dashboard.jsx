@@ -11,8 +11,10 @@ import {
   faTimes,
   faFolder,
   faSignOutAlt,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
+import ConfirmModal from "./ConfirmModal"; // Importa il nuovo componente
 import LogoIcon from "../../assets/icon-white.svg";
 
 // Componente DashboardHome
@@ -51,56 +53,100 @@ DashboardHome.propTypes = {
 };
 
 // Componente RequestList
-const RequestList = ({ getFilteredRequests, setSelectedRequest }) => (
-  <div className="requests-table">
-    <table>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Data</th>
-          <th>Stato</th>
-          <th>Azioni</th>
-        </tr>
-      </thead>
-      <tbody>
-        {getFilteredRequests().map((req) => (
-          <tr key={req.sessionId}>
-            <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
-            <td>{req.formData.contactInfo.email}</td>
-            <td>
-              {req.createdAt &&
-              (req.createdAt.$date || typeof req.createdAt === "string")
-                ? new Date(
-                    req.createdAt.$date || req.createdAt
-                  ).toLocaleDateString()
-                : "Data non disponibile"}
-            </td>
-            <td>
-              {req.projectPlan ? (
-                <span className="status-icon completed">✅ Completata</span>
-              ) : (
-                <span className="status-icon pending">⏳ In attesa</span>
-              )}
-            </td>
-            <td>
-              <button
-                className="details-btn"
-                onClick={() => setSelectedRequest(req)}
-              >
-                Dettagli
-              </button>
-            </td>
+const RequestList = ({
+  getFilteredRequests,
+  setSelectedRequest,
+  selectedSection,
+  updateFeedback,
+  confirmDelete, // Cambiamo la prop per gestire la modale
+}) => {
+  return (
+    <div className="requests-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Data</th>
+            <th>Allegati</th>
+            {selectedSection === "all" && <th>Stato</th>}
+            <th>Feedback</th>
+            <th></th> {/* Colonna per il pulsante Elimina */}
           </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+        </thead>
+        <tbody>
+          {getFilteredRequests().map((req) => (
+            <tr
+              key={req.sessionId}
+              onClick={() => setSelectedRequest(req)}
+              className="request-row"
+            >
+              <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
+              <td>{req.formData.contactInfo.email || "Non fornito"}</td>
+              <td>
+                {req.createdAt &&
+                (req.createdAt.$date || typeof req.createdAt === "string")
+                  ? new Date(
+                      req.createdAt.$date || req.createdAt
+                    ).toLocaleDateString()
+                  : "Data non disponibile"}
+              </td>
+              <td>
+                {req.formData.currentLogo ? (
+                  <span className="attachment-icon available">
+                    <FontAwesomeIcon icon={faCheck} />
+                  </span>
+                ) : (
+                  <span className="attachment-icon unavailable">
+                    <FontAwesomeIcon icon={faTimes} />
+                  </span>
+                )}
+              </td>
+              {selectedSection === "all" && (
+                <td>
+                  {req.projectPlan ? (
+                    <span className="status-icon completed">✅ Completata</span>
+                  ) : (
+                    <span className="status-icon pending">⏳ In attesa</span>
+                  )}
+                </td>
+              )}
+              <td>
+                <button
+                  className={`feedback-btn ${req.feedback ? "worked" : "not-worked"}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateFeedback(req.sessionId, !req.feedback);
+                  }}
+                >
+                  <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
+                </button>
+              </td>
+              <td>
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirmDelete(req.sessionId);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 RequestList.propTypes = {
   getFilteredRequests: PropTypes.func.isRequired,
   setSelectedRequest: PropTypes.func.isRequired,
+  selectedSection: PropTypes.string.isRequired,
+  updateFeedback: PropTypes.func.isRequired,
+  confirmDelete: PropTypes.func.isRequired, // Nuova prop per gestire la modale
 };
 
 // Componente RequestDetails
@@ -307,11 +353,14 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [fileList, setFileList] = useState([]);
   const [activeKey, setActiveKey] = useState(Date.now());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState(null);
   const navigate = useNavigate();
 
-  const API_URL = (
-    import.meta.env.VITE_API_URL || "http://localhost:8080"
-  ).replace(/\/$/, "");
+  const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(
+    /\/$/,
+    ""
+  );
   const requestsUrl = `${API_URL}/api/getRequests`;
 
   useEffect(() => {
@@ -326,9 +375,12 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         const response = await axios.get(requestsUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const sortedRequests = response.data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
+        const sortedRequests = response.data
+          .map((req) => ({
+            ...req,
+            feedback: req.feedback !== undefined ? req.feedback : false,
+          }))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setRequests(sortedRequests);
       } catch (err) {
         console.error("Errore nel caricamento delle richieste:", err);
@@ -338,7 +390,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     };
 
     fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchFileList = async () => {
@@ -372,6 +424,49 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     }
   };
 
+  const updateFeedback = async (sessionId, newFeedback) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${API_URL}/api/requests/${sessionId}/feedback`,
+        { feedback: newFeedback },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setRequests(
+        requests.map((req) =>
+          req.sessionId === sessionId ? { ...req, feedback: newFeedback } : req
+        )
+      );
+    } catch (err) {
+      console.error("Errore nell'aggiornamento del feedback:", err);
+      alert("Errore nell'aggiornamento del feedback");
+    }
+  };
+
+  const confirmDelete = (sessionId) => {
+    setRequestToDelete(sessionId);
+    setIsModalOpen(true);
+  };
+
+  const deleteRequest = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/api/requests/${requestToDelete}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRequests(requests.filter((req) => req.sessionId !== requestToDelete));
+      if (selectedRequest?.sessionId === requestToDelete) {
+        setSelectedRequest(null);
+      }
+    } catch (err) {
+      console.error("Errore nella cancellazione della richiesta:", err);
+      alert("Errore nella cancellazione della richiesta");
+    } finally {
+      setIsModalOpen(false);
+      setRequestToDelete(null);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -382,8 +477,8 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     setSelectedSection(section);
     setSelectedRequest(null);
     if (window.innerWidth <= 768 && isSidebarOpen) {
-        toggleSidebar();
-      }
+      toggleSidebar();
+    }
   };
 
   const getFilteredRequests = () => {
@@ -524,9 +619,20 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
           <RequestList
             getFilteredRequests={getFilteredRequests}
             setSelectedRequest={setSelectedRequest}
+            selectedSection={selectedSection}
+            updateFeedback={updateFeedback}
+            confirmDelete={confirmDelete}
           />
         )}
       </div>
+
+      {/* Modale di conferma per l'eliminazione */}
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={deleteRequest}
+        message="Sei sicuro di voler eliminare questa richiesta?"
+      />
     </div>
   );
 };
