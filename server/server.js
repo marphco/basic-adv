@@ -175,22 +175,41 @@ app.put("/api/requests/:sessionId/feedback", authenticateToken, async (req, res)
     const { sessionId } = req.params;
     const { feedback } = req.body;
 
+    console.log(`Tentativo di aggiornamento feedback per sessionId: ${sessionId}, nuovo valore: ${feedback}`);
+
     if (typeof feedback !== "boolean") {
+      console.log("Errore: Il campo feedback non è un booleano");
       return res.status(400).json({ error: "Il campo feedback deve essere un booleano" });
     }
 
     const projectLog = await ProjectLog.findOne({ sessionId });
     if (!projectLog) {
+      console.log(`Errore: Nessun documento trovato con sessionId: ${sessionId}`);
       return res.status(404).json({ error: "Richiesta non trovata" });
     }
 
+    console.log("Documento trovato:", projectLog);
+
+    // Verifica se il campo feedback esiste
+    if (projectLog.feedback === undefined) {
+      console.log(`Il campo feedback non esiste nel documento. Inizializzo a false.`);
+      projectLog.feedback = false;
+    }
+
     projectLog.feedback = feedback;
+
+    // Salva il documento con gestione degli errori
     await projectLog.save();
 
+    console.log(`Feedback aggiornato con successo per sessionId: ${sessionId}`);
     res.status(200).json({ message: "Feedback aggiornato con successo" });
   } catch (error) {
-    console.error("Errore nell'aggiornamento del feedback:", error);
-    res.status(500).json({ error: "Errore nell'aggiornamento del feedback" });
+    console.error("Errore dettagliato nell'aggiornamento del feedback:", error);
+    res.status(500).json({
+      error: "Errore nell'aggiornamento del feedback",
+      details: error.message,
+      stack: error.stack,
+    });
   }
 });
 
