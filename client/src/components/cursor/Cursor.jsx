@@ -112,6 +112,8 @@ export const Cursor = ({ isDark }) => {
       if (dot.classList.contains('clicked')) {
         dot.classList.remove('clicked');
       }
+      // Rimuovi .hovered dopo il rilascio del clic
+      removeHoverClass();
     };
 
     document.addEventListener('mousemove', moveCursor);
@@ -137,7 +139,6 @@ export const Cursor = ({ isDark }) => {
 
     const cleanup = initializeCursor();
 
-    // Listener per il cambio di visibilità della pagina
     const handleVisibilityChange = () => {
       if (!document.hidden && dotRef.current && circleRef.current) {
         dotRef.current.style.visibility = 'visible';

@@ -20,6 +20,7 @@ import {
   faThumbsUp,
   faSortUp,
   faSortDown,
+  faEuroSign,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
 import ConfirmModal from "./ConfirmModal";
@@ -163,6 +164,7 @@ const RequestList = ({
               {selectedSection === "all" ? (
                 <>
                   <th className="centered" onClick={() => handleSort("budget")}>
+                    <FontAwesomeIcon icon={faEuroSign} className="header-icon" />{" "}
                     Budget
                     <span className="sort-icons">
                       <FontAwesomeIcon
@@ -234,6 +236,7 @@ const RequestList = ({
               ) : (
                 <>
                   <th className="centered" onClick={() => handleSort("budget")}>
+                    <FontAwesomeIcon icon={faEuroSign} className="header-icon" />{" "}
                     Budget
                     <span className="sort-icons">
                       <FontAwesomeIcon
