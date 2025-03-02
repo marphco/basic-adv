@@ -636,35 +636,35 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
       }
     };
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
     const fetchRequests = async () => {
-      try {
-        const response = await axios.get(requestsUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const sortedRequests = response.data
-          .map((req) => ({
-            ...req,
-            feedback: req.feedback !== undefined ? req.feedback : false,
-          }))
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setRequests(sortedRequests);
-      } catch (err) {
-        console.error("Errore nel caricamento delle richieste:", err);
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-    };
-
-    fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+        try {
+          const token = localStorage.getItem("token");
+          const response = await axios.get(requestsUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const sortedRequests = response.data
+            .map((req) => ({
+              ...req,
+              feedback: req.feedback !== undefined ? req.feedback : false,
+            }))
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setRequests(sortedRequests);
+        } catch (err) {
+          console.error("Errore nel caricamento delle richieste:", err);
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      };
+    
+      useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+        fetchRequests();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [navigate]);
 
   const fetchFileList = async () => {
     try {
@@ -700,16 +700,15 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   const updateFeedback = async (sessionId, newFeedback) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
+      const response = await axios.put(
         `${API_URL}/api/requests/${sessionId}/feedback`,
         { feedback: newFeedback },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setRequests(
-        requests.map((req) =>
-          req.sessionId === sessionId ? { ...req, feedback: newFeedback } : req
-        )
-      );
+      console.log("Risposta dal server:", response.data); // Debug
+
+      // Ricarica i dati dal server per garantire sincronizzazione
+      await fetchRequests();
     } catch (err) {
       console.error("Errore nell'aggiornamento del feedback:", err);
       alert("Errore nell'aggiornamento del feedback");
