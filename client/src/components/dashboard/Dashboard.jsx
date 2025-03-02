@@ -18,7 +18,7 @@ import {
   faCalendar,
   faChartLine,
   faThumbsUp,
-  faSortUp, 
+  faSortUp,
   faSortDown,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
@@ -186,7 +186,7 @@ const RequestList = ({
                 />
               </span>
             </th>
-            <th onClick={() => handleSort("feedback")}>
+            <th className="centered" onClick={() => handleSort("feedback")}>
               <FontAwesomeIcon icon={faThumbsUp} className="header-icon" />{" "}
               Feedback
               <span className="sort-icons">
@@ -249,7 +249,7 @@ const RequestList = ({
                   ""
                 )}
               </td>
-              <td>
+              <td className="centered">
                 <button
                   className={`feedback-btn ${
                     req.feedback ? "worked" : "not-worked"

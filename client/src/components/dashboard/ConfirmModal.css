@@ -37,7 +37,7 @@
   .modal-confirm-btn {
     background: var(--error-color);
     color: white;
-    border: none;
+    border: solid 1px var(--error-color);
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
@@ -54,11 +54,11 @@
   .modal-cancel-btn {
     background: var(--foreground-color);
     color: white;
-    border: none;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 300;
+    border: 1px solid var(--foreground-color);
     transition: all 0.3s ease;
   }
   

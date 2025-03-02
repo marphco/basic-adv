@@ -192,6 +192,16 @@ th.centered {
   text-align: center;
 }
 
+.centered {
+  text-align: center;
+}
+
+/* Centra i pulsanti all'interno di celle centrate */
+td.centered .feedback-btn {
+  display: block; /* Rende il pulsante un elemento block */
+  margin: 0 auto; /* Centra orizzontalmente il pulsante */
+}
+
 /* Rendi la riga cliccabile */
 .request-row {
   cursor: pointer;
@@ -476,11 +486,13 @@ th.centered {
 .status-badge.completed {
   background-color: #81ffb1;
   color: #166a24;
+  min-width: 83px;
 }
 
 .status-badge.pending {
   background-color: rgb(230, 230, 230);
   color: grey;
+  max-width: 83px;
 }
 
 .sidebar-overlay {
@@ -526,7 +538,7 @@ th.centered {
   color: var(--foreground-color);
   opacity: 0.3;
   transition: opacity 0.3s ease;
-  margin: -5px 0; /* Margine negativo per avvicinare le icone */
+  margin: -6px 0; /* Margine negativo per avvicinare le icone */
 }
 
 .sort-icons .sort-icon.active {
