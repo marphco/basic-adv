@@ -181,11 +181,15 @@ th, td {
 }
 
 th {
-  /* background: var(--foreground-color); */
   font-weight: 600;
   color: var(--primary-text-color);
   text-transform: uppercase;
   font-size: 0.9rem;
+}
+
+/* Per le colonne centrate (Allegati e Stato), sovrascriviamo justify-content */
+th.centered {
+  text-align: center;
 }
 
 /* Rendi la riga cliccabile */
@@ -508,16 +512,25 @@ th {
   font-size: 0.9rem; /* Dimensione dell'icona, in linea con il testo */
 }
 
-.sort-icon {
+.sort-icons {
+  display: inline-block; /* Inline-block per allinearsi con il testo */
+  vertical-align: middle; /* Allinea verticalmente con il testo */
   margin-left: 8px;
-  color: var(--foreground-color);
-  font-size: 0.8rem;
-  opacity: 0.5; /* Leggermente trasparente quando non attivo */
-  transition: opacity 0.3s ease;
+  line-height: 0.8;
 }
 
-.sort-icon.active {
-  opacity: 1; /* Pieno colore quando attivo */
+/* Stile per ciascuna freccia */
+.sort-icons .sort-icon {
+  display: block; /* Ogni icona su una nuova linea */
+  font-size: 0.6rem;
+  color: var(--foreground-color);
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+  margin: -5px 0; /* Margine negativo per avvicinare le icone */
+}
+
+.sort-icons .sort-icon.active {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
