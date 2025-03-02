@@ -198,6 +198,7 @@ th {
   color: var(--primary-text-color);
   text-transform: uppercase;
   font-size: 0.9rem;
+  transition: color .5s ease;
 }
 
 /* Per le colonne centrate (Allegati e Stato), sovrascriviamo justify-content */
@@ -596,6 +597,30 @@ td.centered .feedback-btn {
 .budget-badge.budget-10k-plus {
   background-color: rgba(255, 64, 3, 1); /* Opacità piena per "10K+" */
   color: white;
+}
+
+/* Stili per la sezione Info Utente in RequestDetails */
+.info-section {
+  padding: 20px;
+}
+
+.info-section h2 {
+  margin-bottom: 20px;
+  color: var(--primary-text-color);
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px; /* Aumentato da 15px a 20px per più spazio */
+  font-size: 1rem;
+  color: var(--primary-text-color);
+}
+
+.info-icon {
+  margin-right: 12px; /* Leggermente aumentato per più spaziatura dal testo */
+  color: var(--foreground-color);
+  font-size: 1rem; /* Ridotto da 1.2rem a 1rem per icone più piccole */
 }
 
 @media (max-width: 768px) {

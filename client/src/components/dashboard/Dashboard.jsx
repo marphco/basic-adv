@@ -68,7 +68,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     }
     fetchRequests();
     setIsMounted(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchFileList = async () => {
@@ -199,8 +199,14 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         const statusB = b.projectPlan ? 1 : 0;
         return sortDirection === "asc" ? statusA - statusB : statusB - statusA;
       } else if (sortField === "budget") {
-        const budgetA = a.formData.budget === "unknown" ? -1 : parseFloat(a.formData.budget) || 0;
-        const budgetB = b.formData.budget === "unknown" ? -1 : parseFloat(b.formData.budget) || 0;
+        const budgetA =
+          a.formData.budget === "unknown"
+            ? -1
+            : parseFloat(a.formData.budget) || 0;
+        const budgetB =
+          b.formData.budget === "unknown"
+            ? -1
+            : parseFloat(b.formData.budget) || 0;
         return sortDirection === "asc" ? budgetA - budgetB : budgetB - budgetA;
       } else if (sortField === "attachment") {
         const attachmentA = a.formData.currentLogo ? 1 : 0;
@@ -234,9 +240,11 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         activeKey={activeKey}
       />
       <div className="main-area">
-        {selectedSection !== "home" && selectedSection !== "fileList" && (
-          <SearchBar onSearch={setSearchTerm} />
-        )}
+        {selectedSection !== "home" &&
+          selectedSection !== "fileList" &&
+          !selectedRequest && ( // Aggiunto !selectedRequest
+            <SearchBar onSearch={setSearchTerm} />
+          )}
         {selectedRequest ? (
           <RequestDetails
             request={selectedRequest}

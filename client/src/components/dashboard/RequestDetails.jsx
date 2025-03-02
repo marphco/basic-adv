@@ -1,5 +1,13 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEnvelope,
+  faPhone,
+  faEuroSign,
+  faCalendar,
+  faChartLine,
+} from "@fortawesome/free-solid-svg-icons";
 
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const [activeTab, setActiveTab] = useState("info");
@@ -15,7 +23,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
             className={activeTab === "info" ? "active" : ""}
             onClick={() => setActiveTab("info")}
           >
-            {request.formData.contactInfo.name || "Info Utente"}
+            Info Generali {/* Fissato a "Info Generali" */}
           </li>
           <li
             className={activeTab === "services" ? "active" : ""}
@@ -45,35 +53,39 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
       </div>
       <div className="details-content">
         {activeTab === "info" && (
-          <div>
+          <div className="info-section">
             <h2>{request.formData.contactInfo.name || "Nome non fornito"}</h2>
-            <p>
-              <strong>Email:</strong>{" "}
-              {request.formData.contactInfo.email || "-"}
-            </p>
-            <p>
-              <strong>Telefono:</strong>{" "}
-              {request.formData.contactInfo.phone || "-"}
-            </p>
-            <p>
-              <strong>Budget:</strong>{" "}
-              {request.formData.budget === "unknown"
-                ? "Non lo so"
-                : request.formData.budget}
-            </p>
-            <p>
-              <strong>Data:</strong>{" "}
-              {request.createdAt &&
-              (request.createdAt.$date || typeof request.createdAt === "string")
-                ? new Date(
-                    request.createdAt.$date || request.createdAt
-                  ).toLocaleDateString()
-                : "Data non disponibile"}
-            </p>
-            <p>
-              <strong>Stato:</strong>{" "}
-              {request.projectPlan ? "Completata" : "In attesa"}
-            </p>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faEnvelope} className="info-icon" />
+              <span>{request.formData.contactInfo.email || "-"}</span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faPhone} className="info-icon" />
+              <span>{request.formData.contactInfo.phone || "-"}</span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faEuroSign} className="info-icon" />
+              <span>
+                {request.formData.budget === "unknown"
+                  ? "Non lo so"
+                  : request.formData.budget}
+              </span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faCalendar} className="info-icon" />
+              <span>
+                {request.createdAt &&
+                (request.createdAt.$date || typeof request.createdAt === "string")
+                  ? new Date(
+                      request.createdAt.$date || request.createdAt
+                    ).toLocaleDateString()
+                  : "Data non disponibile"}
+              </span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faChartLine} className="info-icon" />
+              <span>{request.projectPlan ? "Completata" : "In attesa"}</span>
+            </div>
           </div>
         )}
         {activeTab === "services" && (
