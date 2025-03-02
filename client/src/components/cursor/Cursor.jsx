@@ -10,48 +10,38 @@ export const Cursor = ({ isDark }) => {
   const circleX = useRef(0);
   const circleY = useRef(0);
 
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      return; // Non attivare il cursore personalizzato su dispositivi mobili
-    }
-
+  const initializeCursor = () => {
     const dot = dotRef.current;
     const circle = circleRef.current;
-    const speed = 0.12;
+
+    if (!dot || !circle) return;
+
+    dot.style.visibility = 'visible';
+    circle.style.visibility = 'visible';
 
     const moveCursor = (e) => {
       mouseX.current = e.clientX;
       mouseY.current = e.clientY;
-
-      if (dot) {
-        dot.style.left = `${mouseX.current}px`;
-        dot.style.top = `${mouseY.current}px`;
-      }
+      dot.style.left = `${mouseX.current}px`;
+      dot.style.top = `${mouseY.current}px`;
     };
 
     const animateCircle = () => {
-      circleX.current += (mouseX.current - circleX.current) * speed;
-      circleY.current += (mouseY.current - circleY.current) * speed;
-
-      if (circle) {
-        circle.style.left = `${circleX.current}px`;
-        circle.style.top = `${circleY.current}px`;
-      }
-
+      circleX.current += (mouseX.current - circleX.current) * 0.12;
+      circleY.current += (mouseY.current - circleY.current) * 0.12;
+      circle.style.left = `${circleX.current}px`;
+      circle.style.top = `${circleY.current}px`;
       requestAnimationFrame(animateCircle);
     };
 
-    // Event handlers per hover, input focus, ecc.
     const addHoverClass = () => {
-      dot?.classList.add('hovered');
-      circle?.classList.add('hovered');
+      dot.classList.add('hovered');
+      circle.classList.add('hovered');
     };
 
     const removeHoverClass = () => {
-      dot?.classList.remove('hovered');
-      circle?.classList.remove('hovered');
+      dot.classList.remove('hovered');
+      circle.classList.remove('hovered');
     };
 
     const handlePointerEnter = (e) => {
@@ -68,14 +58,14 @@ export const Cursor = ({ isDark }) => {
               inputType === 'tel' ||
               inputType === 'password'
             ) {
-              dot?.classList.add('hidden');
-              circle?.classList.add('hidden');
+              dot.classList.add('hidden');
+              circle.classList.add('hidden');
             } else if (inputType === 'checkbox' || inputType === 'radio') {
               addHoverClass();
             }
           } else if (target.tagName === 'TEXTAREA') {
-            dot?.classList.add('hidden');
-            circle?.classList.add('hidden');
+            dot.classList.add('hidden');
+            circle.classList.add('hidden');
           } else {
             addHoverClass();
           }
@@ -97,14 +87,14 @@ export const Cursor = ({ isDark }) => {
               inputType === 'tel' ||
               inputType === 'password'
             ) {
-              dot?.classList.remove('hidden');
-              circle?.classList.remove('hidden');
+              dot.classList.remove('hidden');
+              circle.classList.remove('hidden');
             } else if (inputType === 'checkbox' || inputType === 'radio') {
               removeHoverClass();
             }
           } else if (target.tagName === 'TEXTAREA') {
-            dot?.classList.remove('hidden');
-            circle?.classList.remove('hidden');
+            dot.classList.remove('hidden');
+            circle.classList.remove('hidden');
           } else {
             removeHoverClass();
           }
@@ -113,14 +103,14 @@ export const Cursor = ({ isDark }) => {
     };
 
     const handleMouseDown = () => {
-      if (!dot?.classList.contains('clicked')) {
-        dot?.classList.add('clicked');
+      if (!dot.classList.contains('clicked')) {
+        dot.classList.add('clicked');
       }
     };
 
     const handleMouseUp = () => {
-      if (dot?.classList.contains('clicked')) {
-        dot?.classList.remove('clicked');
+      if (dot.classList.contains('clicked')) {
+        dot.classList.remove('clicked');
       }
     };
 
@@ -139,9 +129,30 @@ export const Cursor = ({ isDark }) => {
       document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('mouseup', handleMouseUp);
     };
+  };
+
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
+
+    const cleanup = initializeCursor();
+
+    // Listener per il cambio di visibilità della pagina
+    const handleVisibilityChange = () => {
+      if (!document.hidden && dotRef.current && circleRef.current) {
+        dotRef.current.style.visibility = 'visible';
+        circleRef.current.style.visibility = 'visible';
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (cleanup) cleanup();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
-  // Aggiorna le classi CSS quando isDark cambia
   useEffect(() => {
     const dot = dotRef.current;
     const circle = circleRef.current;

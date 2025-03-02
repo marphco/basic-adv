@@ -1,3 +1,16 @@
+* {
+  cursor: inherit !important; /* Reset per evitare cursori nascosti */
+}
+
+html, body {
+  cursor: auto !important;
+}
+
+.custom-cursor-dot, .custom-cursor-circle {
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
 .dashboard {
   display: flex;
   padding-top: 10vh;

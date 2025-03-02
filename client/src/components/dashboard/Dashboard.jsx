@@ -24,6 +24,7 @@ import {
 import SearchBar from "./SearchBar";
 import ConfirmModal from "./ConfirmModal";
 import LogoIcon from "../../assets/icon-white.svg";
+import { Cursor } from "../cursor/Cursor"; // Importa Cursor.jsx
 
 const formatDate = (date) => {
   const day = String(date.getDate()).padStart(2, "0");
@@ -620,6 +621,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     const [requestToDelete, setRequestToDelete] = useState(null);
     const [sortField, setSortField] = useState("createdAt");
     const [sortDirection, setSortDirection] = useState("desc");
+    const [isMounted, setIsMounted] = useState(false); // Stato per controllare il montaggio
     const navigate = useNavigate();
   
     const API_URL = (
@@ -635,37 +637,39 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         setSortDirection("asc");
       }
     };
-
+  
     const fetchRequests = async () => {
-        try {
-          const token = localStorage.getItem("token");
-          const response = await axios.get(requestsUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          console.log("Dati ricevuti dal server:", response.data);
-          const sortedRequests = response.data
-            .map((req) => ({
-              ...req,
-              feedback: req.feedback, // Usa il valore diretto dal server
-            }))
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          setRequests(sortedRequests);
-        } catch (err) {
-          console.error("Errore nel caricamento delle richieste:", err);
-          localStorage.removeItem("token");
-          navigate("/login");
-        }
-      };
-    
-      useEffect(() => {
+      try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-        fetchRequests();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [navigate]);
+        const response = await axios.get(requestsUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("Dati ricevuti dal server:", response.data);
+        const sortedRequests = response.data
+          .map((req) => ({
+            ...req,
+            feedback: req.feedback,
+          }))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setRequests(sortedRequests);
+      } catch (err) {
+        console.error("Errore nel caricamento delle richieste:", err);
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    };
+  
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+      fetchRequests();
+      setIsMounted(true); // Segna il componente come montato
+      console.log("Dashboard montato");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [navigate]);
 
   const fetchFileList = async () => {
     try {
@@ -815,6 +819,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
 
   return (
     <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
+      {isMounted && <Cursor isDark={isDark} />} {/* Monta Cursor solo dopo il caricamento */}
       {isSidebarOpen && (
         <div className="sidebar-overlay" onClick={toggleSidebar}></div>
       )}

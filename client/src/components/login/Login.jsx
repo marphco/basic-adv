@@ -32,16 +32,16 @@ const Login = ({ isDark }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Attiva lo spinner
+    setLoading(true);
     try {
       const response = await axios.post(loginUrl, { username, password });
       localStorage.setItem("token", response.data.token);
-      navigate("/dashboard");
+      window.location.href = "/dashboard"; // Usa un refresh completo invece di navigate
     // eslint-disable-next-line no-unused-vars
     } catch (err) {
-      setError("Credenziali non valide"); // Messaggio di errore
+      setError("Credenziali non valide");
     } finally {
-      setLoading(false); // Disattiva lo spinner
+      setLoading(false);
     }
   };
 
