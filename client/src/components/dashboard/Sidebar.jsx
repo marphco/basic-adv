@@ -13,6 +13,7 @@ import LogoIcon from "../../assets/icon-white.svg";
 
 const Sidebar = ({
   isSidebarOpen,
+  // eslint-disable-next-line no-unused-vars
   toggleSidebar,
   selectedSection,
   handleSectionChange,
