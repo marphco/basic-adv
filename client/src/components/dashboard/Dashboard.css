@@ -505,14 +505,18 @@ td.centered .feedback-btn {
 }
 
 /* Tema dark */
-.dashboard.dark-theme th,
+.dashboard.dark-theme th {
+  border-bottom: 1px solid var(--foreground-color);
+}
 .dashboard.dark-theme td {
   border-bottom: 1px solid rgba(228, 228, 228, 0.1);
   transition: border-bottom .5s ease;
 }
 
 /* Tema light */
-.dashboard.light-theme th,
+.dashboard.light-theme th {
+  border-bottom: 1px solid var(--foreground-color);
+}
 .dashboard.light-theme td {
   border-bottom: 1px solid rgba(228, 228, 228, 0.9);
   transition: border-bottom .5s ease;

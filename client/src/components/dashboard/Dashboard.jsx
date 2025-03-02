@@ -25,6 +25,13 @@ import SearchBar from "./SearchBar";
 import ConfirmModal from "./ConfirmModal"; // Importa il nuovo componente
 import LogoIcon from "../../assets/icon-white.svg";
 
+const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
 // Componente DashboardHome
 const DashboardHome = ({ handleSectionChange, requests }) => {
   const totalRequests = requests.length;
@@ -62,93 +69,27 @@ DashboardHome.propTypes = {
 
 // Componente RequestList
 const RequestList = ({
-  getFilteredRequests,
-  setSelectedRequest,
-  selectedSection,
-  updateFeedback,
-  confirmDelete,
-  sortField, // Aggiungi sortField come prop
-  sortDirection, // Aggiungi sortDirection come prop
-  handleSort, // Aggiungi handleSort come prop
-}) => {
-  return (
-    <div className="requests-table">
-      <table>
-        <thead>
-          <tr>
-            <th onClick={() => handleSort("name")}>
-              <FontAwesomeIcon icon={faUser} className="header-icon" /> Nome
-              <span className="sort-icons">
-                <FontAwesomeIcon
-                  icon={faSortUp}
-                  className={`sort-icon ${
-                    sortField === "name" && sortDirection === "asc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faSortDown}
-                  className={`sort-icon ${
-                    sortField === "name" && sortDirection === "desc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-              </span>
-            </th>
-            <th onClick={() => handleSort("email")}>
-              <FontAwesomeIcon icon={faEnvelope} className="header-icon" />{" "}
-              Email
-              <span className="sort-icons">
-                <FontAwesomeIcon
-                  icon={faSortUp}
-                  className={`sort-icon ${
-                    sortField === "email" && sortDirection === "asc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faSortDown}
-                  className={`sort-icon ${
-                    sortField === "email" && sortDirection === "desc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-              </span>
-            </th>
-            <th onClick={() => handleSort("createdAt")}>
-              <FontAwesomeIcon icon={faCalendar} className="header-icon" /> Data
-              <span className="sort-icons">
-                <FontAwesomeIcon
-                  icon={faSortUp}
-                  className={`sort-icon ${
-                    sortField === "createdAt" && sortDirection === "asc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faSortDown}
-                  className={`sort-icon ${
-                    sortField === "createdAt" && sortDirection === "desc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-              </span>
-            </th>
-            {selectedSection === "all" && (
-              <th className="centered" onClick={() => handleSort("status")}>
-                <FontAwesomeIcon icon={faChartLine} className="header-icon" />{" "}
-                Stato
+    getFilteredRequests,
+    setSelectedRequest,
+    selectedSection,
+    updateFeedback,
+    confirmDelete,
+    sortField,
+    sortDirection,
+    handleSort,
+  }) => {
+    return (
+      <div className="requests-table">
+        <table>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort("name")}>
+                <FontAwesomeIcon icon={faUser} className="header-icon" /> Nome
                 <span className="sort-icons">
                   <FontAwesomeIcon
                     icon={faSortUp}
                     className={`sort-icon ${
-                      sortField === "status" && sortDirection === "asc"
+                      sortField === "name" && sortDirection === "asc"
                         ? "active"
                         : ""
                     }`}
@@ -156,130 +97,194 @@ const RequestList = ({
                   <FontAwesomeIcon
                     icon={faSortDown}
                     className={`sort-icon ${
-                      sortField === "status" && sortDirection === "desc"
+                      sortField === "name" && sortDirection === "desc"
                         ? "active"
                         : ""
                     }`}
                   />
                 </span>
               </th>
-            )}
-            <th className="centered" onClick={() => handleSort("attachment")}>
-              <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
-              Allegati
-              <span className="sort-icons">
-                <FontAwesomeIcon
-                  icon={faSortUp}
-                  className={`sort-icon ${
-                    sortField === "attachment" && sortDirection === "asc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faSortDown}
-                  className={`sort-icon ${
-                    sortField === "attachment" && sortDirection === "desc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-              </span>
-            </th>
-            <th className="centered" onClick={() => handleSort("feedback")}>
-              <FontAwesomeIcon icon={faThumbsUp} className="header-icon" />{" "}
-              Feedback
-              <span className="sort-icons">
-                <FontAwesomeIcon
-                  icon={faSortUp}
-                  className={`sort-icon ${
-                    sortField === "feedback" && sortDirection === "asc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-                <FontAwesomeIcon
-                  icon={faSortDown}
-                  className={`sort-icon ${
-                    sortField === "feedback" && sortDirection === "desc"
-                      ? "active"
-                      : ""
-                  }`}
-                />
-              </span>
-            </th>
-            <th></th> {/* Colonna per il pulsante Elimina, senza ordinamento */}
-          </tr>
-        </thead>
-        <tbody>
-          {getFilteredRequests().map((req) => (
-            <tr
-              key={req.sessionId}
-              onClick={() => setSelectedRequest(req)}
-              className="request-row"
-            >
-              <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
-              <td>{req.formData.contactInfo.email || "Non fornita"}</td>
-              <td>
-                {req.createdAt &&
-                (req.createdAt.$date || typeof req.createdAt === "string")
-                  ? new Date(
-                      req.createdAt.$date || req.createdAt
-                    ).toLocaleDateString()
-                  : "Data non disponibile"}
-              </td>
-              {selectedSection === "all" && (
-                <td className="centered">
-                  <span
-                    className={`status-badge ${
-                      req.projectPlan ? "completed" : "pending"
-                    }`}
-                  >
-                    {req.projectPlan ? "Completa" : "Incompleta"}
-                  </span>
-                </td>
-              )}
-              <td className="centered">
-                {req.formData.currentLogo ? (
+              <th onClick={() => handleSort("email")}>
+                <FontAwesomeIcon icon={faEnvelope} className="header-icon" />{" "}
+                Email
+                <span className="sort-icons">
                   <FontAwesomeIcon
-                    icon={faPaperclip}
-                    className="attachment-icon"
+                    icon={faSortUp}
+                    className={`sort-icon ${
+                      sortField === "email" && sortDirection === "asc"
+                        ? "active"
+                        : ""
+                    }`}
                   />
-                ) : (
-                  ""
-                )}
-              </td>
-              <td className="centered">
-                <button
-                  className={`feedback-btn ${
-                    req.feedback ? "worked" : "not-worked"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateFeedback(req.sessionId, !req.feedback);
-                  }}
-                >
-                  <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
-                </button>
-              </td>
-              <td>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    confirmDelete(req.sessionId);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
+                  <FontAwesomeIcon
+                    icon={faSortDown}
+                    className={`sort-icon ${
+                      sortField === "email" && sortDirection === "desc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                </span>
+              </th>
+              <th onClick={() => handleSort("createdAt")}>
+                <FontAwesomeIcon icon={faCalendar} className="header-icon" /> Data
+                <span className="sort-icons">
+                  <FontAwesomeIcon
+                    icon={faSortUp}
+                    className={`sort-icon ${
+                      sortField === "createdAt" && sortDirection === "asc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                  <FontAwesomeIcon
+                    icon={faSortDown}
+                    className={`sort-icon ${
+                      sortField === "createdAt" && sortDirection === "desc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                </span>
+              </th>
+              {selectedSection === "all" && (
+                <th className="centered" onClick={() => handleSort("status")}>
+                  <FontAwesomeIcon icon={faChartLine} className="header-icon" />{" "}
+                  Stato
+                  <span className="sort-icons">
+                    <FontAwesomeIcon
+                      icon={faSortUp}
+                      className={`sort-icon ${
+                        sortField === "status" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
+                    />
+                    <FontAwesomeIcon
+                      icon={faSortDown}
+                      className={`sort-icon ${
+                        sortField === "status" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
+                    />
+                  </span>
+                </th>
+              )}
+              <th className="centered" onClick={() => handleSort("attachment")}>
+                <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
+                Allegati
+                <span className="sort-icons">
+                  <FontAwesomeIcon
+                    icon={faSortUp}
+                    className={`sort-icon ${
+                      sortField === "attachment" && sortDirection === "asc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                  <FontAwesomeIcon
+                    icon={faSortDown}
+                    className={`sort-icon ${
+                      sortField === "attachment" && sortDirection === "desc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                </span>
+              </th>
+              <th className="centered" onClick={() => handleSort("feedback")}>
+                <FontAwesomeIcon icon={faThumbsUp} className="header-icon" />{" "}
+                Feedback
+                <span className="sort-icons">
+                  <FontAwesomeIcon
+                    icon={faSortUp}
+                    className={`sort-icon ${
+                      sortField === "feedback" && sortDirection === "asc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                  <FontAwesomeIcon
+                    icon={faSortDown}
+                    className={`sort-icon ${
+                      sortField === "feedback" && sortDirection === "desc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                </span>
+              </th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+          </thead>
+          <tbody>
+            {getFilteredRequests().map((req) => (
+              <tr
+                key={req.sessionId}
+                onClick={() => setSelectedRequest(req)}
+                className="request-row"
+              >
+                <td>{req.formData.contactInfo.name || "-"}</td>
+                <td>{req.formData.contactInfo.email || "-"}</td>
+                <td>
+                  {req.createdAt &&
+                  (req.createdAt.$date || typeof req.createdAt === "string")
+                    ? formatDate(new Date(req.createdAt.$date || req.createdAt))
+                    : "Data non disponibile"}
+                </td>
+                {selectedSection === "all" && (
+                  <td className="centered">
+                    <span
+                      className={`status-badge ${
+                        req.projectPlan ? "completed" : "pending"
+                      }`}
+                    >
+                      {req.projectPlan ? "Completa" : "Incompleta"}
+                    </span>
+                  </td>
+                )}
+                <td className="centered">
+                  {req.formData.currentLogo ? (
+                    <FontAwesomeIcon
+                      icon={faPaperclip}
+                      className="attachment-icon"
+                    />
+                  ) : (
+                    ""
+                  )}
+                </td>
+                <td className="centered">
+                  <button
+                    className={`feedback-btn ${
+                      req.feedback ? "worked" : "not-worked"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateFeedback(req.sessionId, !req.feedback);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
+                  </button>
+                </td>
+                <td>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirmDelete(req.sessionId);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
 RequestList.propTypes = {
   getFilteredRequests: PropTypes.func.isRequired,
@@ -307,7 +312,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
             className={activeTab === "info" ? "active" : ""}
             onClick={() => setActiveTab("info")}
           >
-            {request.formData.contactInfo.name || "Utente Sconosciuto"}
+            {request.formData.contactInfo.name || "Info Utente"}
           </li>
           <li
             className={activeTab === "services" ? "active" : ""}
@@ -338,14 +343,14 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
       <div className="details-content">
         {activeTab === "info" && (
           <div>
-            <h2>{request.formData.contactInfo.name || "Utente Sconosciuto"}</h2>
+            <h2>{request.formData.contactInfo.name || "Nome non fornito"}</h2>
             <p>
               <strong>Email:</strong>{" "}
-              {request.formData.contactInfo.email || "Non fornito"}
+              {request.formData.contactInfo.email || "-"}
             </p>
             <p>
               <strong>Telefono:</strong>{" "}
-              {request.formData.contactInfo.phone || "Non fornito"}
+              {request.formData.contactInfo.phone || "-"}
             </p>
             <p>
               <strong>Budget:</strong>{" "}
@@ -653,14 +658,14 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     // Ordinamento
     return filtered.sort((a, b) => {
       if (sortField === "name") {
-        const nameA = a.formData.contactInfo.name || "Utente Sconosciuto";
-        const nameB = b.formData.contactInfo.name || "Utente Sconosciuto";
+        const nameA = a.formData.contactInfo.name || "-";
+        const nameB = b.formData.contactInfo.name || "-";
         return sortDirection === "asc"
           ? nameA.localeCompare(nameB)
           : nameB.localeCompare(nameA);
       } else if (sortField === "email") {
-        const emailA = a.formData.contactInfo.email || "Non fornita";
-        const emailB = b.formData.contactInfo.email || "Non fornita";
+        const emailA = a.formData.contactInfo.email || "-";
+        const emailB = b.formData.contactInfo.email || "-";
         return sortDirection === "asc"
           ? emailA.localeCompare(emailB)
           : emailB.localeCompare(emailA);
