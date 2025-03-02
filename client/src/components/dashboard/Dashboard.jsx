@@ -13,6 +13,13 @@ import {
   faSignOutAlt,
   faTrash,
   faPaperclip,
+  faUser,
+  faEnvelope,
+  faCalendar,
+  faChartLine,
+  faThumbsUp,
+  faArrowUp,
+  faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
 import ConfirmModal from "./ConfirmModal"; // Importa il nuovo componente
@@ -55,103 +62,128 @@ DashboardHome.propTypes = {
 
 // Componente RequestList
 const RequestList = ({
-  getFilteredRequests,
-  setSelectedRequest,
-  selectedSection,
-  updateFeedback,
-  confirmDelete,
-}) => {
-  return (
-    <div className="requests-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Data</th>
-            <th>Allegati</th>
-            {selectedSection === "all" && <th>Stato</th>}
-            <th>Feedback</th>
-            <th></th> {/* Colonna per il pulsante Elimina */}
-          </tr>
-        </thead>
-        <tbody>
-          {getFilteredRequests().map((req) => (
-            <tr
-              key={req.sessionId}
-              onClick={() => setSelectedRequest(req)}
-              className="request-row"
-            >
-              <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
-              <td>{req.formData.contactInfo.email || "Non fornita"}</td>
-              <td>
-                {req.createdAt &&
-                (req.createdAt.$date || typeof req.createdAt === "string")
-                  ? new Date(
-                      req.createdAt.$date || req.createdAt
-                    ).toLocaleDateString()
-                  : "Data non disponibile"}
-              </td>
-              <td>
-                {req.formData.currentLogo ? (
-                  <FontAwesomeIcon
-                    icon={faPaperclip}
-                    className="attachment-icon"
-                  />
-                ) : (
-                  ""
-                )}
-              </td>
+    getFilteredRequests,
+    setSelectedRequest,
+    selectedSection,
+    updateFeedback,
+    confirmDelete,
+    sortField, // Aggiungi sortField come prop
+    sortDirection, // Aggiungi sortDirection come prop
+    handleSort, // Aggiungi handleSort come prop
+  }) => {
+    return (
+      <div className="requests-table">
+        <table>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort("name")}>
+                <FontAwesomeIcon icon={faUser} className="header-icon" /> Nome
+                <FontAwesomeIcon
+                  icon={sortField === "name" && sortDirection === "asc" ? faArrowUp : faArrowDown}
+                  className={`sort-icon ${sortField === "name" ? "active" : ""}`}
+                />
+              </th>
+              <th>
+                <FontAwesomeIcon icon={faEnvelope} className="header-icon" /> Email
+              </th>
+              <th onClick={() => handleSort("createdAt")}>
+                <FontAwesomeIcon icon={faCalendar} className="header-icon" /> Data
+                <FontAwesomeIcon
+                  icon={sortField === "createdAt" && sortDirection === "asc" ? faArrowUp : faArrowDown}
+                  className={`sort-icon ${sortField === "createdAt" ? "active" : ""}`}
+                />
+              </th>
               {selectedSection === "all" && (
-                <td>
-                  <span
-                    className={`status-badge ${
-                      req.projectPlan ? "completed" : "pending"
-                    }`}
-                  >
-                    {req.projectPlan ? "Completa" : "Incompleta"}
-                  </span>
-                </td>
+                <th className="centered">
+                  <FontAwesomeIcon icon={faChartLine} className="header-icon" /> Stato
+                </th>
               )}
-              <td>
-                <button
-                  className={`feedback-btn ${
-                    req.feedback ? "worked" : "not-worked"
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateFeedback(req.sessionId, !req.feedback);
-                  }}
-                >
-                  <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
-                </button>
-              </td>
-              <td>
-                <button
-                  className="delete-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    confirmDelete(req.sessionId);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </td>
+              <th className="centered">
+                <FontAwesomeIcon icon={faPaperclip} className="header-icon" /> Allegati
+              </th>
+              <th>
+                <FontAwesomeIcon icon={faThumbsUp} className="header-icon" /> Feedback
+              </th>
+              <th></th> {/* Colonna per il pulsante Elimina */}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+          </thead>
+          <tbody>
+            {getFilteredRequests().map((req) => (
+              <tr
+                key={req.sessionId}
+                onClick={() => setSelectedRequest(req)}
+                className="request-row"
+              >
+                <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
+                <td>{req.formData.contactInfo.email || "Non fornita"}</td>
+                <td>
+                  {req.createdAt &&
+                  (req.createdAt.$date || typeof req.createdAt === "string")
+                    ? new Date(
+                        req.createdAt.$date || req.createdAt
+                      ).toLocaleDateString()
+                    : "Data non disponibile"}
+                </td>
+                {selectedSection === "all" && (
+                  <td className="centered">
+                    <span
+                      className={`status-badge ${
+                        req.projectPlan ? "completed" : "pending"
+                      }`}
+                    >
+                      {req.projectPlan ? "Completa" : "Incompleta"}
+                    </span>
+                  </td>
+                )}
+                <td className="centered">
+                  {req.formData.currentLogo ? (
+                    <FontAwesomeIcon icon={faPaperclip} className="attachment-icon" />
+                  ) : (
+                    ""
+                  )}
+                </td>
+                <td>
+                  <button
+                    className={`feedback-btn ${
+                      req.feedback ? "worked" : "not-worked"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateFeedback(req.sessionId, !req.feedback);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
+                  </button>
+                </td>
+                <td>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirmDelete(req.sessionId);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
-RequestList.propTypes = {
-  getFilteredRequests: PropTypes.func.isRequired,
-  setSelectedRequest: PropTypes.func.isRequired,
-  selectedSection: PropTypes.string.isRequired,
-  updateFeedback: PropTypes.func.isRequired,
-  confirmDelete: PropTypes.func.isRequired, // Nuova prop per gestire la modale
-};
+  RequestList.propTypes = {
+    getFilteredRequests: PropTypes.func.isRequired,
+    setSelectedRequest: PropTypes.func.isRequired,
+    selectedSection: PropTypes.string.isRequired,
+    updateFeedback: PropTypes.func.isRequired,
+    confirmDelete: PropTypes.func.isRequired,
+    sortField: PropTypes.string.isRequired, // Aggiungi sortField
+    sortDirection: PropTypes.string.isRequired, // Aggiungi sortDirection
+    handleSort: PropTypes.func.isRequired, // Aggiungi handleSort
+  };
 
 // Componente RequestDetails
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
@@ -351,294 +383,325 @@ FileListSection.propTypes = {
 
 // Componente principale Dashboard
 const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
-  const [requests, setRequests] = useState([]);
-  const [selectedSection, setSelectedSection] = useState("home");
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [fileList, setFileList] = useState([]);
-  const [activeKey, setActiveKey] = useState(Date.now());
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [requestToDelete, setRequestToDelete] = useState(null);
-  const navigate = useNavigate();
-
-  const API_URL = (
-    import.meta.env.VITE_API_URL || "http://localhost:8080"
-  ).replace(/\/$/, "");
-  const requestsUrl = `${API_URL}/api/getRequests`;
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const fetchRequests = async () => {
-      try {
-        const response = await axios.get(requestsUrl, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const sortedRequests = response.data
-          .map((req) => ({
-            ...req,
-            feedback: req.feedback !== undefined ? req.feedback : false,
-          }))
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setRequests(sortedRequests);
-      } catch (err) {
-        console.error("Errore nel caricamento delle richieste:", err);
-        localStorage.removeItem("token");
-        navigate("/login");
+    const [requests, setRequests] = useState([]);
+    const [selectedSection, setSelectedSection] = useState("home");
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [fileList, setFileList] = useState([]);
+    const [activeKey, setActiveKey] = useState(Date.now());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [requestToDelete, setRequestToDelete] = useState(null);
+    const [sortField, setSortField] = useState("createdAt"); // Aggiungi stato per sortField
+    const [sortDirection, setSortDirection] = useState("desc"); // Aggiungi stato per sortDirection
+    const navigate = useNavigate();
+  
+    const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(
+      /\/$/,
+      ""
+    );
+    const requestsUrl = `${API_URL}/api/getRequests`;
+  
+    const handleSort = (field) => {
+      // Se il campo è lo stesso, inverti la direzione
+      if (sortField === field) {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        // Altrimenti, ordina per il nuovo campo in ordine crescente
+        setSortField(field);
+        setSortDirection("asc");
       }
     };
-
-    fetchRequests();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
-
-  const fetchFileList = async () => {
-    try {
+  
+    useEffect(() => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/api/uploads/list`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFileList(response.data.files);
-      setActiveKey(Date.now());
-      setSelectedSection("fileList");
-      setSelectedRequest(null);
-      toggleSidebar();
-    } catch (error) {
-      console.error("Errore nel recupero della lista dei file:", error);
-      alert("Errore nel caricamento della lista dei file");
-    }
-  };
-
-  const deleteFile = async (filename) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setFileList(fileList.filter((file) => file.name !== filename));
-      alert(`File ${filename} cancellato con successo!`);
-    } catch (error) {
-      console.error("Errore nella cancellazione del file:", error);
-      alert("Errore nella cancellazione del file");
-    }
-  };
-
-  const updateFeedback = async (sessionId, newFeedback) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${API_URL}/api/requests/${sessionId}/feedback`,
-        { feedback: newFeedback },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setRequests(
-        requests.map((req) =>
-          req.sessionId === sessionId ? { ...req, feedback: newFeedback } : req
-        )
-      );
-    } catch (err) {
-      console.error("Errore nell'aggiornamento del feedback:", err);
-      alert("Errore nell'aggiornamento del feedback");
-    }
-  };
-
-  const confirmDelete = (sessionId) => {
-    setRequestToDelete(sessionId);
-    setIsModalOpen(true);
-  };
-
-  const deleteRequest = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${API_URL}/api/requests/${requestToDelete}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRequests(requests.filter((req) => req.sessionId !== requestToDelete));
-      if (selectedRequest?.sessionId === requestToDelete) {
-        setSelectedRequest(null);
+      if (!token) {
+        navigate("/login");
+        return;
       }
-    } catch (err) {
-      console.error("Errore nella cancellazione della richiesta:", err);
-      alert("Errore nella cancellazione della richiesta");
-    } finally {
-      setIsModalOpen(false);
-      setRequestToDelete(null);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  const handleSectionChange = (section) => {
-    setActiveKey(Date.now());
-    setSelectedSection(section);
-    setSelectedRequest(null);
-    if (window.innerWidth <= 768 && isSidebarOpen) {
-      toggleSidebar();
-    }
-  };
-
-  const getFilteredRequests = () => {
-    let filtered = requests;
-    if (selectedSection === "completed") {
-      filtered = requests.filter((req) => req.projectPlan);
-    } else if (selectedSection === "abandoned") {
-      filtered = requests.filter((req) => !req.projectPlan);
-    }
-    if (searchTerm) {
-      filtered = filtered.filter((req) =>
-        req.formData.contactInfo.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-    }
-    return filtered;
-  };
-
-  return (
-    <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
-      {isSidebarOpen && (
-        <div className="sidebar-overlay" onClick={toggleSidebar}></div>
-      )}
-      <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
-        <ul>
-          <li className="sidebar-logo">
-            <Link to="/">
-              <img src={LogoIcon} alt="Home Logo" className="logo-icon" />
-            </Link>
-          </li>
-          <li
-            key={`dashboard-home-${activeKey}`}
-            className={selectedSection === "home" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleSectionChange("home");
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            <div className="icon">
-              <FontAwesomeIcon icon={faHome} />
-            </div>
-            <div className="text">Home</div>
-          </li>
-          <li
-            key={`all-${activeKey}`}
-            className={selectedSection === "all" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleSectionChange("all");
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            <div className="icon">
-              <FontAwesomeIcon icon={faList} />
-            </div>
-            <div className="text">Tutte le Richieste</div>
-          </li>
-          <li
-            key={`completed-${activeKey}`}
-            className={selectedSection === "completed" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleSectionChange("completed");
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            <div className="icon">
-              <FontAwesomeIcon icon={faCheck} />
-            </div>
-            <div className="text">Completate</div>
-          </li>
-          <li
-            key={`abandoned-${activeKey}`}
-            className={selectedSection === "abandoned" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleSectionChange("abandoned");
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            <div className="icon">
-              <FontAwesomeIcon icon={faTimes} />
-            </div>
-            <div className="text">Abbandonate</div>
-          </li>
-          <li
-            key={`fileList-${activeKey}`}
-            className={selectedSection === "fileList" ? "active" : ""}
-            onClick={(event) => {
-              event.stopPropagation();
-              fetchFileList();
-            }}
-          >
-            <span className="active-before"></span>
-            <span className="active-after"></span>
-            <div className="icon">
-              <FontAwesomeIcon icon={faFolder} />
-            </div>
-            <div className="text">Lista Allegati</div>
-          </li>
-          <li key={`logout-${activeKey}`} onClick={handleLogout}>
-            <div className="icon">
-              <FontAwesomeIcon icon={faSignOutAlt} />
-            </div>
-            <div className="text">Logout</div>
-          </li>
-        </ul>
-      </div>
-
-      <div className="main-area">
-        {selectedSection !== "home" && selectedSection !== "fileList" && (
-          <SearchBar onSearch={setSearchTerm} />
+  
+      const fetchRequests = async () => {
+        try {
+          const response = await axios.get(requestsUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const sortedRequests = response.data
+            .map((req) => ({
+              ...req,
+              feedback: req.feedback !== undefined ? req.feedback : false,
+            }))
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setRequests(sortedRequests);
+        } catch (err) {
+          console.error("Errore nel caricamento delle richieste:", err);
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      };
+  
+      fetchRequests();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [navigate]);
+  
+    const fetchFileList = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(`${API_URL}/api/uploads/list`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFileList(response.data.files);
+        setActiveKey(Date.now());
+        setSelectedSection("fileList");
+        setSelectedRequest(null);
+        toggleSidebar();
+      } catch (error) {
+        console.error("Errore nel recupero della lista dei file:", error);
+        alert("Errore nel caricamento della lista dei file");
+      }
+    };
+  
+    const deleteFile = async (filename) => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/api/uploads/delete/${filename}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFileList(fileList.filter((file) => file.name !== filename));
+        alert(`File ${filename} cancellato con successo!`);
+      } catch (error) {
+        console.error("Errore nella cancellazione del file:", error);
+        alert("Errore nella cancellazione del file");
+      }
+    };
+  
+    const updateFeedback = async (sessionId, newFeedback) => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.put(
+          `${API_URL}/api/requests/${sessionId}/feedback`,
+          { feedback: newFeedback },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setRequests(
+          requests.map((req) =>
+            req.sessionId === sessionId ? { ...req, feedback: newFeedback } : req
+          )
+        );
+      } catch (err) {
+        console.error("Errore nell'aggiornamento del feedback:", err);
+        alert("Errore nell'aggiornamento del feedback");
+      }
+    };
+  
+    const confirmDelete = (sessionId) => {
+      setRequestToDelete(sessionId);
+      setIsModalOpen(true);
+    };
+  
+    const deleteRequest = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/api/requests/${requestToDelete}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRequests(requests.filter((req) => req.sessionId !== requestToDelete));
+        if (selectedRequest?.sessionId === requestToDelete) {
+          setSelectedRequest(null);
+        }
+      } catch (err) {
+        console.error("Errore nella cancellazione della richiesta:", err);
+        alert("Errore nella cancellazione della richiesta");
+      } finally {
+        setIsModalOpen(false);
+        setRequestToDelete(null);
+      }
+    };
+  
+    const handleLogout = () => {
+      localStorage.removeItem("token");
+      navigate("/login");
+    };
+  
+    const handleSectionChange = (section) => {
+      setActiveKey(Date.now());
+      setSelectedSection(section);
+      setSelectedRequest(null);
+      if (window.innerWidth <= 768 && isSidebarOpen) {
+        toggleSidebar();
+      }
+    };
+  
+    const getFilteredRequests = () => {
+      let filtered = requests;
+      if (selectedSection === "completed") {
+        filtered = requests.filter((req) => req.projectPlan);
+      } else if (selectedSection === "abandoned") {
+        filtered = requests.filter((req) => !req.projectPlan);
+      }
+      if (searchTerm) {
+        filtered = filtered.filter((req) =>
+          req.formData.contactInfo.name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
+      }
+      // Ordinamento
+      return filtered.sort((a, b) => {
+        if (sortField === "name") {
+          const nameA = a.formData.contactInfo.name || "Utente Sconosciuto";
+          const nameB = b.formData.contactInfo.name || "Utente Sconosciuto";
+          return sortDirection === "asc"
+            ? nameA.localeCompare(nameB)
+            : nameB.localeCompare(nameA);
+        } else if (sortField === "createdAt") {
+          const dateA = new Date(a.createdAt.$date || a.createdAt);
+          const dateB = new Date(b.createdAt.$date || b.createdAt);
+          return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
+        }
+        return 0;
+      });
+    };
+  
+    return (
+      <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
+        {isSidebarOpen && (
+          <div className="sidebar-overlay" onClick={toggleSidebar}></div>
         )}
-        {selectedRequest ? (
-          <RequestDetails
-            request={selectedRequest}
-            setSelectedRequest={setSelectedRequest}
-            API_URL={API_URL}
-          />
-        ) : selectedSection === "home" ? (
-          <DashboardHome
-            handleSectionChange={handleSectionChange}
-            requests={requests}
-          />
-        ) : selectedSection === "fileList" ? (
-          <FileListSection
-            fileList={fileList}
-            deleteFile={deleteFile}
-            API_URL={API_URL}
-          />
-        ) : (
-          <RequestList
-            getFilteredRequests={getFilteredRequests}
-            setSelectedRequest={setSelectedRequest}
-            selectedSection={selectedSection}
-            updateFeedback={updateFeedback}
-            confirmDelete={confirmDelete}
-          />
-        )}
+        <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
+          <ul>
+            <li className="sidebar-logo">
+              <Link to="/">
+                <img src={LogoIcon} alt="Home Logo" className="logo-icon" />
+              </Link>
+            </li>
+            <li
+              key={`dashboard-home-${activeKey}`}
+              className={selectedSection === "home" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("home");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faHome} />
+              </div>
+              <div className="text">Home</div>
+            </li>
+            <li
+              key={`all-${activeKey}`}
+              className={selectedSection === "all" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("all");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faList} />
+              </div>
+              <div className="text">Tutte le Richieste</div>
+            </li>
+            <li
+              key={`completed-${activeKey}`}
+              className={selectedSection === "completed" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("completed");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faCheck} />
+              </div>
+              <div className="text">Completate</div>
+            </li>
+            <li
+              key={`abandoned-${activeKey}`}
+              className={selectedSection === "abandoned" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("abandoned");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faTimes} />
+              </div>
+              <div className="text">Abbandonate</div>
+            </li>
+            <li
+              key={`fileList-${activeKey}`}
+              className={selectedSection === "fileList" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                fetchFileList();
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faFolder} />
+              </div>
+              <div className="text">Lista Allegati</div>
+            </li>
+            <li key={`logout-${activeKey}`} onClick={handleLogout}>
+              <div className="icon">
+                <FontAwesomeIcon icon={faSignOutAlt} />
+              </div>
+              <div className="text">Logout</div>
+            </li>
+          </ul>
+        </div>
+  
+        <div className="main-area">
+          {selectedSection !== "home" && selectedSection !== "fileList" && (
+            <SearchBar onSearch={setSearchTerm} />
+          )}
+          {selectedRequest ? (
+            <RequestDetails
+              request={selectedRequest}
+              setSelectedRequest={setSelectedRequest}
+              API_URL={API_URL}
+            />
+          ) : selectedSection === "home" ? (
+            <DashboardHome
+              handleSectionChange={handleSectionChange}
+              requests={requests}
+            />
+          ) : selectedSection === "fileList" ? (
+            <FileListSection
+              fileList={fileList}
+              deleteFile={deleteFile}
+              API_URL={API_URL}
+            />
+          ) : (
+            <RequestList
+              getFilteredRequests={getFilteredRequests}
+              setSelectedRequest={setSelectedRequest}
+              selectedSection={selectedSection}
+              updateFeedback={updateFeedback}
+              confirmDelete={confirmDelete}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              handleSort={handleSort}
+            />
+          )}
+        </div>
+  
+        {/* Modale di conferma per l'eliminazione */}
+        <ConfirmModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={deleteRequest}
+          message="Sei sicuro di voler eliminare questa richiesta?"
+        />
       </div>
-
-      {/* Modale di conferma per l'eliminazione */}
-      <ConfirmModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onConfirm={deleteRequest}
-        message="Sei sicuro di voler eliminare questa richiesta?"
-      />
-    </div>
-  );
-};
+    );
+  };
 
 Dashboard.propTypes = {
   isDark: PropTypes.bool.isRequired,

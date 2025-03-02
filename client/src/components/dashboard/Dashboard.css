@@ -66,9 +66,9 @@
   color: var(--primary-text-color);
 } */
 
-.active {
+/* .active {
   background: var(--background-color);
-}
+} */
 
 /* Stile dell'elemento attivo nella sidebar */
 .sidebar ul li.active {
@@ -401,7 +401,7 @@ th {
 }
 
 .stat-card:hover {
-  background: var(--foreground-color);
+  border: solid 1px var(--foreground-color);
 }
 
 .file-list-section {
@@ -502,6 +502,23 @@ th {
   transition: border-bottom .5s ease;
 }
 
+.header-icon {
+  margin-right: 8px; /* Spazio tra icona e testo */
+  color: var(--foreground-color); /* Colore dell'icona */
+  font-size: 0.9rem; /* Dimensione dell'icona, in linea con il testo */
+}
+
+.sort-icon {
+  margin-left: 8px;
+  color: var(--foreground-color);
+  font-size: 0.8rem;
+  opacity: 0.5; /* Leggermente trasparente quando non attivo */
+  transition: opacity 0.3s ease;
+}
+
+.sort-icon.active {
+  opacity: 1; /* Pieno colore quando attivo */
+}
 
 @media (max-width: 768px) {
   .sidebar {
