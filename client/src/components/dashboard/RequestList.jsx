@@ -14,7 +14,7 @@ import {
   faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { formatDate, formatBudget } from "./dashboardUtils";
+import { formatDate, formatBudget } from "./DashboardUtils";
 
 const RequestList = ({
   getFilteredRequests,
