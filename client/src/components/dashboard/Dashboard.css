@@ -549,6 +549,42 @@ td.centered .feedback-btn {
   opacity: 1;
 }
 
+.budget-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--primary-text-color);
+  min-width: 50px;
+  text-align: center;
+}
+
+/* Tonalità crescenti basate sul budget */
+.budget-badge.budget-unknown {
+  background-color: transparent;
+  border: solid 1px rgba(255, 64, 3, 0.3);
+}
+.budget-badge.budget-0-1k {
+  background-color: rgba(255, 64, 3, 0.2); /* Opacità bassa */
+  border: solid 1px transparent;
+  color: white;
+}
+.budget-badge.budget-1-5k {
+  background-color: rgba(255, 64, 3, 0.4); /* Opacità media */
+  border: solid 1px var(--foreground-color);
+  color: white;
+}
+.budget-badge.budget-5-10k {
+  background-color: rgba(255, 64, 3, 0.7); /* Opacità alta */
+  border: solid 1px var(--foreground-color);
+  color: white;
+}
+.budget-badge.budget-10k-plus {
+  background-color: rgba(255, 64, 3, 1); /* Opacità piena per "10K+" */
+  color: white;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 30vw;

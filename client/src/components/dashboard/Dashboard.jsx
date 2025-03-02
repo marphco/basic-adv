@@ -22,17 +22,29 @@ import {
   faSortDown,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
-import ConfirmModal from "./ConfirmModal"; // Importa il nuovo componente
+import ConfirmModal from "./ConfirmModal";
 import LogoIcon from "../../assets/icon-white.svg";
 
 const formatDate = (date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
-// Componente DashboardHome
+// Funzione per convertire il budget in formato "K"
+const formatBudget = (budget) => {
+    if (budget === "unknown") return { text: "Non lo so", className: "budget-unknown" };
+    const budgetNum = parseFloat(budget);
+    if (isNaN(budgetNum)) return { text: "-", className: "budget-unknown" };
+    if (budgetNum <= 1000) return { text: "0-1K", className: "budget-0-1k" };
+    if (budgetNum <= 5000) return { text: "1-5K", className: "budget-1-5k" };
+    if (budgetNum <= 10000) return { text: "5-10K", className: "budget-5-10k" };
+    return { text: "10K+", className: "budget-10k-plus" };
+  };
+  
+
+// Componente DashboardHome (invariato)
 const DashboardHome = ({ handleSectionChange, requests }) => {
   const totalRequests = requests.length;
   const completedRequests = requests.filter((req) => req.projectPlan).length;
@@ -171,6 +183,27 @@ const RequestList = ({
                   </span>
                 </th>
               )}
+              <th className="centered" onClick={() => handleSort("budget")}>
+                Budget
+                <span className="sort-icons">
+                  <FontAwesomeIcon
+                    icon={faSortUp}
+                    className={`sort-icon ${
+                      sortField === "budget" && sortDirection === "asc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                  <FontAwesomeIcon
+                    icon={faSortDown}
+                    className={`sort-icon ${
+                      sortField === "budget" && sortDirection === "desc"
+                        ? "active"
+                        : ""
+                    }`}
+                  />
+                </span>
+              </th>
               <th className="centered" onClick={() => handleSort("attachment")}>
                 <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
                 Allegati
@@ -219,67 +252,75 @@ const RequestList = ({
             </tr>
           </thead>
           <tbody>
-            {getFilteredRequests().map((req) => (
-              <tr
-                key={req.sessionId}
-                onClick={() => setSelectedRequest(req)}
-                className="request-row"
-              >
-                <td>{req.formData.contactInfo.name || "-"}</td>
-                <td>{req.formData.contactInfo.email || "-"}</td>
-                <td>
-                  {req.createdAt &&
-                  (req.createdAt.$date || typeof req.createdAt === "string")
-                    ? formatDate(new Date(req.createdAt.$date || req.createdAt))
-                    : "Data non disponibile"}
-                </td>
-                {selectedSection === "all" && (
+            {getFilteredRequests().map((req) => {
+              const budgetData = formatBudget(req.formData.budget);
+              return (
+                <tr
+                  key={req.sessionId}
+                  onClick={() => setSelectedRequest(req)}
+                  className="request-row"
+                >
+                  <td>{req.formData.contactInfo.name || "-"}</td>
+                  <td>{req.formData.contactInfo.email || "-"}</td>
+                  <td>
+                    {req.createdAt &&
+                    (req.createdAt.$date || typeof req.createdAt === "string")
+                      ? formatDate(new Date(req.createdAt.$date || req.createdAt))
+                      : "Data non disponibile"}
+                  </td>
+                  {selectedSection === "all" && (
+                    <td className="centered">
+                      <span
+                        className={`status-badge ${
+                          req.projectPlan ? "completed" : "pending"
+                        }`}
+                      >
+                        {req.projectPlan ? "Completa" : "Incompleta"}
+                      </span>
+                    </td>
+                  )}
                   <td className="centered">
-                    <span
-                      className={`status-badge ${
-                        req.projectPlan ? "completed" : "pending"
-                      }`}
-                    >
-                      {req.projectPlan ? "Completa" : "Incompleta"}
+                    <span className={`budget-badge ${budgetData.className}`}>
+                      {budgetData.text}
                     </span>
                   </td>
-                )}
-                <td className="centered">
-                  {req.formData.currentLogo ? (
-                    <FontAwesomeIcon
-                      icon={faPaperclip}
-                      className="attachment-icon"
-                    />
-                  ) : (
-                    ""
-                  )}
-                </td>
-                <td className="centered">
-                  <button
-                    className={`feedback-btn ${
-                      req.feedback ? "worked" : "not-worked"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateFeedback(req.sessionId, !req.feedback);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
-                  </button>
-                </td>
-                <td>
-                  <button
-                    className="delete-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      confirmDelete(req.sessionId);
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td className="centered">
+                    {req.formData.currentLogo ? (
+                      <FontAwesomeIcon
+                        icon={faPaperclip}
+                        className="attachment-icon"
+                      />
+                    ) : (
+                      ""
+                    )}
+                  </td>
+                  <td className="centered">
+                    <button
+                      className={`feedback-btn ${
+                        req.feedback ? "worked" : "not-worked"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateFeedback(req.sessionId, !req.feedback);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={req.feedback ? faCheck : faTimes} />
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        confirmDelete(req.sessionId);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -292,9 +333,9 @@ RequestList.propTypes = {
   selectedSection: PropTypes.string.isRequired,
   updateFeedback: PropTypes.func.isRequired,
   confirmDelete: PropTypes.func.isRequired,
-  sortField: PropTypes.string.isRequired, // Aggiungi sortField
-  sortDirection: PropTypes.string.isRequired, // Aggiungi sortDirection
-  handleSort: PropTypes.func.isRequired, // Aggiungi handleSort
+  sortField: PropTypes.string.isRequired,
+  sortDirection: PropTypes.string.isRequired,
+  handleSort: PropTypes.func.isRequired,
 };
 
 // Componente RequestDetails
@@ -495,33 +536,31 @@ FileListSection.propTypes = {
 
 // Componente principale Dashboard
 const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
-  const [requests, setRequests] = useState([]);
-  const [selectedSection, setSelectedSection] = useState("home");
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [fileList, setFileList] = useState([]);
-  const [activeKey, setActiveKey] = useState(Date.now());
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [requestToDelete, setRequestToDelete] = useState(null);
-  const [sortField, setSortField] = useState("createdAt"); // Aggiungi stato per sortField
-  const [sortDirection, setSortDirection] = useState("desc"); // Aggiungi stato per sortDirection
-  const navigate = useNavigate();
-
-  const API_URL = (
-    import.meta.env.VITE_API_URL || "http://localhost:8080"
-  ).replace(/\/$/, "");
-  const requestsUrl = `${API_URL}/api/getRequests`;
-
-  const handleSort = (field) => {
-    // Se il campo è lo stesso, inverti la direzione
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      // Altrimenti, ordina per il nuovo campo in ordine crescente
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
+    const [requests, setRequests] = useState([]);
+    const [selectedSection, setSelectedSection] = useState("home");
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [fileList, setFileList] = useState([]);
+    const [activeKey, setActiveKey] = useState(Date.now());
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [requestToDelete, setRequestToDelete] = useState(null);
+    const [sortField, setSortField] = useState("createdAt");
+    const [sortDirection, setSortDirection] = useState("desc");
+    const navigate = useNavigate();
+  
+    const API_URL = (
+      import.meta.env.VITE_API_URL || "http://localhost:8080"
+    ).replace(/\/$/, "");
+    const requestsUrl = `${API_URL}/api/getRequests`;
+  
+    const handleSort = (field) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -655,7 +694,6 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
           .includes(searchTerm.toLowerCase())
       );
     }
-    // Ordinamento
     return filtered.sort((a, b) => {
       if (sortField === "name") {
         const nameA = a.formData.contactInfo.name || "-";
@@ -670,13 +708,22 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
           ? emailA.localeCompare(emailB)
           : emailB.localeCompare(emailA);
       } else if (sortField === "createdAt") {
-        const dateA = new Date(a.createdAt.$date || a.createdAt);
-        const dateB = new Date(b.createdAt.$date || b.createdAt);
+        // Gestione di createdAt undefined
+        const dateA = a.createdAt
+          ? new Date(a.createdAt.$date || a.createdAt)
+          : new Date(0); // Fallback a epoch (1970-01-01) se undefined
+        const dateB = b.createdAt
+          ? new Date(b.createdAt.$date || b.createdAt)
+          : new Date(0); // Fallback a epoch (1970-01-01) se undefined
         return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
       } else if (sortField === "status") {
         const statusA = a.projectPlan ? 1 : 0;
         const statusB = b.projectPlan ? 1 : 0;
         return sortDirection === "asc" ? statusA - statusB : statusB - statusA;
+      } else if (sortField === "budget") {
+        const budgetA = a.formData.budget === "unknown" ? -1 : parseFloat(a.formData.budget) || 0;
+        const budgetB = b.formData.budget === "unknown" ? -1 : parseFloat(b.formData.budget) || 0;
+        return sortDirection === "asc" ? budgetA - budgetB : budgetB - budgetA;
       } else if (sortField === "attachment") {
         const attachmentA = a.formData.currentLogo ? 1 : 0;
         const attachmentB = b.formData.currentLogo ? 1 : 0;
@@ -825,7 +872,6 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         )}
       </div>
 
-      {/* Modale di conferma per l'eliminazione */}
       <ConfirmModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
