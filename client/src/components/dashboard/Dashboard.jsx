@@ -642,10 +642,11 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
           const response = await axios.get(requestsUrl, {
             headers: { Authorization: `Bearer ${token}` },
           });
+          console.log("Dati ricevuti dal server:", response.data);
           const sortedRequests = response.data
             .map((req) => ({
               ...req,
-              feedback: req.feedback !== undefined ? req.feedback : false,
+              feedback: req.feedback, // Usa il valore diretto dal server
             }))
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           setRequests(sortedRequests);
@@ -705,9 +706,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         { feedback: newFeedback },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Risposta dal server:", response.data); // Debug
-
-      // Ricarica i dati dal server per garantire sincronizzazione
+      console.log("Risposta dal server dopo PUT:", response.data);
       await fetchRequests();
     } catch (err) {
       console.error("Errore nell'aggiornamento del feedback:", err);
