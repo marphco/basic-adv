@@ -53,7 +53,7 @@ const DashboardHome = ({ handleSectionChange, requests }) => {
   return (
     <div className="dashboard-home">
       <div className="stat-card" onClick={() => handleSectionChange("all")}>
-        <h3>Numero Richieste</h3>
+        <h3>Totale Richieste</h3>
         <p>{totalRequests}</p>
       </div>
       <div
@@ -159,73 +159,127 @@ const RequestList = ({
                   />
                 </span>
               </th>
-              {selectedSection === "all" && (
-                <th className="centered" onClick={() => handleSort("status")}>
-                  <FontAwesomeIcon icon={faChartLine} className="header-icon" />{" "}
-                  Stato
-                  <span className="sort-icons">
-                    <FontAwesomeIcon
-                      icon={faSortUp}
-                      className={`sort-icon ${
-                        sortField === "status" && sortDirection === "asc"
-                          ? "active"
-                          : ""
-                      }`}
-                    />
-                    <FontAwesomeIcon
-                      icon={faSortDown}
-                      className={`sort-icon ${
-                        sortField === "status" && sortDirection === "desc"
-                          ? "active"
-                          : ""
-                      }`}
-                    />
-                  </span>
-                </th>
+              {selectedSection === "all" ? (
+                <>
+                  <th className="centered" onClick={() => handleSort("budget")}>
+                    Budget
+                    <span className="sort-icons">
+                      <FontAwesomeIcon
+                        icon={faSortUp}
+                        className={`sort-icon ${
+                          sortField === "budget" && sortDirection === "asc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                      <FontAwesomeIcon
+                        icon={faSortDown}
+                        className={`sort-icon ${
+                          sortField === "budget" && sortDirection === "desc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                  </th>
+                  <th
+                    className="centered"
+                    onClick={() => handleSort("attachment")}
+                  >
+                    <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
+                    Allegati
+                    <span className="sort-icons">
+                      <FontAwesomeIcon
+                        icon={faSortUp}
+                        className={`sort-icon ${
+                          sortField === "attachment" && sortDirection === "asc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                      <FontAwesomeIcon
+                        icon={faSortDown}
+                        className={`sort-icon ${
+                          sortField === "attachment" && sortDirection === "desc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                  </th>
+                  <th className="centered" onClick={() => handleSort("status")}>
+                    <FontAwesomeIcon icon={faChartLine} className="header-icon" />{" "}
+                    Stato
+                    <span className="sort-icons">
+                      <FontAwesomeIcon
+                        icon={faSortUp}
+                        className={`sort-icon ${
+                          sortField === "status" && sortDirection === "asc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                      <FontAwesomeIcon
+                        icon={faSortDown}
+                        className={`sort-icon ${
+                          sortField === "status" && sortDirection === "desc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                  </th>
+                </>
+              ) : (
+                <>
+                  <th className="centered" onClick={() => handleSort("budget")}>
+                    Budget
+                    <span className="sort-icons">
+                      <FontAwesomeIcon
+                        icon={faSortUp}
+                        className={`sort-icon ${
+                          sortField === "budget" && sortDirection === "asc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                      <FontAwesomeIcon
+                        icon={faSortDown}
+                        className={`sort-icon ${
+                          sortField === "budget" && sortDirection === "desc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                  </th>
+                  <th
+                    className="centered"
+                    onClick={() => handleSort("attachment")}
+                  >
+                    <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
+                    Allegati
+                    <span className="sort-icons">
+                      <FontAwesomeIcon
+                        icon={faSortUp}
+                        className={`sort-icon ${
+                          sortField === "attachment" && sortDirection === "asc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                      <FontAwesomeIcon
+                        icon={faSortDown}
+                        className={`sort-icon ${
+                          sortField === "attachment" && sortDirection === "desc"
+                            ? "active"
+                            : ""
+                        }`}
+                      />
+                    </span>
+                  </th>
+                </>
               )}
-              <th className="centered" onClick={() => handleSort("budget")}>
-                Budget
-                <span className="sort-icons">
-                  <FontAwesomeIcon
-                    icon={faSortUp}
-                    className={`sort-icon ${
-                      sortField === "budget" && sortDirection === "asc"
-                        ? "active"
-                        : ""
-                    }`}
-                  />
-                  <FontAwesomeIcon
-                    icon={faSortDown}
-                    className={`sort-icon ${
-                      sortField === "budget" && sortDirection === "desc"
-                        ? "active"
-                        : ""
-                    }`}
-                  />
-                </span>
-              </th>
-              <th className="centered" onClick={() => handleSort("attachment")}>
-                <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
-                Allegati
-                <span className="sort-icons">
-                  <FontAwesomeIcon
-                    icon={faSortUp}
-                    className={`sort-icon ${
-                      sortField === "attachment" && sortDirection === "asc"
-                        ? "active"
-                        : ""
-                    }`}
-                  />
-                  <FontAwesomeIcon
-                    icon={faSortDown}
-                    className={`sort-icon ${
-                      sortField === "attachment" && sortDirection === "desc"
-                        ? "active"
-                        : ""
-                    }`}
-                  />
-                </span>
-              </th>
               <th className="centered" onClick={() => handleSort("feedback")}>
                 <FontAwesomeIcon icon={faThumbsUp} className="header-icon" />{" "}
                 Feedback
@@ -268,32 +322,52 @@ const RequestList = ({
                       ? formatDate(new Date(req.createdAt.$date || req.createdAt))
                       : "Data non disponibile"}
                   </td>
-                  {selectedSection === "all" && (
-                    <td className="centered">
-                      <span
-                        className={`status-badge ${
-                          req.projectPlan ? "completed" : "pending"
-                        }`}
-                      >
-                        {req.projectPlan ? "Completa" : "Incompleta"}
-                      </span>
-                    </td>
+                  {selectedSection === "all" ? (
+                    <>
+                      <td className="centered">
+                        <span className={`budget-badge ${budgetData.className}`}>
+                          {budgetData.text}
+                        </span>
+                      </td>
+                      <td className="centered">
+                        {req.formData.currentLogo ? (
+                          <FontAwesomeIcon
+                            icon={faPaperclip}
+                            className="attachment-icon"
+                          />
+                        ) : (
+                          ""
+                        )}
+                      </td>
+                      <td className="centered">
+                        <span
+                          className={`status-badge ${
+                            req.projectPlan ? "completed" : "pending"
+                          }`}
+                        >
+                          {req.projectPlan ? "Completa" : "Incompleta"}
+                        </span>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="centered">
+                        <span className={`budget-badge ${budgetData.className}`}>
+                          {budgetData.text}
+                        </span>
+                      </td>
+                      <td className="centered">
+                        {req.formData.currentLogo ? (
+                          <FontAwesomeIcon
+                            icon={faPaperclip}
+                            className="attachment-icon"
+                          />
+                        ) : (
+                          ""
+                        )}
+                      </td>
+                    </>
                   )}
-                  <td className="centered">
-                    <span className={`budget-badge ${budgetData.className}`}>
-                      {budgetData.text}
-                    </span>
-                  </td>
-                  <td className="centered">
-                    {req.formData.currentLogo ? (
-                      <FontAwesomeIcon
-                        icon={faPaperclip}
-                        className="attachment-icon"
-                      />
-                    ) : (
-                      ""
-                    )}
-                  </td>
                   <td className="centered">
                     <button
                       className={`feedback-btn ${
