@@ -212,8 +212,8 @@ td.centered .feedback-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   font-size: 14px;
 }
