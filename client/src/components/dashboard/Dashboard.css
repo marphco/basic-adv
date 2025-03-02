@@ -159,7 +159,7 @@
   margin-right: 5vw;
   overflow-y: auto;
   min-height: 100vh;
-  transition: all 0.5s ease;
+  /* transition: all 0.5s ease; */
 }
 
 .requests-table {
@@ -174,14 +174,14 @@ table {
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 20px 15px;
   text-align: left;
-  border-bottom: 1px solid #d1d1d1;
+  border-bottom: none;
   font-weight: 300;
 }
 
 th {
-  background: rgba(var(--foreground-color-rgb), 0.05);
+  /* background: var(--foreground-color); */
   font-weight: 600;
   color: var(--primary-text-color);
   text-transform: uppercase;
@@ -191,14 +191,6 @@ th {
 /* Rendi la riga cliccabile */
 .request-row {
   cursor: pointer;
-}
-
-tr:nth-child(even) {
-  background: rgba(var(--background-color-rgb), 0.95);
-}
-
-tr:hover {
-  background: rgba(var(--foreground-color-rgb), 0.1);
 }
 
 /* Stili per Allegati */
@@ -232,7 +224,7 @@ tr:hover {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.5s ease;
 }
 
 .feedback-btn.worked {
@@ -241,33 +233,28 @@ tr:hover {
 }
 
 .feedback-btn.not-worked {
-  background: var(--error-color);
-  color: white;
+  background: transparent;
+  color: var(--primary-text-color);
+  border: solid 1px var(--primary-text-color);
+  transition: all .5s ease;
 }
 
 .feedback-btn:hover {
-  opacity: 0.8;
+  border: solid 1px var(--foreground-color);
 }
 
 /* Stili per il pulsante Elimina */
 .delete-btn {
   border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--error-color);
-  color: white;
+  background: none; /* Rimuove lo sfondo */
   cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 0; /* Rimuove il padding */
+  color: var(--error-color); /* Colore dell'icona */
+  transition: all 0.5s ease;
 }
 
 .delete-btn:hover {
-  background: var(--background-color);
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
+  color: var(--foreground-color); /* Colore al passaggio del mouse */
 }
 
 .search-bar {
@@ -331,7 +318,7 @@ tr:hover {
 }
 
 .details-sidebar li:hover:not(.active) {
-  background: rgba(var(--foreground-color-rgb), 0.1);
+  border-color: var(--primary-text-color);
   color: var(--foreground-color);
 }
 
@@ -414,7 +401,7 @@ tr:hover {
 }
 
 .stat-card:hover {
-  background: rgba(var(--foreground-color-rgb), 0.1);
+  background: var(--foreground-color);
 }
 
 .file-list-section {
@@ -468,6 +455,30 @@ tr:hover {
   border: 1px solid var(--error-color);
 }
 
+.attachment-icon {
+  font-size: 16px; /* Dimensione dell'icona */
+  color: var(--foreground-color); /* Colore dell'icona */
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 400;
+  /* text-transform: uppercase; */
+}
+
+.status-badge.completed {
+  background-color: #81ffb1;
+  color: #166a24;
+}
+
+.status-badge.pending {
+  background-color: rgb(230, 230, 230);
+  color: grey;
+}
+
 .sidebar-overlay {
   display: none; /* Nascosto di default */
 }
@@ -477,12 +488,27 @@ tr:hover {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+/* Tema dark */
+.dashboard.dark-theme th,
+.dashboard.dark-theme td {
+  border-bottom: 1px solid rgba(228, 228, 228, 0.1);
+  transition: border-bottom .5s ease;
+}
+
+/* Tema light */
+.dashboard.light-theme th,
+.dashboard.light-theme td {
+  border-bottom: 1px solid rgba(228, 228, 228, 0.9);
+  transition: border-bottom .5s ease;
+}
+
+
 @media (max-width: 768px) {
   .sidebar {
     width: 30vw;
     padding: 0 10px;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease;
     z-index: 999999999;
   }
   .sidebar.open {

@@ -12,6 +12,7 @@ import {
   faFolder,
   faSignOutAlt,
   faTrash,
+  faPaperclip,
 } from "@fortawesome/free-solid-svg-icons";
 import SearchBar from "./SearchBar";
 import ConfirmModal from "./ConfirmModal"; // Importa il nuovo componente
@@ -58,7 +59,7 @@ const RequestList = ({
   setSelectedRequest,
   selectedSection,
   updateFeedback,
-  confirmDelete, // Cambiamo la prop per gestire la modale
+  confirmDelete,
 }) => {
   return (
     <div className="requests-table">
@@ -82,7 +83,7 @@ const RequestList = ({
               className="request-row"
             >
               <td>{req.formData.contactInfo.name || "Utente Sconosciuto"}</td>
-              <td>{req.formData.contactInfo.email || "Non fornito"}</td>
+              <td>{req.formData.contactInfo.email || "Non fornita"}</td>
               <td>
                 {req.createdAt &&
                 (req.createdAt.$date || typeof req.createdAt === "string")
@@ -93,27 +94,30 @@ const RequestList = ({
               </td>
               <td>
                 {req.formData.currentLogo ? (
-                  <span className="attachment-icon available">
-                    <FontAwesomeIcon icon={faCheck} />
-                  </span>
+                  <FontAwesomeIcon
+                    icon={faPaperclip}
+                    className="attachment-icon"
+                  />
                 ) : (
-                  <span className="attachment-icon unavailable">
-                    <FontAwesomeIcon icon={faTimes} />
-                  </span>
+                  ""
                 )}
               </td>
               {selectedSection === "all" && (
                 <td>
-                  {req.projectPlan ? (
-                    <span className="status-icon completed">✅ Completata</span>
-                  ) : (
-                    <span className="status-icon pending">⏳ In attesa</span>
-                  )}
+                  <span
+                    className={`status-badge ${
+                      req.projectPlan ? "completed" : "pending"
+                    }`}
+                  >
+                    {req.projectPlan ? "Completa" : "Incompleta"}
+                  </span>
                 </td>
               )}
               <td>
                 <button
-                  className={`feedback-btn ${req.feedback ? "worked" : "not-worked"}`}
+                  className={`feedback-btn ${
+                    req.feedback ? "worked" : "not-worked"
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation();
                     updateFeedback(req.sessionId, !req.feedback);
@@ -357,10 +361,9 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   const [requestToDelete, setRequestToDelete] = useState(null);
   const navigate = useNavigate();
 
-  const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(
-    /\/$/,
-    ""
-  );
+  const API_URL = (
+    import.meta.env.VITE_API_URL || "http://localhost:8080"
+  ).replace(/\/$/, "");
   const requestsUrl = `${API_URL}/api/getRequests`;
 
   useEffect(() => {
@@ -390,7 +393,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     };
 
     fetchRequests();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   const fetchFileList = async () => {
