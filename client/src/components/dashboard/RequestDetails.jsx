@@ -36,13 +36,13 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
             className={activeTab === "info" ? "active" : ""}
             onClick={() => setActiveTab("info")}
           >
-            Info Generali
+            Generali
           </li>
           <li
             className={activeTab === "services" ? "active" : ""}
             onClick={() => setActiveTab("services")}
           >
-            Info Servizi
+            Servizi
           </li>
           <li
             className={activeTab === "questions" ? "active" : ""}
