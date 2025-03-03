@@ -7,10 +7,23 @@ import {
   faEuroSign,
   faCalendar,
   faChartLine,
+  faList,
+  faRedo,
+  faPaperclip,
+  faBriefcase,
 } from "@fortawesome/free-solid-svg-icons";
 
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const [activeTab, setActiveTab] = useState("info");
+
+  // Funzione per normalizzare il valore di projectType
+  const getProjectTypeDisplay = (projectType) => {
+    if (!projectType) return "Non specificato";
+    const typeLower = projectType.toLowerCase();
+    if (typeLower.includes("new") || typeLower.includes("nuovo")) return "Ex Novo";
+    if (typeLower.includes("restyling")) return "Restyling";
+    return projectType; // Se non è né "new/nuovo" né "restyling", mostra il valore originale
+  };
 
   return (
     <div className="request-details">
@@ -23,13 +36,13 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
             className={activeTab === "info" ? "active" : ""}
             onClick={() => setActiveTab("info")}
           >
-            Info Generali {/* Fissato a "Info Generali" */}
+            Info Generali
           </li>
           <li
             className={activeTab === "services" ? "active" : ""}
             onClick={() => setActiveTab("services")}
           >
-            Servizi Richiesti
+            Info Servizi
           </li>
           <li
             className={activeTab === "questions" ? "active" : ""}
@@ -89,21 +102,28 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "services" && (
-          <div>
-            <h3>Servizi Richiesti</h3>
-            {request.servicesQueue && request.servicesQueue.length > 0 ? (
-              <ul>
-                {Array.isArray(request.servicesQueue) ? (
-                  request.servicesQueue.map((service, index) => (
-                    <li key={index}>{service}</li>
-                  ))
-                ) : (
-                  <li>{String(request.servicesQueue)}</li>
-                )}
-              </ul>
-            ) : (
-              <p>Nessun servizio richiesto disponibile</p>
-            )}
+          <div className="info-section">
+            <h2>Servizi Richiesti</h2>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faList} className="info-icon" />
+              <span>
+                {request.servicesQueue && request.servicesQueue.length > 0
+                  ? request.servicesQueue.join(", ")
+                  : "Nessun servizio selezionato"}
+              </span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faRedo} className="info-icon" />
+              <span>{getProjectTypeDisplay(request.formData.projectType)}</span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faPaperclip} className="info-icon" />
+              <span>{request.formData.currentLogo ? "Sì" : "No"}</span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon icon={faBriefcase} className="info-icon" />
+              <span>{request.formData.businessField || "Non specificato"}</span>
+            </div>
           </div>
         )}
         {activeTab === "questions" && (

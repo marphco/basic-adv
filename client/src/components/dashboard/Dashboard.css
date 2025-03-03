@@ -609,18 +609,23 @@ td.centered .feedback-btn {
   color: var(--primary-text-color);
 }
 
+.info-section h3 {
+  margin-bottom: 20px;
+  color: var(--primary-text-color);
+}
+
 .info-item {
   display: flex;
   align-items: center;
-  margin-bottom: 20px; /* Aumentato da 15px a 20px per più spazio */
+  margin-bottom: 20px;
   font-size: 1rem;
   color: var(--primary-text-color);
 }
 
 .info-icon {
-  margin-right: 12px; /* Leggermente aumentato per più spaziatura dal testo */
+  margin-right: 12px;
   color: var(--foreground-color);
-  font-size: 1rem; /* Ridotto da 1.2rem a 1rem per icone più piccole */
+  font-size: 1rem;
 }
 
 @media (max-width: 768px) {
