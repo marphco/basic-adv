@@ -700,6 +700,119 @@ td.centered .feedback-btn {
   font-weight: 300;
 }
 
+/* Stile per la sezione Allegati */
+.attachments-section {
+  padding: 20px;
+}
+
+.attachments-section h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin-bottom: 30px; /* Coerente con altre sezioni */
+}
+
+.attachments-section p {
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin-bottom: 16px;
+}
+
+/* Stile per il pulsante di download */
+.download-btn {
+  display: inline-block; /* Per comportarsi come pulsante */
+  padding: 8px 16px; /* Padding simile a .close-btn */
+  background: var(--foreground-color); /* Colore principale */
+  color: white; /* Testo bianco per contrasto */
+  border: 1px solid var(--foreground-color); /* Bordo dello stesso colore */
+  border-radius: 4px; /* Bordi arrotondati */
+  text-decoration: none; /* Rimuove sottolineatura di default */
+  font-weight: 300; /* Font leggero */
+  transition: all 0.5s ease; /* Transizione fluida */
+}
+
+/* Hover effect */
+.download-btn:hover {
+  background: var(--background-color); /* Sfondo chiaro al passaggio */
+  color: var(--foreground-color); /* Testo colorato */
+  border: 1px solid var(--foreground-color); /* Mantiene il bordo */
+}
+
+/* Stile per la sezione Lista Allegati */
+.file-list-section {
+  padding: 20px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  background: var(--background-color);
+}
+
+.file-list-section h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin-bottom: 30px; /* Coerente con altre sezioni */
+}
+
+.file-list-section p {
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin-bottom: 16px;
+}
+
+.file-list-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.file-list-section li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0; /* Spaziatura verticale tra elementi */
+  border-bottom: 1px solid #d1d1d1;
+  font-weight: 300;
+  color: var(--primary-text-color);
+}
+
+/* Stile per il pulsante Scarica */
+.file-list-section .download-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--foreground-color);
+  color: white;
+  border: 1px solid var(--foreground-color);
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 300;
+  transition: all 0.5s ease;
+  margin-left: 10px; /* Spazio dal testo */
+}
+
+.file-list-section .download-btn:hover {
+  background: var(--background-color);
+  color: var(--foreground-color);
+  border: 1px solid var(--foreground-color);
+}
+
+/* Stile per il pulsante Cancella */
+.file-list-section .delete-btn {
+  padding: 8px 16px;
+  background: var(--error-color);
+  color: white;
+  border: 1px solid var(--error-color);
+  border-radius: 4px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  margin-left: 10px; /* Spazio dal pulsante Scarica */
+}
+
+.file-list-section .delete-btn:hover {
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--error-color);
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 30vw;

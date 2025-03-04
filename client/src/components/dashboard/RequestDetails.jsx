@@ -14,7 +14,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ReactMarkdown from "react-markdown"; // Importa la libreria
 
-
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const [activeTab, setActiveTab] = useState("info");
 
@@ -179,17 +178,18 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           <div className="piano">
             <h2>Piano d’Azione</h2>
             <ReactMarkdown>
-            {request.projectPlan || "Non ancora generato"}
+              {request.projectPlan || "Non ancora generato"}
             </ReactMarkdown>
           </div>
         )}
         {activeTab === "attachments" && (
-          <div>
+          <div className="attachments-section">
             <h2>Allegati</h2>
             {request.formData.currentLogo ? (
               <a
                 href={`${API_URL}/api/download/${request.formData.currentLogo}`}
                 download
+                className="download-btn"
               >
                 Scarica Logo Attuale
               </a>

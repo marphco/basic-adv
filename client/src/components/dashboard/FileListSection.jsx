@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 
 const FileListSection = ({ fileList, deleteFile, API_URL }) => (
   <div className="file-list-section">
-    <h3>Lista Allegati</h3>
+    <h2>Lista Allegati</h2>
     {fileList.length > 0 ? (
       <ul>
         {fileList.map((file, index) => (
@@ -12,13 +12,13 @@ const FileListSection = ({ fileList, deleteFile, API_URL }) => (
             <a
               href={`${API_URL}/api/download/${file.name}`}
               download
-              style={{ marginLeft: "10px" }}
+              className="download-btn"
             >
               Scarica
             </a>
             <button
               onClick={() => deleteFile(file.name)}
-              style={{ marginLeft: "10px" }}
+              className="delete-btn"
             >
               Cancella
             </button>
