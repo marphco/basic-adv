@@ -148,7 +148,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "questions" && (
-          <div>
+          <div className="info-section">
             <h2>Domande e Risposte</h2>
             {request.questions.map((q, index) => (
               <div key={index} className="question-answer">
@@ -193,7 +193,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "plan" && (
-          <div className="piano">
+          <div className="info-section piano">
             <h2>Piano d’Azione</h2>
             <ReactMarkdown>
               {request.projectPlan || "Non ancora generato"}
