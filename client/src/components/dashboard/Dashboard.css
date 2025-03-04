@@ -1065,6 +1065,7 @@ td.centered .feedback-btn {
   }
   .main-area {
     margin-left: 0;
+    margin-right: 0;
     overflow-y: auto;
   }
   .requests-table {
@@ -1138,5 +1139,9 @@ td.centered .feedback-btn {
 
   .file-list-section .button-group {
     padding-top: 10px;
+  }
+
+  .info-section {
+    padding: 50px 0;
   }
 }
