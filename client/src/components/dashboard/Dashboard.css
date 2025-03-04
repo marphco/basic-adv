@@ -790,6 +790,7 @@ td.centered .feedback-btn {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 10px; /* Aggiunto per separare il pulsante e il campo di ricerca */
 }
 
 /* Stile per il filtro dei servizi */
@@ -834,11 +835,11 @@ td.centered .feedback-btn {
   z-index: 10000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Ridotto a 2 colonne per più spazio */
-  gap: 20px; /* Aumentato da 15px a 20px */
-  max-height: 400px; /* Aumentato da 300px a 400px */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-height: 400px;
   overflow-y: auto;
-  width: 600px; /* Aumentato da 450px a 600px */
+  width: 600px;
 }
 
 /* Stile per ogni opzione nel dropdown */
@@ -935,6 +936,34 @@ td.centered .feedback-btn {
   gap: 10px;
 }
 
+/* Stile per il dropdown di ordinamento su mobile */
+.sort-dropdown {
+  margin-bottom: 15px;
+}
+
+.sort-dropdown select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  background: var(--background-color);
+  color: var(--primary-text-color);
+  font-size: 0.9rem;
+  font-weight: 300;
+  transition: all 0.5s ease;
+  outline: none;
+  appearance: none; /* Rimuove lo stile predefinito del browser */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Aggiunge una freccia personalizzata */
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
+}
+
+.sort-dropdown select:hover,
+.sort-dropdown select:focus {
+  border-color: var(--foreground-color);
+}
+
 /* Media query per visualizzazione mobile */
 @media (max-width: 1024px) {
   .desktop-table {
@@ -953,6 +982,50 @@ td.centered .feedback-btn {
   /* Regola il padding delle celle per mobile */
   th, td {
     padding: 10px 8px; /* Riduciamo il padding per adattarci a schermi più piccoli */
+  }
+
+  /* Uniforma i margini di main-area */
+  .main-area {
+    margin-left: 20vw;
+    margin-right: 5vw; /* Aggiunto per uniformare lo spazio */
+    padding: 20px; /* Mantiene il padding uniforme */
+  }
+
+  /* Uniforma i margini delle card */
+  .request-card {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .header-controls {
+    gap: 8px; /* Gap leggermente più piccolo su mobile */
+  }
+
+  .service-filter .filter-btn {
+    padding: 6px 12px; /* Riduciamo il padding del pulsante */
+    font-size: 0.85rem; /* Riduciamo la dimensione del testo */
+  }
+
+  .search-bar input {
+    max-width: 200px; /* Riduciamo la larghezza del campo di ricerca su mobile */
+  }
+
+  .filter-dropdown {
+    width: 100%;
+    width: 50vw;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    padding: 10px;
+    gap: 15px;
+    max-height: 450px; /* Aumentato da 400px a 450px */
+  }
+
+  .filter-option {
+    white-space: normal;
+    font-size: 0.9rem;
+    padding: 5px 0;
+    margin-bottom: 5px;
   }
 }
 
@@ -993,6 +1066,7 @@ td.centered .feedback-btn {
   .main-area {
     margin-left: 0;
     overflow-y: auto;
+    margin: 0 auto;
   }
   .requests-table {
     overflow-x: auto;
@@ -1048,5 +1122,14 @@ td.centered .feedback-btn {
   }
   .sidebar li .icon {
     margin-bottom: 0;
+  }
+
+  .filter-dropdown {
+    width: 93vw;
+    height: 80vh !important;
+  }
+
+  .filter-dropdown label {
+    font-size: .8rem !important;
   }
 }
