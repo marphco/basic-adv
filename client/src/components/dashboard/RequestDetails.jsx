@@ -20,7 +20,8 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const getProjectTypeDisplay = (projectType) => {
     if (!projectType) return "Non specificato";
     const typeLower = projectType.toLowerCase();
-    if (typeLower.includes("new") || typeLower.includes("nuovo")) return "Ex Novo";
+    if (typeLower.includes("new") || typeLower.includes("nuovo"))
+      return "Ex Novo";
     if (typeLower.includes("restyling")) return "Restyling";
     return projectType; // Se non è né "new/nuovo" né "restyling", mostra il valore originale
   };
@@ -88,7 +89,8 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
               <FontAwesomeIcon icon={faCalendar} className="info-icon" />
               <span>
                 {request.createdAt &&
-                (request.createdAt.$date || typeof request.createdAt === "string")
+                (request.createdAt.$date ||
+                  typeof request.createdAt === "string")
                   ? new Date(
                       request.createdAt.$date || request.createdAt
                     ).toLocaleDateString()
@@ -128,30 +130,43 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
         )}
         {activeTab === "questions" && (
           <div>
-            <h3>Domande e Risposte</h3>
+            <h2>Domande e Risposte</h2>
             {request.questions.map((q, index) => (
               <div key={index} className="question-answer">
                 <p>
-                  <strong>{q.question}</strong>
+                  <strong>{`${index + 1}. ${q.question}`}</strong>
                 </p>
                 {q.options.length > 0 ? (
                   <ul>
-                    {q.options.map((option, optIndex) => (
-                      <li
-                        key={optIndex}
-                        className={
-                          request.answers[q.question]?.options?.includes(option)
-                            ? "selected"
-                            : ""
-                        }
-                      >
-                        {option}
-                      </li>
-                    ))}
+                    {q.options.map((option, optIndex) => {
+                      const isSelected =
+                        request.answers[q.question]?.options?.includes(option);
+                      return (
+                        <li
+                          key={optIndex}
+                          className={
+                            isSelected
+                              ? "answer-badge selected"
+                              : "answer-badge"
+                          }
+                        >
+                          {option}
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
-                  <p>
-                    {request.answers[q.question]?.input || "Nessuna risposta"}
+                  <p
+                    className={
+                      request.answers[q.question]?.input ||
+                      request.answers[q.question]?.options?.length > 0
+                        ? "answer-badge selected"
+                        : "answer-badge"
+                    }
+                  >
+                    {request.answers[q.question]?.input ||
+                      request.answers[q.question]?.options?.[0] ||
+                      "Nessuna risposta"}
                   </p>
                 )}
               </div>

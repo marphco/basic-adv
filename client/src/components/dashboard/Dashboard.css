@@ -628,6 +628,60 @@ td.centered .feedback-btn {
   font-size: 1rem;
 }
 
+/* Stile per il titolo */
+.details-content h2 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  margin-bottom: 30px; /* Spazio tra titolo e prima domanda */
+}
+
+/* Stile per i blocchi domanda-risposta */
+.question-answer {
+  margin-bottom: 30px; /* Spazio tra una domanda e l'altra */
+}
+
+/* Stile per il testo della domanda */
+.question-answer p strong {
+  display: block; /* Assicura che la domanda occupi una riga intera */
+  color: var(--primary-text-color);
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+/* Stili per i badge delle risposte */
+.question-answer .answer-badge {
+  font-weight: 300;
+  color: var(--primary-text-color);
+  padding: 6px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  background: rgba(209, 209, 209, 0.1);
+  transition: all 0.5s ease;
+}
+
+.question-answer .answer-badge.selected {
+  font-weight: 600;
+  color: var(--foreground-color);
+  background: rgba(255, 64, 3, 0.3);
+  border: 1px solid var(--foreground-color);
+}
+
+.question-answer .answer-badge:hover {
+  background: rgba(255, 64, 3, 0.2);
+}
+
+/* Stile per la lista di opzioni */
+.question-answer ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+/* Spazio tra le opzioni nella lista */
+.question-answer li {
+  margin-bottom: 8px;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     width: 30vw;
