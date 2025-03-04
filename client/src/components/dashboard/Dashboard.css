@@ -414,6 +414,7 @@ td.centered .feedback-btn {
   font-size: 1.2rem;
   font-weight: 300;
   color: var(--primary-text-color);
+  transition: color .5s ease;
 }
 
 .stat-card p {
