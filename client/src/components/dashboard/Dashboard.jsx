@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import "./Dashboard.css"; // Nota: il percorso potrebbe dover essere adattato
+import "./Dashboard.css";
 import SearchBar from "./SearchBar";
+import ServiceFilter from "./ServiceFilter";
 import ConfirmModal from "./ConfirmModal";
 import { Cursor } from "../cursor/Cursor";
 import DashboardHome from "./DashboardHome";
@@ -17,6 +18,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   const [selectedSection, setSelectedSection] = useState("home");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filteredServices, setFilteredServices] = useState([]);
   const [fileList, setFileList] = useState([]);
   const [activeKey, setActiveKey] = useState(Date.now());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,6 +32,28 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     import.meta.env.VITE_API_URL || "http://localhost:8080"
   ).replace(/\/$/, "");
   const requestsUrl = `${API_URL}/api/getRequests`;
+
+  // Lista dei microservizi (18 in totale)
+  const servicesList = [
+    "Logo",
+    "Brand Identity",
+    "Packaging",
+    "Content Creation",
+    "Social Media Management",
+    "Advertising",
+    "Product Photography",
+    "Fashion Photography",
+    "Event Photography",
+    "Promo Video",
+    "Corporate Video",
+    "Motion Graphics",
+    "Website Design",
+    "E-commerce",
+    "Landing Page",
+    "Mobile App",
+    "Web App",
+    "UI/UX Design",
+  ];
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -173,6 +197,11 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
           .includes(searchTerm.toLowerCase())
       );
     }
+    if (filteredServices.length > 0) {
+      filtered = filtered.filter((req) =>
+        req.servicesQueue.some((service) => filteredServices.includes(service))
+      );
+    }
     return filtered.sort((a, b) => {
       if (sortField === "name") {
         const nameA = a.formData.contactInfo.name || "-";
@@ -242,8 +271,14 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
       <div className="main-area">
         {selectedSection !== "home" &&
           selectedSection !== "fileList" &&
-          !selectedRequest && ( // Aggiunto !selectedRequest
-            <SearchBar onSearch={setSearchTerm} />
+          !selectedRequest && (
+            <div className="header-controls">
+              <ServiceFilter
+                services={servicesList}
+                onFilterChange={setFilteredServices}
+              />
+              <SearchBar onSearch={setSearchTerm} />
+            </div>
           )}
         {selectedRequest ? (
           <RequestDetails

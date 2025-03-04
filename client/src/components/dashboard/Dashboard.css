@@ -73,16 +73,6 @@ html, body {
   font-size: 0.65rem; /* Testo più piccolo */
 }
 
-/* .sidebar li:hover {
-  background: var(--background-color);
-  border-radius: 20px 0px 0px 20px; 
-  color: var(--primary-text-color);
-} */
-
-/* .active {
-  background: var(--background-color);
-} */
-
 /* Stile dell'elemento attivo nella sidebar */
 .sidebar ul li.active {
   background: var(--background-color); /* Colore di sfondo dell'elemento attivo */
@@ -792,6 +782,81 @@ td.centered .feedback-btn {
   border: 1px solid var(--error-color);
 }
 
+/* Stile per la riga dei controlli */
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Stile per il filtro dei servizi */
+.service-filter {
+  position: relative;
+}
+
+/* Stile per il pulsante del filtro */
+.filter-btn {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--foreground-color);
+  color: white;
+  border: 1px solid var(--foreground-color);
+  border-radius: 4px;
+  font-weight: 300;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.filter-btn:hover {
+  background: var(--background-color);
+  color: var(--foreground-color);
+  border: 1px solid var(--foreground-color);
+}
+
+.filter-icon {
+  margin-right: 8px;
+}
+
+/* Stile per il dropdown */
+.filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--background-color);
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 10000; /* Aumentato per garantire visibilità */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 colonne */
+  gap: 10px;
+  max-height: 300px; /* Altezza massima con scroll */
+  overflow-y: auto;
+  width: 450px; /* Larghezza fissa per il dropdown */
+}
+
+/* Stile per ogni opzione nel dropdown */
+.filter-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 300;
+  color: var(--primary-text-color);
+}
+
+.filter-option input {
+  margin-right: 8px;
+}
+
+/* Aggiorna la search-bar per allinearsi a destra */
+.search-bar {
+  margin-bottom: 0;
+}
+
 @media (max-width: 1200px) {
   .file-list-section .file-info {
     margin-right: 12px;
@@ -883,6 +948,6 @@ td.centered .feedback-btn {
     display: none;
   }
   .sidebar li .icon {
-  margin-bottom: 0;
+    margin-bottom: 0;
   }
 }
