@@ -693,7 +693,7 @@ td.centered .feedback-btn {
   border: 1px solid #d1d1d1;
   border-radius: 4px;
   background-color: var(--background-color);
-  transition: background-color .5s ease;
+  transition: background-color 0.5s ease;
 }
 
 .file-list-section h2 {
@@ -701,14 +701,14 @@ td.centered .feedback-btn {
   font-weight: 300;
   color: var(--primary-text-color);
   margin-bottom: 30px;
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .file-list-section p {
   font-weight: 300;
   color: var(--primary-text-color);
   margin-bottom: 16px;
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .file-list-section ul {
@@ -724,42 +724,49 @@ td.centered .feedback-btn {
   border-bottom: 1px solid #d1d1d1;
   font-weight: 300;
   color: var(--primary-text-color);
-  transition: color .5s ease;
+  transition: color 0.5s ease;
+}
+
+/* Contenitore per i pulsanti */
+.file-list-section .button-group {
+  display: flex;
+  gap: 8px; /* Spazio ridotto tra i pulsanti */
 }
 
 /* Stile comune per entrambi i pulsanti */
-.file-list-section a,
+.file-list-section .download-btn,
 .file-list-section .delete-btn {
-  display: inline-flex; /* Flex per allineare il testo */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 100px; /* Larghezza minima per uniformità */
-  padding: 8px 16px; /* Padding uniforme */
+  width: 100px; /* Larghezza fissa per uniformità */
+  padding: 8px 0; /* Padding verticale uniforme, 0 orizzontale perché width fissa */
   border-radius: 4px;
   font-weight: 300;
-  text-decoration: none; /* Nessuna sottolineatura */
+  font-size: 0.9rem; /* Font uniforme */
+  text-decoration: none;
+  box-sizing: border-box; /* Assicura che padding sia incluso nella width */
   transition: all 0.5s ease;
-  margin-left: 10px;
-  cursor: pointer; /* Per entrambi */
+  cursor: pointer;
 }
 
 /* Stile specifico per Scarica */
-.file-list-section a {
-  background: var(--foreground-color);
+.file-list-section .download-btn {
+  background: var(--foreground-color); /* Arancione */
   color: white;
   border: 1px solid var(--foreground-color);
 }
 
-.file-list-section a:hover {
+.file-list-section .download-btn:hover {
   background: var(--background-color);
   color: var(--foreground-color);
   border: 1px solid var(--foreground-color);
-  text-decoration: none; /* Rimuove sottolineatura su hover */
+  text-decoration: none;
 }
 
 /* Stile specifico per Cancella */
 .file-list-section .delete-btn {
-  background: var(--error-color);
+  background: var(--error-color); /* Dovrebbe essere rosso, ma nell'immagine è blu */
   color: white;
   border: 1px solid var(--error-color);
 }
