@@ -828,28 +828,48 @@ td.centered .feedback-btn {
   background: var(--background-color);
   border: 1px solid #d1d1d1;
   border-radius: 4px;
-  padding: 10px;
-  z-index: 10000; /* Aumentato per garantire visibilità */
+  padding: 15px;
+  z-index: 10000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 colonne */
-  gap: 10px;
-  max-height: 300px; /* Altezza massima con scroll */
+  grid-template-columns: repeat(2, 1fr); /* Ridotto a 2 colonne per più spazio */
+  gap: 20px; /* Aumentato da 15px a 20px */
+  max-height: 400px; /* Aumentato da 300px a 400px */
   overflow-y: auto;
-  width: 450px; /* Larghezza fissa per il dropdown */
+  width: 600px; /* Aumentato da 450px a 600px */
 }
 
 /* Stile per ogni opzione nel dropdown */
 .filter-option {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   font-weight: 300;
   color: var(--primary-text-color);
+  padding: 5px 0;
+  font-size: 0.95rem;
 }
 
-.filter-option input {
-  margin-right: 8px;
+/* Stile per i checkbox nel dropdown */
+.filter-option input[type="checkbox"] {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid grey;
+  border-radius: 2px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.5s ease;
+  margin-right: 12px;
+}
+
+.filter-option input[type="checkbox"]:checked {
+  background-color: var(--foreground-color);
+  border: 1px solid var(--foreground-color);
+}
+
+.filter-option input[type="checkbox"]:focus {
+  outline: none;
 }
 
 /* Aggiorna la search-bar per allinearsi a destra */
