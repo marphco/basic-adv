@@ -718,8 +718,8 @@ td.centered .feedback-btn {
 
 .file-list-section li {
   display: flex;
-  align-items: center;
-  justify-content: space-between; /* Spaziatura tra file-info e button-group */
+  align-items: flex-start; /* Allinea in alto per gestire il testo su più righe */
+  justify-content: space-between;
   padding: 10px 0;
   border-bottom: 1px solid #d1d1d1;
   font-weight: 300;
@@ -728,20 +728,28 @@ td.centered .feedback-btn {
 }
 
 .file-list-section .file-info {
-  flex: 1; /* Occupa lo spazio disponibile */
-  white-space: nowrap; /* Evita che il testo vada a capo */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
-  margin-right: 16px; /* Spazio fisso tra testo e pulsanti */
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* Colonna per nome e dettagli */
+  margin-right: 16px;
+}
+
+.file-list-section .file-name {
+  font-weight: 400; /* Leggermente più marcato per il nome */
+  margin-bottom: 4px; /* Spazio tra nome e dettagli */
+}
+
+.file-list-section .file-details {
+  font-size: 0.9rem; /* Dimensione leggermente più piccola per i dettagli */
+  color: var(--primary-text-color);
 }
 
 .file-list-section .button-group {
   display: flex;
-  gap: 8px; /* Spazio fisso tra i pulsanti */
-  flex-shrink: 0; /* Evita che il gruppo si comprima */
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-/* Stile comune per entrambi i pulsanti */
 .file-list-section .download-btn,
 .file-list-section .delete-btn {
   display: inline-flex;
@@ -758,7 +766,6 @@ td.centered .feedback-btn {
   cursor: pointer;
 }
 
-/* Stile specifico per Scarica */
 .file-list-section .download-btn {
   background: var(--foreground-color);
   color: white;
@@ -772,7 +779,6 @@ td.centered .feedback-btn {
   text-decoration: none;
 }
 
-/* Stile specifico per Cancella */
 .file-list-section .delete-btn {
   background: var(--error-color);
   color: white;
@@ -785,25 +791,23 @@ td.centered .feedback-btn {
   border: 1px solid var(--error-color);
 }
 
-/* Media query per schermi più piccoli */
 @media (max-width: 1200px) {
   .file-list-section .file-info {
-    margin-right: 12px; /* Riduce lo spazio su schermi medi */
+    margin-right: 12px;
   }
 
   .file-list-section .button-group {
-    gap: 6px; /* Spazio leggermente più piccolo */
+    gap: 6px;
   }
 }
 
-/* Media query per schermi grandi */
 @media (min-width: 1600px) {
   .file-list-section .file-info {
-    margin-right: 20px; /* Aumenta lo spazio su schermi grandi */
+    margin-right: 20px;
   }
 
   .file-list-section .button-group {
-    gap: 10px; /* Spazio leggermente più grande */
+    gap: 10px;
   }
 }
 

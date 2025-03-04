@@ -8,8 +8,11 @@ const FileListSection = ({ fileList, deleteFile, API_URL }) => (
         {fileList.map((file, index) => (
           <li key={index}>
             <div className="file-info">
-              {file.name} - {Math.round(file.size / 1024)} KB -{" "}
-              {new Date(file.lastModified).toLocaleDateString()}
+              <div className="file-name">{file.name}</div>
+              <div className="file-details">
+                {Math.round(file.size / 1024)} KB -{" "}
+                {new Date(file.lastModified).toLocaleDateString()}
+              </div>
             </div>
             <div className="button-group">
               <a
