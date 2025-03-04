@@ -742,6 +742,7 @@ td.centered .feedback-btn {
 .file-list-section .file-details {
   font-size: 0.9rem; /* Dimensione leggermente più piccola per i dettagli */
   color: var(--primary-text-color);
+  transition: color 0.5s ease;
 }
 
 .file-list-section .button-group {
