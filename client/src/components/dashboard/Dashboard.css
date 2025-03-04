@@ -719,7 +719,7 @@ td.centered .feedback-btn {
 .file-list-section li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Spaziatura tra file-info e button-group */
   padding: 10px 0;
   border-bottom: 1px solid #d1d1d1;
   font-weight: 300;
@@ -727,10 +727,18 @@ td.centered .feedback-btn {
   transition: color 0.5s ease;
 }
 
-/* Contenitore per i pulsanti */
+.file-list-section .file-info {
+  flex: 1; /* Occupa lo spazio disponibile */
+  white-space: nowrap; /* Evita che il testo vada a capo */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Aggiunge "..." se il testo è troppo lungo */
+  margin-right: 16px; /* Spazio fisso tra testo e pulsanti */
+}
+
 .file-list-section .button-group {
   display: flex;
-  gap: 8px; /* Spazio ridotto tra i pulsanti */
+  gap: 8px; /* Spazio fisso tra i pulsanti */
+  flex-shrink: 0; /* Evita che il gruppo si comprima */
 }
 
 /* Stile comune per entrambi i pulsanti */
@@ -739,20 +747,20 @@ td.centered .feedback-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100px; /* Larghezza fissa per uniformità */
-  padding: 8px 0; /* Padding verticale uniforme, 0 orizzontale perché width fissa */
+  width: 100px;
+  padding: 8px 0;
   border-radius: 4px;
   font-weight: 300;
-  font-size: 0.9rem; /* Font uniforme */
+  font-size: 0.9rem;
   text-decoration: none;
-  box-sizing: border-box; /* Assicura che padding sia incluso nella width */
+  box-sizing: border-box;
   transition: all 0.5s ease;
   cursor: pointer;
 }
 
 /* Stile specifico per Scarica */
 .file-list-section .download-btn {
-  background: var(--foreground-color); /* Arancione */
+  background: var(--foreground-color);
   color: white;
   border: 1px solid var(--foreground-color);
 }
@@ -766,7 +774,7 @@ td.centered .feedback-btn {
 
 /* Stile specifico per Cancella */
 .file-list-section .delete-btn {
-  background: var(--error-color); /* Dovrebbe essere rosso, ma nell'immagine è blu */
+  background: var(--error-color);
   color: white;
   border: 1px solid var(--error-color);
 }
@@ -775,6 +783,28 @@ td.centered .feedback-btn {
   background: var(--background-color);
   color: var(--primary-text-color);
   border: 1px solid var(--error-color);
+}
+
+/* Media query per schermi più piccoli */
+@media (max-width: 1200px) {
+  .file-list-section .file-info {
+    margin-right: 12px; /* Riduce lo spazio su schermi medi */
+  }
+
+  .file-list-section .button-group {
+    gap: 6px; /* Spazio leggermente più piccolo */
+  }
+}
+
+/* Media query per schermi grandi */
+@media (min-width: 1600px) {
+  .file-list-section .file-info {
+    margin-right: 20px; /* Aumenta lo spazio su schermi grandi */
+  }
+
+  .file-list-section .button-group {
+    gap: 10px; /* Spazio leggermente più grande */
+  }
 }
 
 @media (max-width: 768px) {

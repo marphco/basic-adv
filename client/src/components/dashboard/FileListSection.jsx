@@ -7,21 +7,25 @@ const FileListSection = ({ fileList, deleteFile, API_URL }) => (
       <ul>
         {fileList.map((file, index) => (
           <li key={index}>
-            {file.name} - {Math.round(file.size / 1024)} KB -{" "}
-            {new Date(file.lastModified).toLocaleDateString()}
-            <a
-              href={`${API_URL}/api/download/${file.name}`}
-              download
-              className="download-btn"
-            >
-              Scarica
-            </a>
-            <button
-              onClick={() => deleteFile(file.name)}
-              className="delete-btn"
-            >
-              Cancella
-            </button>
+            <div className="file-info">
+              {file.name} - {Math.round(file.size / 1024)} KB -{" "}
+              {new Date(file.lastModified).toLocaleDateString()}
+            </div>
+            <div className="button-group">
+              <a
+                href={`${API_URL}/api/download/${file.name}`}
+                download
+                className="download-btn"
+              >
+                Scarica
+              </a>
+              <button
+                onClick={() => deleteFile(file.name)}
+                className="delete-btn"
+              >
+                Cancella
+              </button>
+            </div>
           </li>
         ))}
       </ul>
