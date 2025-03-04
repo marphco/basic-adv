@@ -12,6 +12,8 @@ import {
   faPaperclip,
   faBriefcase,
 } from "@fortawesome/free-solid-svg-icons";
+import ReactMarkdown from "react-markdown"; // Importa la libreria
+
 
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const [activeTab, setActiveTab] = useState("info");
@@ -174,14 +176,16 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "plan" && (
-          <div>
-            <h3>Piano d’Azione</h3>
-            <pre>{request.projectPlan || "Non ancora generato"}</pre>
+          <div className="piano">
+            <h2>Piano d’Azione</h2>
+            <ReactMarkdown>
+            {request.projectPlan || "Non ancora generato"}
+            </ReactMarkdown>
           </div>
         )}
         {activeTab === "attachments" && (
           <div>
-            <h3>Allegati</h3>
+            <h2>Allegati</h2>
             {request.formData.currentLogo ? (
               <a
                 href={`${API_URL}/api/download/${request.formData.currentLogo}`}
