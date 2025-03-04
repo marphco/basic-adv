@@ -8,6 +8,7 @@ import {
   faPaperclip,
   faChartLine,
   faThumbsUp,
+  faThumbsDown, // Aggiunto
   faSortUp,
   faSortDown,
   faCheck,
@@ -28,7 +29,8 @@ const RequestList = ({
 }) => {
   return (
     <div className="requests-table">
-      <table>
+      {/* Visualizzazione desktop (tabella) */}
+      <table className="desktop-table">
         <thead>
           <tr>
             <th onClick={() => handleSort("name")}>
@@ -36,11 +38,19 @@ const RequestList = ({
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
-                  className={`sort-icon ${sortField === "name" && sortDirection === "asc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "name" && sortDirection === "asc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
                 <FontAwesomeIcon
                   icon={faSortDown}
-                  className={`sort-icon ${sortField === "name" && sortDirection === "desc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "name" && sortDirection === "desc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
               </span>
             </th>
@@ -50,11 +60,19 @@ const RequestList = ({
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
-                  className={`sort-icon ${sortField === "email" && sortDirection === "asc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "email" && sortDirection === "asc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
                 <FontAwesomeIcon
                   icon={faSortDown}
-                  className={`sort-icon ${sortField === "email" && sortDirection === "desc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "email" && sortDirection === "desc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
               </span>
             </th>
@@ -63,11 +81,19 @@ const RequestList = ({
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
-                  className={`sort-icon ${sortField === "createdAt" && sortDirection === "asc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "createdAt" && sortDirection === "asc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
                 <FontAwesomeIcon
                   icon={faSortDown}
-                  className={`sort-icon ${sortField === "createdAt" && sortDirection === "desc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "createdAt" && sortDirection === "desc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
               </span>
             </th>
@@ -79,11 +105,19 @@ const RequestList = ({
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
-                      className={`sort-icon ${sortField === "budget" && sortDirection === "asc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "budget" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                     <FontAwesomeIcon
                       icon={faSortDown}
-                      className={`sort-icon ${sortField === "budget" && sortDirection === "desc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "budget" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                   </span>
                 </th>
@@ -96,11 +130,19 @@ const RequestList = ({
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
-                      className={`sort-icon ${sortField === "attachment" && sortDirection === "asc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "attachment" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                     <FontAwesomeIcon
                       icon={faSortDown}
-                      className={`sort-icon ${sortField === "attachment" && sortDirection === "desc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "attachment" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                   </span>
                 </th>
@@ -110,11 +152,19 @@ const RequestList = ({
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
-                      className={`sort-icon ${sortField === "status" && sortDirection === "asc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "status" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                     <FontAwesomeIcon
                       icon={faSortDown}
-                      className={`sort-icon ${sortField === "status" && sortDirection === "desc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "status" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                   </span>
                 </th>
@@ -127,11 +177,19 @@ const RequestList = ({
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
-                      className={`sort-icon ${sortField === "budget" && sortDirection === "asc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "budget" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                     <FontAwesomeIcon
                       icon={faSortDown}
-                      className={`sort-icon ${sortField === "budget" && sortDirection === "desc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "budget" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                   </span>
                 </th>
@@ -144,11 +202,19 @@ const RequestList = ({
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
-                      className={`sort-icon ${sortField === "attachment" && sortDirection === "asc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "attachment" && sortDirection === "asc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                     <FontAwesomeIcon
                       icon={faSortDown}
-                      className={`sort-icon ${sortField === "attachment" && sortDirection === "desc" ? "active" : ""}`}
+                      className={`sort-icon ${
+                        sortField === "attachment" && sortDirection === "desc"
+                          ? "active"
+                          : ""
+                      }`}
                     />
                   </span>
                 </th>
@@ -160,11 +226,19 @@ const RequestList = ({
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
-                  className={`sort-icon ${sortField === "feedback" && sortDirection === "asc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "feedback" && sortDirection === "asc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
                 <FontAwesomeIcon
                   icon={faSortDown}
-                  className={`sort-icon ${sortField === "feedback" && sortDirection === "desc" ? "active" : ""}`}
+                  className={`sort-icon ${
+                    sortField === "feedback" && sortDirection === "desc"
+                      ? "active"
+                      : ""
+                  }`}
                 />
               </span>
             </th>
@@ -263,6 +337,112 @@ const RequestList = ({
           })}
         </tbody>
       </table>
+
+      {/* Visualizzazione mobile (card) */}
+      <div className="mobile-cards">
+        {getFilteredRequests().map((req) => {
+          const budgetData = formatBudget(req.formData.budget);
+          return (
+            <div
+              key={req.sessionId}
+              className="request-card"
+              onClick={() => setSelectedRequest(req)} // Aggiunto evento onClick sulla card
+            >
+              <div className="card-content">
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faUser} className="card-icon" />{" "}
+                    Nome:
+                  </strong>{" "}
+                  {req.formData.contactInfo.name || "-"}
+                </div>
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faEnvelope} className="card-icon" />{" "}
+                    Email:
+                  </strong>{" "}
+                  {req.formData.contactInfo.email || "-"}
+                </div>
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faCalendar} className="card-icon" />{" "}
+                    Data:
+                  </strong>{" "}
+                  {req.createdAt &&
+                  (req.createdAt.$date || typeof req.createdAt === "string")
+                    ? formatDate(new Date(req.createdAt.$date || req.createdAt))
+                    : "Data non disponibile"}
+                </div>
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faEuroSign} className="card-icon" />{" "}
+                    Budget:
+                  </strong>{" "}
+                  <span className={`budget-badge ${budgetData.className}`}>
+                    {budgetData.text}
+                  </span>
+                </div>
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faPaperclip} className="card-icon" />{" "}
+                    Allegati:
+                  </strong>{" "}
+                  {req.formData.currentLogo ? (
+                    <FontAwesomeIcon
+                      icon={faPaperclip}
+                      className="attachment-icon"
+                    />
+                  ) : (
+                    "-"
+                  )}
+                </div>
+                {selectedSection === "all" && (
+                  <div className="card-item">
+                    <strong>
+                      <FontAwesomeIcon
+                        icon={faChartLine}
+                        className="card-icon"
+                      />{" "}
+                      Stato:
+                    </strong>{" "}
+                    <span
+                      className={`status-badge ${
+                        req.projectPlan ? "completed" : "pending"
+                      }`}
+                    >
+                      {req.projectPlan ? "Completa" : "Incompleta"}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="card-actions">
+                <button
+                  className={`feedback-btn ${
+                    req.feedback ? "worked" : "not-worked"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateFeedback(req.sessionId, !req.feedback);
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={req.feedback ? faThumbsUp : faThumbsDown}
+                  />
+                </button>
+                <button
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    confirmDelete(req.sessionId);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

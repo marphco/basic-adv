@@ -233,6 +233,7 @@ td.centered .feedback-btn {
 }
 
 /* Stili per Feedback */
+/* Stili per Feedback */
 .feedback-btn {
   border: none;
   border-radius: 50%;
@@ -252,9 +253,9 @@ td.centered .feedback-btn {
 
 .feedback-btn.not-worked {
   background: transparent;
-  color: var(--primary-text-color);
-  border: solid 1px var(--primary-text-color);
-  transition: all .5s ease;
+  color: var(--error-color); /* Cambiato da --primary-text-color a --error-color per maggiore chiarezza */
+  border: solid 1px var(--error-color); /* Usiamo --error-color per il bordo */
+  transition: all 0.5s ease;
 }
 
 .feedback-btn:hover {
@@ -876,6 +877,83 @@ td.centered .feedback-btn {
 /* Aggiorna la search-bar per allinearsi a destra */
 .search-bar {
   margin-bottom: 0;
+}
+
+/* Stile per la visualizzazione desktop (tabella) */
+.desktop-table {
+  display: table;
+}
+
+/* Stile per la visualizzazione mobile (card) */
+.mobile-cards {
+  display: none; /* Nascosto di default */
+}
+
+/* Stile per ogni card */
+.request-card {
+  background: var(--background-color);
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: all 0.5s ease;
+  cursor: pointer; /* Permette di cliccare sulla card per aprire i dettagli */
+}
+
+/* Contenuto della card */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Elementi della card */
+.card-item {
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+}
+
+.card-item strong {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+/* Icone accanto ai titoli nella card */
+.card-icon {
+  margin-right: 8px;
+  color: var(--foreground-color);
+  font-size: 0.9rem;
+}
+
+/* Azioni della card */
+.card-actions {
+  display: flex;
+  justify-content: space-between; /* Modificato da flex-end a space-between */
+  gap: 10px;
+}
+
+/* Media query per visualizzazione mobile */
+@media (max-width: 1024px) {
+  .desktop-table {
+    display: none; /* Nasconde la tabella */
+  }
+
+  .mobile-cards {
+    display: block; /* Mostra le card */
+  }
+
+  /* Nasconde l'ordinamento su mobile (opzionale) */
+  .sort-icons {
+    display: none;
+  }
+
+  /* Regola il padding delle celle per mobile */
+  th, td {
+    padding: 10px 8px; /* Riduciamo il padding per adattarci a schermi più piccoli */
+  }
 }
 
 @media (max-width: 1200px) {
