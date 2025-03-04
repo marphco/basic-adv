@@ -11,6 +11,8 @@ import {
   faRedo,
   faPaperclip,
   faBriefcase,
+  faThumbsUp,
+  faThumbsDown,
 } from "@fortawesome/free-solid-svg-icons";
 import ReactMarkdown from "react-markdown"; // Importa la libreria
 
@@ -25,6 +27,15 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
       return "Ex Novo";
     if (typeLower.includes("restyling")) return "Restyling";
     return projectType; // Se non è né "new/nuovo" né "restyling", mostra il valore originale
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "Data non disponibile";
+    const d = new Date(date.$date || date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // I mesi partono da 0
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -92,15 +103,22 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
                 {request.createdAt &&
                 (request.createdAt.$date ||
                   typeof request.createdAt === "string")
-                  ? new Date(
-                      request.createdAt.$date || request.createdAt
-                    ).toLocaleDateString()
+                  ? formatDate(request.createdAt)
                   : "Data non disponibile"}
               </span>
             </div>
             <div className="info-item">
               <FontAwesomeIcon icon={faChartLine} className="info-icon" />
-              <span>{request.projectPlan ? "Completata" : "In attesa"}</span>
+              <span>{request.projectPlan ? "Completa" : "Incompleta"}</span>
+            </div>
+            <div className="info-item">
+              <FontAwesomeIcon
+                icon={request.feedback ? faThumbsUp : faThumbsDown}
+                className="info-icon"
+              />
+              <span>
+                {request.feedback ? "Visualizzata" : "Non Visualizzata"}
+              </span>
             </div>
           </div>
         )}
