@@ -1094,7 +1094,7 @@ td.centered .feedback-btn {
     align-items: center;
     justify-content: center;
     padding: 5px 6px; /* Ridotto ulteriormente il padding */
-    font-size: 0.75rem; /* Ridotto il font-size per occupare meno spazio */
+    font-size: 0.6rem; /* Ridotto il font-size per occupare meno spazio */
     margin-bottom: 0;
     flex: 1; /* Distribuiamo lo spazio equamente tra i pulsanti */
     text-align: center; /* Centriamo il testo per maggiore leggibilità */
