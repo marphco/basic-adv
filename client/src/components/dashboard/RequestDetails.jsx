@@ -148,50 +148,56 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "questions" && (
-          <div className="info-section">
-            <h2>Domande e Risposte</h2>
-            {request.questions.map((q, index) => (
-              <div key={index} className="question-answer">
-                <p>
-                  <strong>{`${index + 1}. ${q.question}`}</strong>
-                </p>
-                {q.options.length > 0 ? (
-                  <ul>
-                    {q.options.map((option, optIndex) => {
-                      const isSelected =
-                        request.answers[q.question]?.options?.includes(option);
-                      return (
-                        <li
-                          key={optIndex}
-                          className={
-                            isSelected
-                              ? "answer-badge selected"
-                              : "answer-badge"
-                          }
-                        >
-                          {option}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p
+  <div className="info-section">
+    <h2>Domande e Risposte</h2>
+    {request.questions.map((q, index) => (
+      <div key={index} className="question-answer">
+        <p>
+          <strong>{`${index + 1}. ${q.question}`}</strong>
+        </p>
+        {q.options.length > 0 ? (
+          <>
+            <ul>
+              {q.options.map((option, optIndex) => {
+                const isSelected =
+                  request.answers[q.question]?.options?.includes(option);
+                return (
+                  <li
+                    key={optIndex}
                     className={
-                      request.answers[q.question]?.input ||
-                      request.answers[q.question]?.options?.length > 0
-                        ? "answer-badge selected"
-                        : "answer-badge"
+                      isSelected ? "answer-badge selected" : "answer-badge"
                     }
                   >
-                    {request.answers[q.question]?.input ||
-                      request.answers[q.question]?.options?.[0] ||
-                      "Nessuna risposta"}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+                    {option}
+                  </li>
+                );
+              })}
+            </ul>
+            {/* Mostriamo il campo input se presente, anche se ci sono opzioni */}
+            {request.answers[q.question]?.input && (
+              <p className="answer-badge selected">
+                {request.answers[q.question].input}
+              </p>
+            )}
+          </>
+        ) : (
+          <p
+            className={
+              request.answers[q.question]?.input ||
+              request.answers[q.question]?.options?.length > 0
+                ? "answer-badge selected"
+                : "answer-badge"
+            }
+          >
+            {request.answers[q.question]?.input ||
+              request.answers[q.question]?.options?.[0] ||
+              "Nessuna risposta"}
+          </p>
         )}
+      </div>
+    ))}
+  </div>
+)}
         {activeTab === "plan" && (
           <div className="info-section piano">
             <h2>Piano d’Azione</h2>

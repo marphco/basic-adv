@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { formatDate } from "./DashboardUtils"; // Importiamo formatDate
 
 const FileListSection = ({ fileList, deleteFile, API_URL }) => (
   <div className="file-list-section">
@@ -11,7 +12,7 @@ const FileListSection = ({ fileList, deleteFile, API_URL }) => (
               <div className="file-name">{file.name}</div>
               <div className="file-details">
                 {Math.round(file.size / 1024)} KB -{" "}
-                {new Date(file.lastModified).toLocaleDateString()}
+                {formatDate(new Date(file.lastModified))} {/* Usiamo formatDate */}
               </div>
             </div>
             <div className="button-group">
