@@ -73,6 +73,7 @@ const DynamicForm = () => {
     []
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const categoriesRequiringBrand = ["Branding", "Web", "App"];
 
   const handleRestart = () => {
@@ -240,12 +241,20 @@ const DynamicForm = () => {
         ) {
           newErrors.otherBusinessField = "Specifica l’ambito.";
         }
-        if (formData.projectType === "Tipo di progetto") {
+        // Validazione di projectType solo se almeno una categoria richiede il brand
+        const requiresBrand = selectedCategories.some((cat) =>
+          categoriesRequiringBrand.includes(cat)
+        );
+        if (
+          requiresBrand &&
+          formData.projectType === "Tipo di progetto"
+        ) {
           newErrors.projectType = "Seleziona un tipo di progetto.";
         }
-        if (formData.projectType === "restyling" && !formData.currentLogo) {
+        if (requiresBrand && formData.projectType === "restyling" && !formData.currentLogo) {
           newErrors.currentLogo = "Carica un’immagine per il restyling.";
         } else if (
+          requiresBrand &&
           formData.projectType === "restyling" &&
           formData.currentLogo
         ) {
@@ -325,7 +334,7 @@ const DynamicForm = () => {
           setLoading(false);
         }
       }, 300),
-    [selectedServices, formData, sessionId]
+    [selectedServices, selectedCategories, formData, sessionId, categoriesRequiringBrand]
   );
 
   const fetchNextQuestion = async () => {
@@ -357,7 +366,7 @@ const DynamicForm = () => {
       setErrors({
         general: "Errore nel recupero della domanda. Riprova più tardi.",
       });
-      setLoading(false); // Assicurati che loading si resetti anche in caso di errore
+      setLoading(false);
     } finally {
       setLoading(false);
     }
