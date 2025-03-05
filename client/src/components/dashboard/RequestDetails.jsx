@@ -14,7 +14,7 @@ import {
   faThumbsUp,
   faThumbsDown,
 } from "@fortawesome/free-solid-svg-icons";
-import ReactMarkdown from "react-markdown"; // Importa la libreria
+import ReactMarkdown from "react-markdown";
 
 const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
   const [activeTab, setActiveTab] = useState("info");
@@ -26,14 +26,19 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
     if (typeLower.includes("new") || typeLower.includes("nuovo"))
       return "Ex Novo";
     if (typeLower.includes("restyling")) return "Restyling";
-    return projectType; // Se non è né "new/nuovo" né "restyling", mostra il valore originale
+    return projectType;
+  };
+
+  // Funzione per normalizzare le chiavi delle domande
+  const normalizeQuestionKey = (question) => {
+    return question.replace("es.", "es_"); // Sostituiamo "es." con "es_" per uniformare le chiavi
   };
 
   const formatDate = (date) => {
     if (!date) return "Data non disponibile";
     const d = new Date(date.$date || date);
     const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0"); // I mesi partono da 0
+    const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -148,56 +153,57 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "questions" && (
-  <div className="info-section">
-    <h2>Domande e Risposte</h2>
-    {request.questions.map((q, index) => (
-      <div key={index} className="question-answer">
-        <p>
-          <strong>{`${index + 1}. ${q.question}`}</strong>
-        </p>
-        {q.options.length > 0 ? (
-          <>
-            <ul>
-              {q.options.map((option, optIndex) => {
-                const isSelected =
-                  request.answers[q.question]?.options?.includes(option);
-                return (
-                  <li
-                    key={optIndex}
+          <div className="info-section">
+            <h2>Domande e Risposte</h2>
+            {request.questions.map((q, index) => (
+              <div key={index} className="question-answer">
+                <p>
+                  <strong>{`${index + 1}. ${q.question}`}</strong>
+                </p>
+                {q.options.length > 0 ? (
+                  <>
+                    <ul>
+                      {q.options.map((option, optIndex) => {
+                        const normalizedQuestion = normalizeQuestionKey(q.question);
+                        const isSelected =
+                          request.answers[normalizedQuestion]?.options?.includes(option);
+                        return (
+                          <li
+                            key={optIndex}
+                            className={
+                              isSelected ? "answer-badge selected" : "answer-badge"
+                            }
+                          >
+                            {option}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {/* Mostriamo il campo input se presente, anche se ci sono opzioni */}
+                    {request.answers[normalizeQuestionKey(q.question)]?.input && (
+                      <p className="answer-badge selected">
+                        {request.answers[normalizeQuestionKey(q.question)].input}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p
                     className={
-                      isSelected ? "answer-badge selected" : "answer-badge"
+                      request.answers[normalizeQuestionKey(q.question)]?.input ||
+                      request.answers[normalizeQuestionKey(q.question)]?.options?.length > 0
+                        ? "answer-badge selected"
+                        : "answer-badge"
                     }
                   >
-                    {option}
-                  </li>
-                );
-              })}
-            </ul>
-            {/* Mostriamo il campo input se presente, anche se ci sono opzioni */}
-            {request.answers[q.question]?.input && (
-              <p className="answer-badge selected">
-                {request.answers[q.question].input}
-              </p>
-            )}
-          </>
-        ) : (
-          <p
-            className={
-              request.answers[q.question]?.input ||
-              request.answers[q.question]?.options?.length > 0
-                ? "answer-badge selected"
-                : "answer-badge"
-            }
-          >
-            {request.answers[q.question]?.input ||
-              request.answers[q.question]?.options?.[0] ||
-              "Nessuna risposta"}
-          </p>
+                    {request.answers[normalizeQuestionKey(q.question)]?.input ||
+                      request.answers[normalizeQuestionKey(q.question)]?.options?.[0] ||
+                      "Nessuna risposta"}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
         )}
-      </div>
-    ))}
-  </div>
-)}
         {activeTab === "plan" && (
           <div className="info-section piano">
             <h2>Piano d’Azione</h2>
