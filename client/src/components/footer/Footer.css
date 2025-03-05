@@ -68,14 +68,24 @@
   
   /* Su mobile, adattiamo il layout (lo gestiremo dopo) */
   @media (max-width: 768px) {
+    .section-footer {
+        width: 100vw;
+        height: 25vh;
+        padding-top: 1vh;
+    }
+    
     .footer {
       height: auto; /* Adattiamo l'altezza su mobile */
+      border-left: 0;
+      border-top: solid 1px var(--foreground-color)
     }
   
     .footer-content {
       font-size: 0.7rem;
+      margin-top: 8.5vh;
       padding: 10px;
       gap: 8px;
+      rotate: 0deg;
     }
   
     .footer-cities {
