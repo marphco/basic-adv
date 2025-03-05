@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
-import PropTypes from "prop-types"; // Importiamo PropTypes
+import PropTypes from "prop-types";
 import "./App.css";
 import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
@@ -20,11 +20,11 @@ import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
+import Footer from "./components/footer/Footer";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
 
-// Componente wrapper per usare useLocation
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -33,12 +33,10 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Stato per la sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const openAboutUs = () => setIsAboutUsOpen(true);
   const closeAboutUs = () => setIsAboutUsOpen(false);
-
-  // Funzione per gestire l'apertura/chiusura della sidebar
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   useLayoutEffect(() => {
@@ -60,7 +58,10 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       const isHomePage = location.pathname === "/";
       if (!isMobile && scrollContainerRef.current && isHomePage) {
         const container = scrollContainerRef.current;
+        console.log("ScrollWidth di .App (px):", container.scrollWidth);
+        console.log("Window innerWidth (px):", window.innerWidth);
         const totalWidth = container.scrollWidth - window.innerWidth;
+        console.log("TotalWidth calcolato (px):", totalWidth);
         if (scrollTween) scrollTween.kill();
         const tween = gsap.to(container, {
           x: -totalWidth,
@@ -92,6 +93,16 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   }, [isMobile, windowWidth, windowHeight, location.pathname]);
 
   useEffect(() => {
+    if (scrollContainerRef.current) {
+      const sections = scrollContainerRef.current.querySelectorAll(".section, .section-footer");
+      sections.forEach((section, index) => {
+        console.log(`Larghezza della sezione ${index + 1} (px):`, section.scrollWidth);
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     document.body.setAttribute("data-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
@@ -109,8 +120,8 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         openAboutUs={openAboutUs}
         closeAboutUs={closeAboutUs}
         isMobile={isMobile}
-        toggleSidebar={toggleSidebar} // Passa toggleSidebar
-        isSidebarOpen={isSidebarOpen} // Passa isSidebarOpen
+        toggleSidebar={toggleSidebar}
+        isSidebarOpen={isSidebarOpen}
       />
       <div
         className={`App ${isDashboard ? "dashboard-layout" : ""}`}
@@ -140,6 +151,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
                 <div className="section">
                   <Contacts />
                 </div>
+                <div className="section-footer">
+                  <Footer />
+                </div>
                 {!isMobile && (
                   <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
                     <AboutUsDesktop />
@@ -156,8 +170,8 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
             element={
               <Dashboard
                 isDark={isDark}
-                toggleSidebar={toggleSidebar} // Passa toggleSidebar
-                isSidebarOpen={isSidebarOpen} // Passa isSidebarOpen
+                toggleSidebar={toggleSidebar}
+                isSidebarOpen={isSidebarOpen}
               />
             }
           />
