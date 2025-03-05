@@ -201,7 +201,7 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
           </div>
         )}
         {activeTab === "attachments" && (
-          <div className="attachments-section">
+          <div className="info-section attachments-section">
             <h2>Allegati</h2>
             {request.formData.currentLogo ? (
               <a
