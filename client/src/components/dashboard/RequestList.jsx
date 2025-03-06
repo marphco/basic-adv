@@ -14,6 +14,7 @@ import {
   faCheck,
   faTimes,
   faTrash,
+  faTag, // Aggiungiamo l'icona per il brand
 } from "@fortawesome/free-solid-svg-icons";
 import { formatDate, formatBudget } from "./DashboardUtils";
 
@@ -58,8 +59,7 @@ const RequestList = ({
               </span>
             </th>
             <th onClick={() => handleSort("email")}>
-              <FontAwesomeIcon icon={faEnvelope} className="header-icon" />{" "}
-              Email
+              <FontAwesomeIcon icon={faEnvelope} className="header-icon" /> Email
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
@@ -68,6 +68,20 @@ const RequestList = ({
                 <FontAwesomeIcon
                   icon={faSortDown}
                   className={`sort-icon ${sortField === "email" && sortDirection === "desc" ? "active" : ""}`}
+                />
+              </span>
+            </th>
+            {/* Nuova colonna per il nome del brand */}
+            <th onClick={() => handleSort("brandName")}>
+              <FontAwesomeIcon icon={faTag} className="header-icon" /> Brand
+              <span className="sort-icons">
+                <FontAwesomeIcon
+                  icon={faSortUp}
+                  className={`sort-icon ${sortField === "brandName" && sortDirection === "asc" ? "active" : ""}`}
+                />
+                <FontAwesomeIcon
+                  icon={faSortDown}
+                  className={`sort-icon ${sortField === "brandName" && sortDirection === "desc" ? "active" : ""}`}
                 />
               </span>
             </th>
@@ -87,8 +101,7 @@ const RequestList = ({
             {selectedSection === "all" ? (
               <>
                 <th className="centered" onClick={() => handleSort("budget")}>
-                  <FontAwesomeIcon icon={faEuroSign} className="header-icon" />{" "}
-                  Budget
+                  <FontAwesomeIcon icon={faEuroSign} className="header-icon" /> Budget
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
@@ -100,12 +113,8 @@ const RequestList = ({
                     />
                   </span>
                 </th>
-                <th
-                  className="centered"
-                  onClick={() => handleSort("attachment")}
-                >
-                  <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
-                  Allegati
+                <th className="centered" onClick={() => handleSort("attachment")}>
+                  <FontAwesomeIcon icon={faPaperclip} className="header-icon" /> Allegati
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
@@ -118,8 +127,7 @@ const RequestList = ({
                   </span>
                 </th>
                 <th className="centered" onClick={() => handleSort("status")}>
-                  <FontAwesomeIcon icon={faChartLine} className="header-icon" />{" "}
-                  Stato
+                  <FontAwesomeIcon icon={faChartLine} className="header-icon" /> Stato
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
@@ -135,8 +143,7 @@ const RequestList = ({
             ) : (
               <>
                 <th className="centered" onClick={() => handleSort("budget")}>
-                  <FontAwesomeIcon icon={faEuroSign} className="header-icon" />{" "}
-                  Budget
+                  <FontAwesomeIcon icon={faEuroSign} className="header-icon" /> Budget
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
@@ -148,12 +155,8 @@ const RequestList = ({
                     />
                   </span>
                 </th>
-                <th
-                  className="centered"
-                  onClick={() => handleSort("attachment")}
-                >
-                  <FontAwesomeIcon icon={faPaperclip} className="header-icon" />{" "}
-                  Allegati
+                <th className="centered" onClick={() => handleSort("attachment")}>
+                  <FontAwesomeIcon icon={faPaperclip} className="header-icon" /> Allegati
                   <span className="sort-icons">
                     <FontAwesomeIcon
                       icon={faSortUp}
@@ -168,8 +171,7 @@ const RequestList = ({
               </>
             )}
             <th className="centered" onClick={() => handleSort("feedback")}>
-              <FontAwesomeIcon icon={faThumbsUp} className="header-icon" />{" "}
-              Feedback
+              <FontAwesomeIcon icon={faThumbsUp} className="header-icon" /> Feedback
               <span className="sort-icons">
                 <FontAwesomeIcon
                   icon={faSortUp}
@@ -195,6 +197,8 @@ const RequestList = ({
               >
                 <td>{req.formData.contactInfo.name || "-"}</td>
                 <td>{req.formData.contactInfo.email || "-"}</td>
+                {/* Nuova colonna per il nome del brand */}
+                <td>{req.formData.brandName || "-"}</td>
                 <td>
                   {req.createdAt &&
                   (req.createdAt.$date || typeof req.createdAt === "string")
@@ -283,12 +287,15 @@ const RequestList = ({
         <div className="sort-dropdown">
           <select
             onChange={handleSortChange}
-            value={`${sortField}-${sortDirection}`} // Valore corrente per il select
+            value={`${sortField}-${sortDirection}`}
           >
             <option value="name-asc">Ordina per Nome (A-Z)</option>
             <option value="name-desc">Ordina per Nome (Z-A)</option>
             <option value="email-asc">Ordina per Email (A-Z)</option>
             <option value="email-desc">Ordina per Email (Z-A)</option>
+            {/* Aggiungiamo le opzioni di ordinamento per brandName */}
+            <option value="brandName-asc">Ordina per Brand (A-Z)</option>
+            <option value="brandName-desc">Ordina per Brand (Z-A)</option>
             <option value="createdAt-asc">Ordina per Data (più vecchia)</option>
             <option value="createdAt-desc">Ordina per Data (più recente)</option>
             <option value="budget-asc">Ordina per Budget (crescente)</option>
@@ -326,6 +333,13 @@ const RequestList = ({
                     <FontAwesomeIcon icon={faEnvelope} className="card-icon" /> Email:
                   </strong>{" "}
                   {req.formData.contactInfo.email || "-"}
+                </div>
+                {/* Nuova voce per il nome del brand */}
+                <div className="card-item">
+                  <strong>
+                    <FontAwesomeIcon icon={faTag} className="card-icon" /> Brand:
+                  </strong>{" "}
+                  {req.formData.brandName || "-"}
                 </div>
                 <div className="card-item">
                   <strong>

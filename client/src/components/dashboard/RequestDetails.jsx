@@ -13,6 +13,7 @@ import {
   faBriefcase,
   faThumbsUp,
   faThumbsDown,
+  faTag,
 } from "@fortawesome/free-solid-svg-icons";
 import ReactMarkdown from "react-markdown";
 
@@ -131,6 +132,11 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
         {activeTab === "services" && (
           <div className="info-section">
             <h2>Servizi Richiesti</h2>
+            {/* Nuova voce per il nome del brand */}
+            <div className="info-item">
+              <FontAwesomeIcon icon={faTag} className="info-icon" />
+              <span>{request.formData.brandName || "Non specificato"}</span>
+            </div>
             <div className="info-item">
               <FontAwesomeIcon icon={faList} className="info-icon" />
               <span>
@@ -180,7 +186,6 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
                         );
                       })}
                     </ul>
-                    {/* Mostriamo il campo input se presente, anche se ci sono opzioni */}
                     {request.answers[normalizeQuestionKey(q.question)]?.input && (
                       <p className="answer-badge selected">
                         {request.answers[normalizeQuestionKey(q.question)].input}

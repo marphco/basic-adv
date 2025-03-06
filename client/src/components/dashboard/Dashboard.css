@@ -965,7 +965,7 @@ td.centered .feedback-btn {
 }
 
 /* Media query per visualizzazione mobile */
-@media (max-width: 1024px) {
+@media (max-width: 1440px) {
   .desktop-table {
     display: none; /* Nasconde la tabella */
   }
