@@ -1,129 +1,226 @@
 .contact-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    width: 75vw;
-    max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  width: 75vw;
+  max-width: 800px;
+}
+
+.contact-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0 0.25rem;
+}
+
+.contact-form .form-input {
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid #d1d1d1;
+  border-radius: 0;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  background: transparent;
+  outline: none;
+  transition: all 0.5s ease;
+  text-align: left;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.contact-form .form-input:hover,
+.contact-form .form-input:focus {
+  border-bottom-color: var(--foreground-color);
+  color: var(--primary-text-color);
+}
+
+.contact-form .form-input::placeholder {
+  color: #999;
+  font-weight: 300;
+  text-align: left;
+}
+
+.contact-form .form-actions {
+  padding-top: 1rem;
+  display: flex;
+  align-items: center !important;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.contact-form .contact-submit-btn {
+  padding: 0.75rem 2rem;
+  background-color: var(--foreground-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 200;
+  cursor: pointer;
+  border: solid 1px var(--foreground-color);
+  transition: background-color 0.5s ease;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.contact-form .contact-submit-btn:hover {
+  background: var(--background-color);
+  border: solid 1px var(--foreground-color);
+  color: var(--primary-text-color);
+}
+
+.contact-form .contact-submit-btn:disabled {
+  background-color: var(--foreground-color);
+  cursor: not-allowed;
+}
+
+.contact-form .form-group .error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--error-color) !important;
+  margin-top: 0.25rem;
+  text-align: left;
+  transition: color 0.5s ease;
+}
+
+.contact-form .form-group .error-icon {
+  font-size: 0.9rem;
+  color: var(--error-color) !important;
+  transition: color 0.5s ease;
+}
+
+.contact-form .contact-cta {
+  font-size: 1.2rem;
+  font-weight: 200;
+  text-align: center;
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
+  padding-bottom: 1rem;
+  padding-left: 0;
+}
+
+.contact-form .contact-cta span {
+  font-weight: 400;
+  color: var(--foreground-color);
+}
+
+.contact-form.fade-in {
+  animation: fadeIn 1s ease-in forwards;
+}
+
+/* Stile per il checkbox della Privacy Policy */
+.contact-form .privacy-consent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.contact-form .privacy-consent-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+  white-space: nowrap; /* Impedisce al testo di andare a capo su desktop */
+}
+
+.contact-form .privacy-consent-label input[type="checkbox"] {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--primary-text-color);
+  border-radius: 2px;
+  cursor: pointer;
+  background-color: transparent;
+  transition: all 0.5s ease;
+}
+
+.contact-form .privacy-consent-label input[type="checkbox"]:checked {
+  background-color: var(--foreground-color);
+  border-color: var(--foreground-color);
+}
+
+.contact-form .privacy-consent-label input[type="checkbox"]:focus {
+  outline: none;
+}
+
+.contact-form .privacy-consent-label a {
+  color: var(--foreground-color);
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
+.contact-form .privacy-consent-label a:hover {
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
   }
-  
+  100% {
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 768px) {
   .contact-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    width: 100%;
-    padding: 0 0.25rem;
-  }
-  
-  .contact-form .form-input {
-    padding: 0.75rem 0.5rem;
-    border: none;
-    border-bottom: 1px solid #d1d1d1;
-    border-radius: 0;
-    font-size: 1rem;
-    font-weight: 300;
-    color: var(--primary-text-color);
-    background: transparent;
-    outline: none;
-    transition: all 0.5s ease;
-    text-align: left;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  
-  .contact-form .form-input:hover,
-  .contact-form .form-input:focus {
-    border-bottom-color: var(--foreground-color);
-    color: var(--primary-text-color);
-  }
-  
-  .contact-form .form-input::placeholder {
-    color: #999;
-    font-weight: 300;
-    text-align: left;
-  }
-  
-  .contact-form .form-actions {
-    padding-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-  }
-  
-  .contact-form .contact-submit-btn {
-    padding: 0.75rem 2rem;
-    background-color: var(--foreground-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: 200;
-    cursor: pointer;
-    border: solid 1px var(--foreground-color);
-    transition: background-color 0.5s ease;
-    font-size: 1.2rem;
-  }
-  
-  .contact-form .contact-submit-btn:hover {
-    background: var(--background-color);
-    border: solid 1px var(--foreground-color);
-    color: var(--primary-text-color);
-  }
-  
-  .contact-form .contact-submit-btn:disabled {
-    background-color: var(--foreground-color);
-    cursor: not-allowed;
-  }
-  
-  .contact-form .form-group .error-message {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    font-weight: 300;
-    color: var(--error-color) !important;
-    margin-top: 0.25rem;
-    text-align: left;
-    transition: color 0.5s ease;
-  }
-  
-  .contact-form .form-group .error-icon {
-    font-size: 0.9rem;
-    color: var(--error-color) !important;
-    transition: color 0.5s ease;
+    padding: 0 1rem;
   }
 
-  .contact-form .contact-cta {
-    font-size: 1.2rem;
-    font-weight: 200;
-    text-align: center;
+  .contact-form .privacy-consent {
+    padding: 0 1rem;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .contact-form .form-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .contact-form .privacy-consent-label {
+    padding: 0;
+    display: flex;
+    flex-direction: row; /* Layout a due colonne: checkbox e testo */
+    align-items: center; /* Allineamento verticale al centro */
+    width: 100%;
+    gap: 0.8rem;
+  }
+
+  .contact-form .privacy-consent-label input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  .contact-form .privacy-consent-label .consent-text {
+    flex: 1; /* Il testo occupa tutto lo spazio rimanente */
+    font-size: 0.8rem;
+    font-weight: 300;
     color: var(--primary-text-color);
-    transition: all 0.5s ease;
-    padding-bottom: 1rem;
-    padding-left: 0;
+    line-height: 1.4;
+    white-space: normal; /* Permettiamo al testo di andare a capo in modo naturale */
   }
-  
-  .contact-form .contact-cta span {
-    font-weight: 400;
-    color: var(--foreground-color);
+
+  .contact-form .contact-submit-btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
   }
-  
-  .contact-form.fade-in {
-    animation: fadeIn 1s ease-in forwards;
-  }
-  
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-  
-  @media screen and (max-width: 768px) {
-    .contact-form .form-group {
-      padding: 0 1rem;
-    }
-  }
+}

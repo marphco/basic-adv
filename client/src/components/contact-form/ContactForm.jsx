@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import "./ContactForm.css";
 import { FaExclamationCircle } from "react-icons/fa";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const ContactForm = ({
   formData,
@@ -10,6 +12,8 @@ const ContactForm = ({
   errors = {},
   setErrors,
 }) => {
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -31,13 +35,11 @@ const ContactForm = ({
     });
   };
 
-  // Funzione per filtrare solo numeri e il prefisso "+"
   const handlePhoneInput = (e) => {
     const { name, value } = e.target;
-    // Consente solo numeri e il "+" iniziale, rimuovendo tutto il resto
     const filteredValue = value
-      .replace(/[^0-9+]/g, "") // Rimuove tutto tranne numeri e "+"
-      .replace(/(^\+[^0-9])|(\+.*\+)/g, (match, p1) => (p1 ? "" : "+")); // Assicura che "+" sia solo all'inizio
+      .replace(/[^0-9+]/g, "")
+      .replace(/(^\+[^0-9])|(\+.*\+)/g, (match, p1) => (p1 ? "" : "+"));
 
     setFormData((prevData) => ({
       ...prevData,
@@ -48,12 +50,44 @@ const ContactForm = ({
     }));
   };
 
+  const handlePrivacyConsentChange = (e) => {
+    setPrivacyConsent(e.target.checked);
+    setErrors((prev) => {
+      const updatedErrors = { ...prev };
+      if (e.target.checked && updatedErrors.privacyConsent) {
+        delete updatedErrors.privacyConsent;
+      }
+      return updatedErrors;
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    let newErrors = {};
+
+    if (!formData.contactInfo.name.trim()) {
+      newErrors.name = "Il nome è obbligatorio";
+    }
+    if (!formData.contactInfo.email.trim()) {
+      newErrors.email = "L'email è obbligatoria";
+    } else if (!/\S+@\S+\.\S+/.test(formData.contactInfo.email)) {
+      newErrors.email = "Inserisci un'email valida";
+    }
+
+    if (!privacyConsent) {
+      newErrors.privacyConsent = "Devi accettare la Privacy Policy";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    handleSubmitContactInfo(e);
+  };
+
   return (
-    <form
-      className="contact-form fade-in"
-      onSubmit={handleSubmitContactInfo}
-      noValidate
-    >
+    <form className="contact-form fade-in" onSubmit={handleSubmit} noValidate>
       <h2 className="contact-cta">
         Ci siamo! Lascia i tuoi contatti e ci sentiamo presto –{" "}
         <span>niente spam, promesso!</span>
@@ -102,11 +136,28 @@ const ContactForm = ({
           value={formData.contactInfo.phone}
           onChange={handlePhoneInput}
           placeholder="Telefono"
-          pattern="[0-9]*|(\+[0-9]+)" // Solo numeri o formato con "+" iniziale seguito da numeri
+          pattern="[0-9]*|(\+[0-9]+)"
           className="form-input"
         />
       </div>
       <div className="form-actions">
+        <div className="privacy-consent">
+          <label className="privacy-consent-label">
+            <input
+              type="checkbox"
+              checked={privacyConsent}
+              onChange={handlePrivacyConsentChange}
+              required
+            />
+            <span className="consent-text">Accetto il trattamento dei miei dati personali ai sensi della <Link to="/privacy-policy">Privacy Policy</Link>.</span>
+          </label>
+          {errors.privacyConsent && (
+            <span className="error-message">
+              <FaExclamationCircle className="error-icon" />
+              {errors.privacyConsent}
+            </span>
+          )}
+        </div>
         <button type="submit" className="contact-submit-btn" disabled={loading}>
           {loading ? "Invio..." : "Invia"}
         </button>
