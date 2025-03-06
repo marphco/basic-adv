@@ -91,6 +91,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight, location.pathname]);
 
   useEffect(() => {
