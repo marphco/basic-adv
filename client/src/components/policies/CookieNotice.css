@@ -1,0 +1,74 @@
+.cookie-notice {
+    position: fixed;
+    bottom: 20px;
+    right: 80px;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+    font-size: 0.7rem;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .cookie-notice.exiting {
+    animation: fadeOut 0.5s ease forwards; /* Animazione in uscita */
+  }
+  
+  .cookie-notice span {
+    color: var(--primary-text-color);
+    transition: color 0.5s ease;
+  }
+  
+  .cookie-notice a,
+  .cookie-notice button {
+    color: var(--foreground-color);
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.7rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+  
+  .cookie-notice a:hover,
+  .cookie-notice button:hover {
+    opacity: 0.8;
+  }
+  
+  .cookie-notice .separator {
+    color: var(--primary-text-color);
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(10px); /* Oppossto all'entrata */
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .cookie-notice {
+        top: 380px;
+        right: -95px;
+        rotate: -90deg;
+    }
+  }

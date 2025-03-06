@@ -23,6 +23,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import Footer from "./components/footer/Footer";
 import PrivacyPolicy from "./components/policies/PrivacyPolicy";
 import CookiePolicy from "./components/policies/CookiePolicy";
+import CookieNotice from "./components/policies/CookieNotice";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
@@ -31,7 +32,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isDashboard = location.pathname === "/dashboard";
-  const isPolicyPage = location.pathname === "/privacy-policy" || location.pathname === "/cookie-policy"; // Nuova condizione per le policy
+  const isPolicyPage = location.pathname === "/privacy-policy" || location.pathname === "/cookie-policy";
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
@@ -115,7 +116,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         isSidebarOpen={isSidebarOpen}
       />
       <div
-        className={`App ${isDashboard ? "dashboard-layout" : ""} ${isPolicyPage ? "policy-layout" : ""}`} // Aggiunta classe per policy
+        className={`App ${isDashboard ? "dashboard-layout" : ""} ${isPolicyPage ? "policy-layout" : ""}`}
         ref={scrollContainerRef}
       >
         <Routes>
@@ -170,6 +171,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           <Route path="/cookie-policy" element={<CookiePolicy />} />
         </Routes>
       </div>
+      <CookieNotice /> {/* Aggiungiamo la Cookie Notice */}
     </>
   );
 }
