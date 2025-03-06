@@ -18,7 +18,7 @@ const app = express();
 // Configurazione CORS
 app.use(
   cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL], // Consentiti localhost e produzione
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -27,7 +27,6 @@ app.use(
 
 app.use(express.json());
 app.use("/uploads", express.static("/app/uploads"));
-
 
 // Configura il transporter per email
 const transporter = nodemailer.createTransport({
@@ -101,7 +100,7 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
     const logs = await ProjectLog.find()
       .select("sessionId formData questions answers projectPlan createdAt servicesQueue feedback")
       .lean();
-    console.log("Dati inviati al frontend:", logs); // Aggiungi log per debug
+    console.log("Dati inviati al frontend:", logs);
     res.json(logs);
   } catch (error) {
     console.error("Errore:", error);
@@ -112,14 +111,14 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
 // Endpoint per scaricare i file allegati
 app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join("/app/uploads", filename); // Usa il percorso assoluto del volume
+  const filePath = path.join("/app/uploads", filename);
 
   if (fs.existsSync(filePath)) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.sendFile(filePath);
   } else {
-    console.error("File non trovato:", filePath); // Aggiungi log per debug
+    console.error("File non trovato:", filePath);
     res.status(404).json({ error: "File non trovato" });
   }
 });
@@ -131,21 +130,21 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
     const files = await fs.promises.readdir(uploadDir);
     const fileDetails = await Promise.all(
       files
-        .filter(file => file !== "lost+found") // Esclude lost+found
+        .filter(file => file !== "lost+found")
         .map(async (file) => {
           const filePath = path.join(uploadDir, file);
           const stats = await fs.promises.stat(filePath);
-          if (stats.isFile()) { // Include solo file, non directory
+          if (stats.isFile()) {
             return {
               name: file,
               size: stats.size,
               lastModified: stats.mtime,
             };
           }
-          return null; // Esclude directory
+          return null;
         })
     );
-    res.json({ files: fileDetails.filter(file => file !== null) }); // Rimuove i null
+    res.json({ files: fileDetails.filter(file => file !== null) });
   } catch (error) {
     console.error("Errore nel recupero dei file:", error);
     res.status(500).json({ error: "Errore nel recupero dei file" });
@@ -156,7 +155,7 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
 app.delete("/api/uploads/delete/:filename", authenticateToken, async (req, res) => {
   try {
     const filename = req.params.filename;
-    const filePath = path.join("/app/uploads", filename); // Usa il percorso del volume
+    const filePath = path.join("/app/uploads", filename);
 
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
@@ -195,7 +194,7 @@ app.put("/api/requests/:sessionId/feedback", authenticateToken, async (req, res)
 
     await projectLog.save();
 
-    const updatedLog = await ProjectLog.findOne({ sessionId }); // Rileggi dal database per verifica
+    const updatedLog = await ProjectLog.findOne({ sessionId });
     console.log(`Feedback aggiornato con successo per sessionId: ${sessionId}, valore salvato: ${updatedLog.feedback}`);
 
     res.status(200).json({
@@ -222,7 +221,6 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "Richiesta non trovata" });
     }
 
-    // Se la richiesta ha un file allegato, eliminalo
     if (projectLog.formData.currentLogo) {
       const filePath = path.join("/app/uploads", projectLog.formData.currentLogo);
       if (fs.existsSync(filePath)) {
@@ -244,19 +242,13 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Altre route esistenti (non modificate)
-app.get("/", (req, res) => {
-  res.send("Server is running!");
-});
-
 // Crea la cartella uploads se non esiste
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-  console.log("Cartella uploads creata:", uploadDir); // Log temporaneo per debug
+  console.log("Cartella uploads creata:", uploadDir);
 }
 
-// Configura multer (non modificato)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "/app/uploads");
@@ -298,10 +290,9 @@ if (!global.serverRunning) {
     }
   });
 
-  // Gestione della chiusura del server
-  let isClosing = false; // Flag per evitare chiamate multiple
+  let isClosing = false;
   process.on("SIGINT", async () => {
-    if (isClosing) return; // Esci se già in chiusura
+    if (isClosing) return;
     isClosing = true;
 
     console.log("🔴 Chiusura server...");
@@ -319,7 +310,7 @@ mongoose
   .then(() => console.log("Connesso al database MongoDB"))
   .catch((err) => console.error("Errore di connessione al database:", err));
 
-const sanitizeKey = (key) => key.replace(/\./g, "_");
+const sanitizeKey = (key) => key.replace(/\./g, "_").replace(/\?$/, "");
 
 const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
   const brandName = formData.brandName || "non specificato";
@@ -432,6 +423,9 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     if (askedQuestions.includes(aiQuestion.question)) {
       return await generateQuestionForService(service, formData, answers, askedQuestions);
     }
+
+    // Sanitizza la domanda prima di salvarla
+    aiQuestion.question = sanitizeKey(aiQuestion.question);
 
     return aiQuestion;
   } catch (error) {
@@ -550,7 +544,7 @@ app.post("/api/nextQuestion", async (req, res) => {
     if (!logEntry.askedQuestions.has(currentService)) {
       logEntry.askedQuestions.set(currentService, []);
     }
-    logEntry.askedQuestions.get(currentService).push(questionText);
+    logEntry.askedQuestions.get(currentService).push(sanitizedQuestionText); // Usa la chiave sanitizzata
 
     if (logEntry.questionCount >= logEntry.totalQuestions) {
       await logEntry.save();

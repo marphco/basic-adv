@@ -29,9 +29,10 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
     return projectType;
   };
 
-  // Funzione per normalizzare le chiavi delle domande
+  // Funzione per normalizzare le chiavi delle domande (allineata con sanitizeKey)
   const normalizeQuestionKey = (question) => {
-    return question.replace("es.", "es_"); // Sostituiamo "es." con "es_" per uniformare le chiavi
+    // Sostituiamo i punti con underscore e rimuoviamo il punto interrogativo finale
+    return question.replace(/\./g, "_").replace(/\?$/, "");
   };
 
   const formatDate = (date) => {
