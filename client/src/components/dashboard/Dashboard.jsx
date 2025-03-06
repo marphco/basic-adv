@@ -33,7 +33,6 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   ).replace(/\/$/, "");
   const requestsUrl = `${API_URL}/api/getRequests`;
 
-  // Lista dei microservizi (18 in totale)
   const servicesList = [
     "Logo",
     "Brand Identity",
@@ -191,11 +190,17 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
       filtered = requests.filter((req) => !req.projectPlan);
     }
     if (searchTerm) {
-      filtered = filtered.filter((req) =>
-        req.formData.contactInfo.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter((req) => {
+        const name = req.formData.contactInfo.name?.toLowerCase() || "";
+        const email = req.formData.contactInfo.email?.toLowerCase() || "";
+        const brandName = req.formData.brandName?.toLowerCase() || "";
+        return (
+          name.includes(term) ||
+          email.includes(term) ||
+          brandName.includes(term)
+        );
+      });
     }
     if (filteredServices.length > 0) {
       filtered = filtered.filter((req) =>
@@ -204,17 +209,23 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     }
     return filtered.sort((a, b) => {
       if (sortField === "name") {
-        const nameA = a.formData.contactInfo.name || "-";
-        const nameB = b.formData.contactInfo.name || "-";
+        const nameA = a.formData.contactInfo.name?.toLowerCase() || "-";
+        const nameB = b.formData.contactInfo.name?.toLowerCase() || "-";
         return sortDirection === "asc"
           ? nameA.localeCompare(nameB)
           : nameB.localeCompare(nameA);
       } else if (sortField === "email") {
-        const emailA = a.formData.contactInfo.email || "-";
-        const emailB = b.formData.contactInfo.email || "-";
+        const emailA = a.formData.contactInfo.email?.toLowerCase() || "-";
+        const emailB = b.formData.contactInfo.email?.toLowerCase() || "-";
         return sortDirection === "asc"
           ? emailA.localeCompare(emailB)
           : emailB.localeCompare(emailA);
+      } else if (sortField === "brandName") {
+        const brandA = a.formData.brandName?.toLowerCase() || "-";
+        const brandB = b.formData.brandName?.toLowerCase() || "-";
+        return sortDirection === "asc"
+          ? brandA.localeCompare(brandB)
+          : brandB.localeCompare(brandA);
       } else if (sortField === "createdAt") {
         const dateA = a.createdAt
           ? new Date(a.createdAt.$date || a.createdAt)
