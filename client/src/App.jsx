@@ -22,6 +22,10 @@ import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
 import Footer from "./components/footer/Footer";
 
+// Componenti placeholder per Privacy Policy e Cookie Policy
+const PrivacyPolicy = () => <div>Privacy Policy Page</div>;
+const CookiePolicy = () => <div>Cookie Policy Page</div>;
+
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
 
@@ -59,10 +63,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       const isHomePage = location.pathname === "/";
       if (!isMobile && scrollContainerRef.current && isHomePage) {
         const container = scrollContainerRef.current;
-        console.log("ScrollWidth di .App (px):", container.scrollWidth);
-        console.log("Window innerWidth (px):", window.innerWidth);
         const totalWidth = container.scrollWidth - window.innerWidth;
-        console.log("TotalWidth calcolato (px):", totalWidth);
         if (scrollTween) scrollTween.kill();
         const tween = gsap.to(container, {
           x: -totalWidth,
@@ -91,15 +92,6 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
     }, scrollContainerRef);
     return () => ctx.revert();
   }, [isMobile, windowWidth, windowHeight, location.pathname]);
-
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const sections = scrollContainerRef.current.querySelectorAll(".section, .section-footer");
-      sections.forEach((section, index) => {
-        console.log(`Larghezza della sezione ${index + 1} (px):`, section.scrollWidth);
-      });
-    }
-  }, []);
 
   useEffect(() => {
     document.body.setAttribute("data-theme", isDark ? "dark" : "light");
@@ -174,6 +166,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
               />
             }
           />
+          {/* Aggiunte route per Privacy Policy e Cookie Policy */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
         </Routes>
       </div>
     </>
