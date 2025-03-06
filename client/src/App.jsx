@@ -21,10 +21,8 @@ import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteCh
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
 import Footer from "./components/footer/Footer";
-
-// Componenti placeholder per Privacy Policy e Cookie Policy
-const PrivacyPolicy = () => <div>Privacy Policy Page</div>;
-const CookiePolicy = () => <div>Cookie Policy Page</div>;
+import PrivacyPolicy from "./components/policies/PrivacyPolicy";
+import CookiePolicy from "./components/policies/CookiePolicy";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.normalizeScroll(true);
@@ -33,6 +31,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isDashboard = location.pathname === "/dashboard";
+  const isPolicyPage = location.pathname === "/privacy-policy" || location.pathname === "/cookie-policy"; // Nuova condizione per le policy
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
@@ -116,7 +115,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         isSidebarOpen={isSidebarOpen}
       />
       <div
-        className={`App ${isDashboard ? "dashboard-layout" : ""}`}
+        className={`App ${isDashboard ? "dashboard-layout" : ""} ${isPolicyPage ? "policy-layout" : ""}`} // Aggiunta classe per policy
         ref={scrollContainerRef}
       >
         <Routes>
@@ -167,7 +166,6 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
               />
             }
           />
-          {/* Aggiunte route per Privacy Policy e Cookie Policy */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
         </Routes>

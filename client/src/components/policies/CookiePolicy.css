@@ -1,0 +1,53 @@
+.policy-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Altezza minima per occupare tutta la viewport */
+  width: 100vw; /* Larghezza 100vw per occupare tutto lo schermo */
+  background-color: var(--background-color);
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
+  padding-top: 10vh; /* Spazio per la navbar */
+}
+
+.policy-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  flex: 1; /* Fa sì che il contenuto occupi lo spazio rimanente */
+  overflow-y: auto; /* Scroll verticale */
+  line-height: 1.6;
+}
+
+.policy-content h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.policy-content h2 {
+  font-size: 1.5rem;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.policy-content p {
+  margin-bottom: 15px;
+}
+
+.policy-content ul {
+  list-style-type: disc;
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.policy-content li {
+  margin-bottom: 10px;
+}
+
+.policy-content a {
+  color: var(--foreground-color);
+  text-decoration: none;
+}
+
+.policy-content a:hover {
+  text-decoration: underline;
+}

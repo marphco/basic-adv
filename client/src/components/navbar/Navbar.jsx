@@ -5,7 +5,7 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import LogoIcon from '../../assets/icon.svg';
+import LogoIcon from "../../assets/icon.svg";
 
 const Navbar = ({
   isDark,
@@ -20,7 +20,12 @@ const Navbar = ({
 
   const location = useLocation();
 
-  const isLoginPage = location.pathname === "/login";
+  // Aggiungiamo /privacy-policy e /cookie-policy alla condizione
+  const isLoginPage =
+    location.pathname === "/login" ||
+    location.pathname === "/privacy-policy" ||
+    location.pathname === "/cookie-policy";
+
   const isDashboardPage = location.pathname === "/dashboard";
   const inAboutUsOrProject =
     location.pathname === "/about-us" ||
