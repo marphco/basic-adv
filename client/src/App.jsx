@@ -47,6 +47,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         setWindowWidth(window.innerWidth);
         setWindowHeight(window.innerHeight);
         ScrollTrigger.refresh();
+        window.location.reload();
       }
     };
     window.addEventListener("resize", handleResize);
@@ -89,7 +90,6 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight, location.pathname]);
 
   useEffect(() => {
@@ -99,7 +99,6 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         console.log(`Larghezza della sezione ${index + 1} (px):`, section.scrollWidth);
       });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

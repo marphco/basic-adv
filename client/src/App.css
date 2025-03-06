@@ -99,7 +99,7 @@ body {
 .App {
   display: flex;
   flex-direction: row;
-  width: 1115vw; /* Adatta in base al numero di sezioni */
+  width: 1100vw; /* Adatta in base al numero di sezioni */
   height: 100vh;
   overflow: hidden; /* Rimuove overflow-x: auto e overflow-y: hidden */
 }
