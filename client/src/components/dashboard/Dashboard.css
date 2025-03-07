@@ -798,6 +798,13 @@ td.centered .feedback-btn {
   position: relative;
 }
 
+/* Wrapper per il pulsante e il pulsante di reset */
+.filter-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Spazio tra il pulsante e l'icona di reset */
+}
+
 /* Stile per il pulsante del filtro */
 .filter-btn {
   display: flex;
@@ -811,6 +818,7 @@ td.centered .feedback-btn {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.5s ease;
+  gap: 8px; /* Spazio tra icona, testo e badge */
 }
 
 .filter-btn:hover {
@@ -821,6 +829,43 @@ td.centered .feedback-btn {
 
 .filter-icon {
   margin-right: 8px;
+}
+
+/* Stile per il badge dei filtri attivi */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background-color: var(--error-color);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 400;
+  transition: all 0.5s ease;
+}
+
+/* Stile per il pulsante di reset */
+.filter-clear-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stile per l'icona di reset */
+.filter-clear-icon {
+  font-size: 16px;
+  color: var(--error-color);
+  transition: all 0.5s ease;
+}
+
+.filter-clear-icon:hover {
+  color: var(--foreground-color);
 }
 
 /* Stile per il dropdown */
@@ -1143,5 +1188,34 @@ td.centered .feedback-btn {
 
   .info-section {
     padding: 50px 0;
+  }
+
+  .filter-wrapper {
+    gap: 6px; /* Riduci lo spazio su mobile */
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    gap: 6px; /* Riduci lo spazio interno */
+  }
+
+  .filter-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+  }
+
+  .filter-clear-icon {
+    font-size: 14px; /* Riduci per mobile */
+  }
+
+  .search-bar input {
+    max-width: 150px; /* Riduci ulteriormente la larghezza su mobile per evitare wrapping */
+  }
+
+  .header-controls {
+    flex-wrap: nowrap; /* Forza tutto sulla stessa riga */
+    gap: 6px;
   }
 }

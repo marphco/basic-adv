@@ -286,6 +286,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
             <div className="header-controls">
               <ServiceFilter
                 services={servicesList}
+                selectedServices={filteredServices}
                 onFilterChange={setFilteredServices}
               />
               <SearchBar onSearch={setSearchTerm} />
