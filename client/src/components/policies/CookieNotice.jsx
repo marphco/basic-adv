@@ -9,7 +9,6 @@ const CookieNotice = () => {
   // Controlliamo se l'utente ha dato il consenso
   useEffect(() => {
     const consent = localStorage.getItem("cookieConsent");
-    console.log("Cookie Consent:", consent); // Debug
     if (!consent) {
       setIsVisible(true); // Mostra la notice se non c'è consenso
     }
@@ -30,7 +29,6 @@ const CookieNotice = () => {
 
   // Funzione per salvare il consenso e nascondere la notice
   const acceptCookies = () => {
-    console.log("Accepting cookies..."); // Debug
     localStorage.setItem("cookieConsent", "accepted");
     hideNotice();
   };
