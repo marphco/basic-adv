@@ -5,7 +5,7 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import LogoIconUrl from "../../assets/icon.svg"; // mask per ereditare il colore
+import LogoIconUrl from "../../assets/icon.svg";
 
 const Navbar = ({
   isDark,
@@ -57,10 +57,10 @@ const Navbar = ({
   const handleClose = () => navigate(-1);
 
   // Icona come MASK per ereditare sempre il colore dei testi
-  const logoMaskStyle = {
-    WebkitMaskImage: `url(${LogoIconUrl})`,
-    maskImage: `url(${LogoIconUrl})`,
-  };
+  // const logoMaskStyle = {
+  //   WebkitMaskImage: `url(${LogoIconUrl})`,
+  //   maskImage: `url(${LogoIconUrl})`,
+  // };
 
   // Logo al centro SOLO su mobile/tablet ovunque tranne Login/Policy
   // (quindi anche in About/Project e in Dashboard)
@@ -73,16 +73,26 @@ const Navbar = ({
         <div className="nav-left">
           {/* LOGIN / POLICY -> solo logo a sinistra */}
           {isLoginOrPolicy && (
-            <Link to="/" className="navbar-logo" aria-label="Home">
-              <span className="logo-icon" style={logoMaskStyle} />
-            </Link>
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+  <span
+    className="logo-icon"
+    role="img"
+    aria-label="Basic logo"
+    style={{ "--logo-url": `url(${LogoIconUrl})` }}
+  />
+</Link>
           )}
 
           {/* DASHBOARD desktop -> solo logo a sinistra */}
           {!isMobile && isDashboardPage && (
-            <Link to="/" className="navbar-logo" aria-label="Home">
-              <span className="logo-icon" style={logoMaskStyle} />
-            </Link>
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+  <span
+    className="logo-icon"
+    role="img"
+    aria-label="Basic logo"
+    style={{ "--logo-url": `url(${LogoIconUrl})` }}
+  />
+</Link>
           )}
 
           {/* [CHIUDI] in About/Project (desktop e mobile) */}
@@ -124,9 +134,14 @@ const Navbar = ({
               {/* logo nel menu SOLO su desktop */}
               {!isMobile && (
                 <li className="li-logo-desktop">
-                  <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="Home">
-                    <span className="logo-icon" style={logoMaskStyle} />
-                  </Link>
+                  <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+  <span
+    className="logo-icon"
+    role="img"
+    aria-label="Basic logo"
+    style={{ "--logo-url": `url(${LogoIconUrl})` }}
+  />
+</Link>
                 </li>
               )}
               <li>
@@ -159,9 +174,14 @@ const Navbar = ({
         {/* CENTRO: logo solo su mobile/tablet (anche About/Project e Dashboard) */}
         {showCenterLogo && (
           <div className="nav-center">
-            <Link to="/" className="navbar-logo" aria-label="Home">
-              <span className="logo-icon" style={logoMaskStyle} />
-            </Link>
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+  <span
+    className="logo-icon"
+    role="img"
+    aria-label="Basic logo"
+    style={{ "--logo-url": `url(${LogoIconUrl})` }}
+  />
+</Link>
           </div>
         )}
 

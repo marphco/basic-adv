@@ -95,13 +95,41 @@ body[data-theme="dark"] .navbar-block::before {
 
 /* Logo (mask → eredita currentColor) */
 .navbar-logo { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
-.logo-icon {
-  width: 25px;
-  height: 25px;
+.logo-icon{
+  width: 32px;
+  height: 32px;
   display: inline-block;
-  background-color: currentColor;
-  -webkit-mask: no-repeat center / contain;
-  mask: no-repeat center / contain;
+
+  /* colore del logo */
+  background-color: var(--foreground-color); /* #ff4003 */
+
+  /* mask con l'SVG (resta tutto com’è) */
+  -webkit-mask-image: var(--logo-url);
+  mask-image: var(--logo-url);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+
+  transition: background-color .15s ease;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Hover contrastato per tema */
+body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon,
+body[data-theme="dark"] .navbar .logo-icon:focus-visible {
+  background-color: #fff;      /* su sfondo scuro → bianco */
+}
+body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon,
+body[data-theme="light"] .navbar .logo-icon:focus-visible {
+  background-color: #000;      /* su sfondo chiaro → nero */
+}
+
+/* (opzionale) feedback al tap */
+.navbar .navbar-logo:active .logo-icon {
+  filter: brightness(.9);
 }
 
 /* Logo a sinistra nel menu (solo desktop) */
