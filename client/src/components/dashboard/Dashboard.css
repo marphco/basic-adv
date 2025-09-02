@@ -34,17 +34,18 @@ html, body {
 .sidebar-logo {
   margin-bottom: 9rem;
   padding: 0;
-  height: auto;
+  height: 106px !important;
 }
 
 .sidebar-logo a {
   display: block;
 }
 
-.logo-icon {
+.sidebar-logo .logo-icon {
   width: 2rem;
   height: 2rem;
   display: block;
+  background-color: transparent !important;
 }
 
 .sidebar ul {
@@ -1218,4 +1219,18 @@ td.centered .feedback-btn {
     flex-wrap: nowrap; /* Forza tutto sulla stessa riga */
     gap: 6px;
   }
+
+
+
+
+
+  .sidebar .sidebar-logo {
+    display: none;
+}
+
+.sidebar ul {
+    padding-top: 2vh; /* solo se avevi padding creato per il logo */
+  }
+
+
 }
