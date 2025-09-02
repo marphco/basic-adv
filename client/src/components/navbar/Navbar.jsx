@@ -38,7 +38,8 @@ const Navbar = ({
 
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
-      if (hamburgerRef.current) hamburgerRef.current.style.visibility = "hidden";
+      if (hamburgerRef.current)
+        hamburgerRef.current.style.visibility = "hidden";
       toggleSidebar();
     } else {
       setIsMenuOpen((prev) => !prev);
@@ -47,7 +48,9 @@ const Navbar = ({
 
   useEffect(() => {
     if (isDashboardPage && isMobile && hamburgerRef.current) {
-      hamburgerRef.current.style.visibility = isSidebarOpen ? "hidden" : "visible";
+      hamburgerRef.current.style.visibility = isSidebarOpen
+        ? "hidden"
+        : "visible";
     }
   }, [isSidebarOpen, isDashboardPage, isMobile]);
 
@@ -72,46 +75,58 @@ const Navbar = ({
           {/* [CHIUDI] nelle pagine About/Project (desktop e mobile) */}
           {inAboutUsOrProject && (
             <div className="navbar-close">
-              <button onClick={handleClose} className="close-btn">[CHIUDI]</button>
+              <button onClick={handleClose} className="close-btn">
+                [CHIUDI]
+              </button>
             </div>
           )}
 
           {/* Hamburger solo su mobile nelle pagine normali */}
-          {!isLoginPage && !isDashboardPage && !inAboutUsOrProject && isMobile && (
-            <div
-              ref={hamburgerRef}
-              className="hamburger-menu"
-              onClick={toggleMenu}
-              aria-label="Open menu"
-            >
+          {!isLoginPage &&
+            !isDashboardPage &&
+            !inAboutUsOrProject &&
+            isMobile && (
               <div
-                className={classNames("hamburger", {
-                  open: isMenuOpen,
-                  "dark-mode": isDark,
-                })}
-              />
-              <div
-                className={classNames("hamburger", {
-                  open: isMenuOpen,
-                  "dark-mode": isDark,
-                })}
-              />
-            </div>
-          )}
+                ref={hamburgerRef}
+                className="hamburger-menu"
+                onClick={toggleMenu}
+                aria-label="Open menu"
+              >
+                <div
+                  className={classNames("hamburger", {
+                    open: isMenuOpen,
+                    "dark-mode": isDark,
+                  })}
+                />
+                <div
+                  className={classNames("hamburger", {
+                    open: isMenuOpen,
+                    "dark-mode": isDark,
+                  })}
+                />
+              </div>
+            )}
 
           {/* Menu desktop inline con logo a sinistra */}
           {!isLoginPage && !isDashboardPage && !inAboutUsOrProject && (
             <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
               {!isMobile && (
                 <li className="li-logo-desktop">
-                  <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="Home">
+                  <Link
+                    to="/"
+                    onClick={handleLinkClick}
+                    className="navbar-logo"
+                    aria-label="Home"
+                  >
                     <span className="logo-icon" style={logoMaskStyle} />
                   </Link>
                 </li>
               )}
               <li>
                 {isMobile ? (
-                  <Link to="/about-us" onClick={handleLinkClick}>ABOUT US</Link>
+                  <Link to="/about-us" onClick={handleLinkClick}>
+                    ABOUT US
+                  </Link>
                 ) : (
                   <a
                     href="#"
@@ -125,8 +140,16 @@ const Navbar = ({
                   </a>
                 )}
               </li>
-              <li><Link to="/portfolio" onClick={handleLinkClick}>PORTFOLIO</Link></li>
-              <li><Link to="/contacts" onClick={handleLinkClick}>CONTACTS</Link></li>
+              <li>
+                <Link to="/#portfolio" onClick={handleLinkClick}>
+                  PORTFOLIO
+                </Link>
+              </li>
+              <li>
+                <Link to="/#contacts" onClick={handleLinkClick}>
+                  CONTACTS
+                </Link>
+              </li>
             </ul>
           )}
         </div>

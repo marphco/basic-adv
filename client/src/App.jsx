@@ -1,5 +1,10 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
@@ -24,15 +29,18 @@ import Footer from "./components/footer/Footer";
 import PrivacyPolicy from "./components/policies/PrivacyPolicy";
 import CookiePolicy from "./components/policies/CookiePolicy";
 import CookieNotice from "./components/policies/CookieNotice";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
 
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isDashboard = location.pathname === "/dashboard";
-  const isPolicyPage = location.pathname === "/privacy-policy" || location.pathname === "/cookie-policy";
+  const isPolicyPage =
+    location.pathname === "/privacy-policy" ||
+    location.pathname === "/cookie-policy";
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [windowHeight, setWindowHeight] = useState(window.innerHeight);
   const [scrollTween, setScrollTween] = useState(null);
@@ -91,7 +99,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       ScrollTrigger.refresh();
     }, scrollContainerRef);
     return () => ctx.revert();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, windowWidth, windowHeight, location.pathname]);
 
   useEffect(() => {
@@ -102,6 +110,34 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
     document.body.classList.add("no-default-cursor");
     return () => document.body.classList.remove("no-default-cursor");
   }, []);
+
+  useEffect(() => {
+  if (location.pathname !== "/") return;
+
+  const hash = (location.hash || "").slice(1);
+  if (!hash) return;
+
+  requestAnimationFrame(() => {
+    const target = document.getElementById(hash);
+    if (!target) return;
+
+    const container = scrollContainerRef.current;
+
+    if (!isMobile && scrollTween?.scrollTrigger && container) {
+      const st = scrollTween.scrollTrigger;
+      const totalH = container.scrollWidth - window.innerWidth; // orizzontale
+      const totalV = st.end - st.start;                         // verticale
+      const left   = Math.max(0, Math.min(target.offsetLeft, totalH));
+      const y      = st.start + (left / totalH) * totalV;       // mappatura corretta
+
+      gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
+    } else {
+      const y = target.getBoundingClientRect().top + window.pageYOffset;
+      gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: y });
+    }
+  });
+}, [location.pathname, location.hash, isMobile, scrollTween, scrollContainerRef]);
+
 
   return (
     <>
@@ -116,7 +152,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         isSidebarOpen={isSidebarOpen}
       />
       <div
-        className={`App ${isDashboard ? "dashboard-layout" : ""} ${isPolicyPage ? "policy-layout" : ""}`}
+        className={`App ${isDashboard ? "dashboard-layout" : ""} ${
+          isPolicyPage ? "policy-layout" : ""
+        }`}
         ref={scrollContainerRef}
       >
         <Routes>
@@ -127,7 +165,8 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
                 <div className="section">
                   <Home />
                 </div>
-                <div className="section">
+
+                <div className="section" id="services">
                   <Services
                     scrollTween={scrollTween}
                     isMobile={isMobile}
@@ -135,12 +174,14 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
                     windowHeight={windowHeight}
                   />
                 </div>
-                <div className="section">
+
+                <div className="section" id="portfolio">
                   <DndProvider backend={HTML5Backend}>
                     <Portfolio scrollTween={scrollTween} />
                   </DndProvider>
                 </div>
-                <div className="section">
+
+                <div className="section" id="contacts">
                   <Contacts />
                 </div>
                 <div className="section-footer">
@@ -155,7 +196,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
             }
           />
           <Route path="/about-us" element={<AboutUs />} />
-          {isMobile && <Route path="/project/:id" element={<ProjectSectionMobile />} />}
+          {isMobile && (
+            <Route path="/project/:id" element={<ProjectSectionMobile />} />
+          )}
           <Route path="/login" element={<Login isDark={isDark} />} />
           <Route
             path="/dashboard"
@@ -193,7 +236,11 @@ function App() {
     <Router>
       <ScrollToTopOnRouteChange />
       <div className={`app-wrapper ${isDark ? "dark-theme" : "light-theme"}`}>
-        <AppContent isDark={isDark} setIsDark={setIsDark} scrollContainerRef={scrollContainerRef} />
+        <AppContent
+          isDark={isDark}
+          setIsDark={setIsDark}
+          scrollContainerRef={scrollContainerRef}
+        />
       </div>
     </Router>
   );
