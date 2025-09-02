@@ -46,6 +46,7 @@ body.no-default-cursor a {
   --secondary-text-color: #ffffff;
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
   --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
+  --contrast-color: #000000;
 }
 
 [data-theme="dark"] {
@@ -55,4 +56,5 @@ body.no-default-cursor a {
   --secondary-text-color: #161616;
   --toggle-bg: #283452;
   --toggle-fg: #00a6ff;
+  --contrast-color: #000000;
 }
