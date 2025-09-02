@@ -5,7 +5,11 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import LogoIconUrl from "../../assets/icon.svg";
+
+// 3 asset separati
+import IconOrange from "../../assets/icon-orange.svg";
+import IconBlack from "../../assets/icon-black.svg";
+import IconWhite from "../../assets/icon-white.svg";
 
 const Navbar = ({
   isDark,
@@ -40,13 +44,12 @@ const Navbar = ({
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
       if (hamburgerRef.current) hamburgerRef.current.style.visibility = "hidden";
-      toggleSidebar(); // apre/chiude sidebar
+      toggleSidebar();
     } else {
       setIsMenuOpen((prev) => !prev);
     }
   };
 
-  // Sincronizza visibilità hamburger dashboard-mobile con lo stato della sidebar
   useEffect(() => {
     if (isDashboardPage && isMobile && hamburgerRef.current) {
       hamburgerRef.current.style.visibility = isSidebarOpen ? "hidden" : "visible";
@@ -59,11 +62,14 @@ const Navbar = ({
   // Logo al centro SOLO su mobile/tablet ovunque tranne Login/Policy
   const showCenterLogo = isMobile && !isLoginOrPolicy;
 
-  // >>> FISSA DEFINITIVA MASK (niente var(), compatibile Safari)
-  const logoStyle = {
-    WebkitMaskImage: `url(${LogoIconUrl})`,
-    maskImage: `url(${LogoIconUrl})`,
-  };
+  // Piccolo componente per lo stack del logo
+  const LogoStack = () => (
+    <span className="logo-stack" aria-hidden="true">
+      <img src={IconOrange} className="logo-img logo-icon--orange" alt="" />
+      <img src={IconBlack}  className="logo-img logo-icon--hover-light" alt="" />
+      <img src={IconWhite}  className="logo-img logo-icon--hover-dark"  alt="" />
+    </span>
+  );
 
   return (
     <div className="navbar-block">
@@ -73,24 +79,14 @@ const Navbar = ({
           {/* LOGIN / POLICY -> solo logo a sinistra */}
           {isLoginOrPolicy && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-              <span
-                className="logo-icon"
-                role="img"
-                aria-label="Basic logo"
-                style={logoStyle}
-              />
+              <LogoStack />
             </Link>
           )}
 
           {/* DASHBOARD desktop -> solo logo a sinistra */}
           {!isMobile && isDashboardPage && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-              <span
-                className="logo-icon"
-                role="img"
-                aria-label="Basic logo"
-                style={logoStyle}
-              />
+              <LogoStack />
             </Link>
           )}
 
@@ -114,7 +110,7 @@ const Navbar = ({
             </div>
           )}
 
-          {/* HAMBURGER: pagine normali (non login/policy, non dashboard, non about/project) */}
+          {/* HAMBURGER: pagine normali */}
           {!isLoginOrPolicy && !isDashboardPage && !inAboutUsOrProject && isMobile && (
             <div
               ref={hamburgerRef}
@@ -127,19 +123,14 @@ const Navbar = ({
             </div>
           )}
 
-          {/* MENU DESKTOP inline (come nel tuo originale) */}
+          {/* MENU DESKTOP inline */}
           {!isLoginOrPolicy && !isDashboardPage && !inAboutUsOrProject && (
             <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
               {/* logo nel menu SOLO su desktop */}
               {!isMobile && (
                 <li className="li-logo-desktop">
                   <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-                    <span
-                      className="logo-icon"
-                      role="img"
-                      aria-label="Basic logo"
-                      style={logoStyle}
-                    />
+                    <LogoStack />
                   </Link>
                 </li>
               )}
@@ -160,7 +151,6 @@ const Navbar = ({
                 )}
               </li>
               <li>
-                {/* anchor one-page */}
                 <Link to="/#portfolio" onClick={handleLinkClick}>PORTFOLIO</Link>
               </li>
               <li>
@@ -170,16 +160,11 @@ const Navbar = ({
           )}
         </div>
 
-        {/* CENTRO: logo solo su mobile/tablet (anche About/Project e Dashboard) */}
+        {/* CENTRO: logo solo su mobile/tablet */}
         {showCenterLogo && (
           <div className="nav-center">
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-              <span
-                className="logo-icon"
-                role="img"
-                aria-label="Basic logo"
-                style={logoStyle}
-              />
+              <LogoStack />
             </Link>
           </div>
         )}

@@ -77,7 +77,7 @@ body[data-theme="dark"] .navbar-block::before {
   color: inherit;
   text-decoration: none;
   font-size: 0.8rem;
-  transition: color 0.1s ease;
+  transition: color 0.5s ease;
 }
 .navbar-menu li a:hover { color: var(--foreground-color); }
 
@@ -95,37 +95,42 @@ body[data-theme="dark"] .navbar-block::before {
 
 /* Logo (mask → eredita currentColor) */
 .navbar-logo { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
-.logo-icon{
+.navbar-logo { display: inline-flex; align-items: center; text-decoration: none; }
+.logo-stack {
+  position: relative;
   width: 32px;
   height: 32px;
   display: inline-block;
-
-  /* colore del logo */
-  background-color: var(--foreground-color); /* #ff4003 */
-
-  /* mask con l'SVG (resta tutto com’è) */
-  -webkit-mask-image: var(--logo-url);
-  mask-image: var(--logo-url);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-
-  transition: background-color .15s ease;
+}
+.logo-stack .logo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity .5s ease;
+  /* per evitare “blur” in alcuni browser */
   image-rendering: -webkit-optimize-contrast;
 }
 
-/* Hover contrastato per tema */
-body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon,
-body[data-theme="dark"] .navbar .logo-icon:focus-visible {
-  background-color: #fff;      /* su sfondo scuro → bianco */
-}
-body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon,
-body[data-theme="light"] .navbar .logo-icon:focus-visible {
-  background-color: #000;      /* su sfondo chiaro → nero */
-}
+/* stato base: arancione visibile */
+.logo-icon--orange      { opacity: 1; }
+.logo-icon--hover-light { opacity: 0; } /* nero */
+.logo-icon--hover-dark  { opacity: 0; } /* bianco */
+
+/* hover in LIGHT: mostra nero */
+body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon--orange      { opacity: 0; }
+body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon--hover-light { opacity: 1; }
+
+/* hover in DARK: mostra bianco */
+body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon--orange     { opacity: 0; }
+body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon--hover-dark { opacity: 1; }
+
+/* focus tastiera = stesso comportamento dell’hover */
+body[data-theme="light"] .navbar .navbar-logo:focus-visible .logo-icon--orange      { opacity: 0; }
+body[data-theme="light"] .navbar .navbar-logo:focus-visible .logo-icon--hover-light { opacity: 1; }
+body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--orange     { opacity: 0; }
+body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--hover-dark { opacity: 1; }
 
 /* (opzionale) feedback al tap */
 .navbar .navbar-logo:active .logo-icon {
