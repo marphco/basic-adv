@@ -1,16 +1,16 @@
-/* Incollata al top: nessun gap */
+/* Wrapper incollato al top: nessun gap */
 .navbar-block {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* come nel tuo originale */
   z-index: 999999999;
-  pointer-events: none;
+  pointer-events: none; /* lo sfumato non intercetta click */
 }
 
-/* Sfumato DAL TOP della pagina */
+/* Gradient DAL TOP della pagina (molto leggero) */
 .navbar-block::before {
   content: "";
   position: fixed;
@@ -25,48 +25,52 @@ body[data-theme="dark"] .navbar-block::before {
   background: linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0));
 }
 
-/* Barra */
+/* Barra: padding identico al tuo originale -> allineamento perfetto */
 .navbar {
   position: relative;
   width: 100%;
-  max-width: 1280px;         /* opzionale */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 80px;
+  padding: 0 80px;           /* allineamento come prima */
+  height: 60px;
   color: var(--primary-text-color);
   background: transparent;
   transition: background-color 0.3s ease, color 0.1s ease;
-  pointer-events: auto;
+  pointer-events: auto;      /* riabilita click */
 }
 .navbar.dark-mode { color: white; }
 
 .nav-left  { display: flex; align-items: center; }
 .nav-right { display: flex; align-items: center; }
 
-/* Pulsante CHIUDI: stile semplice (come avevi) */
-.navbar-close button {
+/* [CHIUDI] — cliccabile SEMPRE e lievemente più in basso */
+.navbar-close {
+  margin-right: 12px;
+  position: relative;
+  z-index: 2147483647;       /* sopra qualsiasi overlay */
+  pointer-events: auto;
+}
+.close-btn {
   background: none;
   border: none;
-  color: inherit;                 /* usa il colore della navbar */
+  color: inherit;            /* stesso colore dei testi */
   font-size: 0.8rem;
+  line-height: 1;
   cursor: pointer;
-  transition: color .5s ease;
+  padding: 4px 6px;          /* hit-area minima */
+  transition: color .15s ease;
 }
-.navbar-close button:hover { color: var(--foreground-color); }
+.close-btn:hover { color: var(--foreground-color); }
 
-/* Menu desktop inline: nessun extra gap */
+/* Menu desktop inline */
 .navbar-menu {
   display: flex;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.navbar-menu li {
-  margin-right: 15px;
-  display: flex;
-  align-items: center;
-}
+.navbar-menu li { margin-right: 15px; display: flex; align-items: center; }
 .navbar-menu li:last-child { margin-right: 0; }
 
 .navbar-menu li a {
@@ -77,7 +81,7 @@ body[data-theme="dark"] .navbar-block::before {
 }
 .navbar-menu li a:hover { color: var(--foreground-color); }
 
-/* Hamburger */
+/* Hamburger (mobile) */
 .hamburger-menu { display: none; flex-direction: column; cursor: pointer; margin-right: 12px; }
 .hamburger {
   width: 25px;
@@ -100,18 +104,18 @@ body[data-theme="dark"] .navbar-block::before {
   mask: no-repeat center / contain;
 }
 
-/* Logo dentro al menu a sinistra (solo desktop) */
+/* Logo a sinistra nel menu (solo desktop) */
 .li-logo-desktop { display: inline-flex; align-items: center; margin-right: 15px; }
 
-/* ---------- Mobile (<=768px) ---------- */
+/* ---------- Mobile / Tablet (<=768px) ---------- */
 @media screen and (max-width: 768px) {
-  .navbar { padding: 12px 10%; }
+  .navbar { padding: 0 10%; }
 
-  /* Mostra hamburger, nascondi logo nel menu desktop */
+  /* Mostro hamburger; nascondo logo nel menu desktop */
   .hamburger-menu { display: flex; }
   .li-logo-desktop { display: none; }
 
-  /* Centro: logo perfettamente centrato (assoluto) */
+  /* Logo perfettamente centrato: visibile solo su mobile (controllato da JSX) */
   .nav-center {
     position: absolute;
     left: 50%;
@@ -122,7 +126,7 @@ body[data-theme="dark"] .navbar-block::before {
     pointer-events: auto;
   }
 
-  /* Menu mobile: spaziature/animazioni come prima (voci vicine) */
+  /* Menu mobile: spaziature come nel tuo originale (voci ravvicinate) */
   .navbar-menu {
     display: none;
     position: absolute;
@@ -138,12 +142,10 @@ body[data-theme="dark"] .navbar-block::before {
   .navbar-menu.open { display: flex; opacity: 1; }
 
   .navbar-menu li {
-    /* niente margin verticale extra → voci ravvicinate come nel tuo screenshot 1 */
     opacity: 0;
     transform: translateX(-20px);
     animation: slideIn 0.4s forwards;
   }
-
   .navbar-menu li:nth-child(1) { animation-delay: 0.1s; }
   .navbar-menu li:nth-child(2) { animation-delay: 0.2s; }
   .navbar-menu li:nth-child(3) { animation-delay: 0.3s; }
@@ -155,6 +157,6 @@ body[data-theme="dark"] .navbar-block::before {
 
 /* ---------- Desktop (>768px) ---------- */
 @media screen and (min-width: 769px) {
-  /* Logo centrale visibile solo su mobile */
+  /* Logo centrale: non visibile su desktop */
   .nav-center { display: none; }
 }

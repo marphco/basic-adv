@@ -52,7 +52,7 @@ body,
 /* Pulsante di chiusura, posizionato in alto a destra all'interno della header */
 .aboutus-overlay-close {
   position: absolute; /* Relativo a .aboutus-section */
-  top: 52px;
+  top: 72px;
   right: 72px;
   font-size: 0.8rem;
   background: none;

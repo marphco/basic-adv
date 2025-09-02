@@ -20,15 +20,19 @@ const Navbar = ({
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Normalizzo il pathname rimuovendo eventuali slash finali
+  const pathname = (location.pathname || "/").replace(/\/+$/, "");
+
   const isLoginPage =
-    location.pathname === "/login" ||
-    location.pathname === "/privacy-policy" ||
-    location.pathname === "/cookie-policy";
-  const isDashboardPage = location.pathname === "/dashboard";
+    pathname === "/login" ||
+    pathname === "/privacy-policy" ||
+    pathname === "/cookie-policy";
+
+  const isDashboardPage = pathname === "/dashboard";
+
+  // Rilevo About e Project (per mostrare il bottone [CHIUDI] e nascondere hamburger)
   const inAboutUsOrProject =
-    location.pathname === "/about-us" ||
-    location.pathname === "/about-us/" ||
-    /^\/project\/[^/]+$/.test(location.pathname);
+    pathname === "/about-us" || pathname.startsWith("/project/");
 
   const handleToggleChange = () => setIsDark(!isDark);
 
@@ -50,21 +54,25 @@ const Navbar = ({
   const handleLinkClick = () => setIsMenuOpen(false);
   const handleClose = () => navigate(-1);
 
-  // Icona come MASK per ereditare il colore dei testi
+  // Icona come MASK per ereditare sempre il colore dei testi
   const logoMaskStyle = {
     WebkitMaskImage: `url(${LogoIconUrl})`,
     maskImage: `url(${LogoIconUrl})`,
   };
+
+  // ✅ Logo al centro SOLO su mobile/tablet (anche in about/project),
+  //    ma NON su login/privacy/cookie e NON su dashboard
+  const showCenterLogo = isMobile && !isDashboardPage && !isLoginPage;
 
   return (
     <div className="navbar-block">
       <nav className={classNames("navbar", { "dark-mode": isDark })}>
         {/* SINISTRA */}
         <div className="nav-left">
-          {/* Pulsante CHIUDI nelle pagine speciali (desktop + mobile) */}
+          {/* [CHIUDI] nelle pagine About/Project (desktop e mobile) */}
           {inAboutUsOrProject && (
             <div className="navbar-close">
-              <button onClick={handleClose}>[CHIUDI]</button>
+              <button onClick={handleClose} className="close-btn">[CHIUDI]</button>
             </div>
           )}
 
@@ -76,13 +84,22 @@ const Navbar = ({
               onClick={toggleMenu}
               aria-label="Open menu"
             >
-              <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
-              <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
+              <div
+                className={classNames("hamburger", {
+                  open: isMenuOpen,
+                  "dark-mode": isDark,
+                })}
+              />
+              <div
+                className={classNames("hamburger", {
+                  open: isMenuOpen,
+                  "dark-mode": isDark,
+                })}
+              />
             </div>
           )}
 
-          {/* Menu desktop inline (con logo a sinistra). 
-              Sul mobile/Tablet NON inseriamo il logo qui. */}
+          {/* Menu desktop inline con logo a sinistra */}
           {!isLoginPage && !isDashboardPage && !inAboutUsOrProject && (
             <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
               {!isMobile && (
@@ -108,22 +125,20 @@ const Navbar = ({
                   </a>
                 )}
               </li>
-              <li>
-                <Link to="/portfolio" onClick={handleLinkClick}>PORTFOLIO</Link>
-              </li>
-              <li>
-                <Link to="/contacts" onClick={handleLinkClick}>CONTACTS</Link>
-              </li>
+              <li><Link to="/portfolio" onClick={handleLinkClick}>PORTFOLIO</Link></li>
+              <li><Link to="/contacts" onClick={handleLinkClick}>CONTACTS</Link></li>
             </ul>
           )}
         </div>
 
-        {/* CENTRO: logo SOLO su mobile (centrato perfettamente) */}
-        <div className="nav-center">
-          <Link to="/" className="navbar-logo" aria-label="Home">
-            <span className="logo-icon" style={logoMaskStyle} />
-          </Link>
-        </div>
+        {/* CENTRO: logo solo su mobile/tablet */}
+        {showCenterLogo && (
+          <div className="nav-center">
+            <Link to="/" className="navbar-logo" aria-label="Home">
+              <span className="logo-icon" style={logoMaskStyle} />
+            </Link>
+          </div>
+        )}
 
         {/* DESTRA */}
         <div className="nav-right">
