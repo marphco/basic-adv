@@ -78,6 +78,7 @@ body[data-theme="dark"] .home-logo-container .home-logo.dark-logo {
   position: relative;
   /* bottom: 88px; */
   right: 80px;
+  transition: color .5s ease;
 }
 
 .scroll-arrow {

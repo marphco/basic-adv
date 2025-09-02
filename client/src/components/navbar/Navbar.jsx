@@ -56,15 +56,14 @@ const Navbar = ({
   const handleLinkClick = () => setIsMenuOpen(false);
   const handleClose = () => navigate(-1);
 
-  // Icona come MASK per ereditare sempre il colore dei testi
-  // const logoMaskStyle = {
-  //   WebkitMaskImage: `url(${LogoIconUrl})`,
-  //   maskImage: `url(${LogoIconUrl})`,
-  // };
-
   // Logo al centro SOLO su mobile/tablet ovunque tranne Login/Policy
-  // (quindi anche in About/Project e in Dashboard)
   const showCenterLogo = isMobile && !isLoginOrPolicy;
+
+  // >>> FISSA DEFINITIVA MASK (niente var(), compatibile Safari)
+  const logoStyle = {
+    WebkitMaskImage: `url(${LogoIconUrl})`,
+    maskImage: `url(${LogoIconUrl})`,
+  };
 
   return (
     <div className="navbar-block">
@@ -74,25 +73,25 @@ const Navbar = ({
           {/* LOGIN / POLICY -> solo logo a sinistra */}
           {isLoginOrPolicy && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-  <span
-    className="logo-icon"
-    role="img"
-    aria-label="Basic logo"
-    style={{ "--logo-url": `url(${LogoIconUrl})` }}
-  />
-</Link>
+              <span
+                className="logo-icon"
+                role="img"
+                aria-label="Basic logo"
+                style={logoStyle}
+              />
+            </Link>
           )}
 
           {/* DASHBOARD desktop -> solo logo a sinistra */}
           {!isMobile && isDashboardPage && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-  <span
-    className="logo-icon"
-    role="img"
-    aria-label="Basic logo"
-    style={{ "--logo-url": `url(${LogoIconUrl})` }}
-  />
-</Link>
+              <span
+                className="logo-icon"
+                role="img"
+                aria-label="Basic logo"
+                style={logoStyle}
+              />
+            </Link>
           )}
 
           {/* [CHIUDI] in About/Project (desktop e mobile) */}
@@ -135,13 +134,13 @@ const Navbar = ({
               {!isMobile && (
                 <li className="li-logo-desktop">
                   <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-  <span
-    className="logo-icon"
-    role="img"
-    aria-label="Basic logo"
-    style={{ "--logo-url": `url(${LogoIconUrl})` }}
-  />
-</Link>
+                    <span
+                      className="logo-icon"
+                      role="img"
+                      aria-label="Basic logo"
+                      style={logoStyle}
+                    />
+                  </Link>
                 </li>
               )}
               <li>
@@ -175,13 +174,13 @@ const Navbar = ({
         {showCenterLogo && (
           <div className="nav-center">
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
-  <span
-    className="logo-icon"
-    role="img"
-    aria-label="Basic logo"
-    style={{ "--logo-url": `url(${LogoIconUrl})` }}
-  />
-</Link>
+              <span
+                className="logo-icon"
+                role="img"
+                aria-label="Basic logo"
+                style={logoStyle}
+              />
+            </Link>
           </div>
         )}
 
