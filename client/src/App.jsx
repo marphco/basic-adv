@@ -141,40 +141,64 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
 
   // Evento custom "basic:scrollTo" -> scroll (già presente)
   useEffect(() => {
-    const handler = (ev) => {
-      const id = ev?.detail?.id;
-      if (!id) return;
+  const handler = (ev) => {
+    const id = ev?.detail?.id;
+    if (!id) return;
 
-      const el =
-        document.getElementById(id) ||
-        document.querySelector(`[data-section="${id}"]`) ||
-        document.querySelector(`.${id}-section`);
+    const target =
+      document.getElementById(id) ||
+      document.querySelector(`[data-section="${id}"]`) ||
+      document.querySelector(`.${id}-section`);
 
-      if (!el) return;
+    if (!target) return;
 
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
+    const container = scrollContainerRef.current;
 
-    window.addEventListener("basic:scrollTo", handler);
-    return () => window.removeEventListener("basic:scrollTo", handler);
-  }, []);
+    // DESKTOP (pinned orizzontale): mappa offsetLeft -> Y finestra
+    if (!isMobile && scrollTween?.scrollTrigger && container) {
+      const st = scrollTween.scrollTrigger;
+      const totalH = container.scrollWidth - window.innerWidth; // orizzontale
+      const totalV = st.end - st.start;                         // verticale
+      const left   = Math.max(0, Math.min(target.offsetLeft, totalH));
+      const y      = st.start + (left / totalH) * totalV;
 
-  // 👇 NUOVO: quando torni su "/" da un progetto MOBILE, ripristina esattamente la Y salvata
-  useEffect(() => {
-    if (!isMobile) return;
-    if (location.pathname !== "/") return;
+      gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
+      return;
+    }
 
-    const saved = sessionStorage.getItem("basic:returnY");
-    if (!saved) return;
+    // MOBILE (layout verticale normale)
+    gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: target });
+  };
 
-    sessionStorage.removeItem("basic:returnY");
-    const y = Math.max(0, parseInt(saved, 10) || 0);
+  window.addEventListener("basic:scrollTo", handler);
+  return () => window.removeEventListener("basic:scrollTo", handler);
+}, [isMobile, scrollTween, scrollContainerRef]);
 
-    // Forza il ripristino dopo il cambio route (e dopo eventuali scroll-to-top)
+// Ripristina la Y salvata quando torni su "/" da un project MOBILE
+useEffect(() => {
+  if (!isMobile) return;
+  if (location.pathname !== "/") return;
+
+  const saved = sessionStorage.getItem("basic:returnY");
+  if (!saved) return;
+
+  sessionStorage.removeItem("basic:returnY");
+  const y = Math.max(0, parseInt(saved, 10) || 0);
+
+  // assicurati che sovrascriva eventuali scroll-to-top
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       window.scrollTo(0, y);
     });
-  }, [location.pathname, isMobile]);
+  });
+}, [location.pathname, isMobile]);
+
+useEffect(() => {
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+}, []);
+
 
   return (
     <>
