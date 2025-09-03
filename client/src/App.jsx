@@ -74,19 +74,19 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         const totalWidth = container.scrollWidth - window.innerWidth;
         if (scrollTween) scrollTween.kill();
         const tween = gsap.to(container, {
-  x: -totalWidth,
-  ease: "none",
-  force3D: true,            // ⚑ aggiunto
-  scrollTrigger: {
-    trigger: container,
-    start: "top top",
-    end: "bottom top",
-    scrub: 2,
-    pin: true,
-    anticipatePin: 1,
-    invalidateOnRefresh: true,
-  },
-});
+          x: -totalWidth,
+          ease: "none",
+          force3D: true, // ⚑ aggiunto
+          scrollTrigger: {
+            trigger: container,
+            start: "top top",
+            end: "bottom top",
+            scrub: 2,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        });
         setScrollTween(tween);
       } else {
         if (scrollContainerRef.current) {
@@ -128,9 +128,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       if (!isMobile && scrollTween?.scrollTrigger && container) {
         const st = scrollTween.scrollTrigger;
         const totalH = container.scrollWidth - window.innerWidth; // orizzontale
-        const totalV = st.end - st.start;                         // verticale
-        const left   = Math.max(0, Math.min(target.offsetLeft, totalH));
-        const y      = st.start + (left / totalH) * totalV;       // mappatura corretta
+        const totalV = st.end - st.start; // verticale
+        const left = Math.max(0, Math.min(target.offsetLeft, totalH));
+        const y = st.start + (left / totalH) * totalV; // mappatura corretta
 
         gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
       } else {
@@ -138,68 +138,73 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: y });
       }
     });
-  }, [location.pathname, location.hash, isMobile, scrollTween, scrollContainerRef]);
+  }, [
+    location.pathname,
+    location.hash,
+    isMobile,
+    scrollTween,
+    scrollContainerRef,
+  ]);
 
   // Evento custom "basic:scrollTo" -> scroll (già presente)
   useEffect(() => {
-  const handler = (ev) => {
-    const id = ev?.detail?.id;
-    if (!id) return;
+    const handler = (ev) => {
+      const id = ev?.detail?.id;
+      if (!id) return;
 
-    const target =
-      document.getElementById(id) ||
-      document.querySelector(`[data-section="${id}"]`) ||
-      document.querySelector(`.${id}-section`);
+      const target =
+        document.getElementById(id) ||
+        document.querySelector(`[data-section="${id}"]`) ||
+        document.querySelector(`.${id}-section`);
 
-    if (!target) return;
+      if (!target) return;
 
-    const container = scrollContainerRef.current;
+      const container = scrollContainerRef.current;
 
-    // DESKTOP (pinned orizzontale): mappa offsetLeft -> Y finestra
-    if (!isMobile && scrollTween?.scrollTrigger && container) {
-      const st = scrollTween.scrollTrigger;
-      const totalH = container.scrollWidth - window.innerWidth; // orizzontale
-      const totalV = st.end - st.start;                         // verticale
-      const left   = Math.max(0, Math.min(target.offsetLeft, totalH));
-      const y      = st.start + (left / totalH) * totalV;
+      // DESKTOP (pinned orizzontale): mappa offsetLeft -> Y finestra
+      if (!isMobile && scrollTween?.scrollTrigger && container) {
+        const st = scrollTween.scrollTrigger;
+        const totalH = container.scrollWidth - window.innerWidth; // orizzontale
+        const totalV = st.end - st.start; // verticale
+        const left = Math.max(0, Math.min(target.offsetLeft, totalH));
+        const y = st.start + (left / totalH) * totalV;
 
-      gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
-      return;
-    }
+        gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
+        return;
+      }
 
-    // MOBILE (layout verticale normale)
-    gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: target });
-  };
+      // MOBILE (layout verticale normale)
+      gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: target });
+    };
 
-  window.addEventListener("basic:scrollTo", handler);
-  return () => window.removeEventListener("basic:scrollTo", handler);
-}, [isMobile, scrollTween, scrollContainerRef]);
+    window.addEventListener("basic:scrollTo", handler);
+    return () => window.removeEventListener("basic:scrollTo", handler);
+  }, [isMobile, scrollTween, scrollContainerRef]);
 
-// Ripristina la Y salvata quando torni su "/" da un project MOBILE
-useEffect(() => {
-  if (!isMobile) return;
-  if (location.pathname !== "/") return;
+  // Ripristina la Y salvata quando torni su "/" da un project MOBILE
+  useEffect(() => {
+    if (!isMobile) return;
+    if (location.pathname !== "/") return;
 
-  const saved = sessionStorage.getItem("basic:returnY");
-  if (!saved) return;
+    const saved = sessionStorage.getItem("basic:returnY");
+    if (!saved) return;
 
-  sessionStorage.removeItem("basic:returnY");
-  const y = Math.max(0, parseInt(saved, 10) || 0);
+    sessionStorage.removeItem("basic:returnY");
+    const y = Math.max(0, parseInt(saved, 10) || 0);
 
-  // assicurati che sovrascriva eventuali scroll-to-top
-  requestAnimationFrame(() => {
+    // assicurati che sovrascriva eventuali scroll-to-top
     requestAnimationFrame(() => {
-      window.scrollTo(0, y);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, y);
+      });
     });
-  });
-}, [location.pathname, isMobile]);
+  }, [location.pathname, isMobile]);
 
-useEffect(() => {
-  if ('scrollRestoration' in window.history) {
-    window.history.scrollRestoration = 'manual';
-  }
-}, []);
-
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
 
   return (
     <>
