@@ -74,18 +74,19 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         const totalWidth = container.scrollWidth - window.innerWidth;
         if (scrollTween) scrollTween.kill();
         const tween = gsap.to(container, {
-          x: -totalWidth,
-          ease: "none",
-          scrollTrigger: {
-            trigger: container,
-            start: "top top",
-            end: "bottom top",
-            scrub: 2,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
+  x: -totalWidth,
+  ease: "none",
+  force3D: true,            // ⚑ aggiunto
+  scrollTrigger: {
+    trigger: container,
+    start: "top top",
+    end: "bottom top",
+    scrub: 2,
+    pin: true,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
+  },
+});
         setScrollTween(tween);
       } else {
         if (scrollContainerRef.current) {

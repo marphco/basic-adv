@@ -248,3 +248,17 @@ body[data-theme="dark"] .services-list-section {
   bottom: 0;
 }
 }
+
+/* ⚑ forza compositing anche sui blocchi pieni */
+.services-section,
+.services-list-section,
+.chi-siamo,
+.services-content {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* (facoltativo) se vuoi che il light usi esattamente la variabile */
+body[data-theme="light"] .services-section {
+  background-color: var(--background-color);
+}
