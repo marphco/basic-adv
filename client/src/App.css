@@ -97,16 +97,19 @@ body {
 }
 
 .App {
-  display: flex;
-  flex-direction: row;
-  width: 1100vw; /* come già hai */
-  height: 100vh;
-  overflow: hidden;
+  width: 100vw;
+  min-height: 100vh;
+}
 
-  /* ⚑ anti-hairline */
-  will-change: transform;
-  backface-visibility: hidden;
-  transform: translateZ(0);
+.App.home-layout {         /* SOLO Home: scroller orizzontale + GPU hack */
+display: flex;
+flex-direction: row;
+width: 1100vw;
+height: 100vh;
+overflow: hidden;
+will-change: transform;
+backface-visibility: hidden;
+transform: translateZ(0);
 }
 
 .section {
@@ -196,4 +199,17 @@ body {
 
 html, body, #root, .app-wrapper {
   background-color: var(--background-color) !important;
+}
+
+
+@media (max-width: 768px) {
+  .App.home-layout {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow-y: auto;
+    transform: none;
+    backface-visibility: initial;
+    will-change: auto;
+  }
 }

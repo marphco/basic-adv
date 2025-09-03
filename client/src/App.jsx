@@ -36,6 +36,7 @@ ScrollTrigger.normalizeScroll(true);
 
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
+  const isHomePage = location.pathname === "/";
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const isDashboard = location.pathname === "/dashboard";
   const isPolicyPage =
@@ -219,9 +220,9 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         isSidebarOpen={isSidebarOpen}
       />
       <div
-        className={`App ${isDashboard ? "dashboard-layout" : ""} ${
-          isPolicyPage ? "policy-layout" : ""
-        }`}
+        className={`App ${isHomePage ? "home-layout" : ""} ${
+          isDashboard ? "dashboard-layout" : ""
+        } ${isPolicyPage ? "policy-layout" : ""}`}
         ref={scrollContainerRef}
       >
         <Routes>
