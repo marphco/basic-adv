@@ -93,6 +93,12 @@ const Portfolio = ({ scrollTween = null }) => {
 
   const openSection = (projectId) => {
     if (isMobile) {
+      // 👇 Salva la posizione attuale per ripristinarla al ritorno su "/"
+      try {
+        const y = window.scrollY || window.pageYOffset || 0;
+        sessionStorage.setItem("basic:returnY", String(y));
+      // eslint-disable-next-line no-empty
+      } catch {}
       navigate(`/project/${projectId.toLowerCase()}`);
     } else {
       document.body.classList.add("project-section-open");
