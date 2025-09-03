@@ -138,6 +138,40 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   });
 }, [location.pathname, location.hash, isMobile, scrollTween, scrollContainerRef]);
 
+useEffect(() => {
+  const handler = (ev) => {
+    const id = ev?.detail?.id;
+    if (!id) return;
+
+    const target =
+      document.getElementById(id) ||
+      document.querySelector(`[data-section="${id}"]`) ||
+      document.querySelector(`.${id}-section`);
+
+    if (!target) return;
+
+    const container = scrollContainerRef.current;
+
+    // DESKTOP (scroller orizzontale pin-nato): mappa X -> Y finestra
+    if (!isMobile && scrollTween?.scrollTrigger && container) {
+      const st = scrollTween.scrollTrigger;
+      const totalH = container.scrollWidth - window.innerWidth; // larghezza scrollabile
+      const totalV = st.end - st.start;                         // range verticale del pin
+      const left   = Math.max(0, Math.min(target.offsetLeft, totalH));
+      const y      = st.start + (left / totalH) * totalV;
+
+      gsap.to(window, { duration: 0.9, ease: "power2.out", scrollTo: y });
+      return;
+    }
+
+    // MOBILE (layout verticale normale)
+    gsap.to(window, { duration: 0.7, ease: "power2.out", scrollTo: target });
+  };
+
+  window.addEventListener("basic:scrollTo", handler);
+  return () => window.removeEventListener("basic:scrollTo", handler);
+}, [isMobile, scrollTween, scrollContainerRef]);
+
 
   return (
     <>

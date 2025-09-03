@@ -39,7 +39,8 @@ const Navbar = ({
 
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
-      if (hamburgerRef.current) hamburgerRef.current.style.visibility = "hidden";
+      if (hamburgerRef.current)
+        hamburgerRef.current.style.visibility = "hidden";
       toggleSidebar();
     } else {
       setIsMenuOpen((prev) => !prev);
@@ -48,7 +49,9 @@ const Navbar = ({
 
   useEffect(() => {
     if (isDashboardPage && isMobile && hamburgerRef.current) {
-      hamburgerRef.current.style.visibility = isSidebarOpen ? "hidden" : "visible";
+      hamburgerRef.current.style.visibility = isSidebarOpen
+        ? "hidden"
+        : "visible";
     }
   }, [isSidebarOpen, isDashboardPage, isMobile]);
 
@@ -66,7 +69,9 @@ const Navbar = ({
     }
 
     const apply = () => {
-      const projectOpen = document.body.classList.contains("project-section-open");
+      const projectOpen = document.body.classList.contains(
+        "project-section-open"
+      );
       // segnale esplicito + fallback su presenza nodo overlay
       const aboutOpen =
         document.body.classList.contains("aboutus-open") ||
@@ -103,8 +108,8 @@ const Navbar = ({
   const LogoStack = () => (
     <span className="logo-stack" aria-hidden="true">
       <img src={IconOrange} className="logo-img logo-icon--orange" alt="" />
-      <img src={IconBlack}  className="logo-img logo-icon--hover-light" alt="" />
-      <img src={IconWhite}  className="logo-img logo-icon--hover-dark"  alt="" />
+      <img src={IconBlack} className="logo-img logo-icon--hover-light" alt="" />
+      <img src={IconWhite} className="logo-img logo-icon--hover-dark" alt="" />
     </span>
   );
 
@@ -132,7 +137,9 @@ const Navbar = ({
 
           {(inAboutRoute || inProjectRoute) && (
             <div className="navbar-close">
-              <button onClick={handleClose} className="close-btn">[CHIUDI]</button>
+              <button onClick={handleClose} className="close-btn">
+                [CHIUDI]
+              </button>
             </div>
           )}
 
@@ -143,44 +150,95 @@ const Navbar = ({
               onClick={toggleMenu}
               aria-label="Open sidebar"
             >
-              <div className={classNames("hamburger", { "dark-mode": isDark })} />
-              <div className={classNames("hamburger", { "dark-mode": isDark })} />
+              <div
+                className={classNames("hamburger", { "dark-mode": isDark })}
+              />
+              <div
+                className={classNames("hamburger", { "dark-mode": isDark })}
+              />
             </div>
           )}
 
-          {!isLoginOrPolicy && !isDashboardPage && !(inAboutRoute || inProjectRoute) && isMobile && (
-            <div
-              ref={hamburgerRef}
-              className="hamburger-menu"
-              onClick={toggleMenu}
-              aria-label="Open menu"
-            >
-              <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
-              <div className={classNames("hamburger", { open: isMenuOpen, "dark-mode": isDark })} />
-            </div>
-          )}
+          {!isLoginOrPolicy &&
+            !isDashboardPage &&
+            !(inAboutRoute || inProjectRoute) &&
+            isMobile && (
+              <div
+                ref={hamburgerRef}
+                className="hamburger-menu"
+                onClick={toggleMenu}
+                aria-label="Open menu"
+              >
+                <div
+                  className={classNames("hamburger", {
+                    open: isMenuOpen,
+                    "dark-mode": isDark,
+                  })}
+                />
+                <div
+                  className={classNames("hamburger", {
+                    open: isMenuOpen,
+                    "dark-mode": isDark,
+                  })}
+                />
+              </div>
+            )}
 
           {shouldRenderMenu && (
             <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
               {!isMobile && (
                 <li className="li-logo-desktop">
-                  <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+                  <Link
+                    to="/"
+                    onClick={handleLinkClick}
+                    className="navbar-logo"
+                  >
                     <LogoStack />
                   </Link>
                 </li>
               )}
               <li>
                 {isMobile ? (
-                  <Link to="/about-us" onClick={handleLinkClick}>ABOUT US</Link>
+                  <Link to="/about-us" onClick={handleLinkClick}>
+                    ABOUT US
+                  </Link>
                 ) : (
-                  <a href="#" onClick={handleAboutDesktop}>ABOUT US</a>
+                  <a href="#" onClick={handleAboutDesktop}>
+                    ABOUT US
+                  </a>
                 )}
               </li>
               <li>
-                <Link to="/#portfolio" onClick={handleLinkClick}>PORTFOLIO</Link>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.dispatchEvent(
+                      new CustomEvent("basic:scrollTo", {
+                        detail: { id: "portfolio" },
+                      })
+                    );
+                  }}
+                >
+                  PORTFOLIO
+                </a>
               </li>
               <li>
-                <Link to="/#contacts" onClick={handleLinkClick}>CONTACTS</Link>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.dispatchEvent(
+                      new CustomEvent("basic:scrollTo", {
+                        detail: { id: "contacts" },
+                      })
+                    );
+                  }}
+                >
+                  CONTACTS
+                </a>
               </li>
             </ul>
           )}

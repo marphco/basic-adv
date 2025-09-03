@@ -144,3 +144,11 @@ body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--hover-da
   body.nav-hide-desktop .navbar-menu > li:nth-child(4) { transition-delay: .12s; }
 }
 
+#portfolio, #contacts {
+  scroll-margin-top: 60px; /* altezza navbar */
+}
+
+/* In alternativa coi fallback che ho usato nella query */
+.portfolio-section, .contacts-section, [data-section="portfolio"], [data-section="contacts"] {
+  scroll-margin-top: 60px;
+}
