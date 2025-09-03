@@ -24,20 +24,16 @@ const Navbar = ({
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Normalizzo pathname
   const pathname = (location.pathname || "/").replace(/\/+$/, "");
 
-  // Login + Policy (stesso trattamento)
   const isLoginOrPolicy =
     pathname === "/login" ||
     pathname === "/privacy-policy" ||
     pathname === "/cookie-policy";
 
   const isDashboardPage = pathname === "/dashboard";
-
-  // About e Project (per [CHIUDI])
-  const inAboutUsOrProject =
-    pathname === "/about-us" || pathname.startsWith("/project/");
+  const inAboutRoute = pathname === "/about-us";
+  const inProjectRoute = pathname.startsWith("/project/");
 
   const handleToggleChange = () => setIsDark(!isDark);
 
@@ -62,7 +58,48 @@ const Navbar = ({
   // Logo al centro SOLO su mobile/tablet ovunque tranne Login/Policy
   const showCenterLogo = isMobile && !isLoginOrPolicy;
 
-  // Piccolo componente per lo stack del logo
+  // --- NUOVO: nascondi voci su overlay desktop (About/Project) ---
+  useEffect(() => {
+    if (isMobile) {
+      document.body.classList.remove("nav-hide-desktop");
+      return;
+    }
+
+    const apply = () => {
+      const projectOpen = document.body.classList.contains("project-section-open");
+      // segnale esplicito + fallback su presenza nodo overlay
+      const aboutOpen =
+        document.body.classList.contains("aboutus-open") ||
+        document.querySelector(".aboutus-overlay") != null;
+
+      const shouldHide = projectOpen || aboutOpen;
+      document.body.classList.toggle("nav-hide-desktop", shouldHide);
+    };
+
+    apply();
+
+    const mo = new MutationObserver(apply);
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      mo.disconnect();
+      document.body.classList.remove("nav-hide-desktop");
+    };
+  }, [isMobile]);
+
+  // Forza l’effetto subito al click desktop (senza aspettare il portal)
+  const handleAboutDesktop = (e) => {
+    e.preventDefault();
+    openAboutUs?.();
+    document.body.classList.add("aboutus-open");
+    handleLinkClick();
+  };
+
   const LogoStack = () => (
     <span className="logo-stack" aria-hidden="true">
       <img src={IconOrange} className="logo-img logo-icon--orange" alt="" />
@@ -71,33 +108,34 @@ const Navbar = ({
     </span>
   );
 
+  const shouldRenderMenu =
+    !isLoginOrPolicy &&
+    !isDashboardPage &&
+    (isMobile ? !(inAboutRoute || inProjectRoute) : true);
+
   return (
     <div className="navbar-block">
       <nav className={classNames("navbar", { "dark-mode": isDark })}>
         {/* SINISTRA */}
         <div className="nav-left">
-          {/* LOGIN / POLICY -> solo logo a sinistra */}
           {isLoginOrPolicy && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
               <LogoStack />
             </Link>
           )}
 
-          {/* DASHBOARD desktop -> solo logo a sinistra */}
           {!isMobile && isDashboardPage && (
             <Link to="/" onClick={handleLinkClick} className="navbar-logo">
               <LogoStack />
             </Link>
           )}
 
-          {/* [CHIUDI] in About/Project (desktop e mobile) */}
-          {inAboutUsOrProject && (
+          {(inAboutRoute || inProjectRoute) && (
             <div className="navbar-close">
               <button onClick={handleClose} className="close-btn">[CHIUDI]</button>
             </div>
           )}
 
-          {/* HAMBURGER: dashboard mobile -> apre/chiude la sidebar */}
           {isDashboardPage && isMobile && (
             <div
               ref={hamburgerRef}
@@ -110,8 +148,7 @@ const Navbar = ({
             </div>
           )}
 
-          {/* HAMBURGER: pagine normali */}
-          {!isLoginOrPolicy && !isDashboardPage && !inAboutUsOrProject && isMobile && (
+          {!isLoginOrPolicy && !isDashboardPage && !(inAboutRoute || inProjectRoute) && isMobile && (
             <div
               ref={hamburgerRef}
               className="hamburger-menu"
@@ -123,10 +160,8 @@ const Navbar = ({
             </div>
           )}
 
-          {/* MENU DESKTOP inline */}
-          {!isLoginOrPolicy && !isDashboardPage && !inAboutUsOrProject && (
+          {shouldRenderMenu && (
             <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
-              {/* logo nel menu SOLO su desktop */}
               {!isMobile && (
                 <li className="li-logo-desktop">
                   <Link to="/" onClick={handleLinkClick} className="navbar-logo">
@@ -138,16 +173,7 @@ const Navbar = ({
                 {isMobile ? (
                   <Link to="/about-us" onClick={handleLinkClick}>ABOUT US</Link>
                 ) : (
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      openAboutUs();
-                      handleLinkClick();
-                    }}
-                  >
-                    ABOUT US
-                  </a>
+                  <a href="#" onClick={handleAboutDesktop}>ABOUT US</a>
                 )}
               </li>
               <li>

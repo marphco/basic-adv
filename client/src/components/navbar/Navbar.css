@@ -5,18 +5,16 @@
   left: 0;
   width: 100vw;
   display: flex;
-  justify-content: flex-start; /* come nel tuo originale */
+  justify-content: flex-start;
   z-index: 999999999;
-  pointer-events: none; /* lo sfumato non intercetta click */
+  pointer-events: none;
 }
 
-/* Gradient DAL TOP della pagina (molto leggero) */
+/* Gradient dal top (leggero) */
 .navbar-block::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 96px;
   background: linear-gradient(to bottom, rgba(0,0,0,0.07), rgba(0,0,0,0));
   pointer-events: none;
@@ -25,51 +23,32 @@ body[data-theme="dark"] .navbar-block::before {
   background: linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0));
 }
 
-/* Barra: padding identico al tuo originale -> allineamento perfetto */
+/* Barra */
 .navbar {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 80px;           /* allineamento come prima */
+  padding: 0 80px;
   height: 60px;
   color: var(--primary-text-color);
   background: transparent;
   transition: background-color 0.3s ease, color 0.1s ease;
-  pointer-events: auto;      /* riabilita click */
+  pointer-events: auto;
 }
 .navbar.dark-mode { color: white; }
 
 .nav-left  { display: flex; align-items: center; }
 .nav-right { display: flex; align-items: center; }
 
-/* [CHIUDI] — cliccabile SEMPRE e lievemente più in basso */
-.navbar-close {
-  margin-right: 12px;
-  position: relative;
-  z-index: 2147483647;       /* sopra qualsiasi overlay */
-  pointer-events: auto;
-}
-.close-btn {
-  background: none;
-  border: none;
-  color: inherit;            /* stesso colore dei testi */
-  font-size: 0.8rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 4px 6px;          /* hit-area minima */
-  transition: color .15s ease;
-}
+/* [CHIUDI] */
+.navbar-close { margin-right: 12px; position: relative; z-index: 2147483647; pointer-events: auto; }
+.close-btn { background: none; border: none; color: inherit; font-size: 0.8rem; line-height: 1; cursor: pointer; padding: 4px 6px; transition: color .15s ease; }
 .close-btn:hover { color: var(--foreground-color); }
 
-/* Menu desktop inline */
-.navbar-menu {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+/* Menu */
+.navbar-menu { display: flex; list-style: none; margin: 0; padding: 0; }
 .navbar-menu li { margin-right: 15px; display: flex; align-items: center; }
 .navbar-menu li:last-child { margin-right: 0; }
 
@@ -83,100 +62,53 @@ body[data-theme="dark"] .navbar-block::before {
 
 /* Hamburger (mobile) */
 .hamburger-menu { display: none; flex-direction: column; cursor: pointer; margin-right: 12px; }
-.hamburger {
-  width: 25px;
-  height: 2px;
-  background-color: currentColor;
-  margin: 2px 0;
-  transition: transform 0.3s ease;
-}
+.hamburger { width: 25px; height: 2px; background-color: currentColor; margin: 2px 0; transition: transform 0.3s ease; }
 .hamburger.open:nth-child(1) { transform: rotate(45deg) translateY(4px); }
 .hamburger.open:nth-child(2) { transform: rotate(-45deg) translateY(-4px); }
 
-/* Logo (mask → eredita currentColor) */
-.navbar-logo { color: inherit; text-decoration: none; display: inline-flex; align-items: center; }
+/* Logo stack */
 .navbar-logo { display: inline-flex; align-items: center; text-decoration: none; }
-.logo-stack {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  display: inline-block;
-}
-.logo-stack .logo-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  transition: opacity .5s ease;
-  /* per evitare “blur” in alcuni browser */
-  image-rendering: -webkit-optimize-contrast;
-}
+.logo-stack { position: relative; width: 32px; height: 32px; display: inline-block; }
+.logo-stack .logo-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; transition: opacity .5s ease; image-rendering: -webkit-optimize-contrast; }
+.logo-icon--orange { opacity: 1; }
+.logo-icon--hover-light { opacity: 0; }
+.logo-icon--hover-dark  { opacity: 0; }
 
-/* stato base: arancione visibile */
-.logo-icon--orange      { opacity: 1; }
-.logo-icon--hover-light { opacity: 0; } /* nero */
-.logo-icon--hover-dark  { opacity: 0; } /* bianco */
-
-/* hover in LIGHT: mostra nero */
+/* Hover/focus varianti */
 body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon--orange      { opacity: 0; }
 body[data-theme="light"] .navbar .navbar-logo:hover .logo-icon--hover-light { opacity: 1; }
-
-/* hover in DARK: mostra bianco */
-body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon--orange     { opacity: 0; }
-body[data-theme="dark"] .navbar .navbar-logo:hover .logo-icon--hover-dark { opacity: 1; }
-
-/* focus tastiera = stesso comportamento dell’hover */
+body[data-theme="dark"]  .navbar .navbar-logo:hover .logo-icon--orange     { opacity: 0; }
+body[data-theme="dark"]  .navbar .navbar-logo:hover .logo-icon--hover-dark { opacity: 1; }
 body[data-theme="light"] .navbar .navbar-logo:focus-visible .logo-icon--orange      { opacity: 0; }
 body[data-theme="light"] .navbar .navbar-logo:focus-visible .logo-icon--hover-light { opacity: 1; }
 body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--orange     { opacity: 0; }
 body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--hover-dark { opacity: 1; }
 
-/* (opzionale) feedback al tap */
-.navbar .navbar-logo:active .logo-icon {
-  filter: brightness(.9);
-}
-
-/* Logo a sinistra nel menu (solo desktop) */
+.navbar .navbar-logo:active .logo-icon { filter: brightness(.9); }
 .li-logo-desktop { display: inline-flex; align-items: center; margin-right: 15px; }
 
-/* ---------- Mobile / Tablet (<=768px) ---------- */
+/* --------- Mobile / Tablet --------- */
 @media screen and (max-width: 768px) {
   .navbar { padding: 0 10%; }
-
-  /* Mostro hamburger; nascondo logo nel menu desktop */
   .hamburger-menu { display: flex; }
   .li-logo-desktop { display: none; }
 
-  /* Logo perfettamente centrato: visibile solo su mobile (controllato da JSX) */
   .nav-center {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 50%; top: 50%;
     transform: translate(-50%, -50%);
-    height: 25px;
-    display: block;
-    pointer-events: auto;
+    height: 25px; display: block; pointer-events: auto;
   }
 
-  /* Menu mobile: spaziature come nel tuo originale (voci ravvicinate) */
   .navbar-menu {
-    display: none;
-    position: absolute;
-    top: 30px;
-    left: 10%;
-    flex-direction: column;
-    width: 90%;
-    text-align: left;
-    padding: 20px 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    display: none; position: absolute; top: 30px; left: 10%;
+    flex-direction: column; width: 90%; text-align: left;
+    padding: 20px 0; opacity: 0; transition: opacity 0.3s ease;
   }
   .navbar-menu.open { display: flex; opacity: 1; }
 
   .navbar-menu li {
-    opacity: 0;
-    transform: translateX(-20px);
+    opacity: 0; transform: translateX(-20px);
     animation: slideIn 0.4s forwards;
   }
   .navbar-menu li:nth-child(1) { animation-delay: 0.1s; }
@@ -190,6 +122,25 @@ body[data-theme="dark"]  .navbar .navbar-logo:focus-visible .logo-icon--hover-da
 
 /* ---------- Desktop (>768px) ---------- */
 @media screen and (min-width: 769px) {
-  /* Logo centrale: non visibile su desktop */
   .nav-center { display: none; }
+
+  /* transizioni pronte su TUTTE le voci del menu */
+  .navbar-menu > li {
+    transition: transform .35s cubic-bezier(.2,.7,.2,1), opacity .25s ease;
+    will-change: transform, opacity;
+    transition-delay: 0s;
+  }
+
+  /* Quando il body ha la classe, le voci (tranne il logo) salgono e svaniscono con stagger */
+  body.nav-hide-desktop .navbar-menu > li:not(.li-logo-desktop) {
+    opacity: 0;
+    transform: translateY(-14px);
+    pointer-events: none;
+  }
+
+  /* Stagger: logo = 1°, ABOUT = 2°, PORTFOLIO = 3°, CONTACTS = 4° */
+  body.nav-hide-desktop .navbar-menu > li:nth-child(2) { transition-delay: 0s; }
+  body.nav-hide-desktop .navbar-menu > li:nth-child(3) { transition-delay: .06s; }
+  body.nav-hide-desktop .navbar-menu > li:nth-child(4) { transition-delay: .12s; }
 }
+
