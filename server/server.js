@@ -76,45 +76,45 @@ const sendViaMailersendApi = async (mailOptions) => {
   if (!process.env.MAILERSEND_API_TOKEN) {
     throw new Error("MAILERSEND_API_TOKEN mancante per fallback API");
   }
-  // mappatura nodemailer -> MailerSend API
+
+  // mappa nodemailer -> MailerSend API
   const body = {
     from: {
-      email:
-        mailOptions.envelope?.from ||
-        mailOptions.from?.address ||
-        mailOptions.from,
-      name: mailOptions.from?.name || "Basic Adv",
+      email: (mailOptions.envelope?.from) || (mailOptions.from?.address || mailOptions.from),
+      name:  (mailOptions.from?.name) || "Basic Adv",
     },
-    to: [
-      {
-        email: Array.isArray(mailOptions.to)
-          ? mailOptions.to[0]
-          : mailOptions.to,
-      },
-    ],
+    to: [{ email: Array.isArray(mailOptions.to) ? mailOptions.to[0] : mailOptions.to }],
     subject: mailOptions.subject,
     text: mailOptions.text,
   };
   if (mailOptions.html) body.html = mailOptions.html;
+
   if (mailOptions.replyTo) {
-    const rt =
-      typeof mailOptions.replyTo === "string"
-        ? { email: mailOptions.replyTo }
-        : {
-            email: mailOptions.replyTo.address,
-            name: mailOptions.replyTo.name,
-          };
-    body.reply_to = [rt];
+    const rt = typeof mailOptions.replyTo === "string"
+      ? { email: mailOptions.replyTo }
+      : { email: mailOptions.replyTo.address, name: mailOptions.replyTo.name };
+    body.reply_to = rt; // <-- oggetto, NON array
   }
 
-  return axios.post("https://api.mailersend.com/v1/email", body, {
-    headers: {
-      Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    timeout: 20000,
-  });
+  try {
+    return await axios.post("https://api.mailersend.com/v1/email", body, {
+      headers: {
+        Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 20000,
+    });
+  } catch (err) {
+    if (err.response) {
+      console.error("MailerSend API 4xx/5xx:", {
+        status: err.response.status,
+        data: err.response.data,   // <— qui vedrai l’errore preciso (campo sbagliato, from non verificato, ecc.)
+      });
+    }
+    throw err;
+  }
 };
+
 
 // wrapper unico che usi ovunque
 const sendMail = async (mailOptions) => {
