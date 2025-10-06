@@ -28,55 +28,64 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({
-  origin: (origin, cb) => {
-    // consente anche richieste senza Origin (cron/server-to-server)
-    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-    return cb(new Error("Not allowed by CORS"));
-  },
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // ok anche se usi solo Bearer
-}));
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // consente anche richieste senza Origin (cron/server-to-server)
+      if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // ok anche se usi solo Bearer
+  })
+);
 
 // Preflight per tutte le route (deve stare PRIMA delle route)
 app.options("*", cors());
-
 
 app.use(express.json());
 // app.use("/uploads", express.static("/app/uploads"));
 
 // Configura il transporter per email
-// --- SMTP (Mailersend) robusto con fallback ---
-const createTransporter = (use465 = false) =>
+// --- SMTP con STARTTLS: prova 587 poi 2525 ---
+const SMTP_HOST = "smtp.mailersend.net";
+const SMTP_PORTS = [587, 2525];
+let smtpIndex = 0;
+
+const createTransporter = (port) =>
   nodemailer.createTransport({
-    host: "smtp.mailersend.net",
-    port: use465 ? 465 : 587,   // 587 (STARTTLS) -> fallback 465 (TLS)
-    secure: use465,             // true solo su 465
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    },
-    tls: { minVersion: "TLSv1.2" }, // più compatibile in deploy
+    host: SMTP_HOST,
+    port,
+    secure: false, // STARTTLS
+    requireTLS: true,
+    auth: { user: process.env.SMTP_USERNAME, pass: process.env.SMTP_PASSWORD },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
+    tls: { minVersion: "TLSv1.2", servername: SMTP_HOST },
   });
 
-let transporter = createTransporter();
+let transporter = createTransporter(SMTP_PORTS[smtpIndex]);
 
-const sendWithFallback = async (mailOptions) => {
+const sendViaSmtp = async (mailOptions) => {
   try {
     await transporter.verify();
     return await transporter.sendMail(mailOptions);
   } catch (err) {
-    // connessione / auth: prova 465 con TLS pieno
-    if (["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(err?.code)) {
-      transporter = createTransporter(true);
+    // se la porta attuale dà timeout/connessione respinta, passa alla successiva (2525)
+    if (
+      ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(err?.code) &&
+      smtpIndex < SMTP_PORTS.length - 1
+    ) {
+      smtpIndex++;
+      transporter = createTransporter(SMTP_PORTS[smtpIndex]);
       await transporter.verify();
       return await transporter.sendMail(mailOptions);
     }
     throw err;
   }
 };
-
 
 // Endpoint per inviare email
 app.post("/api/sendEmails", async (req, res) => {
@@ -117,8 +126,8 @@ Team BasicAdv`,
     };
 
     await Promise.all([
-      sendWithFallback(userMailOptions),
-      sendWithFallback(adminMailOptions),
+      sendMail(userMailOptions), // wrapper: SMTP -> API se serve
+      sendMail(adminMailOptions),
     ]);
 
     return res.status(200).json({ message: "Email inviate con successo" });
@@ -155,11 +164,16 @@ const authenticateToken = (req, res, next) => {
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
 
-  if (username !== process.env.ADMIN_USERNAME || password !== process.env.ADMIN_PASSWORD) {
+  if (
+    username !== process.env.ADMIN_USERNAME ||
+    password !== process.env.ADMIN_PASSWORD
+  ) {
     return res.status(401).json({ error: "Credenziali non valide" });
   }
 
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ username }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
   res.json({ token });
 });
 
@@ -167,7 +181,9 @@ app.post("/api/login", (req, res) => {
 app.get("/api/getRequests", authenticateToken, async (req, res) => {
   try {
     const logs = await ProjectLog.find()
-      .select("sessionId formData questions answers projectPlan createdAt servicesQueue feedback")
+      .select(
+        "sessionId formData questions answers projectPlan createdAt servicesQueue feedback"
+      )
       .lean();
     console.log("Dati inviati al frontend:", logs);
     res.json(logs);
@@ -180,7 +196,7 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
 // Endpoint per scaricare i file allegati
 app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join("/app/uploads", filename);
+  const filePath = path.join(UPLOAD_DIR, filename);
 
   if (fs.existsSync(filePath)) {
     res.setHeader("Content-Type", "application/pdf");
@@ -195,11 +211,11 @@ app.get("/api/download/:filename", (req, res) => {
 // Endpoint per elencare i file
 app.get("/api/uploads/list", authenticateToken, async (req, res) => {
   try {
-    const uploadDir = "/app/uploads";
+    const uploadDir = UPLOAD_DIR;
     const files = await fs.promises.readdir(uploadDir);
     const fileDetails = await Promise.all(
       files
-        .filter(file => file !== "lost+found")
+        .filter((file) => file !== "lost+found")
         .map(async (file) => {
           const filePath = path.join(uploadDir, file);
           const stats = await fs.promises.stat(filePath);
@@ -213,7 +229,7 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
           return null;
         })
     );
-    res.json({ files: fileDetails.filter(file => file !== null) });
+    res.json({ files: fileDetails.filter((file) => file !== null) });
   } catch (error) {
     console.error("Errore nel recupero dei file:", error);
     res.status(500).json({ error: "Errore nel recupero dei file" });
@@ -221,64 +237,85 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
 });
 
 // Endpoint per cancellare un file
-app.delete("/api/uploads/delete/:filename", authenticateToken, async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const filePath = path.join("/app/uploads", filename);
+app.delete(
+  "/api/uploads/delete/:filename",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const filename = req.params.filename;
+      const filePath = path.join(UPLOAD_DIR, filename);
 
-    if (fs.existsSync(filePath)) {
-      await fs.promises.unlink(filePath);
-      res.status(200).json({ message: `File ${filename} cancellato con successo` });
-    } else {
-      res.status(404).json({ error: "File non trovato" });
+      if (fs.existsSync(filePath)) {
+        await fs.promises.unlink(filePath);
+        res
+          .status(200)
+          .json({ message: `File ${filename} cancellato con successo` });
+      } else {
+        res.status(404).json({ error: "File non trovato" });
+      }
+    } catch (error) {
+      console.error("Errore nella cancellazione del file:", error);
+      res.status(500).json({ error: "Errore nella cancellazione del file" });
     }
-  } catch (error) {
-    console.error("Errore nella cancellazione del file:", error);
-    res.status(500).json({ error: "Errore nella cancellazione del file" });
   }
-});
+);
 
 // Endpoint per aggiornare il feedback di una richiesta
-app.put("/api/requests/:sessionId/feedback", authenticateToken, async (req, res) => {
-  try {
-    const { sessionId } = req.params;
-    const { feedback } = req.body;
+app.put(
+  "/api/requests/:sessionId/feedback",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { feedback } = req.body;
 
-    console.log(`Tentativo di aggiornamento feedback per sessionId: ${sessionId}, nuovo valore: ${feedback}`);
+      console.log(
+        `Tentativo di aggiornamento feedback per sessionId: ${sessionId}, nuovo valore: ${feedback}`
+      );
 
-    if (typeof feedback !== "boolean") {
-      console.log("Errore: Il campo feedback non è un booleano");
-      return res.status(400).json({ error: "Il campo feedback deve essere un booleano" });
+      if (typeof feedback !== "boolean") {
+        console.log("Errore: Il campo feedback non è un booleano");
+        return res
+          .status(400)
+          .json({ error: "Il campo feedback deve essere un booleano" });
+      }
+
+      const projectLog = await ProjectLog.findOne({ sessionId });
+      if (!projectLog) {
+        console.log(
+          `Errore: Nessun documento trovato con sessionId: ${sessionId}`
+        );
+        return res.status(404).json({ error: "Richiesta non trovata" });
+      }
+
+      console.log("Documento prima dell'aggiornamento:", projectLog);
+
+      projectLog.feedback = feedback;
+
+      await projectLog.save();
+
+      const updatedLog = await ProjectLog.findOne({ sessionId });
+      console.log(
+        `Feedback aggiornato con successo per sessionId: ${sessionId}, valore salvato: ${updatedLog.feedback}`
+      );
+
+      res.status(200).json({
+        message: "Feedback aggiornato con successo",
+        feedback: updatedLog.feedback,
+      });
+    } catch (error) {
+      console.error(
+        "Errore dettagliato nell'aggiornamento del feedback:",
+        error
+      );
+      res.status(500).json({
+        error: "Errore nell'aggiornamento del feedback",
+        details: error.message,
+        stack: error.stack,
+      });
     }
-
-    const projectLog = await ProjectLog.findOne({ sessionId });
-    if (!projectLog) {
-      console.log(`Errore: Nessun documento trovato con sessionId: ${sessionId}`);
-      return res.status(404).json({ error: "Richiesta non trovata" });
-    }
-
-    console.log("Documento prima dell'aggiornamento:", projectLog);
-
-    projectLog.feedback = feedback;
-
-    await projectLog.save();
-
-    const updatedLog = await ProjectLog.findOne({ sessionId });
-    console.log(`Feedback aggiornato con successo per sessionId: ${sessionId}, valore salvato: ${updatedLog.feedback}`);
-
-    res.status(200).json({
-      message: "Feedback aggiornato con successo",
-      feedback: updatedLog.feedback,
-    });
-  } catch (error) {
-    console.error("Errore dettagliato nell'aggiornamento del feedback:", error);
-    res.status(500).json({
-      error: "Errore nell'aggiornamento del feedback",
-      details: error.message,
-      stack: error.stack,
-    });
   }
-});
+);
 
 // Endpoint per eliminare una richiesta
 app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
@@ -291,7 +328,10 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
     }
 
     if (projectLog.formData.currentLogo) {
-      const filePath = path.join("/app/uploads", projectLog.formData.currentLogo);
+      const filePath = path.join(
+        "/app/uploads",
+        projectLog.formData.currentLogo
+      );
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
       }
@@ -302,7 +342,9 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
     res.status(200).json({ message: "Richiesta eliminata con successo" });
   } catch (error) {
     console.error("Errore nella cancellazione della richiesta:", error);
-    res.status(500).json({ error: "Errore nella cancellazione della richiesta" });
+    res
+      .status(500)
+      .json({ error: "Errore nella cancellazione della richiesta" });
   }
 });
 
@@ -328,7 +370,12 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/svg+xml", "application/pdf"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "application/pdf",
+    ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -376,7 +423,12 @@ mongoose
 
 const sanitizeKey = (key) => key.replace(/\./g, "_").replace(/\?$/, "");
 
-const generateQuestionForService = async (service, formData, answers, askedQuestions) => {
+const generateQuestionForService = async (
+  service,
+  formData,
+  answers,
+  askedQuestions
+) => {
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
@@ -389,7 +441,9 @@ const generateQuestionForService = async (service, formData, answers, askedQuest
   }
 
   const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto ${
-    brandName !== "non specificato" ? `per il brand "${brandName}"` : "senza un brand specifico"
+    brandName !== "non specificato"
+      ? `per il brand "${brandName}"`
+      : "senza un brand specifico"
   }. Le seguenti informazioni sono già state raccolte:
 
 - Nome del Brand: ${brandName}
@@ -461,7 +515,10 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
       const jsonStartIndex = aiResponseText.indexOf("{");
       const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1;
       if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        const jsonString = aiResponseText.substring(jsonStartIndex, jsonEndIndex);
+        const jsonString = aiResponseText.substring(
+          jsonStartIndex,
+          jsonEndIndex
+        );
         aiQuestion = JSON.parse(jsonString);
       } else {
         throw new Error("Errore nel parsing della risposta AI");
@@ -485,7 +542,12 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     }
 
     if (askedQuestions.includes(aiQuestion.question)) {
-      return await generateQuestionForService(service, formData, answers, askedQuestions);
+      return await generateQuestionForService(
+        service,
+        formData,
+        answers,
+        askedQuestions
+      );
     }
 
     // Sanitizza la domanda prima di salvarla
@@ -503,7 +565,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     try {
       servicesSelected = JSON.parse(req.body.servicesSelected || "[]");
     } catch (e) {
-      return res.status(400).json({ error: "Formato servicesSelected non valido" });
+      return res
+        .status(400)
+        .json({ error: "Formato servicesSelected non valido" });
     }
 
     const formData = { ...req.body };
@@ -526,7 +590,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       formData.currentLogo = req.file.filename;
       console.log("File salvato in:", req.file.path);
     } else if (formData.projectType === "restyling") {
-      return res.status(400).json({ error: "Immagine richiesta per il restyling non fornita" });
+      return res
+        .status(400)
+        .json({ error: "Immagine richiesta per il restyling non fornita" });
     }
 
     formData.brandName = formData.brandName || "";
@@ -548,7 +614,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       currentServiceIndex: 0,
       serviceQuestionCount: new Map(),
       maxQuestionsPerService: servicesSelected.length === 1 ? 10 : 8,
-      totalQuestions: servicesSelected.length === 1 ? 10 : 8 * servicesSelected.length,
+      totalQuestions:
+        servicesSelected.length === 1 ? 10 : 8 * servicesSelected.length,
       askedQuestions: new Map(),
     });
 
@@ -558,7 +625,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     });
 
     const firstService = servicesSelected[0];
-    const askedQuestionsForService = newLogEntry.askedQuestions.get(firstService) || [];
+    const askedQuestionsForService =
+      newLogEntry.askedQuestions.get(firstService) || [];
 
     const aiQuestion = await generateQuestionForService(
       firstService,
@@ -580,7 +648,13 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     res.json({ question: aiQuestion });
   } catch (error) {
     console.error("Errore in /api/generate:", error);
-    res.status(500).json({ error: error.message || "Errore nella generazione della domanda. Riprova più tardi." });
+    res
+      .status(500)
+      .json({
+        error:
+          error.message ||
+          "Errore nella generazione della domanda. Riprova più tardi.",
+      });
   }
 });
 
@@ -626,7 +700,8 @@ app.post("/api/nextQuestion", async (req, res) => {
     }
 
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-    const askedQuestionsForNextService = logEntry.askedQuestions.get(nextService) || [];
+    const askedQuestionsForNextService =
+      logEntry.askedQuestions.get(nextService) || [];
 
     const aiQuestion = await generateQuestionForService(
       nextService,
@@ -680,15 +755,22 @@ app.post("/api/submitLog", async (req, res) => {
     res.status(200).json({ message: "Log inviato e salvato" });
 
     try {
-      if (!logEntry.formData.contactInfo.name || !logEntry.formData.contactInfo.email) {
-        throw new Error("Nome ed email sono obbligatori per generare il project plan.");
+      if (
+        !logEntry.formData.contactInfo.name ||
+        !logEntry.formData.contactInfo.email
+      ) {
+        throw new Error(
+          "Nome ed email sono obbligatori per generare il project plan."
+        );
       }
 
       const formattedAnswers = Array.from(logEntry.answers.entries())
         .map(([question, response]) => {
           let answerText = "";
           if (response.input && response.options) {
-            answerText = `Opzioni selezionate: ${response.options.join(", ")}\nRisposta libera: ${response.input}`;
+            answerText = `Opzioni selezionate: ${response.options.join(
+              ", "
+            )}\nRisposta libera: ${response.input}`;
           } else if (response.input) {
             answerText = `Risposta libera: ${response.input}`;
           } else if (response.options) {
@@ -765,9 +847,13 @@ ${formattedAnswers}
 
 app.use((err, req, res, next) => {
   console.error("UNCAUGHT ERROR:", err);
-  res.status(500).json({ error: "Errore interno del server", details: err?.message });
+  res
+    .status(500)
+    .json({ error: "Errore interno del server", details: err?.message });
 });
 
 // Facoltativo: cattura errori non gestiti a livello process
-process.on("unhandledRejection", (r) => console.error("UNHANDLED REJECTION:", r));
+process.on("unhandledRejection", (r) =>
+  console.error("UNHANDLED REJECTION:", r)
+);
 process.on("uncaughtException", (e) => console.error("UNCAUGHT EXCEPTION:", e));
