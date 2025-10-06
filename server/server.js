@@ -47,11 +47,9 @@ app.options("*", cors());
 app.use(express.json());
 // app.use("/uploads", express.static("/app/uploads"));
 
-// Configura il transporter per email
-// --- SMTP con STARTTLS: prova 587 poi 2525 ---
+// ========== MAILER (SMTP 587/2525 + fallback API) ==========
 const SMTP_HOST = "smtp.mailersend.net";
-const SMTP_PORTS = [587, 2525];
-let smtpIndex = 0;
+const SMTP_PORTS = [587, 2525]; // niente 465 con MailerSend
 
 const createTransporter = (port) =>
   nodemailer.createTransport({
@@ -66,24 +64,85 @@ const createTransporter = (port) =>
     tls: { minVersion: "TLSv1.2", servername: SMTP_HOST },
   });
 
+let smtpIndex = 0;
 let transporter = createTransporter(SMTP_PORTS[smtpIndex]);
 
 const sendViaSmtp = async (mailOptions) => {
+  await transporter.verify();
+  return transporter.sendMail(mailOptions);
+};
+
+const sendViaMailersendApi = async (mailOptions) => {
+  if (!process.env.MAILERSEND_API_TOKEN) {
+    throw new Error("MAILERSEND_API_TOKEN mancante per fallback API");
+  }
+  // mappatura nodemailer -> MailerSend API
+  const body = {
+    from: {
+      email:
+        mailOptions.envelope?.from ||
+        mailOptions.from?.address ||
+        mailOptions.from,
+      name: mailOptions.from?.name || "Basic Adv",
+    },
+    to: [
+      {
+        email: Array.isArray(mailOptions.to)
+          ? mailOptions.to[0]
+          : mailOptions.to,
+      },
+    ],
+    subject: mailOptions.subject,
+    text: mailOptions.text,
+  };
+  if (mailOptions.html) body.html = mailOptions.html;
+  if (mailOptions.replyTo) {
+    const rt =
+      typeof mailOptions.replyTo === "string"
+        ? { email: mailOptions.replyTo }
+        : {
+            email: mailOptions.replyTo.address,
+            name: mailOptions.replyTo.name,
+          };
+    body.reply_to = [rt];
+  }
+
+  return axios.post("https://api.mailersend.com/v1/email", body, {
+    headers: {
+      Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    timeout: 20000,
+  });
+};
+
+// wrapper unico che usi ovunque
+const sendMail = async (mailOptions) => {
   try {
-    await transporter.verify();
-    return await transporter.sendMail(mailOptions);
-  } catch (err) {
-    // se la porta attuale dà timeout/connessione respinta, passa alla successiva (2525)
+    // 1) prova SMTP su 587
+    return await sendViaSmtp(mailOptions);
+  } catch (e1) {
+    // 2) se fallisce, prova SMTP su 2525
     if (
-      ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(err?.code) &&
+      ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(e1?.code) &&
       smtpIndex < SMTP_PORTS.length - 1
     ) {
       smtpIndex++;
       transporter = createTransporter(SMTP_PORTS[smtpIndex]);
-      await transporter.verify();
-      return await transporter.sendMail(mailOptions);
+      try {
+        return await sendViaSmtp(mailOptions);
+      } catch (e2) {
+        // 3) fallback API
+        console.error(
+          "SMTP fallito (2525). Fallback API:",
+          e2?.code || e2?.message
+        );
+        return await sendViaMailersendApi(mailOptions);
+      }
     }
-    throw err;
+    // errori logici (es. 5xx SMTP) -> prova comunque API
+    console.error("SMTP fallito. Fallback API:", e1?.code || e1?.message);
+    return await sendViaMailersendApi(mailOptions);
   }
 };
 
@@ -125,10 +184,7 @@ Team BasicAdv`,
       envelope: { from: process.env.SENDER_EMAIL, to: process.env.ADMIN_EMAIL },
     };
 
-    await Promise.all([
-      sendMail(userMailOptions), // wrapper: SMTP -> API se serve
-      sendMail(adminMailOptions),
-    ]);
+    await Promise.all([sendMail(userMailOptions), sendMail(adminMailOptions)]);
 
     return res.status(200).json({ message: "Email inviate con successo" });
   } catch (error) {
@@ -648,13 +704,11 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     res.json({ question: aiQuestion });
   } catch (error) {
     console.error("Errore in /api/generate:", error);
-    res
-      .status(500)
-      .json({
-        error:
-          error.message ||
-          "Errore nella generazione della domanda. Riprova più tardi.",
-      });
+    res.status(500).json({
+      error:
+        error.message ||
+        "Errore nella generazione della domanda. Riprova più tardi.",
+    });
   }
 });
 
