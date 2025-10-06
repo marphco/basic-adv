@@ -59,31 +59,62 @@ const transporter = nodemailer.createTransport({
 
 // Endpoint per inviare email
 app.post("/api/sendEmails", async (req, res) => {
-  const { contactInfo, sessionId } = req.body;
-  const userEmail = contactInfo.email;
-  const adminEmail = process.env.ADMIN_EMAIL;
-
-  const userMailOptions = {
-    from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
-    to: userEmail,
-    subject: "Grazie per averci contattato!",
-    text: "Ciao,\n\nGrazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\nTeam BasicAdv",
-  };
-
-  const adminMailOptions = {
-    from: `"Basic Adv" <${process.env.SENDER_EMAIL}>`,
-    to: adminEmail,
-    subject: "Nuova richiesta sul sito",
-    text: `Ciao Admin,\n\nHai ricevuto una nuova richiesta!\n\nNome: ${contactInfo.name}\nEmail: ${contactInfo.email}\nTelefono: ${contactInfo.phone || "Non fornito"}\nSession ID: ${sessionId}\n\nControlla i dettagli nel database!`,
-  };
-
   try {
-    await transporter.sendMail(userMailOptions);
-    await transporter.sendMail(adminMailOptions);
-    res.status(200).json({ message: "Email inviate con successo" });
+    const { contactInfo, sessionId } = req.body || {};
+
+    if (!contactInfo?.name || !contactInfo?.email) {
+      return res.status(400).json({ error: "Missing name or email" });
+    }
+    if (!sessionId) {
+      return res.status(400).json({ error: "Missing sessionId" });
+    }
+
+    const userEmail = contactInfo.email;
+    const adminEmail = process.env.ADMIN_EMAIL;
+
+    // verifica connessione/credenziali
+    await transporter.verify();
+
+    const userMailOptions = {
+      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+      to: userEmail,
+      subject: "Grazie per averci contattato!",
+      text: `Ciao ${contactInfo.name},
+grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
+
+Team BasicAdv`,
+    };
+
+    const adminMailOptions = {
+      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+      to: adminEmail,
+      replyTo: userEmail,
+      subject: "Nuova richiesta sul sito",
+      text: `Nuova richiesta:
+- Nome: ${contactInfo.name}
+- Email: ${contactInfo.email}
+- Telefono: ${contactInfo.phone || "Non fornito"}
+- Session ID: ${sessionId}`,
+    };
+
+    await Promise.all([
+      transporter.sendMail(userMailOptions),
+      transporter.sendMail(adminMailOptions),
+    ]);
+
+    return res.status(200).json({ message: "Email inviate con successo" });
   } catch (error) {
-    console.error("Errore invio email:", error);
-    res.status(500).json({ error: "Errore nell’invio delle email" });
+    console.error("SMTP error:", {
+      message: error?.message,
+      code: error?.code,
+      command: error?.command,
+      response: error?.response,
+      responseCode: error?.responseCode,
+    });
+    return res.status(500).json({
+      error: "SMTP_ERROR",
+      details: error?.message || "Unknown SMTP error",
+    });
   }
 });
 
@@ -261,16 +292,11 @@ app.get("/", (req, res) => {
 });
 
 // Crea la cartella uploads se non esiste
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  console.log("Cartella uploads creata:", uploadDir);
-}
+const UPLOAD_DIR = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "/app/uploads");
-  },
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
@@ -718,5 +744,10 @@ ${formattedAnswers}
 });
 
 app.use((err, req, res, next) => {
-  res.status(500).json({ error: "Errore interno del server" });
+  console.error("UNCAUGHT ERROR:", err);
+  res.status(500).json({ error: "Errore interno del server", details: err?.message });
 });
+
+// Facoltativo: cattura errori non gestiti a livello process
+process.on("unhandledRejection", (r) => console.error("UNHANDLED REJECTION:", r));
+process.on("uncaughtException", (e) => console.error("UNCAUGHT EXCEPTION:", e));
