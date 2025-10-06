@@ -15,15 +15,33 @@ dotenv.config();
 
 const app = express();
 
-// Configurazione CORS
-app.use(
-  cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "https://basicadv.com",
+  "https://www.basicadv.com",
+]);
+
+// Aiuta cache/proxy a servire la risposta corretta per Origin diversi
+app.use((req, res, next) => {
+  res.header("Vary", "Origin");
+  next();
+});
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // consente anche richieste senza Origin (cron/server-to-server)
+    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+    return cb(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // ok anche se usi solo Bearer
+}));
+
+// Preflight per tutte le route (deve stare PRIMA delle route)
+app.options("*", cors());
+
 
 app.use(express.json());
 app.use("/uploads", express.static("/app/uploads"));
