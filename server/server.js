@@ -44,24 +44,44 @@ app.options("*", cors());
 
 
 app.use(express.json());
-app.use("/uploads", express.static("/app/uploads"));
+// app.use("/uploads", express.static("/app/uploads"));
 
 // Configura il transporter per email
-const transporter = nodemailer.createTransport({
-  host: "smtp.mailersend.net",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USERNAME,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+// --- SMTP (Mailersend) robusto con fallback ---
+const createTransporter = (use465 = false) =>
+  nodemailer.createTransport({
+    host: "smtp.mailersend.net",
+    port: use465 ? 465 : 587,   // 587 (STARTTLS) -> fallback 465 (TLS)
+    secure: use465,             // true solo su 465
+    auth: {
+      user: process.env.SMTP_USERNAME,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    tls: { minVersion: "TLSv1.2" }, // più compatibile in deploy
+  });
+
+let transporter = createTransporter();
+
+const sendWithFallback = async (mailOptions) => {
+  try {
+    await transporter.verify();
+    return await transporter.sendMail(mailOptions);
+  } catch (err) {
+    // connessione / auth: prova 465 con TLS pieno
+    if (["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(err?.code)) {
+      transporter = createTransporter(true);
+      await transporter.verify();
+      return await transporter.sendMail(mailOptions);
+    }
+    throw err;
+  }
+};
+
 
 // Endpoint per inviare email
 app.post("/api/sendEmails", async (req, res) => {
   try {
     const { contactInfo, sessionId } = req.body || {};
-
     if (!contactInfo?.name || !contactInfo?.email) {
       return res.status(400).json({ error: "Missing name or email" });
     }
@@ -70,24 +90,22 @@ app.post("/api/sendEmails", async (req, res) => {
     }
 
     const userEmail = contactInfo.email;
-    const adminEmail = process.env.ADMIN_EMAIL;
-
-    // verifica connessione/credenziali
-    await transporter.verify();
 
     const userMailOptions = {
-      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // mittente verificato
       to: userEmail,
+      replyTo: userEmail,
       subject: "Grazie per averci contattato!",
       text: `Ciao ${contactInfo.name},
 grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
 
 Team BasicAdv`,
+      envelope: { from: process.env.SENDER_EMAIL, to: userEmail }, // MAIL FROM/RCPT TO espliciti
     };
 
     const adminMailOptions = {
       from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
-      to: adminEmail,
+      to: process.env.ADMIN_EMAIL,
       replyTo: userEmail,
       subject: "Nuova richiesta sul sito",
       text: `Nuova richiesta:
@@ -95,11 +113,12 @@ Team BasicAdv`,
 - Email: ${contactInfo.email}
 - Telefono: ${contactInfo.phone || "Non fornito"}
 - Session ID: ${sessionId}`,
+      envelope: { from: process.env.SENDER_EMAIL, to: process.env.ADMIN_EMAIL },
     };
 
     await Promise.all([
-      transporter.sendMail(userMailOptions),
-      transporter.sendMail(adminMailOptions),
+      sendWithFallback(userMailOptions),
+      sendWithFallback(adminMailOptions),
     ]);
 
     return res.status(200).json({ message: "Email inviate con successo" });
@@ -114,6 +133,7 @@ Team BasicAdv`,
     return res.status(500).json({
       error: "SMTP_ERROR",
       details: error?.message || "Unknown SMTP error",
+      code: error?.code || null,
     });
   }
 });
