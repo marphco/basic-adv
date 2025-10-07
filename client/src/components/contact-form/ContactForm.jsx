@@ -149,7 +149,7 @@ const ContactForm = ({
               onChange={handlePrivacyConsentChange}
               required
             />
-            <span className="consent-text">Accetto il trattamento dei miei dati personali ai sensi della <Link to="/privacy-policy">Privacy Policy</Link>.</span>
+            <span className="consent-text">Accetto il trattamento dei miei dati personali ai sensi della <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>.</span>
           </label>
           {errors.privacyConsent && (
             <span className="error-message">
