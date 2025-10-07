@@ -58,16 +58,19 @@ const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
 };
 
 // --- KELIWEB SMTP (gratis, primario) ---
-const createKeliTransport = () =>
+const createKeliTransport = (port = 587, secure = false) =>
   nodemailer.createTransport({
     host: process.env.KELI_SMTP_HOST || "mail.basicadv.com",
-    port: Number(process.env.KELI_SMTP_PORT || 587), // 587 = STARTTLS
-    secure: false,                   // STARTTLS su 587
-    requireTLS: true,
+    port,
+    secure,                 // false=STARTTLS (587), true=SSL (465)
+    requireTLS: !secure,    // STARTTLS su 587
     auth: {
       user: process.env.KELI_SMTP_USER, // es. info@basicadv.com
       pass: process.env.KELI_SMTP_PASS, // password casella
     },
+    // debug utili in Railway
+    logger: true,
+    debug: true,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
@@ -75,18 +78,41 @@ const createKeliTransport = () =>
   });
 
 const sendViaKeliSMTP = async ({ to, subject, text, html, replyTo }) => {
-  const t = createKeliTransport();
-  await t.verify();
-  return t.sendMail({
-    from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // deve essere = alla casella autenticata
-    to,
-    subject,
-    text,
-    html,
-    replyTo,
-    envelope: { from: process.env.SENDER_EMAIL, to }, // allinea MAIL FROM
-  });
+  // 1) prova 587 STARTTLS
+  try {
+    const t587 = createKeliTransport(587, false);
+    await t587.verify();
+    return await t587.sendMail({
+      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // = KELI_SMTP_USER
+      to,
+      subject,
+      text,
+      html,
+      replyTo,
+      envelope: { from: process.env.SENDER_EMAIL, to },
+    });
+  } catch (e587) {
+    console.error("Keliweb 587 failed:", e587?.code, e587?.message);
+    // 2) tenta 465 SSL (alcuni hosting gradiscono questo)
+    try {
+      const t465 = createKeliTransport(465, true);
+      await t465.verify();
+      return await t465.sendMail({
+        from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+        to,
+        subject,
+        text,
+        html,
+        replyTo,
+        envelope: { from: process.env.SENDER_EMAIL, to },
+      });
+    } catch (e465) {
+      console.error("Keliweb 465 failed:", e465?.code, e465?.message);
+      throw e465; // lascia che il catch dell’endpoint vada agli altri provider
+    }
+  }
 };
+
 
 
 const app = express();
