@@ -43,79 +43,19 @@ if (process.env.SENDGRID_REGION === 'eu') {
 // // piccola diagnostica: NON loggare tutta la chiave
 // console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
 
-// --- EMAIL HTML UTILS (evita che Gmail collassi il testo) ---
-const escapeHtml = (s='') =>
-  s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-const buildUserHtml = (name, token='') => `
-<!doctype html>
-<html lang="it">
-<head>
-<meta charset="utf-8">
-<meta name="x-apple-disable-message-reformatting">
-<meta name="color-scheme" content="light dark">
-<meta name="supported-color-schemes" content="light dark">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Grazie</title>
-</head>
-<body style="margin:0;padding:0;background:#0f0f0f;color:#eaeaea;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
-  <!-- preheader invisibile + token per evitare collapsing nelle conversazioni -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;visibility:hidden">
-    Grazie per averci contattato • ID:${token}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
-  </div>
-
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#171717">
-    <tr>
-      <td style="padding:24px 24px 0">
-        <img src="https://basicadv.com/email/logo-96.png" width="40" height="40" alt="Basic Adv"
-             style="display:block;border-radius:9999px;">
-      </td>
-    </tr>
-
-    <tr>
-      <td style="padding:16px 24px 6px">
-        <h1 style="margin:0;font-size:22px;line-height:1.35;font-weight:700;color:#ffffff">
-          Ciao ${escapeHtml(name)},
-        </h1>
-      </td>
-    </tr>
-
-    <tr>
-      <td style="padding:0 24px 8px;font-size:16px;line-height:1.6;color:#d6d6d6">
-        grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
-      </td>
-    </tr>
-
-    <tr>
-      <td style="padding:12px 24px 28px;font-size:16px;line-height:1.6;color:#ffffff">
-        Basic Adv
-      </td>
-    </tr>
-  </table>
-
-  <!-- padding invisibile anti-trim -->
-  <div style="display:none;white-space:nowrap;line-height:0;opacity:0;max-height:0;overflow:hidden">
-    &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-  </div>
-</body>
-</html>`;
-
-
-const sendViaSendGrid = async ({ to, subject, text, html, replyTo }) => {
-  if (!process.env.SENDGRID_API_KEY) {
-    throw new Error("SENDGRID_API_KEY missing");
-  }
+const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
+  if (!process.env.SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY missing");
   const msg = {
     to,
     from: { email: process.env.SENDER_EMAIL, name: "Basic Adv" },
     subject,
     text,
-    html,       // <<< aggiunto
-    replyTo,    // es. email dell’utente
+    replyTo,
   };
   const [res] = await sgMail.send(msg);
   return res;
 };
+
 
 
 // --- KELIWEB SMTP (gratis, primario) ---
@@ -138,23 +78,20 @@ const createKeliTransport = (port = 587, secure = false) =>
     tls: { minVersion: "TLSv1.2", servername: process.env.KELI_SMTP_HOST || "mail.basicadv.com" },
   });
 
-const sendViaKeliSMTP = async ({ to, subject, text, html, replyTo }) => {
-  // 1) prova 587 STARTTLS
+const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
   try {
     const t587 = createKeliTransport(587, false);
     await t587.verify();
     return await t587.sendMail({
-      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // = KELI_SMTP_USER
+      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
       to,
       subject,
-      text,
-      html,
+      text,        // solo testo
       replyTo,
       envelope: { from: process.env.SENDER_EMAIL, to },
     });
   } catch (e587) {
     console.error("Keliweb 587 failed:", e587?.code, e587?.message);
-    // 2) tenta 465 SSL (alcuni hosting gradiscono questo)
     try {
       const t465 = createKeliTransport(465, true);
       await t465.verify();
@@ -162,18 +99,16 @@ const sendViaKeliSMTP = async ({ to, subject, text, html, replyTo }) => {
         from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
         to,
         subject,
-        text,
-        html,
+        text,      // solo testo
         replyTo,
         envelope: { from: process.env.SENDER_EMAIL, to },
       });
     } catch (e465) {
       console.error("Keliweb 465 failed:", e465?.code, e465?.message);
-      throw e465; // lascia che il catch dell’endpoint vada agli altri provider
+      throw e465;
     }
   }
 };
-
 
 
 const app = express();
@@ -290,59 +225,13 @@ const sendViaResendApi = async (mailOptions) => {
   });
 };
 
-// Invio “smart”: prova MailerSend API; se limit (#MS42204) ripiega su Resend.
-const smartSend = async (mailOptions) => {
-  try {
-    return await sendViaMailerSendApi(mailOptions);
-  } catch (e) {
-    const msg = e?.response?.data?.message || e?.message || "";
-    const isLimit = msg.includes("MS42204");
-    if (isLimit && process.env.RESEND_API_KEY) {
-      console.warn("MailerSend limitato (#MS42204). Fallback su Resend…");
-      return await sendViaResendApi(mailOptions);
-    }
-    throw e;
-  }
-};
-
-// wrapper unico che usi ovunque
-const sendMail = async (mailOptions) => {
-  try {
-    // 1) prova SMTP su 587
-    return await sendViaSmtp(mailOptions);
-  } catch (e1) {
-    // 2) se fallisce, prova SMTP su 2525
-    if (
-      ["ECONNECTION", "ETIMEDOUT", "ESOCKET", "EAUTH"].includes(e1?.code) &&
-      smtpIndex < SMTP_PORTS.length - 1
-    ) {
-      smtpIndex++;
-      transporter = createTransporter(SMTP_PORTS[smtpIndex]);
-      try {
-        return await sendViaSmtp(mailOptions);
-      } catch (e2) {
-        // 3) fallback API
-        console.error(
-          "SMTP fallito (2525). Fallback API:",
-          e2?.code || e2?.message
-        );
-        return await sendViaMailerSendApi(mailOptions);
-      }
-    }
-    // errori logici (es. 5xx SMTP) -> prova comunque API
-    console.error("SMTP fallito. Fallback API:", e1?.code || e1?.message);
-    return await sendViaMailerSendApi(mailOptions);
-  }
-};
-
 // --- Relay HTTPS su mailer.basicadv.com (match con send.php) ---
-async function sendViaKeliWebhook({ to, subject, text, html, replyTo }) {
+async function sendViaKeliWebhook({ to, subject, text, replyTo }) {
   if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
     throw new Error("KELI_WEBHOOK_URL o KELI_WEBHOOK_SECRET mancanti");
   }
-  const payload = { to, subject, text, html, replyTo };
+  const payload = { to, subject, text, replyTo };   // niente html
 
-  // Importante: firmo il *raw* che invio
   const raw = JSON.stringify(payload);
   const ts  = Math.floor(Date.now() / 1000).toString();
   const sig = crypto
@@ -401,17 +290,18 @@ app.post("/api/sendEmails", async (req, res) => {
     const userEmail  = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    const token = (sessionId || Date.now().toString()).slice(-8); // solo per variare il preheader
-const userMsg = {
-  subject: "Grazie per averci contattato!",
-  text:
-    `Ciao ${contactInfo.name},\n` +
-    `grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\n` +
-    `Basic.`,
-  html: buildUserHtml(contactInfo.name, token),
-  replyTo: userEmail,
-};
+    // TESTO ESATTAMENTE COME RICHIESTO
+    const userText =
+      `Ciao ${contactInfo.name},\n\n` +
+      `Grazie per aver compilato il form sul nostro sito.\n` +
+      `Ti contatteremo presto!\n\n` +
+      `Basic Adv`;
 
+    const userMsg = {
+      subject: "Grazie per averci contattato!",
+      text: userText,
+      replyTo: userEmail,
+    };
 
     const adminMsg = {
       subject: "Nuova richiesta sul sito",
@@ -424,7 +314,7 @@ const userMsg = {
       replyTo: userEmail,
     };
 
-    // 1) Relay HTTPS (primario, gratis)
+    // 1) Relay HTTPS (primario)
     try {
       await Promise.all([
         sendViaKeliWebhook({ to: userEmail,  ...userMsg }),
@@ -435,7 +325,7 @@ const userMsg = {
       console.error("Keliweb HTTPS relay failed:", relayErr?.response?.data || relayErr?.message);
     }
 
-    // 2) SendGrid (se configurato)
+    // 2) SendGrid (fallback)
     try {
       await Promise.all([
         sendViaSendGrid({ to: userEmail,  ...userMsg }),
@@ -450,7 +340,7 @@ const userMsg = {
       });
     }
 
-    // 3) SMTP / altri fallback tuoi
+    // 3) SMTP Keli (ultimo fallback)
     try {
       await Promise.all([
         sendViaKeliSMTP({ to: userEmail,  ...userMsg, from: { name: "Basic Adv", address: process.env.SENDER_EMAIL } }),
@@ -461,9 +351,7 @@ const userMsg = {
       console.error("SMTP fallback failed:", smtpErr?.message || smtpErr?.code, smtpErr?.response || "");
     }
 
-    // Se sono falliti tutti
     return res.status(502).json({ error: "No mail provider available right now" });
-
   } catch (error) {
     console.error("UNEXPECTED /api/sendEmails error:", error);
     return res.status(500).json({
@@ -472,7 +360,6 @@ const userMsg = {
     });
   }
 });
-
 
 // Endpoint login
 app.post("/api/login", (req, res) => {
