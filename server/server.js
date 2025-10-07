@@ -480,7 +480,7 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
         "sessionId formData questions answers projectPlan createdAt servicesQueue feedback"
       )
       .lean();
-    console.log("Dati inviati al frontend:", logs);
+    // console.log("Dati inviati al frontend:", logs);
     res.json(logs);
   } catch (error) {
     console.error("Errore:", error);
