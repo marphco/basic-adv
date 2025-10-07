@@ -296,6 +296,34 @@ const sendMail = async (mailOptions) => {
   }
 };
 
+// --- Relay HTTPS su mailer.basicadv.com (match con send.php) ---
+async function sendViaKeliWebhook({ to, subject, text, html, replyTo }) {
+  if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
+    throw new Error("KELI_WEBHOOK_URL o KELI_WEBHOOK_SECRET mancanti");
+  }
+
+  const payload = { to, subject, text, html, replyTo };
+
+  // IMPORTANTISSIMO: firmo il *raw JSON* e invio *lo stesso raw*,
+  // così lato PHP (php://input) coincide bit-per-bit.
+  const raw = JSON.stringify(payload);
+  const ts  = Math.floor(Date.now() / 1000).toString();
+  const sig = require("crypto")
+    .createHmac("sha256", process.env.KELI_WEBHOOK_SECRET)
+    .update(`${ts}.${raw}`)
+    .digest("base64");
+
+  const { data } = await axios.post(process.env.KELI_WEBHOOK_URL, raw, {
+    headers: {
+      "Content-Type": "application/json",
+      "X-Timestamp": ts,
+      "X-Signature": sig,
+    },
+    timeout: 15000,
+  });
+  return data;
+}
+
 app.post("/api/sendEmails", async (req, res) => {
   try {
     const { contactInfo, sessionId } = req.body || {};
@@ -306,50 +334,75 @@ app.post("/api/sendEmails", async (req, res) => {
       return res.status(400).json({ error: "Missing sessionId" });
     }
 
-    const userEmail = contactInfo.email;
+    const userEmail  = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
     const userMsg = {
       subject: "Grazie per averci contattato!",
-      text: `Ciao ${contactInfo.name},
-grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
-
-Team BasicAdv`,
+      text:
+        `Ciao ${contactInfo.name},\n` +
+        `grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\n` +
+        `Team BasicAdv`,
       replyTo: userEmail,
     };
+
     const adminMsg = {
       subject: "Nuova richiesta sul sito",
-      text: `Nuova richiesta:
-- Nome: ${contactInfo.name}
-- Email: ${contactInfo.email}
-- Telefono: ${contactInfo.phone || "Non fornito"}
-- Session ID: ${sessionId}`,
+      text:
+        `Nuova richiesta:\n` +
+        `- Nome: ${contactInfo.name}\n` +
+        `- Email: ${contactInfo.email}\n` +
+        `- Telefono: ${contactInfo.phone || "Non fornito"}\n` +
+        `- Session ID: ${sessionId}`,
       replyTo: userEmail,
     };
 
-    // 0) Keliweb via HTTPS (funziona anche se il PaaS blocca SMTP)
+    // 1) Relay HTTPS (primario, gratis)
     try {
       await Promise.all([
         sendViaKeliWebhook({ to: userEmail,  ...userMsg }),
         sendViaKeliWebhook({ to: adminEmail, ...adminMsg }),
       ]);
-      return res.status(200).json({ message: "Email inviate (Keliweb HTTPS relay)" });
-    } catch (webErr) {
-      console.error("Keliweb HTTPS relay failed:", webErr?.response?.data || webErr?.message);
+      return res.status(200).json({ message: "Email inviate (HTTPS relay)" });
+    } catch (relayErr) {
+      console.error("Keliweb HTTPS relay failed:", relayErr?.response?.data || relayErr?.message);
     }
 
-    // 1) (opzionale) Keliweb SMTP diretto — puoi lasciarlo, ma su Railway di solito time-out
-    // try { ...sendViaKeliSMTP(...) } catch(e) { console.error(...) }
+    // 2) SendGrid (se configurato)
+    try {
+      await Promise.all([
+        sendViaSendGrid({ to: userEmail,  ...userMsg }),
+        sendViaSendGrid({ to: adminEmail, ...adminMsg }),
+      ]);
+      return res.status(200).json({ message: "Email inviate (SendGrid)" });
+    } catch (sgErr) {
+      console.error("SendGrid failed:", {
+        status: sgErr?.code || sgErr?.response?.statusCode,
+        body: sgErr?.response?.body,
+        message: sgErr?.message,
+      });
+    }
 
-    // 2) (opzionale) SendGrid — al momento hai “Maximum credits exceeded”
-    // try { ...sendViaSendGrid(...) } catch(e) { console.error(...) }
+    // 3) SMTP / altri fallback tuoi
+    try {
+      await Promise.all([
+        sendViaKeliSMTP({ to: userEmail,  ...userMsg, from: { name: "Basic Adv", address: process.env.SENDER_EMAIL } }),
+        sendViaKeliSMTP({ to: adminEmail, ...adminMsg, from: { name: "Basic Adv", address: process.env.SENDER_EMAIL } }),
+      ]);
+      return res.status(200).json({ message: "Email inviate (SMTP fallback)" });
+    } catch (smtpErr) {
+      console.error("SMTP fallback failed:", smtpErr?.message || smtpErr?.code, smtpErr?.response || "");
+    }
 
-    // 3) Evita MailerSend API se è in quota 422: altrimenti torni sempre 500
+    // Se sono falliti tutti
     return res.status(502).json({ error: "No mail provider available right now" });
 
   } catch (error) {
     console.error("UNEXPECTED /api/sendEmails error:", error);
-    return res.status(500).json({ error: "INTERNAL_ERROR", details: error?.message });
+    return res.status(500).json({
+      error: "INTERNAL_ERROR",
+      details: error?.message || "Unexpected error",
+    });
   }
 });
 
