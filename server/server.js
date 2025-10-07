@@ -10,8 +10,30 @@ const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+const sgMail = require("@sendgrid/mail");
 
 dotenv.config();
+
+// SendGrid setup (primario)
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
+const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error("SENDGRID_API_KEY missing");
+  }
+  const msg = {
+    to,
+    from: { email: process.env.SENDER_EMAIL, name: "Basic Adv" },
+    subject,
+    text,
+    replyTo, // es. email dell’utente
+  };
+  // sgMail restituisce un array di response
+  const [res] = await sgMail.send(msg);
+  return res;
+};
 
 const app = express();
 
@@ -72,46 +94,51 @@ const sendViaSmtp = async (mailOptions) => {
   return transporter.sendMail(mailOptions);
 };
 
-const sendViaMailersendApi = async (mailOptions) => {
-  if (!process.env.MAILERSEND_API_TOKEN) {
-    throw new Error("MAILERSEND_API_TOKEN mancante per fallback API");
-  }
-
-  // mappa nodemailer -> MailerSend API
+// --- MailerSend via API (già lo stai usando; lascio qui una versione compatta) ---
+const sendViaMailerSendApi = async (mailOptions) => {
   const body = {
-    from: {
-      email: (mailOptions.envelope?.from) || (mailOptions.from?.address || mailOptions.from),
-      name:  (mailOptions.from?.name) || "Basic Adv",
-    },
+    from: { email: process.env.SENDER_EMAIL, name: mailOptions.from?.name || "Basic Adv" },
     to: [{ email: Array.isArray(mailOptions.to) ? mailOptions.to[0] : mailOptions.to }],
     subject: mailOptions.subject,
     text: mailOptions.text,
+    html: mailOptions.html,
+    reply_to: { email: (mailOptions.replyTo?.address || mailOptions.replyTo) || undefined },
   };
-  if (mailOptions.html) body.html = mailOptions.html;
+  await axios.post("https://api.mailersend.com/v1/email", body, {
+    headers: { Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}` },
+    timeout: 20000,
+  });
+};
 
-  if (mailOptions.replyTo) {
-    const rt = typeof mailOptions.replyTo === "string"
-      ? { email: mailOptions.replyTo }
-      : { email: mailOptions.replyTo.address, name: mailOptions.replyTo.name };
-    body.reply_to = rt; // <-- oggetto, NON array
-  }
+// --- Resend come fallback API ---
+const sendViaResendApi = async (mailOptions) => {
+  if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY mancante");
+  const body = {
+    from: `${mailOptions.from?.name || "Basic Adv"} <${mailOptions.from?.address || process.env.SENDER_EMAIL}>`,
+    to: [Array.isArray(mailOptions.to) ? mailOptions.to[0] : mailOptions.to],
+    subject: mailOptions.subject,
+    text: mailOptions.text,
+    html: mailOptions.html,
+    reply_to: (mailOptions.replyTo?.address || mailOptions.replyTo) || undefined,
+  };
+  await axios.post("https://api.resend.com/emails", body, {
+    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
+    timeout: 20000,
+  });
+};
 
+// Invio “smart”: prova MailerSend API; se limit (#MS42204) ripiega su Resend.
+const smartSend = async (mailOptions) => {
   try {
-    return await axios.post("https://api.mailersend.com/v1/email", body, {
-      headers: {
-        Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      timeout: 20000,
-    });
-  } catch (err) {
-    if (err.response) {
-      console.error("MailerSend API 4xx/5xx:", {
-        status: err.response.status,
-        data: err.response.data,   // <— qui vedrai l’errore preciso (campo sbagliato, from non verificato, ecc.)
-      });
+    return await sendViaMailerSendApi(mailOptions);
+  } catch (e) {
+    const msg = e?.response?.data?.message || e?.message || "";
+    const isLimit = msg.includes("MS42204");
+    if (isLimit && process.env.RESEND_API_KEY) {
+      console.warn("MailerSend limitato (#MS42204). Fallback su Resend…");
+      return await sendViaResendApi(mailOptions);
     }
-    throw err;
+    throw e;
   }
 };
 
@@ -158,63 +185,84 @@ app.post("/api/sendEmails", async (req, res) => {
     }
 
     const userEmail = contactInfo.email;
+    const adminEmail = process.env.ADMIN_EMAIL;
 
-    const userMailOptions = {
-      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // mittente verificato
-      to: userEmail,
-      replyTo: userEmail,
+    // messaggi (stesso contenuto per entrambi i provider)
+    const userMsg = {
       subject: "Grazie per averci contattato!",
       text: `Ciao ${contactInfo.name},
 grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
 
 Team BasicAdv`,
-      envelope: { from: process.env.SENDER_EMAIL, to: userEmail }, // MAIL FROM/RCPT TO espliciti
-    };
-
-    const adminMailOptions = {
-      from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
-      to: process.env.ADMIN_EMAIL,
       replyTo: userEmail,
+    };
+    const adminMsg = {
       subject: "Nuova richiesta sul sito",
       text: `Nuova richiesta:
 - Nome: ${contactInfo.name}
 - Email: ${contactInfo.email}
 - Telefono: ${contactInfo.phone || "Non fornito"}
 - Session ID: ${sessionId}`,
-      envelope: { from: process.env.SENDER_EMAIL, to: process.env.ADMIN_EMAIL },
+      replyTo: userEmail,
     };
 
-    await Promise.all([sendMail(userMailOptions), sendMail(adminMailOptions)]);
+    // 1) PROVA SENDGRID (primario)
+    try {
+      await Promise.all([
+        sendViaSendGrid({ to: userEmail, ...userMsg }),
+        sendViaSendGrid({ to: adminEmail, ...adminMsg }),
+      ]);
+      return res.status(200).json({ message: "Email inviate (SendGrid)" });
+    } catch (sgErr) {
+      console.error("SendGrid failed:", {
+        status: sgErr?.code || sgErr?.response?.statusCode,
+        body: sgErr?.response?.body,
+        message: sgErr?.message,
+      });
+    }
 
-    return res.status(200).json({ message: "Email inviate con successo" });
+    // 2) FALLBACK: MailerSend via SMTP (riusa il tuo transporter esistente)
+    try {
+      await Promise.all([
+        sendWithFallback({
+          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+          to: userEmail,
+          subject: userMsg.subject,
+          text: userMsg.text,
+          replyTo: userEmail,
+          envelope: { from: process.env.SENDER_EMAIL, to: userEmail },
+        }),
+        sendWithFallback({
+          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+          to: adminEmail,
+          subject: adminMsg.subject,
+          text: adminMsg.text,
+          replyTo: userEmail,
+          envelope: { from: process.env.SENDER_EMAIL, to: adminEmail },
+        }),
+      ]);
+      return res.status(200).json({ message: "Email inviate (SMTP fallback)" });
+    } catch (smtpErr) {
+      console.error("SMTP fallback failed:", {
+        message: smtpErr?.message,
+        code: smtpErr?.code,
+        response: smtpErr?.response,
+      });
+      return res.status(500).json({
+        error: "SMTP_ERROR",
+        details: smtpErr?.message || "Unknown SMTP error",
+        code: smtpErr?.code || null,
+      });
+    }
   } catch (error) {
-    console.error("SMTP error:", {
-      message: error?.message,
-      code: error?.code,
-      command: error?.command,
-      response: error?.response,
-      responseCode: error?.responseCode,
-    });
+    console.error("UNEXPECTED /api/sendEmails error:", error);
     return res.status(500).json({
-      error: "SMTP_ERROR",
-      details: error?.message || "Unknown SMTP error",
-      code: error?.code || null,
+      error: "INTERNAL_ERROR",
+      details: error?.message || "Unexpected error",
     });
   }
 });
 
-// Middleware per autenticazione JWT
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Accesso negato" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: "Token non valido" });
-    req.user = user;
-    next();
-  });
-};
 
 // Endpoint login
 app.post("/api/login", (req, res) => {
