@@ -40,11 +40,49 @@ if (process.env.SENDGRID_REGION === 'eu') {
   try { sgMail.setDataResidency('eu'); } catch {}
 }
 
-// piccola diagnostica: NON loggare tutta la chiave
-console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
+// // piccola diagnostica: NON loggare tutta la chiave
+// console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
+
+// --- EMAIL HTML UTILS (evita che Gmail collassi il testo) ---
+const escapeHtml = (s='') =>
+  s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+const buildUserHtml = (name, token='') => `
+<!doctype html><html><head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Grazie</title>
+</head>
+<body style="margin:0;padding:0;background:#111;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+  <!-- preheader invisibile: contiene un ID per rendere ogni mail diversa -->
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;visibility:hidden">
+    Grazie per averci contattato • ID:${token}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#1a1a1a">
+    <tr>
+      <td style="padding:24px 24px 0">
+        <img src="https://www.basicadv.com/favicon-192.png" width="40" height="40" alt="Basic Adv" style="border-radius:9999px;display:block">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:16px 24px 24px;font-size:16px;line-height:1.55">
+        <p style="margin:0 0 12px">Ciao ${escapeHtml(name)},</p>
+        <p style="margin:0 0 12px">grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!</p>
+        <p style="margin:24px 0 0">Basic.</p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- padding invisibile anti-trim -->
+  <div style="display:none;white-space:nowrap;line-height:0;opacity:0;max-height:0;overflow:hidden">
+    &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+  </div>
+</body></html>`;
 
 
-const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
+const sendViaSendGrid = async ({ to, subject, text, html, replyTo }) => {
   if (!process.env.SENDGRID_API_KEY) {
     throw new Error("SENDGRID_API_KEY missing");
   }
@@ -53,12 +91,13 @@ const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
     from: { email: process.env.SENDER_EMAIL, name: "Basic Adv" },
     subject,
     text,
-    replyTo, // es. email dell’utente
+    html,       // <<< aggiunto
+    replyTo,    // es. email dell’utente
   };
-  // sgMail restituisce un array di response
   const [res] = await sgMail.send(msg);
   return res;
 };
+
 
 // --- KELIWEB SMTP (gratis, primario) ---
 const createKeliTransport = (port = 587, secure = false) =>
@@ -72,8 +111,8 @@ const createKeliTransport = (port = 587, secure = false) =>
       pass: process.env.KELI_SMTP_PASS, // password casella
     },
     // debug utili in Railway
-    logger: true,
-    debug: true,
+    logger: false,
+    debug: false,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
@@ -343,14 +382,17 @@ app.post("/api/sendEmails", async (req, res) => {
     const userEmail  = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    const userMsg = {
-      subject: "Grazie per averci contattato!",
-      text:
-        `Ciao ${contactInfo.name},\n` +
-        `grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\n` +
-        `Team BasicAdv`,
-      replyTo: userEmail,
-    };
+    const token = (sessionId || Date.now().toString()).slice(-8); // solo per variare il preheader
+const userMsg = {
+  subject: "Grazie per averci contattato!",
+  text:
+    `Ciao ${contactInfo.name},\n` +
+    `grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!\n\n` +
+    `Basic.`,
+  html: buildUserHtml(contactInfo.name, token),
+  replyTo: userEmail,
+};
+
 
     const adminMsg = {
       subject: "Nuova richiesta sul sito",
