@@ -12,7 +12,7 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
-const mime = require('mime-types');
+const mime = require("mime-types");
 
 dotenv.config();
 
@@ -29,22 +29,24 @@ function authenticateToken(req, res, next) {
   });
 }
 
-
 // SendGrid setup (primario)
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
 // opzionale, solo se usi EU subuser
-if (process.env.SENDGRID_REGION === 'eu') {
-  try { sgMail.setDataResidency('eu'); } catch {}
+if (process.env.SENDGRID_REGION === "eu") {
+  try {
+    sgMail.setDataResidency("eu");
+  } catch {}
 }
 
 // // piccola diagnostica: NON loggare tutta la chiave
 // console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
 
 const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
-  if (!process.env.SENDGRID_API_KEY) throw new Error("SENDGRID_API_KEY missing");
+  if (!process.env.SENDGRID_API_KEY)
+    throw new Error("SENDGRID_API_KEY missing");
   const msg = {
     to,
     from: { email: process.env.SENDER_EMAIL, name: "Basic Adv" },
@@ -56,15 +58,13 @@ const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
   return res;
 };
 
-
-
 // --- KELIWEB SMTP (gratis, primario) ---
 const createKeliTransport = (port = 587, secure = false) =>
   nodemailer.createTransport({
     host: process.env.KELI_SMTP_HOST || "mail.basicadv.com",
     port,
-    secure,                 // false=STARTTLS (587), true=SSL (465)
-    requireTLS: !secure,    // STARTTLS su 587
+    secure, // false=STARTTLS (587), true=SSL (465)
+    requireTLS: !secure, // STARTTLS su 587
     auth: {
       user: process.env.KELI_SMTP_USER, // es. info@basicadv.com
       pass: process.env.KELI_SMTP_PASS, // password casella
@@ -75,7 +75,10 @@ const createKeliTransport = (port = 587, secure = false) =>
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
-    tls: { minVersion: "TLSv1.2", servername: process.env.KELI_SMTP_HOST || "mail.basicadv.com" },
+    tls: {
+      minVersion: "TLSv1.2",
+      servername: process.env.KELI_SMTP_HOST || "mail.basicadv.com",
+    },
   });
 
 const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
@@ -86,7 +89,7 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
       from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
       to,
       subject,
-      text,        // solo testo
+      text, // solo testo
       replyTo,
       envelope: { from: process.env.SENDER_EMAIL, to },
     });
@@ -99,7 +102,7 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
         from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
         to,
         subject,
-        text,      // solo testo
+        text, // solo testo
         replyTo,
         envelope: { from: process.env.SENDER_EMAIL, to },
       });
@@ -109,7 +112,6 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
     }
   }
 };
-
 
 const app = express();
 
@@ -122,12 +124,14 @@ const allowedOrigins = new Set([
 
 // === Upload dir su volume persistente ===
 const UPLOAD_DIR =
-  process.env.UPLOAD_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data/uploads';
+  process.env.UPLOAD_DIR ||
+  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+  "/data/uploads";
 
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 // Static serve (ok per anteprime, non forza il download)
-app.use('/uploads', express.static(UPLOAD_DIR));
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 // Aiuta cache/proxy a servire la risposta corretta per Origin diversi
 app.use((req, res, next) => {
@@ -230,10 +234,10 @@ async function sendViaKeliWebhook({ to, subject, text, replyTo }) {
   if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
     throw new Error("KELI_WEBHOOK_URL o KELI_WEBHOOK_SECRET mancanti");
   }
-  const payload = { to, subject, text, replyTo };   // niente html
+  const payload = { to, subject, text, replyTo }; // niente html
 
   const raw = JSON.stringify(payload);
-  const ts  = Math.floor(Date.now() / 1000).toString();
+  const ts = Math.floor(Date.now() / 1000).toString();
   const sig = crypto
     .createHmac("sha256", process.env.KELI_WEBHOOK_SECRET)
     .update(`${ts}.${raw}`)
@@ -287,19 +291,20 @@ app.post("/api/sendEmails", async (req, res) => {
       return res.status(400).json({ error: "Missing sessionId" });
     }
 
-    const userEmail  = contactInfo.email;
+    const userEmail = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
+    const ZWSP = "\u200B"; // carattere invisibile per evitare il “…” di Gmail
+
     // TESTO ESATTAMENTE COME RICHIESTO
-    const userText =
-  `Ciao ${contactInfo.name},\n\n` +
-  `Grazie per aver compilato il form sul nostro sito.${ZWSP}\n` +
-  `Ti contatteremo presto!\n\n` +
-  `Basic Adv${ZWSP}`;
-
-
-      const ZWSP = "\u200B"; // carattere invisibile per evitare il “…” di Gmail
-
+    const userText = [
+      `Ciao ${contactInfo.name},`,
+      "",
+      `Grazie per aver compilato il form sul nostro sito.${ZWSP}`,
+      "Ti contatteremo presto!",
+      "",
+      `Basic Adv${ZWSP}`,
+    ].join("\n");
 
     const userMsg = {
       subject: "Grazie per averci contattato!",
@@ -321,18 +326,21 @@ app.post("/api/sendEmails", async (req, res) => {
     // 1) Relay HTTPS (primario)
     try {
       await Promise.all([
-        sendViaKeliWebhook({ to: userEmail,  ...userMsg }),
+        sendViaKeliWebhook({ to: userEmail, ...userMsg }),
         sendViaKeliWebhook({ to: adminEmail, ...adminMsg }),
       ]);
       return res.status(200).json({ message: "Email inviate (HTTPS relay)" });
     } catch (relayErr) {
-      console.error("Keliweb HTTPS relay failed:", relayErr?.response?.data || relayErr?.message);
+      console.error(
+        "Keliweb HTTPS relay failed:",
+        relayErr?.response?.data || relayErr?.message
+      );
     }
 
     // 2) SendGrid (fallback)
     try {
       await Promise.all([
-        sendViaSendGrid({ to: userEmail,  ...userMsg }),
+        sendViaSendGrid({ to: userEmail, ...userMsg }),
         sendViaSendGrid({ to: adminEmail, ...adminMsg }),
       ]);
       return res.status(200).json({ message: "Email inviate (SendGrid)" });
@@ -347,15 +355,29 @@ app.post("/api/sendEmails", async (req, res) => {
     // 3) SMTP Keli (ultimo fallback)
     try {
       await Promise.all([
-        sendViaKeliSMTP({ to: userEmail,  ...userMsg, from: { name: "Basic Adv", address: process.env.SENDER_EMAIL } }),
-        sendViaKeliSMTP({ to: adminEmail, ...adminMsg, from: { name: "Basic Adv", address: process.env.SENDER_EMAIL } }),
+        sendViaKeliSMTP({
+          to: userEmail,
+          ...userMsg,
+          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+        }),
+        sendViaKeliSMTP({
+          to: adminEmail,
+          ...adminMsg,
+          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+        }),
       ]);
       return res.status(200).json({ message: "Email inviate (SMTP fallback)" });
     } catch (smtpErr) {
-      console.error("SMTP fallback failed:", smtpErr?.message || smtpErr?.code, smtpErr?.response || "");
+      console.error(
+        "SMTP fallback failed:",
+        smtpErr?.message || smtpErr?.code,
+        smtpErr?.response || ""
+      );
     }
 
-    return res.status(502).json({ error: "No mail provider available right now" });
+    return res
+      .status(502)
+      .json({ error: "No mail provider available right now" });
   } catch (error) {
     console.error("UNEXPECTED /api/sendEmails error:", error);
     return res.status(500).json({
@@ -400,23 +422,27 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
 
 // utils piccola protezione path traversal
 const safeJoin = (base, file) => {
-  const p = path.normalize(file).replace(/^(\.\.(\/|\\|$))+/, '');
+  const p = path.normalize(file).replace(/^(\.\.(\/|\\|$))+/, "");
   return path.join(base, p);
 };
 
-app.get('/api/download/:filename', (req, res) => {
+app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = safeJoin(UPLOAD_DIR, filename);
 
   if (!fs.existsSync(filePath)) {
-    console.error('File non trovato:', filePath);
-    return res.status(404).json({ error: 'File non trovato' });
+    console.error("File non trovato:", filePath);
+    return res.status(404).json({ error: "File non trovato" });
   }
 
-  const ctype = mime.contentType(path.extname(filename)) || 'application/octet-stream';
-  res.setHeader('Content-Type', ctype);
+  const ctype =
+    mime.contentType(path.extname(filename)) || "application/octet-stream";
+  res.setHeader("Content-Type", ctype);
   // Forziamo il download anche cross-origin
-  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${encodeURIComponent(filename)}"`
+  );
   return res.sendFile(filePath);
 });
 
