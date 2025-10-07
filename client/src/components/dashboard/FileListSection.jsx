@@ -12,17 +12,21 @@ const FileListSection = ({ fileList, deleteFile, API_URL }) => (
               <div className="file-name">{file.name}</div>
               <div className="file-details">
                 {Math.round(file.size / 1024)} KB -{" "}
-                {formatDate(new Date(file.lastModified))} {/* Usiamo formatDate */}
+                {formatDate(new Date(file.lastModified))}{" "}
+                {/* Usiamo formatDate */}
               </div>
             </div>
             <div className="button-group">
               <a
-                href={`${API_URL}/api/download/${file.name}`}
+                href={`${API_URL}/api/download/${encodeURIComponent(
+                  file.name
+                )}`}
                 download
                 className="download-btn"
               >
                 Scarica
               </a>
+
               <button
                 onClick={() => deleteFile(file.name)}
                 className="delete-btn"

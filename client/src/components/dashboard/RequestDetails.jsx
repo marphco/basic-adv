@@ -171,14 +171,20 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
                   <>
                     <ul>
                       {q.options.map((option, optIndex) => {
-                        const normalizedQuestion = normalizeQuestionKey(q.question);
+                        const normalizedQuestion = normalizeQuestionKey(
+                          q.question
+                        );
                         const isSelected =
-                          request.answers[normalizedQuestion]?.options?.includes(option);
+                          request.answers[
+                            normalizedQuestion
+                          ]?.options?.includes(option);
                         return (
                           <li
                             key={optIndex}
                             className={
-                              isSelected ? "answer-badge selected" : "answer-badge"
+                              isSelected
+                                ? "answer-badge selected"
+                                : "answer-badge"
                             }
                           >
                             {option}
@@ -186,23 +192,30 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
                         );
                       })}
                     </ul>
-                    {request.answers[normalizeQuestionKey(q.question)]?.input && (
+                    {request.answers[normalizeQuestionKey(q.question)]
+                      ?.input && (
                       <p className="answer-badge selected">
-                        {request.answers[normalizeQuestionKey(q.question)].input}
+                        {
+                          request.answers[normalizeQuestionKey(q.question)]
+                            .input
+                        }
                       </p>
                     )}
                   </>
                 ) : (
                   <p
                     className={
-                      request.answers[normalizeQuestionKey(q.question)]?.input ||
-                      request.answers[normalizeQuestionKey(q.question)]?.options?.length > 0
+                      request.answers[normalizeQuestionKey(q.question)]
+                        ?.input ||
+                      request.answers[normalizeQuestionKey(q.question)]?.options
+                        ?.length > 0
                         ? "answer-badge selected"
                         : "answer-badge"
                     }
                   >
                     {request.answers[normalizeQuestionKey(q.question)]?.input ||
-                      request.answers[normalizeQuestionKey(q.question)]?.options?.[0] ||
+                      request.answers[normalizeQuestionKey(q.question)]
+                        ?.options?.[0] ||
                       "Nessuna risposta"}
                   </p>
                 )}
@@ -223,7 +236,9 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL }) => {
             <h2>Allegati</h2>
             {request.formData.currentLogo ? (
               <a
-                href={`${API_URL}/api/download/${request.formData.currentLogo}`}
+                href={`${API_URL}/api/download/${encodeURIComponent(
+                  request.formData.currentLogo
+                )}`}
                 download
                 className="download-btn"
               >

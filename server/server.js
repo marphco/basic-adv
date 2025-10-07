@@ -12,6 +12,7 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
+const mime = require('mime-types');
 
 dotenv.config();
 
@@ -126,10 +127,14 @@ const allowedOrigins = new Set([
   "https://www.basicadv.com",
 ]);
 
-// Cartella upload UNICA
-const UPLOAD_DIR = path.join(__dirname, "uploads");
+// === Upload dir su volume persistente ===
+const UPLOAD_DIR =
+  process.env.UPLOAD_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || '/data/uploads';
+
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use("/uploads", express.static(UPLOAD_DIR));
+
+// Static serve (ok per anteprime, non forza il download)
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // Aiuta cache/proxy a servire la risposta corretta per Origin diversi
 app.use((req, res, next) => {
@@ -441,19 +446,26 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
   }
 });
 
-// Endpoint per scaricare i file allegati
-app.get("/api/download/:filename", (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(UPLOAD_DIR, filename);
+// utils piccola protezione path traversal
+const safeJoin = (base, file) => {
+  const p = path.normalize(file).replace(/^(\.\.(\/|\\|$))+/, '');
+  return path.join(base, p);
+};
 
-  if (fs.existsSync(filePath)) {
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.sendFile(filePath);
-  } else {
-    console.error("File non trovato:", filePath);
-    res.status(404).json({ error: "File non trovato" });
+app.get('/api/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = safeJoin(UPLOAD_DIR, filename);
+
+  if (!fs.existsSync(filePath)) {
+    console.error('File non trovato:', filePath);
+    return res.status(404).json({ error: 'File non trovato' });
   }
+
+  const ctype = mime.contentType(path.extname(filename)) || 'application/octet-stream';
+  res.setHeader('Content-Type', ctype);
+  // Forziamo il download anche cross-origin
+  res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+  return res.sendFile(filePath);
 });
 
 // Endpoint per elencare i file
