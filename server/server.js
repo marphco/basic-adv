@@ -14,7 +14,7 @@ const sgMail = require("@sendgrid/mail");
 
 dotenv.config();
 
-// ---- JWT middleware (deve stare PRIMA delle route che lo usano) ----
+// ---- JWT middleware ----
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -31,6 +31,15 @@ function authenticateToken(req, res, next) {
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
+
+// opzionale, solo se usi EU subuser
+if (process.env.SENDGRID_REGION === 'eu') {
+  try { sgMail.setDataResidency('eu'); } catch {}
+}
+
+// piccola diagnostica: NON loggare tutta la chiave
+console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
+
 
 const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
   if (!process.env.SENDGRID_API_KEY) {
