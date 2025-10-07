@@ -28,30 +28,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// --- Keliweb via HTTPS, con firma HMAC anti–abuso ---
-const sendViaKeliWebhook = async ({ to, subject, text, replyTo }) => {
-  if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
-    throw new Error("KELI_WEBHOOK_URL/KELI_WEBHOOK_SECRET mancanti");
-  }
-
-  const body = { to, subject, text, replyTo };
-  const ts = Math.floor(Date.now() / 1000).toString();          // epoch sec (anti replay)
-  const payload = `${ts}.${JSON.stringify(body)}`;
-  const sig = crypto
-    .createHmac("sha256", process.env.KELI_WEBHOOK_SECRET)
-    .update(payload)
-    .digest("base64");
-
-  await axios.post(process.env.KELI_WEBHOOK_URL, body, {
-    timeout: 15000,
-    headers: {
-      "X-Timestamp": ts,
-      "X-Signature": sig,
-      "Content-Type": "application/json",
-    },
-  });
-};
-
 
 // SendGrid setup (primario)
 if (process.env.SENDGRID_API_KEY) {
@@ -301,14 +277,12 @@ async function sendViaKeliWebhook({ to, subject, text, html, replyTo }) {
   if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
     throw new Error("KELI_WEBHOOK_URL o KELI_WEBHOOK_SECRET mancanti");
   }
-
   const payload = { to, subject, text, html, replyTo };
 
-  // IMPORTANTISSIMO: firmo il *raw JSON* e invio *lo stesso raw*,
-  // così lato PHP (php://input) coincide bit-per-bit.
+  // Importante: firmo il *raw* che invio
   const raw = JSON.stringify(payload);
   const ts  = Math.floor(Date.now() / 1000).toString();
-  const sig = require("crypto")
+  const sig = crypto
     .createHmac("sha256", process.env.KELI_WEBHOOK_SECRET)
     .update(`${ts}.${raw}`)
     .digest("base64");
@@ -323,6 +297,33 @@ async function sendViaKeliWebhook({ to, subject, text, html, replyTo }) {
   });
   return data;
 }
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "application/pdf",
+    ];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Tipo di file non supportato"), false);
+    }
+  },
+});
 
 app.post("/api/sendEmails", async (req, res) => {
   try {
@@ -595,33 +596,6 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
 // Altre route esistenti
 app.get("/", (req, res) => {
   res.send("Server is running!");
-});
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/svg+xml",
-      "application/pdf",
-    ];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Tipo di file non supportato"), false);
-    }
-  },
 });
 
 const PORT = process.env.PORT || 8080;
