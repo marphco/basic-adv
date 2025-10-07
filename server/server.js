@@ -294,20 +294,25 @@ app.post("/api/sendEmails", async (req, res) => {
     const userEmail = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    const ZWSP = "\u200B"; // carattere invisibile per evitare il “…” di Gmail
+    // rende ogni mail un thread a sé (ultime 4 cifre dell'id)
+    const shortId =
+      String(sessionId)
+        .replace(/[^A-Za-z0-9]/g, "")
+        .slice(-4) || "0000";
 
-    // TESTO ESATTAMENTE COME RICHIESTO
-    const userText = [
-      `Ciao ${contactInfo.name},`,
-      "",
-      `Grazie per aver compilato il form sul nostro sito.${ZWSP}`,
-      "Ti contatteremo presto!",
-      "",
-      `Basic Adv${ZWSP}`,
-    ].join("\n");
+    // spazio “sottile” non-andabile tra Basic e Adv (visivamente identico)
+    const NBSP_NARROW = "\u202F";
+    const brandLine = `Basic${NBSP_NARROW}Adv`;
+
+    // testo semplice, esattamente come vuoi (niente caratteri nascosti a fine riga)
+    const userText =
+      `Ciao ${contactInfo.name},\n\n` +
+      `Grazie per aver compilato il form sul nostro sito.\n` +
+      `Ti contatteremo presto!\n\n` +
+      `${brandLine}`;
 
     const userMsg = {
-      subject: "Grazie per averci contattato!",
+      subject: `Grazie per averci contattato! · ${shortId}`, // rompe il thread di Gmail
       text: userText,
       replyTo: userEmail,
     };
