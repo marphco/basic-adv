@@ -13,6 +13,7 @@ const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
 const mime = require("mime-types");
+const isDbReady = () => mongoose.connection.readyState === 1;
 
 dotenv.config();
 
@@ -268,11 +269,14 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/svg+xml",
-      "application/pdf",
-    ];
+  "image/jpeg",
+  "image/png",
+  "image/svg+xml",
+  "application/pdf",
+  "image/tiff",
+  "image/heic",
+  "image/heif",
+];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -633,6 +637,9 @@ const generateQuestionForService = async (
   answers,
   askedQuestions
 ) => {
+  if (!process.env.OPEN_AI_KEY) {
+  throw new Error("OPEN_AI_KEY mancante");
+}
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
@@ -765,38 +772,60 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
 
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   try {
+    // ⬇️ parse leggero, non blocca se session già esiste
     let servicesSelected;
     try {
       servicesSelected = JSON.parse(req.body.servicesSelected || "[]");
-    } catch (e) {
-      return res
-        .status(400)
-        .json({ error: "Formato servicesSelected non valido" });
+    } catch {
+      servicesSelected = [];
     }
 
-    const formData = { ...req.body };
     const sessionId = req.body.sessionId || uuidv4();
 
+    // ✅ se DB è connesso prova a riprendere la sessione esistente
+    if (isDbReady()) {
+      const existing = await ProjectLog.findOne({ sessionId });
+      if (existing) {
+        // answers può essere Map o plain object: normalizziamo
+        const answersObj = existing.answers instanceof Map
+          ? Object.fromEntries(existing.answers)
+          : (existing.answers || {});
+
+        let pending = null;
+        if (Array.isArray(existing.questions)) {
+          for (let i = existing.questions.length - 1; i >= 0; i--) {
+            const q = existing.questions[i];
+            const key = (q && q.question) ? q.question : q;
+            const sanitized = sanitizeKey(key || "");
+            if (!answersObj[sanitized]) { pending = q; break; }
+          }
+        }
+        return res.json({ question: pending || null });
+      }
+    } else {
+      console.warn("DB non connesso: salto il resume session");
+    }
+
+    // --- da qui creazione nuovo log ---
+
+    // campi form
+    const formData = { ...req.body };
+
+    // currentLogo opzionale; se c'è salviamo il filename
+    if (req.file) {
+      formData.currentLogo = req.file.filename;
+      console.log("File salvato in:", req.file.path);
+    }
+
+    // normalizza campi
     delete formData.servicesSelected;
     delete formData.sessionId;
 
     if (formData.contactInfo) {
-      try {
-        formData.contactInfo = JSON.parse(formData.contactInfo);
-      } catch (e) {
-        formData.contactInfo = {};
-      }
+      try { formData.contactInfo = JSON.parse(formData.contactInfo); }
+      catch { formData.contactInfo = {}; }
     } else {
       formData.contactInfo = {};
-    }
-
-    if (req.file) {
-      formData.currentLogo = req.file.filename;
-      console.log("File salvato in:", req.file.path);
-    } else if (formData.projectType === "restyling") {
-      return res
-        .status(400)
-        .json({ error: "Immagine richiesta per il restyling non fornita" });
     }
 
     formData.brandName = formData.brandName || "";
@@ -804,58 +833,55 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     formData.businessField = formData.businessField || "non specificato";
     formData.otherBusinessField = formData.otherBusinessField || "";
 
-    if (!servicesSelected.length) {
+    if (!servicesSelected.length)
       return res.status(400).json({ error: "Nessun servizio selezionato" });
+
+    // 🔐 fail-fast se manca la chiave OpenAI
+    if (!process.env.OPEN_AI_KEY) {
+      return res.status(500).json({
+        error: "CONFIG",
+        details: "OPEN_AI_KEY mancante sul server",
+      });
+    }
+
+    // genera prima domanda
+    const firstService = servicesSelected[0];
+    const aiQuestion = await generateQuestionForService(
+      firstService,
+      formData,
+      {},
+      []
+    );
+
+    // salva solo se DB è pronto; altrimenti rispondi lo stesso
+    if (!isDbReady()) {
+      console.warn("DB non connesso: rispondo senza persistere");
+      return res.json({ question: aiQuestion });
     }
 
     const newLogEntry = new ProjectLog({
       sessionId,
       formData,
-      questions: [],
+      questions: [aiQuestion],
       answers: new Map(),
-      questionCount: 0,
+      questionCount: 1,
       servicesQueue: servicesSelected,
       currentServiceIndex: 0,
-      serviceQuestionCount: new Map(),
+      serviceQuestionCount: new Map([[firstService, 1]]),
       maxQuestionsPerService: servicesSelected.length === 1 ? 10 : 8,
       totalQuestions:
         servicesSelected.length === 1 ? 10 : 8 * servicesSelected.length,
-      askedQuestions: new Map(),
+      askedQuestions: new Map([[firstService, [aiQuestion.question]]]),
     });
-
-    servicesSelected.forEach((service) => {
-      newLogEntry.serviceQuestionCount.set(service, 0);
-      newLogEntry.askedQuestions.set(service, []);
-    });
-
-    const firstService = servicesSelected[0];
-    const askedQuestionsForService =
-      newLogEntry.askedQuestions.get(firstService) || [];
-
-    const aiQuestion = await generateQuestionForService(
-      firstService,
-      formData,
-      Object.fromEntries(newLogEntry.answers),
-      askedQuestionsForService
-    );
-
-    newLogEntry.questions.push(aiQuestion);
-    newLogEntry.questionCount += 1;
-    newLogEntry.serviceQuestionCount.set(
-      firstService,
-      (newLogEntry.serviceQuestionCount.get(firstService) || 0) + 1
-    );
-    newLogEntry.askedQuestions.get(firstService).push(aiQuestion.question);
 
     await newLogEntry.save();
-
     res.json({ question: aiQuestion });
+
   } catch (error) {
-    console.error("Errore in /api/generate:", error);
+    console.error("Errore in /api/generate:", error?.response?.data || error);
     res.status(500).json({
-      error:
-        error.message ||
-        "Errore nella generazione della domanda. Riprova più tardi.",
+      error: "GENERATION_FAILED",
+      details: error?.message || "Errore nella generazione della domanda",
     });
   }
 });
@@ -1045,6 +1071,14 @@ ${formattedAnswers}
   } catch (error) {
     res.status(500).json({ error: "Errore nell'invio del log" });
   }
+});
+
+app.get("/api/health", (_req, res) => {
+  res.json({
+    dbReadyState: mongoose.connection.readyState, // 1 = connected
+    hasMongoUri: !!process.env.MONGO_URI,
+    hasOpenAIKey: !!process.env.OPEN_AI_KEY,
+  });
 });
 
 app.use((err, req, res, next) => {

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect, createRef } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./DynamicForm.css";
@@ -9,7 +9,9 @@ import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const api = axios.create({
+  baseURL: "/api", // relativo all'origin corrente (http o https)
+});
 
 const debounce = (func, wait) => {
   let timeout;
@@ -19,8 +21,29 @@ const debounce = (func, wait) => {
   };
 };
 
+// === PERSISTENZA STATO ===
+const STORAGE_KEY = "ba_form_state_v1";
+
+const defaultFormData = {
+  brandName: "",
+  projectType: "Tipo di progetto",
+  businessField: "Ambito",
+  otherBusinessField: "",
+  projectObjectives: "",
+  contactInfo: { name: "", email: "", phone: "" },
+  budget: "",
+};
+
 const DynamicForm = () => {
-  const [sessionId, setSessionId] = useState(uuidv4());
+  const [sessionId, setSessionId] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return saved.sessionId || uuidv4();
+    } catch {
+      return uuidv4();
+    }
+  });
+
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(null);
@@ -44,6 +67,7 @@ const DynamicForm = () => {
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // eslint-disable-next-line no-unused-vars
   const questionRef = useRef(null);
 
   const businessFields = [
@@ -56,6 +80,81 @@ const DynamicForm = () => {
     "Produzione",
     "Altro",
   ];
+
+  const refsByKey = useRef(new Map());
+const getRefForKey = (key) => {
+  if (!refsByKey.current.has(key)) {
+    refsByKey.current.set(key, createRef());
+  }
+  return refsByKey.current.get(key);
+};
+
+  // Hydration: ricostruisce lo stato se il sito si ricarica/ridimensiona
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (!saved || !saved.sessionId) return;
+
+      setSelectedCategories(saved.selectedCategories || []);
+      setSelectedServices(saved.selectedServices || []);
+      setCurrentQuestion(saved.currentQuestion || null);
+      setQuestionNumber(saved.questionNumber || 0);
+      setIsCompleted(!!saved.isCompleted);
+      setShowThankYou(!!saved.showThankYou);
+      setFormData(
+        saved.formData
+          ? { ...defaultFormData, ...saved.formData }
+          : defaultFormData
+      );
+      setAnswers(saved.answers || {});
+      // eslint-disable-next-line no-empty
+    } catch {}
+  }, []); // una sola volta al mount
+
+  // Salvataggio debounced su localStorage
+  const saveDebounced = useMemo(
+    () =>
+      debounce((payload) => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+          // eslint-disable-next-line no-empty
+        } catch {}
+      }, 300),
+    []
+  );
+
+  useEffect(() => {
+    // Evita di serializzare eventuali File (non serializzabili)
+    const safeFormData = { ...formData };
+    if (safeFormData.currentLogo instanceof File) {
+      safeFormData.currentLogo = "__uploaded__"; // segnaposto
+    }
+
+    saveDebounced({
+      version: 1,
+      ts: Date.now(),
+      sessionId,
+      selectedCategories,
+      selectedServices,
+      currentQuestion,
+      questionNumber,
+      isCompleted,
+      showThankYou,
+      formData: safeFormData,
+      answers,
+    });
+  }, [
+    sessionId,
+    selectedCategories,
+    selectedServices,
+    currentQuestion,
+    questionNumber,
+    isCompleted,
+    showThankYou,
+    formData,
+    answers,
+    saveDebounced,
+  ]);
 
   const services = useMemo(
     () => ({
@@ -98,6 +197,7 @@ const DynamicForm = () => {
     setIsLogoSelected(false);
     setIsFontQuestionAsked(false);
     setErrors({});
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const toggleCategory = useCallback(
@@ -245,13 +345,14 @@ const DynamicForm = () => {
         const requiresBrand = selectedCategories.some((cat) =>
           categoriesRequiringBrand.includes(cat)
         );
-        if (
-          requiresBrand &&
-          formData.projectType === "Tipo di progetto"
-        ) {
+        if (requiresBrand && formData.projectType === "Tipo di progetto") {
           newErrors.projectType = "Seleziona un tipo di progetto.";
         }
-        if (requiresBrand && formData.projectType === "restyling" && !formData.currentLogo) {
+        if (
+          requiresBrand &&
+          formData.projectType === "restyling" &&
+          !formData.currentLogo
+        ) {
           newErrors.currentLogo = "Carica un’immagine per il restyling.";
         } else if (
           requiresBrand &&
@@ -306,11 +407,8 @@ const DynamicForm = () => {
             }
           }
 
-          const response = await axios.post(
-            `${API_URL.replace(/\/$/, "")}/api/generate`,
-            formDataToSend,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          );
+          const response = await api.post("/generate", formDataToSend, { headers: { "Content-Type": "multipart/form-data" } });
+
 
           if (
             response.data.question &&
@@ -334,7 +432,13 @@ const DynamicForm = () => {
           setLoading(false);
         }
       }, 300),
-    [selectedServices, selectedCategories, formData, sessionId, categoriesRequiringBrand]
+    [
+      selectedServices,
+      selectedCategories,
+      formData,
+      sessionId,
+      categoriesRequiringBrand,
+    ]
   );
 
   const fetchNextQuestion = async () => {
@@ -343,11 +447,8 @@ const DynamicForm = () => {
       const userAnswer = {
         [currentQuestion.question]: answers[currentQuestion.question],
       };
-      const response = await axios.post(
-        `${API_URL.replace(/\/$/, "")}/api/nextQuestion`,
-        { currentAnswer: userAnswer, sessionId },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await api.post("/nextQuestion", { currentAnswer: userAnswer, sessionId }, { headers: { "Content-Type": "application/json" } });
+
 
       const nextQuestion = response.data.question;
 
@@ -382,7 +483,8 @@ const DynamicForm = () => {
 
     if (currentQuestion.type === "font_selection") {
       if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] = "Seleziona un font o inserisci il nome di uno.";
+        newErrors[questionText] =
+          "Seleziona un font o inserisci il nome di uno.";
       }
     } else if (currentQuestion.requiresInput) {
       if (inputAnswer.trim() === "") {
@@ -421,28 +523,37 @@ const DynamicForm = () => {
 
     setLoading(true);
     try {
-      await axios.post(
-        `${API_URL.replace(/\/$/, "")}/api/submitLog`,
-        { contactInfo: formData.contactInfo, sessionId },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      await api.post("/submitLog", { contactInfo: formData.contactInfo, sessionId }, { headers: { "Content-Type": "application/json" } });
 
-      await axios.post(
-        `${API_URL.replace(/\/$/, "")}/api/sendEmails`,
-        { contactInfo: formData.contactInfo, sessionId },
-        { headers: { "Content-Type": "application/json" } }
-      );
+
+      await api.post("/sendEmails", { contactInfo: formData.contactInfo, sessionId }, { headers: { "Content-Type": "application/json" } });
+
 
       setShowThankYou(true);
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setErrors({
-        general: "Errore nell'invio dei contatti o delle email. Riprova più tardi.",
+        general:
+          "Errore nell'invio dei contatti o delle email. Riprova più tardi.",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  // Dopo il "grazie", pulisci lo storage
+  useEffect(() => {
+    if (showThankYou) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, [showThankYou]);
+
+  // === key + ref per l'istanza corrente della domanda ===
+const qKey = currentQuestion
+  ? `${currentQuestion.question}-${questionNumber}`
+  : "none";
+
+const nodeRef = currentQuestion ? getRefForKey(qKey) : null;
 
   return (
     <div className="dynamic-form">
@@ -456,53 +567,33 @@ const DynamicForm = () => {
       )}
 
       <div>
-        {currentQuestion ? (
-          currentQuestion.type === "font_selection" ? (
-            <div ref={questionRef}>
-              <QuestionForm
-                currentQuestion={currentQuestion}
-                questionNumber={questionNumber}
-                answers={answers}
-                handleAnswerSubmit={handleAnswerSubmit}
-                handleInputChange={handleInputChange}
-                handleAnswerChange={handleAnswerChange}
-                loading={loading}
-                errors={errors}
-                formData={formData}
-              />
-            </div>
-          ) : (
-            <TransitionGroup>
-              <CSSTransition
-                timeout={1000}
-                classNames="fade-question"
-                nodeRef={questionRef}
-                key={currentQuestion.question + "-" + questionNumber}
-                exit={false}
-                mountOnEnter
-                unmountOnExit
-              >
-                <div
-                  ref={questionRef}
-                  className={questionNumber === 1 ? "first-question-fade" : ""}
-                >
-                  <QuestionForm
-                    currentQuestion={currentQuestion}
-                    questionNumber={questionNumber}
-                    answers={answers}
-                    handleAnswerSubmit={handleAnswerSubmit}
-                    handleInputChange={handleInputChange}
-                    handleAnswerChange={handleAnswerChange}
-                    loading={loading}
-                    errors={errors}
-                    formData={formData}
-                  />
-                </div>
-              </CSSTransition>
-            </TransitionGroup>
-          )
-        ) : null}
-      </div>
+  {currentQuestion && (
+    <TransitionGroup component={null}>
+      <CSSTransition
+        key={qKey}
+        nodeRef={nodeRef}
+        classNames="fade-question"
+        timeout={350}
+        mountOnEnter
+        unmountOnExit
+      >
+        <div ref={nodeRef}>
+          <QuestionForm
+            currentQuestion={currentQuestion}
+            questionNumber={questionNumber}
+            answers={answers}
+            handleAnswerSubmit={handleAnswerSubmit}
+            handleInputChange={handleInputChange}
+            handleAnswerChange={handleAnswerChange}
+            loading={loading}
+            errors={errors}
+            formData={formData}
+          />
+        </div>
+      </CSSTransition>
+    </TransitionGroup>
+  )}
+</div>
 
       {showThankYou ? (
         <ThankYouMessage handleRestart={handleRestart} />
