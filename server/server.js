@@ -14,6 +14,19 @@ const sgMail = require("@sendgrid/mail");
 
 dotenv.config();
 
+// ---- JWT middleware (deve stare PRIMA delle route che lo usano) ----
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Accesso negato" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Token non valido" });
+    req.user = user;
+    next();
+  });
+}
+
 // SendGrid setup (primario)
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -43,6 +56,11 @@ const allowedOrigins = new Set([
   "https://basicadv.com",
   "https://www.basicadv.com",
 ]);
+
+// Cartella upload UNICA
+const UPLOAD_DIR = path.join(__dirname, "uploads");
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 // Aiuta cache/proxy a servire la risposta corretta per Origin diversi
 app.use((req, res, next) => {
@@ -97,12 +115,23 @@ const sendViaSmtp = async (mailOptions) => {
 // --- MailerSend via API (già lo stai usando; lascio qui una versione compatta) ---
 const sendViaMailerSendApi = async (mailOptions) => {
   const body = {
-    from: { email: process.env.SENDER_EMAIL, name: mailOptions.from?.name || "Basic Adv" },
-    to: [{ email: Array.isArray(mailOptions.to) ? mailOptions.to[0] : mailOptions.to }],
+    from: {
+      email: process.env.SENDER_EMAIL,
+      name: mailOptions.from?.name || "Basic Adv",
+    },
+    to: [
+      {
+        email: Array.isArray(mailOptions.to)
+          ? mailOptions.to[0]
+          : mailOptions.to,
+      },
+    ],
     subject: mailOptions.subject,
     text: mailOptions.text,
     html: mailOptions.html,
-    reply_to: { email: (mailOptions.replyTo?.address || mailOptions.replyTo) || undefined },
+    reply_to: {
+      email: mailOptions.replyTo?.address || mailOptions.replyTo || undefined,
+    },
   };
   await axios.post("https://api.mailersend.com/v1/email", body, {
     headers: { Authorization: `Bearer ${process.env.MAILERSEND_API_TOKEN}` },
@@ -114,12 +143,14 @@ const sendViaMailerSendApi = async (mailOptions) => {
 const sendViaResendApi = async (mailOptions) => {
   if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY mancante");
   const body = {
-    from: `${mailOptions.from?.name || "Basic Adv"} <${mailOptions.from?.address || process.env.SENDER_EMAIL}>`,
+    from: `${mailOptions.from?.name || "Basic Adv"} <${
+      mailOptions.from?.address || process.env.SENDER_EMAIL
+    }>`,
     to: [Array.isArray(mailOptions.to) ? mailOptions.to[0] : mailOptions.to],
     subject: mailOptions.subject,
     text: mailOptions.text,
     html: mailOptions.html,
-    reply_to: (mailOptions.replyTo?.address || mailOptions.replyTo) || undefined,
+    reply_to: mailOptions.replyTo?.address || mailOptions.replyTo || undefined,
   };
   await axios.post("https://api.resend.com/emails", body, {
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` },
@@ -142,7 +173,6 @@ const smartSend = async (mailOptions) => {
   }
 };
 
-
 // wrapper unico che usi ovunque
 const sendMail = async (mailOptions) => {
   try {
@@ -164,12 +194,12 @@ const sendMail = async (mailOptions) => {
           "SMTP fallito (2525). Fallback API:",
           e2?.code || e2?.message
         );
-        return await sendViaMailersendApi(mailOptions);
+        return await sendViaMailerSendApi(mailOptions);
       }
     }
     // errori logici (es. 5xx SMTP) -> prova comunque API
     console.error("SMTP fallito. Fallback API:", e1?.code || e1?.message);
-    return await sendViaMailersendApi(mailOptions);
+    return await sendViaMailerSendApi(mailOptions);
   }
 };
 
@@ -224,7 +254,7 @@ Team BasicAdv`,
     // 2) FALLBACK: MailerSend via SMTP (riusa il tuo transporter esistente)
     try {
       await Promise.all([
-        sendWithFallback({
+        sendMail({
           from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
           to: userEmail,
           subject: userMsg.subject,
@@ -232,7 +262,7 @@ Team BasicAdv`,
           replyTo: userEmail,
           envelope: { from: process.env.SENDER_EMAIL, to: userEmail },
         }),
-        sendWithFallback({
+        sendMail({
           from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
           to: adminEmail,
           subject: adminMsg.subject,
@@ -262,7 +292,6 @@ Team BasicAdv`,
     });
   }
 });
-
 
 // Endpoint login
 app.post("/api/login", (req, res) => {
@@ -432,10 +461,7 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
     }
 
     if (projectLog.formData.currentLogo) {
-      const filePath = path.join(
-        "/app/uploads",
-        projectLog.formData.currentLogo
-      );
+      const filePath = path.join(UPLOAD_DIR, projectLog.formData.currentLogo);
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
       }
@@ -456,10 +482,6 @@ app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
 app.get("/", (req, res) => {
   res.send("Server is running!");
 });
-
-// Crea la cartella uploads se non esiste
-const UPLOAD_DIR = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(UPLOAD_DIR));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
