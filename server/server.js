@@ -57,6 +57,38 @@ const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
   return res;
 };
 
+// --- KELIWEB SMTP (gratis, primario) ---
+const createKeliTransport = () =>
+  nodemailer.createTransport({
+    host: process.env.KELI_SMTP_HOST || "mail.basicadv.com",
+    port: Number(process.env.KELI_SMTP_PORT || 587), // 587 = STARTTLS
+    secure: false,                   // STARTTLS su 587
+    requireTLS: true,
+    auth: {
+      user: process.env.KELI_SMTP_USER, // es. info@basicadv.com
+      pass: process.env.KELI_SMTP_PASS, // password casella
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
+    tls: { minVersion: "TLSv1.2", servername: process.env.KELI_SMTP_HOST || "mail.basicadv.com" },
+  });
+
+const sendViaKeliSMTP = async ({ to, subject, text, html, replyTo }) => {
+  const t = createKeliTransport();
+  await t.verify();
+  return t.sendMail({
+    from: { name: "Basic Adv", address: process.env.SENDER_EMAIL }, // deve essere = alla casella autenticata
+    to,
+    subject,
+    text,
+    html,
+    replyTo,
+    envelope: { from: process.env.SENDER_EMAIL, to }, // allinea MAIL FROM
+  });
+};
+
+
 const app = express();
 
 // ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
@@ -213,6 +245,7 @@ const sendMail = async (mailOptions) => {
 };
 
 // Endpoint per inviare email
+// Endpoint per inviare email
 app.post("/api/sendEmails", async (req, res) => {
   try {
     const { contactInfo, sessionId } = req.body || {};
@@ -226,7 +259,6 @@ app.post("/api/sendEmails", async (req, res) => {
     const userEmail = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    // messaggi (stesso contenuto per entrambi i provider)
     const userMsg = {
       subject: "Grazie per averci contattato!",
       text: `Ciao ${contactInfo.name},
@@ -245,10 +277,21 @@ Team BasicAdv`,
       replyTo: userEmail,
     };
 
-    // 1) PROVA SENDGRID (primario)
+    // 1) Keliweb SMTP (primario)
     try {
       await Promise.all([
-        sendViaSendGrid({ to: userEmail, ...userMsg }),
+        sendViaKeliSMTP({ to: userEmail,  ...userMsg }),
+        sendViaKeliSMTP({ to: adminEmail, ...adminMsg }),
+      ]);
+      return res.status(200).json({ message: "Email inviate (Keliweb SMTP)" });
+    } catch (keliErr) {
+      console.error("Keliweb SMTP failed:", keliErr?.code || keliErr?.message);
+    }
+
+    // 2) SendGrid (se attivo)
+    try {
+      await Promise.all([
+        sendViaSendGrid({ to: userEmail,  ...userMsg }),
         sendViaSendGrid({ to: adminEmail, ...adminMsg }),
       ]);
       return res.status(200).json({ message: "Email inviate (SendGrid)" });
@@ -260,7 +303,7 @@ Team BasicAdv`,
       });
     }
 
-    // 2) FALLBACK: MailerSend via SMTP (riusa il tuo transporter esistente)
+    // 3) Fallback già esistente (MailerSend SMTP/API secondo tua logica)
     try {
       await Promise.all([
         sendMail({
@@ -280,13 +323,9 @@ Team BasicAdv`,
           envelope: { from: process.env.SENDER_EMAIL, to: adminEmail },
         }),
       ]);
-      return res.status(200).json({ message: "Email inviate (SMTP fallback)" });
+      return res.status(200).json({ message: "Email inviate (SMTP/API fallback)" });
     } catch (smtpErr) {
-      console.error("SMTP fallback failed:", {
-        message: smtpErr?.message,
-        code: smtpErr?.code,
-        response: smtpErr?.response,
-      });
+      console.error("Fallback failed:", smtpErr?.code || smtpErr?.message, smtpErr?.response);
       return res.status(500).json({
         error: "SMTP_ERROR",
         details: smtpErr?.message || "Unknown SMTP error",
@@ -301,6 +340,7 @@ Team BasicAdv`,
     });
   }
 });
+
 
 // Endpoint login
 app.post("/api/login", (req, res) => {
