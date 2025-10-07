@@ -11,6 +11,7 @@ const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
+const crypto = require("crypto");
 
 dotenv.config();
 
@@ -26,6 +27,31 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
+
+// --- Keliweb via HTTPS, con firma HMAC anti–abuso ---
+const sendViaKeliWebhook = async ({ to, subject, text, replyTo }) => {
+  if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
+    throw new Error("KELI_WEBHOOK_URL/KELI_WEBHOOK_SECRET mancanti");
+  }
+
+  const body = { to, subject, text, replyTo };
+  const ts = Math.floor(Date.now() / 1000).toString();          // epoch sec (anti replay)
+  const payload = `${ts}.${JSON.stringify(body)}`;
+  const sig = crypto
+    .createHmac("sha256", process.env.KELI_WEBHOOK_SECRET)
+    .update(payload)
+    .digest("base64");
+
+  await axios.post(process.env.KELI_WEBHOOK_URL, body, {
+    timeout: 15000,
+    headers: {
+      "X-Timestamp": ts,
+      "X-Signature": sig,
+      "Content-Type": "application/json",
+    },
+  });
+};
+
 
 // SendGrid setup (primario)
 if (process.env.SENDGRID_API_KEY) {
@@ -270,8 +296,6 @@ const sendMail = async (mailOptions) => {
   }
 };
 
-// Endpoint per inviare email
-// Endpoint per inviare email
 app.post("/api/sendEmails", async (req, res) => {
   try {
     const { contactInfo, sessionId } = req.body || {};
@@ -303,67 +327,29 @@ Team BasicAdv`,
       replyTo: userEmail,
     };
 
-    // 1) Keliweb SMTP (primario)
+    // 0) Keliweb via HTTPS (funziona anche se il PaaS blocca SMTP)
     try {
       await Promise.all([
-        sendViaKeliSMTP({ to: userEmail,  ...userMsg }),
-        sendViaKeliSMTP({ to: adminEmail, ...adminMsg }),
+        sendViaKeliWebhook({ to: userEmail,  ...userMsg }),
+        sendViaKeliWebhook({ to: adminEmail, ...adminMsg }),
       ]);
-      return res.status(200).json({ message: "Email inviate (Keliweb SMTP)" });
-    } catch (keliErr) {
-      console.error("Keliweb SMTP failed:", keliErr?.code || keliErr?.message);
+      return res.status(200).json({ message: "Email inviate (Keliweb HTTPS relay)" });
+    } catch (webErr) {
+      console.error("Keliweb HTTPS relay failed:", webErr?.response?.data || webErr?.message);
     }
 
-    // 2) SendGrid (se attivo)
-    try {
-      await Promise.all([
-        sendViaSendGrid({ to: userEmail,  ...userMsg }),
-        sendViaSendGrid({ to: adminEmail, ...adminMsg }),
-      ]);
-      return res.status(200).json({ message: "Email inviate (SendGrid)" });
-    } catch (sgErr) {
-      console.error("SendGrid failed:", {
-        status: sgErr?.code || sgErr?.response?.statusCode,
-        body: sgErr?.response?.body,
-        message: sgErr?.message,
-      });
-    }
+    // 1) (opzionale) Keliweb SMTP diretto — puoi lasciarlo, ma su Railway di solito time-out
+    // try { ...sendViaKeliSMTP(...) } catch(e) { console.error(...) }
 
-    // 3) Fallback già esistente (MailerSend SMTP/API secondo tua logica)
-    try {
-      await Promise.all([
-        sendMail({
-          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
-          to: userEmail,
-          subject: userMsg.subject,
-          text: userMsg.text,
-          replyTo: userEmail,
-          envelope: { from: process.env.SENDER_EMAIL, to: userEmail },
-        }),
-        sendMail({
-          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
-          to: adminEmail,
-          subject: adminMsg.subject,
-          text: adminMsg.text,
-          replyTo: userEmail,
-          envelope: { from: process.env.SENDER_EMAIL, to: adminEmail },
-        }),
-      ]);
-      return res.status(200).json({ message: "Email inviate (SMTP/API fallback)" });
-    } catch (smtpErr) {
-      console.error("Fallback failed:", smtpErr?.code || smtpErr?.message, smtpErr?.response);
-      return res.status(500).json({
-        error: "SMTP_ERROR",
-        details: smtpErr?.message || "Unknown SMTP error",
-        code: smtpErr?.code || null,
-      });
-    }
+    // 2) (opzionale) SendGrid — al momento hai “Maximum credits exceeded”
+    // try { ...sendViaSendGrid(...) } catch(e) { console.error(...) }
+
+    // 3) Evita MailerSend API se è in quota 422: altrimenti torni sempre 500
+    return res.status(502).json({ error: "No mail provider available right now" });
+
   } catch (error) {
     console.error("UNEXPECTED /api/sendEmails error:", error);
-    return res.status(500).json({
-      error: "INTERNAL_ERROR",
-      details: error?.message || "Unexpected error",
-    });
+    return res.status(500).json({ error: "INTERNAL_ERROR", details: error?.message });
   }
 });
 
