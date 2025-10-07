@@ -48,29 +48,47 @@ const escapeHtml = (s='') =>
   s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
 const buildUserHtml = (name, token='') => `
-<!doctype html><html><head>
+<!doctype html>
+<html lang="it">
+<head>
 <meta charset="utf-8">
+<meta name="x-apple-disable-message-reformatting">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Grazie</title>
 </head>
-<body style="margin:0;padding:0;background:#111;color:#eee;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">
-  <!-- preheader invisibile: contiene un ID per rendere ogni mail diversa -->
+<body style="margin:0;padding:0;background:#0f0f0f;color:#eaeaea;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
+  <!-- preheader invisibile + token per evitare collapsing nelle conversazioni -->
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;visibility:hidden">
     Grazie per averci contattato • ID:${token}&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
 
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#1a1a1a">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#171717">
     <tr>
       <td style="padding:24px 24px 0">
-        <img src="https://www.basicadv.com/favicon-192.png" width="40" height="40" alt="Basic Adv" style="border-radius:9999px;display:block">
+        <img src="https://basicadv.com/email/logo-96.png" width="40" height="40" alt="Basic Adv"
+             style="display:block;border-radius:9999px;">
       </td>
     </tr>
+
     <tr>
-      <td style="padding:16px 24px 24px;font-size:16px;line-height:1.55">
-        <p style="margin:0 0 12px">Ciao ${escapeHtml(name)},</p>
-        <p style="margin:0 0 12px">grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!</p>
-        <p style="margin:24px 0 0">Basic.</p>
+      <td style="padding:16px 24px 6px">
+        <h1 style="margin:0;font-size:22px;line-height:1.35;font-weight:700;color:#ffffff">
+          Ciao ${escapeHtml(name)},
+        </h1>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 24px 8px;font-size:16px;line-height:1.6;color:#d6d6d6">
+        grazie per aver compilato il form sul nostro sito. Ti contatteremo presto!
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:12px 24px 28px;font-size:16px;line-height:1.6;color:#ffffff">
+        Basic Adv
       </td>
     </tr>
   </table>
@@ -79,7 +97,8 @@ const buildUserHtml = (name, token='') => `
   <div style="display:none;white-space:nowrap;line-height:0;opacity:0;max-height:0;overflow:hidden">
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
-</body></html>`;
+</body>
+</html>`;
 
 
 const sendViaSendGrid = async ({ to, subject, text, html, replyTo }) => {
