@@ -294,17 +294,12 @@ app.post("/api/sendEmails", async (req, res) => {
     const userEmail = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    // rende ogni mail un thread a sé (ultime 4 cifre dell'id)
-    const shortId =
-      String(sessionId)
-        .replace(/[^A-Za-z0-9]/g, "")
-        .slice(-4) || "0000";
+    // caratteri invisibili per “rompere” il rilevamento firme di Gmail
+    const WJ = "\u2060"; // Word Joiner (invisibile, non va a capo)
+    const NBSP = "\u00A0"; // spazio non a capo (visivamente uguale)
 
-    // spazio “sottile” non-andabile tra Basic e Adv (visivamente identico)
-    const NBSP_NARROW = "\u202F";
-    const brandLine = `Basic${NBSP_NARROW}Adv`;
+    const brandLine = `Basi${WJ}c${NBSP}A${WJ}dv`; // rende “Basic Adv” ma non come firma
 
-    // testo semplice, esattamente come vuoi (niente caratteri nascosti a fine riga)
     const userText =
       `Ciao ${contactInfo.name},\n\n` +
       `Grazie per aver compilato il form sul nostro sito.\n` +
@@ -312,7 +307,7 @@ app.post("/api/sendEmails", async (req, res) => {
       `${brandLine}`;
 
     const userMsg = {
-      subject: `Grazie per averci contattato! · ${shortId}`, // rompe il thread di Gmail
+      subject: "Grazie per averci contattato!", // niente ID nel subject
       text: userText,
       replyTo: userEmail,
     };
