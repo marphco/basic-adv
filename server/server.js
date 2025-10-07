@@ -292,10 +292,14 @@ app.post("/api/sendEmails", async (req, res) => {
 
     // TESTO ESATTAMENTE COME RICHIESTO
     const userText =
-      `Ciao ${contactInfo.name},\n\n` +
-      `Grazie per aver compilato il form sul nostro sito.\n` +
-      `Ti contatteremo presto!\n\n` +
-      `Basic Adv`;
+  `Ciao ${contactInfo.name},\n\n` +
+  `Grazie per aver compilato il form sul nostro sito.${ZWSP}\n` +
+  `Ti contatteremo presto!\n\n` +
+  `Basic Adv${ZWSP}`;
+
+
+      const ZWSP = "\u200B"; // carattere invisibile per evitare il “…” di Gmail
+
 
     const userMsg = {
       subject: "Grazie per averci contattato!",
