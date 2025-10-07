@@ -269,14 +269,14 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/svg+xml",
-  "application/pdf",
-  "image/tiff",
-  "image/heic",
-  "image/heif",
-];
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "application/pdf",
+      "image/tiff",
+      "image/heic",
+      "image/heif",
+    ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -638,8 +638,8 @@ const generateQuestionForService = async (
   askedQuestions
 ) => {
   if (!process.env.OPEN_AI_KEY) {
-  throw new Error("OPEN_AI_KEY mancante");
-}
+    throw new Error("OPEN_AI_KEY mancante");
+  }
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
@@ -770,6 +770,21 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
   }
 };
 
+const buildFontQuestion = (formData = {}) => ({
+  // usa una chiave stabile + sanitizzata, così non cambia mai
+  question: sanitizeKey("Quale stile tipografico preferisci per il logo?"),
+  options: [
+    "Serif",
+    "Sans-serif",
+    "Script",
+    "Monospaced",
+    "Manoscritto",
+    "Decorativo",
+  ],
+  type: "font_selection",
+  requiresInput: false,
+});
+
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   try {
     // ⬇️ parse leggero, non blocca se session già esiste
@@ -787,17 +802,21 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       const existing = await ProjectLog.findOne({ sessionId });
       if (existing) {
         // answers può essere Map o plain object: normalizziamo
-        const answersObj = existing.answers instanceof Map
-          ? Object.fromEntries(existing.answers)
-          : (existing.answers || {});
+        const answersObj =
+          existing.answers instanceof Map
+            ? Object.fromEntries(existing.answers)
+            : existing.answers || {};
 
         let pending = null;
         if (Array.isArray(existing.questions)) {
           for (let i = existing.questions.length - 1; i >= 0; i--) {
             const q = existing.questions[i];
-            const key = (q && q.question) ? q.question : q;
+            const key = q && q.question ? q.question : q;
             const sanitized = sanitizeKey(key || "");
-            if (!answersObj[sanitized]) { pending = q; break; }
+            if (!answersObj[sanitized]) {
+              pending = q;
+              break;
+            }
           }
         }
         return res.json({ question: pending || null });
@@ -822,8 +841,11 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     delete formData.sessionId;
 
     if (formData.contactInfo) {
-      try { formData.contactInfo = JSON.parse(formData.contactInfo); }
-      catch { formData.contactInfo = {}; }
+      try {
+        formData.contactInfo = JSON.parse(formData.contactInfo);
+      } catch {
+        formData.contactInfo = {};
+      }
     } else {
       formData.contactInfo = {};
     }
@@ -846,12 +868,15 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     // genera prima domanda
     const firstService = servicesSelected[0];
-    const aiQuestion = await generateQuestionForService(
-      firstService,
-      formData,
-      {},
-      []
-    );
+
+let aiQuestion;
+aiQuestion = await generateQuestionForService(
+  firstService,
+  formData,
+  {},
+  []
+);
+
 
     // salva solo se DB è pronto; altrimenti rispondi lo stesso
     if (!isDbReady()) {
@@ -876,7 +901,6 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     await newLogEntry.save();
     res.json({ question: aiQuestion });
-
   } catch (error) {
     console.error("Errore in /api/generate:", error?.response?.data || error);
     res.status(500).json({
@@ -928,15 +952,46 @@ app.post("/api/nextQuestion", async (req, res) => {
     }
 
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-    const askedQuestionsForNextService =
-      logEntry.askedQuestions.get(nextService) || [];
+const askedQuestionsForNextService =
+  logEntry.askedQuestions.get(nextService) || [];
 
-    const aiQuestion = await generateQuestionForService(
+// controlla se la font question è già stata fatta in qualsiasi momento
+const hasFontQuestion = (logEntry.questions || []).some(
+  (q) => q && q.type === "font_selection"
+);
+
+let aiQuestion;
+if (nextService === "Logo") {
+  // se è la prima domanda del servizio Logo -> NON chiedere i font
+  if (askedQuestionsForNextService.length === 0) {
+    aiQuestion = await generateQuestionForService(
       nextService,
       logEntry.formData,
       Object.fromEntries(logEntry.answers),
       askedQuestionsForNextService
     );
+  } else if (!hasFontQuestion) {
+    // dalla seconda domanda in poi, se i font non sono ancora stati chiesti -> forzali ora
+    aiQuestion = buildFontQuestion(logEntry.formData);
+  } else {
+    // font già chiesti -> domanda normale
+    aiQuestion = await generateQuestionForService(
+      nextService,
+      logEntry.formData,
+      Object.fromEntries(logEntry.answers),
+      askedQuestionsForNextService
+    );
+  }
+} else {
+  // servizi diversi da Logo -> normale
+  aiQuestion = await generateQuestionForService(
+    nextService,
+    logEntry.formData,
+    Object.fromEntries(logEntry.answers),
+    askedQuestionsForNextService
+  );
+}
+
 
     logEntry.questions.push(aiQuestion);
     logEntry.questionCount += 1;
