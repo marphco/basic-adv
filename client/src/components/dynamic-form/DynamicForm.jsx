@@ -9,8 +9,10 @@ import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 
+const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8080")
+  .replace(/\/$/, "");
 const api = axios.create({
-  baseURL: "/api", // relativo all'origin corrente (http o https)
+  baseURL: `${API_BASE}/api`, // sempre verso il dominio API
 });
 
 const debounce = (func, wait) => {
