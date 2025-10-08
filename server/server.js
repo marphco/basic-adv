@@ -441,20 +441,26 @@ app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = safeJoin(UPLOAD_DIR, filename);
 
-  if (!fs.existsSync(filePath)) {
-    console.error("File non trovato:", filePath);
-    return res.status(404).json({ error: "File non trovato" });
-  }
+  fs.access(filePath, fs.constants.R_OK, (err) => {
+    if (err) {
+      console.error("File non trovato o non leggibile:", filePath, err?.code);
+      return res.status(404).json({ error: "File non trovato" });
+    }
 
-  const ctype =
-    mime.contentType(path.extname(filename)) || "application/octet-stream";
-  res.setHeader("Content-Type", ctype);
-  // Forziamo il download anche cross-origin
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename="${encodeURIComponent(filename)}"`
-  );
-  return res.sendFile(filePath);
+    // Imposta il Content-Type corretto (facoltativo, res.download lo gestisce da solo)
+    const ctype = mime.contentType(path.extname(filename)) || "application/octet-stream";
+    res.setHeader("Content-Type", ctype);
+
+    // 🔑 Usa res.download: setta Content-Disposition correttamente e gestisce lo stream
+    res.download(filePath, filename, (e) => {
+      if (e) {
+        console.error("Errore nel download:", e);
+        if (!res.headersSent) {
+          res.status(e.code === "ENOENT" ? 404 : 500).json({ error: "Errore nel download del file" });
+        }
+      }
+    });
+  });
 });
 
 // Endpoint per elencare i file
