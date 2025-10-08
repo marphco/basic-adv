@@ -407,18 +407,28 @@ const getRefForKey = (key) => {
             }
           }
 
-          const response = await api.post("/generate", formDataToSend, { headers: { "Content-Type": "multipart/form-data" } });
+          const response = await api.post("/generate", formDataToSend, {
+  headers: { "Content-Type": "multipart/form-data" },
+});
 
+// 👇 prende { sessionId, question } dal server
+const { sessionId: sid, question } = response.data || {};
 
-          if (
-            response.data.question &&
-            response.data.question.type === "font_selection"
-          ) {
-            setIsFontQuestionAsked(true);
-          }
-          setCurrentQuestion(response.data.question);
-          setQuestionNumber(1);
-          setErrors({});
+// 👇 se il backend decide il sessionId (o lo conferma), mettilo nello stato
+if (sid && sid !== sessionId) {
+  setSessionId(sid);
+}
+
+if (question && question.type === "font_selection") {
+  setIsFontQuestionAsked(true);
+}
+setCurrentQuestion(question);
+setQuestionNumber(1);
+
+console.log("[Provider prima domanda]", question?.__provider || "unknown");
+
+setErrors({});
+
         } catch (error) {
           console.error(
             "Errore nella generazione della prima domanda AI:",
@@ -451,6 +461,8 @@ const getRefForKey = (key) => {
 
 
       const nextQuestion = response.data.question;
+
+      console.log("[Provider prossima domanda]", nextQuestion?.__provider || "unknown");
 
       if (!nextQuestion || questionNumber >= 10) {
         setIsCompleted(true);
@@ -523,13 +535,27 @@ const getRefForKey = (key) => {
 
     setLoading(true);
     try {
-      await api.post("/submitLog", { contactInfo: formData.contactInfo, sessionId }, { headers: { "Content-Type": "application/json" } });
+      // 1) Salva sul DB: se va ok, mostra subito il "grazie"
+await api.post(
+  "/submitLog",
+  { contactInfo: formData.contactInfo, sessionId },
+  { headers: { "Content-Type": "application/json" } }
+);
 
+setShowThankYou(true); // 👈 non aspettiamo le email
 
-      await api.post("/sendEmails", { contactInfo: formData.contactInfo, sessionId }, { headers: { "Content-Type": "application/json" } });
+// 2) Prova a mandare le email in background (non blocca la UX)
+api
+  .post(
+    "/sendEmails",
+    { contactInfo: formData.contactInfo, sessionId },
+    { headers: { "Content-Type": "application/json" } }
+  )
+  .catch((err) => {
+    console.error("SendEmails failed:", err?.response?.data || err?.message);
+    // opzionale: potresti loggare lato server se ti serve
+  });
 
-
-      setShowThankYou(true);
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setErrors({

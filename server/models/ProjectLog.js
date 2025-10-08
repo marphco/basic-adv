@@ -138,6 +138,15 @@ const ProjectLogSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  ratings: {
+  // mappa: chiave = domanda (sanitizzata), valore = { q: -1|0|1, o: -1|0|1 }
+  type: Map,
+  of: new mongoose.Schema(
+    { q: { type: Number, default: null }, o: { type: Number, default: null } },
+    { _id: false }
+  ),
+  default: new Map(),
+},
 });
 
 // Esporta il modello Mongoose

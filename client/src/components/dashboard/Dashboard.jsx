@@ -265,6 +265,43 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     });
   };
 
+  // Normalizza Map -> plain object (utile se in futuro torneranno Map)
+const toPlain = (maybeMap) =>
+  maybeMap && !(maybeMap instanceof Map)
+    ? maybeMap
+    : Object.fromEntries(maybeMap || []);
+
+const handleRatingsPatch = (sessionId, key, field, value) => {
+  // 1) patch nella LISTA requests
+  setRequests((prev) =>
+    prev.map((r) => {
+      if (r.sessionId !== sessionId) return r;
+      const prevRatings = toPlain(r.ratings);
+      return {
+        ...r,
+        ratings: {
+          ...prevRatings,
+          [key]: { ...(prevRatings?.[key] || {}), [field]: value },
+        },
+      };
+    })
+  );
+
+  // 2) se la scheda è aperta su quella request, patcha anche selectedRequest
+  setSelectedRequest((prev) => {
+    if (!prev || prev.sessionId !== sessionId) return prev;
+    const prevRatings = toPlain(prev.ratings);
+    return {
+      ...prev,
+      ratings: {
+        ...prevRatings,
+        [key]: { ...(prevRatings?.[key] || {}), [field]: value },
+      },
+    };
+  });
+};
+
+
   return (
     <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
       {isMounted && <Cursor isDark={isDark} />}
@@ -297,6 +334,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
             request={selectedRequest}
             setSelectedRequest={setSelectedRequest}
             API_URL={API_URL}
+            onRatingsPatch={handleRatingsPatch}
           />
         ) : selectedSection === "home" ? (
           <DashboardHome

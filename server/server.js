@@ -13,9 +13,64 @@ const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
 const mime = require("mime-types");
-const isDbReady = () => mongoose.connection.readyState === 1;
+const { rlGenerateQuestions } = require("./services/rlClient");
 
 dotenv.config();
+
+const app = express();
+
+// ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://192.168.1.170:5173",
+  "https://basicadv.com",
+  "https://www.basicadv.com",
+]);
+
+app.use(
+  require("cors")({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+// Preflight global + specifico RL
+app.options("*", require("cors")());
+app.options("/api/rl/*", require("cors")());
+
+app.use(express.json());
+
+app.use((req, res, next) => {
+  res.header("Vary", "Origin");
+  next();
+});
+
+// === Upload dir su volume persistente ===
+const UPLOAD_DIR =
+  process.env.UPLOAD_DIR ||
+  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
+  "/data/uploads";
+
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+// Static serve (ok per anteprime, non forza il download)
+app.use("/uploads", express.static(UPLOAD_DIR));
+
+const isDbReady = () => mongoose.connection.readyState === 1;
+
+// === GENERAZIONE DOMANDE CON MODELLO RL ===
+// const aiRouter = require("./routes/ai");
+// app.use("/api", aiRouter);
+
+// monta il router RL rating (CommonJS)
+const rlTrainingRouter = require("./routes/rlTraining");
+app.use("/api", rlTrainingRouter);
 
 // ---- JWT middleware ----
 function authenticateToken(req, res, next) {
@@ -41,9 +96,6 @@ if (process.env.SENDGRID_REGION === "eu") {
     sgMail.setDataResidency("eu");
   } catch {}
 }
-
-// // piccola diagnostica: NON loggare tutta la chiave
-// console.log('SG key prefix:', process.env.SENDGRID_API_KEY?.slice(0, 10), 'len:', process.env.SENDGRID_API_KEY?.length);
 
 const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
   if (!process.env.SENDGRID_API_KEY)
@@ -113,51 +165,6 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
     }
   }
 };
-
-const app = express();
-
-// ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
-const allowedOrigins = new Set([
-  "http://localhost:5173",
-  "https://basicadv.com",
-  "https://www.basicadv.com",
-]);
-
-// === Upload dir su volume persistente ===
-const UPLOAD_DIR =
-  process.env.UPLOAD_DIR ||
-  process.env.RAILWAY_VOLUME_MOUNT_PATH ||
-  "/data/uploads";
-
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
-// Static serve (ok per anteprime, non forza il download)
-app.use("/uploads", express.static(UPLOAD_DIR));
-
-// Aiuta cache/proxy a servire la risposta corretta per Origin diversi
-app.use((req, res, next) => {
-  res.header("Vary", "Origin");
-  next();
-});
-
-app.use(
-  cors({
-    origin: (origin, cb) => {
-      // consente anche richieste senza Origin (cron/server-to-server)
-      if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true, // ok anche se usi solo Bearer
-  })
-);
-
-// Preflight per tutte le route (deve stare PRIMA delle route)
-app.options("*", cors());
-
-app.use(express.json());
-// app.use("/uploads", express.static("/app/uploads"));
 
 // ========== MAILER (SMTP 587/2525 + fallback API) ==========
 const SMTP_HOST = "smtp.mailersend.net";
@@ -413,7 +420,7 @@ app.get("/api/getRequests", authenticateToken, async (req, res) => {
   try {
     const logs = await ProjectLog.find()
       .select(
-        "sessionId formData questions answers projectPlan createdAt servicesQueue feedback"
+        "sessionId formData questions answers projectPlan createdAt servicesQueue feedback ratings"
       )
       .lean();
     // console.log("Dati inviati al frontend:", logs);
@@ -631,15 +638,55 @@ mongoose
 
 const sanitizeKey = (key) => key.replace(/\./g, "_").replace(/\?$/, "");
 
+// Normalizza una singola domanda "raw" prodotta dal RL in formato atteso dal frontend/DB
+function normalizeFromRl(raw) {
+  if (!raw || typeof raw !== "object") return null;
+
+  // Possibili nomi di campo per la domanda
+  let question = raw.question || raw.Question || raw.q || "";
+
+  if (typeof question !== "string" || !question.trim()) return null;
+
+  // requiresInput: supporta sia "requiresInput" sia "text-area"
+  let requiresInput =
+    raw.requiresInput === true ||
+    raw["text-area"] === true ||
+    raw.options === "text-area";
+
+  // type: di default "multiple", ma lasciamo passare "font_selection" se arriva
+  let type = raw.type || "multiple";
+
+  // options: array oppure niente
+  let options = Array.isArray(raw.options) ? raw.options : [];
+
+  // Se risposta aperta, niente opzioni
+  if (requiresInput) {
+    options = [];
+  } else if (type !== "font_selection" && options.length > 4) {
+    // per le multiple riduci a 4
+    options = options.slice(0, 4);
+  }
+
+  // togli il punto finale per coerenza con la tua logica
+  question = question.trim();
+  if (question.endsWith(".")) question = question.slice(0, -1);
+
+  return {
+    question: sanitizeKey(question),
+    options,
+    type,
+    requiresInput,
+    __provider: "RL",
+  };
+}
+
 const generateQuestionForService = async (
   service,
   formData,
   answers,
   askedQuestions
 ) => {
-  if (!process.env.OPEN_AI_KEY) {
-    throw new Error("OPEN_AI_KEY mancante");
-  }
+  // ====== INVARIATO: variabili di contesto ======
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
@@ -651,6 +698,7 @@ const generateQuestionForService = async (
     imageInfo = `\nIl cliente ha fornito una descrizione del logo attuale: ${formData.currentLogoDescription}`;
   }
 
+  // ⚠️ PROMPT INVARIATO (COPIATO DAL TUO CODICE, SENZA MODIFICHE)
   const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto ${
     brandName !== "non specificato"
       ? `per il brand "${brandName}"`
@@ -694,6 +742,61 @@ Per ogni domanda:
 Assicurati che il JSON sia valido e non includa altro testo o caratteri.
 
 Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecniche. Mantieni le domande e le opzioni concise e facili da comprendere.`;
+
+  // ====== 1) Tenta PRIMA il modello RL con IL TUO PROMPT ======
+  // subito prima della chiamata RL
+  const state = {
+    service,
+    brandNamePresent: brandName !== "non specificato",
+    projectType,
+    businessField,
+  };
+
+  // assicuriamoci che askedQuestions sia un array di stringhe
+  const askedSanitized = (askedQuestions || [])
+    .map((q) => (typeof q === "string" ? q : q?.question || ""))
+    .filter(Boolean);
+
+  if (process.env.RL_API_BASE) {
+    console.log("[RL] enabled:", process.env.RL_API_BASE);
+    try {
+      const rawList = await rlGenerateQuestions(
+        promptBase,
+        { state, askedQuestions: askedSanitized, n: 6 },
+        { base: process.env.RL_API_BASE } // 👈 passa esplicitamente la base
+      );
+      console.log(
+        "[RL] rawList:",
+        Array.isArray(rawList) ? rawList.length : typeof rawList
+      );
+
+      const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
+      if (normalized.length) {
+        const askedSet = new Set(askedSanitized);
+        const pick =
+          normalized.find((q) => q && !askedSet.has(q.question)) ||
+          normalized[0];
+        if (pick?.question) {
+          pick.__provider = "RL";
+          return pick;
+        }
+      } else {
+        console.warn("[RL] nessuna domanda valida -> fallback OpenAI");
+      }
+    } catch (e) {
+      console.warn(
+        "[RL] fallback OpenAI:",
+        e?.response?.status || e.code || e.message
+      );
+    }
+  } else {
+    console.log("[RL] disabilitato (manca RL_API_BASE) -> uso OpenAI");
+  }
+
+  // ====== 2) FALLBACK: il tuo codice OpenAI ORIGINALE (INVARIATO) ======
+  if (!process.env.OPEN_AI_KEY) {
+    throw new Error("OPEN_AI_KEY mancante");
+  }
 
   try {
     const response = await axios.post(
@@ -753,6 +856,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     }
 
     if (askedQuestions.includes(aiQuestion.question)) {
+      // ricorsione con le stesse regole (prompt invariato)
       return await generateQuestionForService(
         service,
         formData,
@@ -763,6 +867,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
 
     // Sanitizza la domanda prima di salvarla
     aiQuestion.question = sanitizeKey(aiQuestion.question);
+    aiQuestion.__provider = "OpenAI";
 
     return aiQuestion;
   } catch (error) {
@@ -771,7 +876,6 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
 };
 
 const buildFontQuestion = (formData = {}) => ({
-  // usa una chiave stabile + sanitizzata, così non cambia mai
   question: sanitizeKey("Quale stile tipografico preferisci per il logo?"),
   options: [
     "Serif",
@@ -783,6 +887,7 @@ const buildFontQuestion = (formData = {}) => ({
   ],
   type: "font_selection",
   requiresInput: false,
+  __provider: "rule", // 👈 per distinguerla
 });
 
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
@@ -819,21 +924,22 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
             }
           }
         }
-        return res.json({ question: pending || null });
+        if (pending && typeof pending === "object" && !pending.__provider) {
+          pending.__provider =
+            pending.type === "font_selection" ? "rule" : "unknown(db)";
+        }
+        return res.json({ sessionId, question: pending || null });
       }
     } else {
       console.warn("DB non connesso: salto il resume session");
     }
 
     // --- da qui creazione nuovo log ---
-
-    // campi form
     const formData = { ...req.body };
 
-    // currentLogo opzionale; se c'è salviamo il filename
+    // currentLogo opzionale
     if (req.file) {
       formData.currentLogo = req.file.filename;
-      console.log("File salvato in:", req.file.path);
     }
 
     // normalizza campi
@@ -858,30 +964,28 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     if (!servicesSelected.length)
       return res.status(400).json({ error: "Nessun servizio selezionato" });
 
-    // 🔐 fail-fast se manca la chiave OpenAI
-    if (!process.env.OPEN_AI_KEY) {
+    // 🔐 chiave OpenAI
+    if (!process.env.RL_API_BASE && !process.env.OPEN_AI_KEY) {
       return res.status(500).json({
         error: "CONFIG",
-        details: "OPEN_AI_KEY mancante sul server",
+        details: "Nessun generatore configurato (RL_API_BASE o OPEN_AI_KEY)",
       });
     }
 
     // genera prima domanda
     const firstService = servicesSelected[0];
+    const aiQuestion = await generateQuestionForService(
+      firstService,
+      formData,
+      {},
+      []
+    );
+    console.log(`[QGEN][${aiQuestion.__provider}] first:`, aiQuestion.question);
 
-let aiQuestion;
-aiQuestion = await generateQuestionForService(
-  firstService,
-  formData,
-  {},
-  []
-);
-
-
-    // salva solo se DB è pronto; altrimenti rispondi lo stesso
+    // salva in DB
     if (!isDbReady()) {
       console.warn("DB non connesso: rispondo senza persistere");
-      return res.json({ question: aiQuestion });
+      return res.json({ sessionId, question: aiQuestion });
     }
 
     const newLogEntry = new ProjectLog({
@@ -900,7 +1004,7 @@ aiQuestion = await generateQuestionForService(
     });
 
     await newLogEntry.save();
-    res.json({ question: aiQuestion });
+    return res.json({ sessionId, question: aiQuestion });
   } catch (error) {
     console.error("Errore in /api/generate:", error?.response?.data || error);
     res.status(500).json({
@@ -952,46 +1056,50 @@ app.post("/api/nextQuestion", async (req, res) => {
     }
 
     const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-const askedQuestionsForNextService =
-  logEntry.askedQuestions.get(nextService) || [];
+    const askedQuestionsForNextService =
+      logEntry.askedQuestions.get(nextService) || [];
 
-// controlla se la font question è già stata fatta in qualsiasi momento
-const hasFontQuestion = (logEntry.questions || []).some(
-  (q) => q && q.type === "font_selection"
-);
-
-let aiQuestion;
-if (nextService === "Logo") {
-  // se è la prima domanda del servizio Logo -> NON chiedere i font
-  if (askedQuestionsForNextService.length === 0) {
-    aiQuestion = await generateQuestionForService(
-      nextService,
-      logEntry.formData,
-      Object.fromEntries(logEntry.answers),
-      askedQuestionsForNextService
+    // controlla se la font question è già stata fatta in qualsiasi momento
+    const hasFontQuestion = (logEntry.questions || []).some(
+      (q) => q && q.type === "font_selection"
     );
-  } else if (!hasFontQuestion) {
-    // dalla seconda domanda in poi, se i font non sono ancora stati chiesti -> forzali ora
-    aiQuestion = buildFontQuestion(logEntry.formData);
-  } else {
-    // font già chiesti -> domanda normale
-    aiQuestion = await generateQuestionForService(
-      nextService,
-      logEntry.formData,
-      Object.fromEntries(logEntry.answers),
-      askedQuestionsForNextService
-    );
-  }
-} else {
-  // servizi diversi da Logo -> normale
-  aiQuestion = await generateQuestionForService(
-    nextService,
-    logEntry.formData,
-    Object.fromEntries(logEntry.answers),
-    askedQuestionsForNextService
-  );
-}
 
+    let aiQuestion;
+    if (nextService === "Logo") {
+      // se è la prima domanda del servizio Logo -> NON chiedere i font
+      if (askedQuestionsForNextService.length === 0) {
+        aiQuestion = await generateQuestionForService(
+          nextService,
+          logEntry.formData,
+          Object.fromEntries(logEntry.answers),
+          askedQuestionsForNextService
+        );
+      } else if (!hasFontQuestion) {
+        // dalla seconda domanda in poi, se i font non sono ancora stati chiesti -> forzali ora
+        aiQuestion = buildFontQuestion(logEntry.formData);
+      } else {
+        // font già chiesti -> domanda normale
+        aiQuestion = await generateQuestionForService(
+          nextService,
+          logEntry.formData,
+          Object.fromEntries(logEntry.answers),
+          askedQuestionsForNextService
+        );
+      }
+    } else {
+      // servizi diversi da Logo -> normale
+      aiQuestion = await generateQuestionForService(
+        nextService,
+        logEntry.formData,
+        Object.fromEntries(logEntry.answers),
+        askedQuestionsForNextService
+      );
+    }
+
+    console.log(
+      `[QGEN][${aiQuestion.__provider}] next (${nextService}):`,
+      aiQuestion.question
+    );
 
     logEntry.questions.push(aiQuestion);
     logEntry.questionCount += 1;
@@ -1130,9 +1238,10 @@ ${formattedAnswers}
 
 app.get("/api/health", (_req, res) => {
   res.json({
-    dbReadyState: mongoose.connection.readyState, // 1 = connected
+    dbReadyState: mongoose.connection.readyState,
     hasMongoUri: !!process.env.MONGO_URI,
     hasOpenAIKey: !!process.env.OPEN_AI_KEY,
+    hasRlBase: !!process.env.RL_API_BASE,
   });
 });
 
