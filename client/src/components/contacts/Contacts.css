@@ -6,7 +6,7 @@
   width: 100vw;
   background-color: var(--background-color);
   box-sizing: border-box;
-  padding: 20px; /* Padding opzionale per desktop */
+  /* padding: 20px; Padding opzionale per desktop */
   transition: all .5s ease;
 }
 
@@ -15,6 +15,6 @@
     height: auto; /* Rimuove l’altezza fissa su mobile */
     min-height: 100vh; /* Mantiene un’altezza minima per coerenza */
     align-items: center; /* Centra verticalmente come su desktop */
-    padding: 20px 20px 60px 20px; /* Padding solo in basso per il pulsante */
+    padding: 0px 0px 60px 0px;
   }
 }

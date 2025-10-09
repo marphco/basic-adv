@@ -192,7 +192,7 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
     <div className="services-section" ref={servicesRef}>
       <div className="chi-siamo">
         <div className="services-text">
-          Ci mettiamo meno tempo a farlo che a spiegartelo.
+          ci mettiamo meno tempo a farlo che a spiegartelo.
         </div>
       </div>
       <div className="services-content">

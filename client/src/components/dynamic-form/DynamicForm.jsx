@@ -1,4 +1,12 @@
-import { useState, useCallback, useMemo, useRef, useEffect, createRef } from "react";
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+  createRef,
+  useLayoutEffect,
+} from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import "./DynamicForm.css";
@@ -8,9 +16,23 @@ import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+gsap.registerPlugin(ScrollTrigger);
 
-const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8080")
-  .replace(/\/$/, "");
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return isMobile;
+};
+
+const API_BASE = (
+  import.meta.env.VITE_API_URL || "http://localhost:8080"
+).replace(/\/$/, "");
 const api = axios.create({
   baseURL: `${API_BASE}/api`, // sempre verso il dominio API
 });
@@ -37,6 +59,9 @@ const defaultFormData = {
 };
 
 const DynamicForm = () => {
+  const isMobile = useIsMobile();
+  const railRef = useRef(null);
+
   const [sessionId, setSessionId] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -84,12 +109,50 @@ const DynamicForm = () => {
   ];
 
   const refsByKey = useRef(new Map());
-const getRefForKey = (key) => {
-  if (!refsByKey.current.has(key)) {
-    refsByKey.current.set(key, createRef());
-  }
-  return refsByKey.current.get(key);
-};
+  const getRefForKey = (key) => {
+    if (!refsByKey.current.has(key)) {
+      refsByKey.current.set(key, createRef());
+    }
+    return refsByKey.current.get(key);
+  };
+
+  useLayoutEffect(() => {
+    const railEl = railRef.current;
+    const txt = railEl?.querySelector(".form-rail-text");
+    if (!txt) return;
+
+    const ctx = gsap.context(() => {
+      if (isMobile) {
+        gsap.set(txt, { x: "90vw" });
+        gsap.to(txt, {
+          x: -200,
+          ease: "none",
+          scrollTrigger: {
+            trigger: txt,
+            start: "top 100%",
+            end: "top 20%",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+      } else {
+        const railEl = railRef.current;
+        gsap.to(txt, {
+          yPercent: 30,
+          ease: "none",
+          scrollTrigger: {
+            trigger: railEl, // la sezione, come in Portfolio
+            start: "center top",
+            end: "bottom top",
+            scrub: 2,
+            invalidateOnRefresh: true,
+          },
+        });
+      }
+    }, railRef);
+
+    return () => ctx.revert();
+  }, [isMobile]);
 
   // Hydration: ricostruisce lo stato se il sito si ricarica/ridimensiona
   useEffect(() => {
@@ -410,27 +473,29 @@ const getRefForKey = (key) => {
           }
 
           const response = await api.post("/generate", formDataToSend, {
-  headers: { "Content-Type": "multipart/form-data" },
-});
+            headers: { "Content-Type": "multipart/form-data" },
+          });
 
-// 👇 prende { sessionId, question } dal server
-const { sessionId: sid, question } = response.data || {};
+          // 👇 prende { sessionId, question } dal server
+          const { sessionId: sid, question } = response.data || {};
 
-// 👇 se il backend decide il sessionId (o lo conferma), mettilo nello stato
-if (sid && sid !== sessionId) {
-  setSessionId(sid);
-}
+          // 👇 se il backend decide il sessionId (o lo conferma), mettilo nello stato
+          if (sid && sid !== sessionId) {
+            setSessionId(sid);
+          }
 
-if (question && question.type === "font_selection") {
-  setIsFontQuestionAsked(true);
-}
-setCurrentQuestion(question);
-setQuestionNumber(1);
+          if (question && question.type === "font_selection") {
+            setIsFontQuestionAsked(true);
+          }
+          setCurrentQuestion(question);
+          setQuestionNumber(1);
 
-console.log("[Provider prima domanda]", question?.__provider || "unknown");
+          console.log(
+            "[Provider prima domanda]",
+            question?.__provider || "unknown"
+          );
 
-setErrors({});
-
+          setErrors({});
         } catch (error) {
           console.error(
             "Errore nella generazione della prima domanda AI:",
@@ -459,12 +524,18 @@ setErrors({});
       const userAnswer = {
         [currentQuestion.question]: answers[currentQuestion.question],
       };
-      const response = await api.post("/nextQuestion", { currentAnswer: userAnswer, sessionId }, { headers: { "Content-Type": "application/json" } });
-
+      const response = await api.post(
+        "/nextQuestion",
+        { currentAnswer: userAnswer, sessionId },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       const nextQuestion = response.data.question;
 
-      console.log("[Provider prossima domanda]", nextQuestion?.__provider || "unknown");
+      console.log(
+        "[Provider prossima domanda]",
+        nextQuestion?.__provider || "unknown"
+      );
 
       if (!nextQuestion || questionNumber >= 10) {
         setIsCompleted(true);
@@ -538,25 +609,28 @@ setErrors({});
     setLoading(true);
     try {
       // 1) Salva sul DB: se va ok, mostra subito il "grazie"
-await api.post(
-  "/submitLog",
-  { contactInfo: formData.contactInfo, sessionId },
-  { headers: { "Content-Type": "application/json" } }
-);
+      await api.post(
+        "/submitLog",
+        { contactInfo: formData.contactInfo, sessionId },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-setShowThankYou(true); // 👈 non aspettiamo le email
+      setShowThankYou(true); // 👈 non aspettiamo le email
 
-// 2) Prova a mandare le email in background (non blocca la UX)
-api
-  .post(
-    "/sendEmails",
-    { contactInfo: formData.contactInfo, sessionId },
-    { headers: { "Content-Type": "application/json" } }
-  )
-  .catch((err) => {
-    console.error("SendEmails failed:", err?.response?.data || err?.message);
-    // opzionale: potresti loggare lato server se ti serve
-  });
+      // 2) Prova a mandare le email in background (non blocca la UX)
+      api
+        .post(
+          "/sendEmails",
+          { contactInfo: formData.contactInfo, sessionId },
+          { headers: { "Content-Type": "application/json" } }
+        )
+        .catch((err) => {
+          console.error(
+            "SendEmails failed:",
+            err?.response?.data || err?.message
+          );
+          // opzionale: potresti loggare lato server se ti serve
+        });
 
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -577,149 +651,158 @@ api
   }, [showThankYou]);
 
   // === key + ref per l'istanza corrente della domanda ===
-const qKey = currentQuestion
-  ? `${currentQuestion.question}-${questionNumber}`
-  : "none";
+  const qKey = currentQuestion
+    ? `${currentQuestion.question}-${questionNumber}`
+    : "none";
 
-const nodeRef = currentQuestion ? getRefForKey(qKey) : null;
+  const nodeRef = currentQuestion ? getRefForKey(qKey) : null;
 
   return (
-    <div className="dynamic-form">
-      {!currentQuestion && !isCompleted && !showThankYou && (
-        <div>
-          <h2>Pronto a fare sul serio?</h2>
-          <p>
-            <span>Categoria, servizi, clic: fatto.</span> Semplice, no?
-          </p>
+    <div className="form-rail-section" ref={railRef}>
+      <div className="form-rail">
+        <div className="form-rail-text">
+          hai scrollato abbastanza: scegli e partiamo.
         </div>
-      )}
+      </div>
 
-      <div>
-  {currentQuestion && (
-    <TransitionGroup component={null}>
-      <CSSTransition
-        key={qKey}
-        nodeRef={nodeRef}
-        classNames="fade-question"
-        timeout={350}
-        mountOnEnter
-        unmountOnExit
-      >
-        <div ref={nodeRef}>
-          <QuestionForm
-            currentQuestion={currentQuestion}
-            questionNumber={questionNumber}
-            answers={answers}
-            handleAnswerSubmit={handleAnswerSubmit}
-            handleInputChange={handleInputChange}
-            handleAnswerChange={handleAnswerChange}
+      {/* Pannello form (90vw), centrato verticalmente come prima */}
+      <div className="dynamic-form">
+        {!currentQuestion && !isCompleted && !showThankYou && (
+          <div className="dynamic-form-hero">
+            <h2>Pronto a fare sul serio?</h2>
+            <p>
+              <span>Categoria, servizi, clic: fatto.</span> Semplice, no?
+            </p>
+          </div>
+        )}
+
+        <div>
+          {currentQuestion && (
+            <TransitionGroup component={null}>
+              <CSSTransition
+                key={qKey}
+                nodeRef={nodeRef}
+                classNames="fade-question"
+                timeout={350}
+                mountOnEnter
+                unmountOnExit
+              >
+                <div ref={nodeRef}>
+                  <QuestionForm
+                    currentQuestion={currentQuestion}
+                    questionNumber={questionNumber}
+                    answers={answers}
+                    handleAnswerSubmit={handleAnswerSubmit}
+                    handleInputChange={handleInputChange}
+                    handleAnswerChange={handleAnswerChange}
+                    loading={loading}
+                    errors={errors}
+                    formData={formData}
+                  />
+                </div>
+              </CSSTransition>
+            </TransitionGroup>
+          )}
+        </div>
+
+        {showThankYou ? (
+          <ThankYouMessage handleRestart={handleRestart} />
+        ) : isCompleted ? (
+          <ContactForm
+            formData={formData}
+            setFormData={setFormData}
+            handleSubmitContactInfo={handleSubmitContactInfo}
             loading={loading}
             errors={errors}
-            formData={formData}
+            setErrors={setErrors}
           />
-        </div>
-      </CSSTransition>
-    </TransitionGroup>
-  )}
-</div>
-
-      {showThankYou ? (
-        <ThankYouMessage handleRestart={handleRestart} />
-      ) : isCompleted ? (
-        <ContactForm
-          formData={formData}
-          setFormData={setFormData}
-          handleSubmitContactInfo={handleSubmitContactInfo}
-          loading={loading}
-          errors={errors}
-          setErrors={setErrors}
-        />
-      ) : (
-        !currentQuestion && (
-          <div>
-            <InitialForm
-              formData={formData}
-              handleFormInputChange={handleFormInputChange}
-              businessFields={businessFields}
-              selectedCategories={selectedCategories}
-              toggleCategory={toggleCategory}
-              selectedServices={selectedServices}
-              toggleService={toggleService}
-              services={services}
-              categoriesRequiringBrand={categoriesRequiringBrand}
-              errors={errors}
-            />
-            {selectedCategories.length > 0 && (
-              <div className="budget-and-submit">
-                <div className="form-group budget-group">
-                  <h3 className="budget-title">Qual è il tuo budget?</h3>
-                  <div className="budget-circles">
-                    {[
-                      { label: "Non lo so", value: "unknown" },
-                      { label: "0-1.000 €", value: "0-1000" },
-                      { label: "1-5.000 €", value: "1000-5000" },
-                      { label: "5-10.000 €", value: "5000-10000" },
-                      { label: "+10.000 €", value: "10000+" },
-                    ].map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className={`budget-circle ${
-                          formData.budget === option.value ? "selected" : ""
-                        }`}
-                        onClick={() =>
-                          handleFormInputChange({
-                            target: { name: "budget", value: option.value },
-                          })
-                        }
-                      >
-                        <span className="budget-label">{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {errors.budget && (
-                    <span className="error-message budget-error">
-                      <FaExclamationCircle className="error-icon" />
-                      {errors.budget}
-                    </span>
-                  )}
-                </div>
-                <div className="form-actions">
-                  <button
-                    className="submit-btn"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      generateFirstQuestion();
-                    }}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <FaSpinner className="spinner" />
-                    ) : (
-                      "COMINCIAMO!"
+        ) : (
+          !currentQuestion && (
+            <div>
+              <InitialForm
+                formData={formData}
+                handleFormInputChange={handleFormInputChange}
+                businessFields={businessFields}
+                selectedCategories={selectedCategories}
+                toggleCategory={toggleCategory}
+                selectedServices={selectedServices}
+                toggleService={toggleService}
+                services={services}
+                categoriesRequiringBrand={categoriesRequiringBrand}
+                errors={errors}
+              />
+              {selectedCategories.length > 0 && (
+                <div className="budget-and-submit">
+                  <div className="form-group budget-group">
+                    <h3 className="budget-title">Qual è il tuo budget?</h3>
+                    <div className="budget-circles">
+                      {[
+                        { label: "Non lo so", value: "unknown" },
+                        { label: "0-1.000 €", value: "0-1000" },
+                        { label: "1-5.000 €", value: "1000-5000" },
+                        { label: "5-10.000 €", value: "5000-10000" },
+                        { label: "+10.000 €", value: "10000+" },
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          className={`budget-circle ${
+                            formData.budget === option.value ? "selected" : ""
+                          }`}
+                          onClick={() =>
+                            handleFormInputChange({
+                              target: { name: "budget", value: option.value },
+                            })
+                          }
+                        >
+                          <span className="budget-label">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {errors.budget && (
+                      <span className="error-message budget-error">
+                        <FaExclamationCircle className="error-icon" />
+                        {errors.budget}
+                      </span>
                     )}
-                  </button>
-                  {errors.general && (
-                    <span className="error-message">
-                      <FaExclamationCircle className="error-icon" />
-                      <span
-                        dangerouslySetInnerHTML={{ __html: errors.general }}
-                      />
-                    </span>
-                  )}
-                  {Object.keys(errors).length > 0 && !errors.general && (
-                    <span className="error-message">
-                      <FaExclamationCircle className="error-icon" />
-                      Errore nel form. Controlla i campi sopra.
-                    </span>
-                  )}
+                  </div>
+                  <div className="form-actions">
+                    <button
+                      className="submit-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        generateFirstQuestion();
+                      }}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <FaSpinner className="spinner" />
+                      ) : (
+                        "COMINCIAMO!"
+                      )}
+                    </button>
+                    {errors.general && (
+                      <span className="error-message">
+                        <FaExclamationCircle className="error-icon" />
+                        <span
+                          dangerouslySetInnerHTML={{ __html: errors.general }}
+                        />
+                      </span>
+                    )}
+                    {Object.keys(errors).length > 0 && !errors.general && (
+                      <span className="error-message">
+                        <FaExclamationCircle className="error-icon" />
+                        Errore nel form. Controlla i campi sopra.
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )
-      )}
+              )}
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 };

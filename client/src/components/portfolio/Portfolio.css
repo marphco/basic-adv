@@ -1,14 +1,13 @@
 /* Portfolio.css */
 .portfolio-section {
   position: relative;
+  display: grid;
+  grid-template-columns: 10vw 90vw;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: rgb(238, 238, 238);
-  transition: color 0.5s ease, background-color 0.5s ease;
-  display: flex;
+  background: #000; /* fallback */
 }
-
 .portfolio {
   background-color: var(--foreground-color);
   display: flex;
@@ -17,7 +16,59 @@
   height: 100vh;
   font-weight: 100;
 }
+.desktop-pane {
+  grid-column: 2;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+   background-color: var(--background-color);
+  transition: background-color .5s ease;
+}
+.desktop-wallpaper {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
 
+.mac-menubar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0; /* occupa tutta la desktop-pane */
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  z-index: 4; /* sopra folders e testo */
+  background: rgba(22, 22, 22, 0.32);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.menubar-left,
+.menubar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mac-menubar .apple {
+  font-size: 16px;
+}
+.mac-menubar .menu-item {
+  opacity: 0.9;
+}
+.mac-menubar .menu-item.active {
+  font-weight: 600;
+  opacity: 1;
+}
 .portfolio-text {
   display: flex;
   justify-content: flex-start;
@@ -30,22 +81,20 @@
   white-space: nowrap;
   z-index: 1000;
 }
-
 .portfolio-content {
   position: relative;
-  width: 20%;
-  height: 100%;
+  width: 100%;
+  height: 85vh;
+  margin-top: 7vh;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   padding: 20px;
   z-index: 2;
 }
-
 .portfolio-content.mobile {
   flex-direction: column;
 }
-
 .folder {
   cursor: move;
   padding: 10px;
@@ -58,23 +107,20 @@
   margin-bottom: 20px;
   position: relative;
 }
-
 .folder.mobile {
   position: static;
   margin-bottom: 0;
 }
-
 .folder-icon {
   width: 50px;
   height: 50px;
 }
-
 .folder-name {
   margin-top: 5px;
   font-size: 12px;
-  color: inherit;
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
 }
-
 .project-section-overlay {
   display: none;
   position: fixed;
@@ -89,7 +135,6 @@
   justify-content: center;
   align-items: flex-end;
 }
-
 .project-section {
   position: relative;
   width: 100vw;
@@ -102,11 +147,9 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
-
 .project-section.show {
   transform: translateY(0%);
 }
-
 .project-section-close {
   position: absolute;
   top: 72px !important;
@@ -117,106 +160,94 @@
   border: none;
   color: var(--primary-text-color);
   z-index: 10001;
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 }
-
 body.project-section-open {
   overflow: hidden;
 }
-
 body.freeze-scroll {
   overflow: hidden; /* Blocca lo scroll del body quando applicato */
 }
-
 .project-section-overlay,
 .project-section {
   overscroll-behavior: none;
 }
-
 .intro-portfolio {
-  position: fixed;
-  bottom: 10%;
-  padding-left: 10em;
+  position: absolute !important; /* rimuove il fixed */
+  bottom: 12%;
+  --blockW: min(60ch, 72vw); /* larghezza leggibile */
+  width: var(--blockW);
+  left: calc(50% - var(--blockW) / 2); /* centrato nella desktop-pane */
+  text-align: left;
   font-size: 2rem;
-  max-width: 80vw;
   font-weight: 100;
   line-height: 1.1;
-  color: var(--primary-text-color) !important;
-  transition: color 0.5s ease-in-out;
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
+  z-index: 3; /* sopra il gradient */
+  padding: 0; /* niente padding-left “10em” */
 }
-
 .intro-mobile {
   display: none;
 }
-
 body[data-theme="dark"] .portfolio-section {
   background-color: black;
   transition: background-color 0.5s ease;
 }
-
 body[data-theme="dark"] .folder-name,
 .intro-portfolio .intro-mobile {
   color: white;
   transition: color 0.5s ease-in-out;
 }
-
 .project-left {
   width: 50vw;
   height: 100vh;
   overflow-y: auto;
   scrollbar-width: none;
 }
-
 .project-right {
   background-color: var(--background-color);
-  transition: background-color .5s ease;
+  transition: background-color 0.5s ease;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   padding: 0 9vw !important;
 }
-
 .project-right h2 {
   font-size: 4rem;
   font-weight: 700;
   color: var(--primary-text-color);
   padding-bottom: 1vh;
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 }
-
 .project-right p {
   color: var(--primary-text-color);
   font-size: 1rem;
   font-weight: 200;
   line-height: 1.5;
-  transition: color .5s ease;
+  transition: color 0.5s ease;
   padding-bottom: 2vh;
 }
-
 .project-right button {
   padding: 1rem;
   background-color: var(--foreground-color);
   color: white;
   border: 1px solid var(--foreground-color);
-  transition: all .5s ease;
+  transition: all 0.5s ease;
 }
-
 .project-right button:hover {
   background-color: var(--background-color);
   color: var(--primary-text-color);
 }
-
 .project-text button {
   padding: 1rem;
   max-width: fit-content;
   background-color: var(--foreground-color);
   color: white;
   border: 1px solid var(--foreground-color);
-  transition: all .5s ease;
-}
-
-/* Stili per l'overlay del desktop */
+  transition: all 0.5s ease;
+} /* Stili per l'overlay del desktop */
 .project-section-overlay {
   position: fixed;
   top: 0;
@@ -224,14 +255,12 @@ body[data-theme="dark"] .folder-name,
   width: 100vw;
   height: 100vh;
   z-index: 9999;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-/* Stili per la sezione principale del desktop */
+} /* Stili per la sezione principale del desktop */
 .project-section {
   width: 100vw;
   height: 100vh;
@@ -239,9 +268,7 @@ body[data-theme="dark"] .folder-name,
   flex-direction: row;
   overflow: hidden;
   position: relative;
-}
-
-/* Stili per il pulsante di chiusura */
+} /* Stili per il pulsante di chiusura */
 .project-section-close {
   position: absolute;
   top: 20px;
@@ -251,38 +278,29 @@ body[data-theme="dark"] .folder-name,
   border: none;
   font-size: 1rem;
   cursor: pointer;
-}
-
-/* Stili per il contenitore del contenuto */
+} /* Stili per il contenitore del contenuto */
 .project-content {
   display: flex;
   width: 100%;
   height: 100%;
-}
-
-/* Stili per la colonna sinistra (immagini) */
+} /* Stili per la colonna sinistra (immagini) */
 .project-left {
   width: 50vw;
   height: 100vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-
 .project-left img {
   width: 100%;
   display: block;
-}
-
-/* Stili per la colonna destra (testo) */
+} /* Stili per la colonna destra (testo) */
 .project-right {
   width: 50vw;
   height: 100vh;
   overflow-y: auto;
   padding: 20px;
   box-sizing: border-box;
-}
-
-/* Stili per la pagina mobile */
+} /* Stili per la pagina mobile */
 .project-section-mobile-page {
   width: 100vw;
   min-height: 100vh;
@@ -290,10 +308,8 @@ body[data-theme="dark"] .folder-name,
   overflow-x: hidden;
   position: relative;
   background-color: var(--background-color);
-  transition: all .5s ease;
-}
-
-/* Stili per la sezione superiore mobile */
+  transition: all 0.5s ease;
+} /* Stili per la sezione superiore mobile */
 .project-section-mobile-top {
   position: fixed;
   top: 0;
@@ -304,16 +320,13 @@ body[data-theme="dark"] .folder-name,
   box-sizing: border-box;
   z-index: 10;
   overflow-y: auto;
-}
-
-/* Stili per la sezione inferiore mobile (immagini) */
+} /* Stili per la sezione inferiore mobile (immagini) */
 .project-section-mobile-bottom {
   margin-top: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
 }
-
 .project-section-mobile-bottom img {
   display: block;
   width: 100vw;
@@ -322,30 +335,173 @@ body[data-theme="dark"] .folder-name,
   margin: 0;
   padding: 0;
 }
-
 .project-text .project-title {
   font-size: 2rem;
   color: var(--primary-text-color);
-  transition: all .5s ease;
+  transition: all 0.5s ease;
   padding-bottom: 1vh;
 }
-
 .project-text .project-description {
   color: var(--primary-text-color);
-  transition: all .5s ease;
+  transition: all 0.5s ease;
   font-weight: 200;
   padding-bottom: 2vh;
 }
+Sfondo “desktop” Sonoma .mac-desktop {
+  /* lo sfondo vero e proprio */
+  background-image: var(--bg-url);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* piccolo extra: effetto “vivo” */
+} /* banda di lettura in basso (sfuma verso l’alto) */
+.mac-desktop::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0; /* stick in basso */
+  height: 38vh; /* regola a gusto */
+  pointer-events: none;
+  z-index: 1; /* sotto il testo ma sopra lo sfondo */
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(0, 0, 0, 0.55) 35%,
+    rgba(0, 0, 0, 0) 75%
+  );
+} /* fai stare le cartelle e il testo sopra il gradient */
+.portfolio-content,
+.intro-portfolio,
+.portfolio {
+  position: relative;
+  z-index: 20000000;
+} /* evita che le cartelle finiscano sotto la menubar */
+.portfolio-content {
+  /* 20px (tuo padding) + altezza menubar */
+  padding-top: calc(20px + var(--menubar-h));
+}
 
 
-/* Responsività */
+/* ---------- Dock ---------- */
+.dock-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--dock-side-pad, 24px); /* padding ai lati configurabile */
+  z-index: 20000002;
+  pointer-events: none; /* la dock interna resta cliccabile */
+}
+
+/* La dock ora è relativa e si scala dentro la banda */
+.dock {
+  position: relative;                  /* <- prima era absolute */
+  transform: scale(var(--dock-scale, 1));  /* <- scala auto-fit */
+  transform-origin: 50% 100%;
+  pointer-events: auto;                /* clic abilitati */
+
+  /* resto identico a prima */
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 24px;
+  background: rgba(25,25,25,0.32);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
+
+  /* variabili di default */
+  --dock-scale: 1;
+  --dock-max: 1.7;     /* magnification base */
+  --dock-radius: 120;  /* raggio di influenza base */
+}
+.dock::after {
+  content: "";
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(to top, rgba(255,255,255,0.08), transparent 40%);
+  opacity: .7;
+}
+
+/* animiamo tre custom properties super smooth */
+@property --ty { syntax: "<length-percentage>"; inherits: false; initial-value: 0%; }
+@property --sx { syntax: "<number>";            inherits: false; initial-value: 1;  }
+@property --sy { syntax: "<number>";            inherits: false; initial-value: 1;  }
+
+.dock-item {
+  -webkit-appearance: none; appearance: none;
+  background: transparent; border: 0; cursor: pointer; padding: 0; margin: 0;
+  width: 56px; height: 56px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  --ty: 0%; --sx: 1; --sy: 1;
+  transform: translateY(var(--ty)) scale(1) scaleX(var(--sx)) scaleY(var(--sy));
+  transform-origin: 50% 100%;
+  transition: transform 180ms cubic-bezier(.2,.8,.2,1), filter 120ms ease;
+  will-change: transform;
+}
+.dock-item:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 3px; border-radius: 14px; }
+
+.dock-item img {
+  width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+}
+
+/* pallino attività */
+.dock-dot {
+  position: absolute; bottom: -6px; left: 50%;
+  width: 4px; height: 4px; border-radius: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 0 8px rgba(255,255,255,.6);
+}
+
+/* separatore unico */
+.dock-sep {
+  width: 1px; height: 52px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.5), rgba(255,255,255,.2));
+  margin: auto 6px;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,.4));
+}
+
+/* --- Bounce spring (1.6s, più picchi, con squash) --- */
+@keyframes dock-bounce-spring {
+  0%   { --ty: 0%;  --sx: 1;    --sy: 1;    }
+  12%  { --ty: -30%; --sx: 1;    --sy: 1;    }   /* salita */
+  25%  { --ty: 0%;  --sx: 1.10; --sy: .92;  }   /* impatto 1 (squash) */
+  38%  { --ty: -18%; --sx: 1;    --sy: 1;    }
+  54%  { --ty: 0%;  --sx: 1.06; --sy: .96;  }   /* impatto 2 */
+  68%  { --ty: -10%; --sx: 1;    --sy: 1;    }
+  80%  { --ty: 0%;  --sx: 1.04; --sy: .98;  }   /* impatto 3 */
+  90%  { --ty: -5%;  --sx: 1;    --sy: 1;    }
+  100% { --ty: 0%;  --sx: 1;    --sy: 1;    }
+}
+.dock-item.bounce {
+  animation: dock-bounce-spring 1.6s cubic-bezier(.2,.7,.2,1);
+}
+
+@media (max-width: 768px) { .dock { display: none; } }
+
+
+
+
+
 @media screen and (max-width: 768px) {
   .portfolio-section {
-    flex-direction: column;
+    display: block;
+    grid-template-columns: none;
     height: auto;
     overflow: visible;
   }
 
+  .desktop-pane {
+    height: auto;           
+    min-height: 100vh;
+    overflow: visible;
+    display: flow-root; 
+  }
+  
   .portfolio {
     width: 100%;
     height: auto;
@@ -358,25 +514,33 @@ body[data-theme="dark"] .folder-name,
     margin: 20px 0;
   }
 
+  .mac-menubar {
+    display: none;
+  }
+
   .portfolio-content {
     width: 100%;
     height: auto;
     flex-direction: row !important;
   }
-
-  .folder-icon {
-    width: 100px;
-    height: 100px;
-  }
-
   .folder.mobile {
-    width: 50%;
+    position: static;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
   }
-
+  .folder-icon {
+    width: clamp(92px, 24vw, 140px);
+    height: clamp(92px, 24vw, 140px);
+  }
+  .folder-name {
+    margin-top: 8px;
+    font-size: clamp(12px, 2.6vw, 16px);
+    text-align: center;
+  }
   .intro-portfolio {
     display: none;
   }
-
   .intro-mobile {
     display: block !important;
     padding: 40px;
@@ -389,12 +553,32 @@ body[data-theme="dark"] .folder-name,
     position: static;
     margin: 20px;
   }
-
   .intro-mobile p {
     font-size: 1em;
     font-weight: 200;
     max-width: 80vw;
     line-height: 1.1;
   }
+  .desktop-wallpaper {
+    height: auto;
+  }
 
+  .portfolio-content {
+    width: 100%;
+    height: auto;
+    margin-top: 0;
+    padding: 24px 20px 80px;
+    /* ⚠️ elimina la vecchia riga:
+       flex-direction: row !important; */
+  }
+
+  /* --- QUI LA GRIGLIA A 2 COLONNE --- */
+  .portfolio-content.mobile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: auto;           /* cresce con i contenuti */
+    gap: clamp(16px, 4vw, 28px) 24px;
+    align-items: start;
+    justify-items: center;
+  }
 }

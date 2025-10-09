@@ -1,0 +1,65 @@
+:root {
+  --menubar-h: 28px;          /* altezza barra */
+  --menubar-pad-x: 10px;      /* padding orizzontale */
+}
+
+/* barra translucida con blur come macOS */
+.mac-menubar{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--menubar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--menubar-pad-x);
+  color: #fff;
+  z-index: 10000;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  background: linear-gradient(180deg, rgba(30,30,30,.65), rgba(30,30,30,.35));
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  user-select: none;
+}
+
+.mac-left, .mac-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mac-apple{
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  opacity: .95;
+}
+
+.mac-menu{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.mac-item{
+  opacity: .9;
+}
+.mac-item--active{
+  font-weight: 600;
+  opacity: 1;
+}
+
+.mac-clock{
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  letter-spacing: .2px;
+  opacity: .95;
+}
+
+/* mobile: barra un filo più alta */
+@media (max-width: 768px){
+  :root{ --menubar-h: 36px; }
+  .mac-menu{ display:none; }
+}

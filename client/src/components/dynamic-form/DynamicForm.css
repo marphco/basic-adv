@@ -88,7 +88,7 @@ input:-webkit-autofill:active {
 }
 
 .submit-btn {
-  padding: 1.70rem 3rem !important;
+  padding: 1.7rem 3rem !important;
   background-color: var(--foreground-color);
   color: white;
   border: none;
@@ -167,8 +167,12 @@ input:-webkit-autofill:active {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .first-question-fade {
@@ -255,6 +259,60 @@ input:-webkit-autofill:active {
   justify-content: flex-start;
 }
 
+.form-rail-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: 10vw 90vw;
+  width: 100vw;
+  min-height: 100vh; /* permette alla sezione di crescere */
+  overflow-x: hidden; /* tieni pulito solo in orizzontale */
+  overflow-y: visible; /* (default) niente clip verticale */
+  background: var(--background-color);
+  align-items: start; /* necessario per sticky dentro grid */
+}
+
+.form-rail {
+  grid-column: 1;
+  background-color: var(--foreground-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky; /* come nel Portfolio aggiornato */
+  top: 0;
+  height: 100vh; /* colonna sempre alta quanto la viewport */
+}
+
+.form-rail-text {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  color: white;
+  font-size: 3em;
+  font-weight: 100;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+/* Pannello del form (90vw) centrato verticalmente */
+.dynamic-form {
+  grid-column: 2;
+  min-height: 100vh;
+  padding: 0 clamp(16px, 6vw, 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* centratura verticale iniziale */
+}
+
+/* per sicurezza: il blocco headline sopra il form */
+.dynamic-form-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
 @media screen and (min-width: 769px) {
   .budget-and-submit {
     display: flex;
@@ -277,6 +335,7 @@ input:-webkit-autofill:active {
   .dynamic-form h2 {
     font-size: 3rem;
     padding-top: 3vh;
+    text-align: left;
     line-height: 1;
     padding-left: 10vw;
   }
@@ -306,6 +365,21 @@ input:-webkit-autofill:active {
   .budget-group .budget-error {
     justify-content: center;
   }
+  .form-rail-section {
+    display: block;
+  }
+  .form-rail {
+    width: 100%;
+    height: auto;
+  }
+  .form-rail-text {
+    transform: rotate(0deg);
+    font-size: 2em;
+    margin: 20px 0;
+  }
+  .dynamic-form {
+    padding-top: 0; /* niente gap extra sotto la banda */
+  }
 }
 
 @media (max-height: 900px) and (min-width: 769px) {
@@ -331,7 +405,7 @@ input:-webkit-autofill:active {
 
 @media (max-width: 1440px) and (min-width: 1024px) {
   .initial-form {
-    zoom: 0.90; /* 67% di zoom */
+    zoom: 0.9; /* 67% di zoom */
     /* Oppure con transform */
     /* transform: scale(0.67); */
     /* transform-origin: top left; */ /* Per evitare spostamenti */
