@@ -8,7 +8,7 @@ import storica3 from "../../assets/storica3.jpg";
 import storica4 from "../../assets/storica4.jpg";
 import storica5 from "../../assets/storica5.jpg";
 import storica6 from "../../assets/storica6.jpg";
-import marcoImage from "../../assets/marco.jpg"; 
+import marcoImage from "../../assets/marco.jpg";
 import alessioImage from "../../assets/alessio.jpg";
 import giorgiaImage from "../../assets/giorgia.jpg";
 import "./AboutUs.css";
@@ -34,7 +34,8 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
     const windowContent = windowSectionRef.current;
 
     // Aggiungi un controllo per evitare errori nel caso in cui i riferimenti siano nulli
-    if (!aboutSection || !imagesContainer || !wallContent || !windowContent) return;
+    if (!aboutSection || !imagesContainer || !wallContent || !windowContent)
+      return;
 
     // Reset degli stili iniziali
     gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
@@ -44,9 +45,21 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
 
     const tl = gsap.timeline({ paused: true });
     const totalWidth = aboutSection.scrollWidth - container.clientWidth;
-    tl.to(imagesContainer, { x: -container.clientWidth, ease: "none", duration: 1 }, 0)
-      .to(wallContent, { backgroundPosition: "60% 80%", ease: "none", duration: 1 }, 0)
-      .to(windowContent, { backgroundPosition: "100% 50%", ease: "none", duration: 1 }, 1);
+    tl.to(
+      imagesContainer,
+      { x: -container.clientWidth, ease: "none", duration: 1 },
+      0
+    )
+      .to(
+        wallContent,
+        { backgroundPosition: "60% 80%", ease: "none", duration: 1 },
+        0
+      )
+      .to(
+        windowContent,
+        { backgroundPosition: "100% 50%", ease: "none", duration: 1 },
+        1
+      );
 
     container.scrollLeft = 0;
     tl.progress(0);
@@ -66,9 +79,21 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
       const oldProg = totalWidth ? container.scrollLeft / totalWidth : 0;
       const newTotal = aboutSection.scrollWidth - container.clientWidth;
       tl.clear();
-      tl.to(imagesContainer, { x: -container.clientWidth, ease: "none", duration: 1 }, 0)
-        .to(wallContent, { backgroundPosition: "60% 80%", ease: "none", duration: 1 }, 0)
-        .to(windowContent, { backgroundPosition: "100% 50%", ease: "none", duration: 1 }, 1);
+      tl.to(
+        imagesContainer,
+        { x: -container.clientWidth, ease: "none", duration: 1 },
+        0
+      )
+        .to(
+          wallContent,
+          { backgroundPosition: "60% 80%", ease: "none", duration: 1 },
+          0
+        )
+        .to(
+          windowContent,
+          { backgroundPosition: "100% 50%", ease: "none", duration: 1 },
+          1
+        );
       container.scrollLeft = newTotal * oldProg;
       tl.progress(oldProg);
     }
@@ -83,14 +108,21 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
   }, [isOpen, overlayRef]);
 
   const [activeAccordion, setActiveAccordion] = useState("marco");
-  
+
   useEffect(() => {
     if (marcoPanelRef.current)
-      gsap.set(marcoPanelRef.current, { xPercent: activeAccordion === "marco" ? 0 : 100 });
+      gsap.set(marcoPanelRef.current, {
+        xPercent: activeAccordion === "marco" ? 0 : 100,
+      });
     if (alessioPanelRef.current)
-      gsap.set(alessioPanelRef.current, { xPercent: activeAccordion === "alessio" ? 0 : 100 });
+      gsap.set(alessioPanelRef.current, {
+        xPercent: activeAccordion === "alessio" ? 0 : 100,
+      });
     if (giorgiaPanelRef.current)
-      gsap.set(giorgiaPanelRef.current, { xPercent: activeAccordion === "giorgia" ? 0 : 100 });
+      gsap.set(giorgiaPanelRef.current, {
+        xPercent: activeAccordion === "giorgia" ? 0 : 100,
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Impostazione iniziale, Marco sarà quello attivo
 
   const openPanel = (name) => {
@@ -122,7 +154,6 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
     setActiveAccordion(name);
   };
 
-
   return (
     <section className="aboutus-section" ref={aboutRef}>
       <div className="slider-section">
@@ -136,8 +167,12 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
             <img src={storica6} alt="Momento Storico 6" />
           </div>
           <div className="aboutus-title-container">
-            <h1 className="aboutus-title">MAGARI LEGGILA<br />UN PO&apos; DI STORIA</h1>
-            <p className="aboutus-subtitle">se fai skip sei senza cuore</p>
+            <h1 className="aboutus-title">
+              MAGARI LEGGI
+              <br />
+              UN PO&apos; DI STORIA
+            </h1>
+            <p className="aboutus-subtitle">Se skippi, niente rancore (quasi).</p>
           </div>
         </div>
       </div>
@@ -145,13 +180,21 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
         <div className="storia-content">
           <div className="storia-text">
             <h2>
-              Dall&apos;Inchiostro<br />al Digitale:<br />La nostra passione,<br /><span className="accent">le nostre radici</span>
+              Dall&apos;inchiostro
+              <br />
+              al digitale:
+              <br />
+              la nostra passione,
+              <br />
+              <span className="accent">le nostre radici</span>
             </h2>
             <p>
-              Siamo nati e cresciuti tra le macchine da stampa della piccola bottega di nostro padre, Crescenzo.
-              Da lui abbiamo ereditato non solo la passione per la comunicazione, ma anche il cuore di chi
-              non si ferma mai davanti a una sfida. Dopo la sua scomparsa, abbiamo deciso di trasformare quella scintilla
-              in un fuoco creativo, portando avanti la sua visione con innovazione e coraggio.
+              Siamo cresciuti tra le macchine da stampa della bottega di nostro
+              padre, Crescenzo. Da lui abbiamo ereditato la passione per la
+              comunicazione e la testardaggine di chi non si ferma davanti a una
+              sfida. Dopo la sua scomparsa abbiamo trasformato quella scintilla
+              in un fuoco creativo, portando avanti la sua visione con
+              innovazione e coraggio.
             </p>
           </div>
         </div>
@@ -161,10 +204,12 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
         <div className="storia-moderna">
           <div className="storia-moderna-text">
             <p>
-              Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro team, giovane ma con esperienza da vendere,
-              domina l&apos;arte della comunicazione a 360 gradi, dal web alla stampa, fino alle app. Siamo professionisti con un
-              pizzico di audacia, pronti a rivoluzionare il mercato con strategie digitali vincenti e design che fanno parlare
-              di sé. Per noi, fare la differenza non è solo un lavoro, è uno stile di vita.
+              Siamo l&apos;incontro tra tradizione e tecnologia. Un team giovane
+              con esperienza da vendere: dal web alla stampa, fino alle app.
+              Facciamo strategia e design che parlano al mercato. Siamo curiosi,
+              un po&apos; audaci, e puntiamo a far crescere i brand con
+              risultati misurabili. Per noi fare la differenza non è solo un
+              lavoro: è uno stile di vita.
             </p>
           </div>
         </div>
@@ -173,25 +218,33 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
         <div className="window-content" ref={windowSectionRef} />
         <div className="window-text">
           <p>
-            Basic è il punto d&apos;incontro tra tradizione e tecnologia. Il nostro team, giovane ma con esperienza da vendere,
-            domina l&apos;arte della comunicazione a 360 gradi, dal web alla stampa, fino alle app. Siamo professionisti con un
-            pizzico di audacia, pronti a rivoluzionare il mercato con strategie digitali vincenti e design che fanno parlare
-            di sé. Per noi, fare la differenza non è solo un lavoro, è uno stile di vita.
+            Siamo l&apos;incontro tra tradizione e tecnologia. Un team giovane
+            con esperienza da vendere: dal web alla stampa, fino alle app.
+            Facciamo strategia e design che parlano al mercato. Siamo curiosi,
+            un po&apos; audaci, e puntiamo a far crescere i brand con risultati
+            misurabili. Per noi fare la differenza non è solo un lavoro: è uno
+            stile di vita.
           </p>
         </div>
       </div>
       <div className="accordion-container">
         <div className="accordion-buttons">
           <button
-            className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`}
+            className={`accordion-button ${
+              activeAccordion === "marco" ? "active" : ""
+            }`}
             onClick={() => toggleAccordion("marco")}
           ></button>
           <button
-            className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`}
+            className={`accordion-button ${
+              activeAccordion === "alessio" ? "active" : ""
+            }`}
             onClick={() => toggleAccordion("alessio")}
           ></button>
           <button
-            className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`}
+            className={`accordion-button ${
+              activeAccordion === "giorgia" ? "active" : ""
+            }`}
             onClick={() => toggleAccordion("giorgia")}
           ></button>
         </div>
@@ -201,9 +254,12 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                    missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                    universale, creando con la precisione di un artigiano del futuro.
+                    Un innovatore nel campo digitale, con una mente che vede
+                    oltre l&apos;orizzonte, ha trasformato ogni progetto in una
+                    missione di scoperta, dove ogni pixel è un passo verso nuovi
+                    mondi. A New York, trova ispirazione, ma la sua visione è
+                    universale, creando con la precisione di un artigiano del
+                    futuro.
                   </p>
                 </div>
                 <div className="team-title">
@@ -222,9 +278,14 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                    missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                    universale, creando con la precisione di un artigiano del futuro.
+                    Ha lo sguardo di chi vede il brand prima ancora del logo.
+                    Mette in fila idee, immagini e parole finché trovano la loro
+                    voce. Cresciuto tra tipografia e fotografia, impasta luce,
+                    caratteri e ritmo, costruendo sistemi visivi che non cedono
+                    al tempo. Guida il team senza alzare la voce: prova,
+                    sbaglia, ricompone, finché tutto “suona”. Con lui la
+                    creatività ha una direzione—quello che vedi è bello perché
+                    funziona.
                   </p>
                 </div>
                 <div className="team-title">
@@ -243,9 +304,13 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
               <div className="team-left">
                 <div className="team-text">
                   <p>
-                    Un innovatore nel campo digitale, con una mente che vede oltre l&apos;orizzonte, ha trasformato ogni progetto in una
-                    missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è
-                    universale, creando con la precisione di un artigiano del futuro.
+                    Dove gli altri vedono file, lei vede ritmo. Tra griglie e
+                    livelli, esadecimali e profili colore, atterra i concept nel
+                    mondo reale. Impagina, adatta, ottimizza: dal post al
+                    packaging, dal web alla stampa—con pixel allineati, neri che
+                    sono neri e loghi che non mollano mai. Precisione gentile,
+                    velocità disarmante. Se qualcosa sembra semplice, è perché
+                    Giorgia ci ha lavorato.
                   </p>
                 </div>
                 <div className="team-title">

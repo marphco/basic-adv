@@ -671,7 +671,7 @@ const DynamicForm = () => {
           <div className="dynamic-form-hero">
             <h2>Pronto a fare sul serio?</h2>
             <p>
-              <span>Categoria, servizi, clic: fatto.</span> Semplice, no?
+              <span>Scegli categoria e servizi.</span> Al resto pensiamo noi.
             </p>
           </div>
         )}

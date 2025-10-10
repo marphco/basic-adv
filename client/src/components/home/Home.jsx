@@ -1,9 +1,9 @@
-import { useRef, useLayoutEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import './Home.css';
-import logoLight from '../../assets/logo-light.svg';
-import logoDark from '../../assets/logo-dark.svg';
+import { useRef, useLayoutEffect } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import "./Home.css";
+import logoLight from "../../assets/logo-light.svg";
+import logoDark from "../../assets/logo-dark.svg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,27 +16,27 @@ const Home = () => {
       if (!homeRef.current) return;
 
       const homeElem = homeRef.current;
-      const stripesContainer = homeElem.querySelector('.stripes-container');
+      const stripesContainer = homeElem.querySelector(".stripes-container");
 
       if (stripesContainer) {
         // Creazione delle strisce
-        stripesContainer.innerHTML = '';
+        stripesContainer.innerHTML = "";
         const numStripes = 20;
         for (let i = 0; i < numStripes; i++) {
-          const stripe = document.createElement('div');
-          stripe.classList.add('stripe');
+          const stripe = document.createElement("div");
+          stripe.classList.add("stripe");
           stripesContainer.appendChild(stripe);
         }
 
         gsap.set(stripesContainer, { opacity: 0 });
-        const stripes = stripesContainer.querySelectorAll('.stripe');
+        const stripes = stripesContainer.querySelectorAll(".stripe");
 
         const tlHome = gsap.timeline({
           scrollTrigger: {
             trigger: homeElem,
-            start: 'top top',
-            end: 'bottom 80%',
-            scrub: true
+            start: "top top",
+            end: "bottom 80%",
+            scrub: true,
           },
         });
 
@@ -45,31 +45,36 @@ const Home = () => {
           stripes,
           {
             scaleX: 1,
-            transformOrigin: 'left center',
+            transformOrigin: "left center",
             stagger: 0.1,
-            ease: 'none',
+            ease: "none",
           },
-          '-=0.3'
+          "-=0.3"
         );
       }
     }, homeRef);
 
     return () => ctx.revert();
   }, []);
-  
+
   return (
     <div className="home-container" ref={homeRef}>
       <div className="stripes-container"></div>
       <div className="home-text">
         <p>
-          Se si tratta di comunicare, noi ci siamo. Trasformiamo idee in storie, progetti in esperienze. Non importa dove, non importa come: il tuo pubblico sta aspettando.
-          <br />
-          <span className="tagline">E noi siamo qui per farlo innamorare.</span>
+          Se c’è da comunicare, ci siamo.<br/>Trasformiamo idee in storie, progetti in esperienze.
+          <br/>Il tuo pubblico non aspetta:
+          <br/>
+          <span className="tagline">facciamolo innamorare.</span>
         </p>
       </div>
       <div className="bottom-section">
         <div className="home-logo-container">
-          <img src={logoLight} alt="Logo Light" className="home-logo light-logo" />
+          <img
+            src={logoLight}
+            alt="Logo Light"
+            className="home-logo light-logo"
+          />
           <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo" />
         </div>
         <div className="scroll-hint">

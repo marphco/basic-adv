@@ -192,15 +192,13 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
     <div className="services-section" ref={servicesRef}>
       <div className="chi-siamo">
         <div className="services-text">
-          ci mettiamo meno tempo a farlo che a spiegartelo.
+          ci mettiamo meno a farlo che a spiegarlo.
         </div>
       </div>
       <div className="services-content">
         <div className="intro">
           <p>
-            Più il progetto è ambizioso, più grande è la sfida – ed è proprio lì
-            che ci piace stare, sempre pronti a superare i nostri limiti. Hai un
-            progetto? Noi siamo già al lavoro.
+            Più il progetto punta in alto,<br/>più ci piace. Le sfide grandi sono la nostra routine.<br/> Hai una visione?<br/><span>Partiamo.</span>
           </p>
         </div>
         <div className="horizontal-line" ref={lineRef}></div>
