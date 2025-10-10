@@ -77,9 +77,16 @@ html,
   padding: 0;
   height: 100%;
   width: 100%;
-  cursor: none !important;
+  /* cursor: none !important; */
   overscroll-behavior: none;
 }
+
+/* Cursor custom solo desktop con puntatore preciso */
+@media (pointer: fine) and (hover: hover) {
+  #root.custom-cursor { cursor: none; }
+}
+/* Sempre mostrare il cursore durante focus via tastiera */
+:focus-visible { outline: 2px solid var(--foreground-color); outline-offset: 2px; }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
