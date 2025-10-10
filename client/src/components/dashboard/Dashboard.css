@@ -789,7 +789,28 @@ td.centered .feedback-btn {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 10px;               /* spazio tra bottone e meta */
+}
+
+/* meta con iconcine */
+.file-list-section .file-details {
+  display: inline-flex;    /* da testo -> inline-flex */
+  align-items: center;
+  gap: 14px;               /* spazio tra data e dimensione */
+  font-size: 0.9rem;
+  color: var(--primary-text-color);
+  transition: color 0.5s ease;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;                /* spazio icona-testo */
+}
+.meta-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--foreground-color);  /* stessa tinta usata per le altre iconcine */
 }
 
 /* bottone compatto, stesso stile di .download-btn */
