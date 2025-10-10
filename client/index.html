@@ -15,7 +15,54 @@
       href="/fonts/inter/Inter-roman.var.woff2"
       crossorigin
     />
-    
+
+    <style id="critical">
+      /* Reset leggero per evitare flash strani */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* Variabili tema usate subito (bg, testo) */
+      :root {
+        --background-color: #fafafa;
+        --foreground-color: #ff4003;
+        --primary-text-color: #161616;
+        --secondary-text-color: #ffffff;
+        --contrast-color: #000000;
+      }
+      [data-theme="dark"] {
+        --background-color: #161616;
+        --primary-text-color: #f6f6f6;
+      }
+
+      /* Font base; già preloaded, qui solo la dichiarazione */
+      @font-face {
+        font-family: "Inter";
+        src: url("/fonts/inter/Inter-roman.var.woff2")
+          format("woff2-variations");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+        font-named-instance: "Regular";
+      }
+
+      /* Layout e background del fold */
+      html,
+      body,
+      #root {
+        height: 100%;
+        width: 100%;
+        background-color: var(--background-color);
+      }
+      body {
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+
     <!-- index.css -->
     <link
       rel="preload"
