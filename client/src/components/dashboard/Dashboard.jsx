@@ -266,41 +266,40 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   };
 
   // Normalizza Map -> plain object (utile se in futuro torneranno Map)
-const toPlain = (maybeMap) =>
-  maybeMap && !(maybeMap instanceof Map)
-    ? maybeMap
-    : Object.fromEntries(maybeMap || []);
+  const toPlain = (maybeMap) =>
+    maybeMap && !(maybeMap instanceof Map)
+      ? maybeMap
+      : Object.fromEntries(maybeMap || []);
 
-const handleRatingsPatch = (sessionId, key, field, value) => {
-  // 1) patch nella LISTA requests
-  setRequests((prev) =>
-    prev.map((r) => {
-      if (r.sessionId !== sessionId) return r;
-      const prevRatings = toPlain(r.ratings);
+  const handleRatingsPatch = (sessionId, key, field, value) => {
+    // 1) patch nella LISTA requests
+    setRequests((prev) =>
+      prev.map((r) => {
+        if (r.sessionId !== sessionId) return r;
+        const prevRatings = toPlain(r.ratings);
+        return {
+          ...r,
+          ratings: {
+            ...prevRatings,
+            [key]: { ...(prevRatings?.[key] || {}), [field]: value },
+          },
+        };
+      })
+    );
+
+    // 2) se la scheda è aperta su quella request, patcha anche selectedRequest
+    setSelectedRequest((prev) => {
+      if (!prev || prev.sessionId !== sessionId) return prev;
+      const prevRatings = toPlain(prev.ratings);
       return {
-        ...r,
+        ...prev,
         ratings: {
           ...prevRatings,
           [key]: { ...(prevRatings?.[key] || {}), [field]: value },
         },
       };
-    })
-  );
-
-  // 2) se la scheda è aperta su quella request, patcha anche selectedRequest
-  setSelectedRequest((prev) => {
-    if (!prev || prev.sessionId !== sessionId) return prev;
-    const prevRatings = toPlain(prev.ratings);
-    return {
-      ...prev,
-      ratings: {
-        ...prevRatings,
-        [key]: { ...(prevRatings?.[key] || {}), [field]: value },
-      },
-    };
-  });
-};
-
+    });
+  };
 
   return (
     <div className={`dashboard ${isDark ? "dark-theme" : "light-theme"}`}>
@@ -346,6 +345,11 @@ const handleRatingsPatch = (sessionId, key, field, value) => {
             fileList={fileList}
             deleteFile={deleteFile}
             API_URL={API_URL}
+            onOpenRequest={(sessionId) => {
+              const req = requests.find((r) => r.sessionId === sessionId);
+              if (req) setSelectedRequest(req);
+              else alert("Richiesta non trovata nell'elenco corrente.");
+            }}
           />
         ) : (
           <RequestList

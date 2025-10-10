@@ -785,6 +785,43 @@ td.centered .feedback-btn {
   border: 1px solid var(--error-color);
 }
 
+/* la seconda riga con data + badge */
+.file-list-section ul li .file-meta-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between; /* mette il badge a destra */
+}
+
+/* badge “richiesta” */
+.req-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.12);
+  border: 1px solid var(--foreground-color);
+  text-decoration: none;
+  transition: transform .15s ease, background-color .3s ease, color .3s ease;
+  white-space: nowrap;
+}
+.req-badge:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--foreground-color-rgb), 0.18);
+  color: #fff;
+}
+
+/* per i file legacy senza sessionId nel nome */
+.req-badge--unknown {
+  color: var(--primary-text-color);
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+}
+
 /* Stile per la riga dei controlli */
 .header-controls {
   display: flex;

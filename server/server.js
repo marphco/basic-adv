@@ -265,11 +265,17 @@ async function sendViaKeliWebhook({ to, subject, text, replyTo }) {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+    const ext = path.extname(file.originalname || "");
+    const base = file.fieldname || "file";
+    const rawSid = (req.body?.sessionId || "").toString();
+    const safeSid = rawSid.replace(/[^a-z0-9-]/gi, "").slice(0, 64) || "no-session";
+    const uniq = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+
+    // Esempio: currentLogo-<sessionId>-<timestamp>-<rnd>.pdf
+    cb(null, `${base}-${safeSid}-${uniq}${ext}`);
   },
 });
+
 
 const upload = multer({
   storage: storage,
@@ -466,30 +472,77 @@ app.get("/api/download/:filename", (req, res) => {
 // Endpoint per elencare i file
 app.get("/api/uploads/list", authenticateToken, async (req, res) => {
   try {
-    const uploadDir = UPLOAD_DIR;
-    const files = await fs.promises.readdir(uploadDir);
-    const fileDetails = await Promise.all(
-      files
-        .filter((file) => file !== "lost+found")
-        .map(async (file) => {
-          const filePath = path.join(uploadDir, file);
-          const stats = await fs.promises.stat(filePath);
-          if (stats.isFile()) {
-            return {
-              name: file,
-              size: stats.size,
-              lastModified: stats.mtime,
-            };
-          }
-          return null;
-        })
-    );
-    res.json({ files: fileDetails.filter((file) => file !== null) });
+    const files = (await fs.promises.readdir(UPLOAD_DIR))
+      .filter((f) => f !== "lost+found");
+
+    const details = (await Promise.all(files.map(async (name) => {
+      const filePath = path.join(UPLOAD_DIR, name);
+      const stats = await fs.promises.stat(filePath);
+      return stats.isFile() ? { name, size: stats.size, lastModified: stats.mtime } : null;
+    }))).filter(Boolean);
+
+    const names = details.map(f => f.name);
+
+    // --- 1) Join diretto: filename salvato nel DB (vecchi file) ---
+    const requestByFilename = new Map();
+    if (isDbReady() && names.length) {
+      const logs = await ProjectLog.find(
+        { "formData.currentLogo": { $in: names } }
+      ).select("sessionId formData.brandName formData.contactInfo createdAt formData.currentLogo").lean();
+
+      for (const l of logs) {
+        requestByFilename.set(l.formData.currentLogo, {
+          sessionId: l.sessionId,
+          brandName: l.formData?.brandName || "",
+          contactName: l.formData?.contactInfo?.name || "",
+          contactEmail: l.formData?.contactInfo?.email || "",
+          createdAt: l.createdAt,
+        });
+      }
+    }
+
+    // --- 2) Fallback: estrai sessionId dal nome file (nuovi file) ---
+    const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const parsedIds = Array.from(new Set(
+      names
+        .filter(n => !requestByFilename.has(n))
+        .map(n => (n.match(UUID_RE)?.[0] || null))
+        .filter(Boolean)
+    ));
+
+    const requestBySession = new Map();
+    if (isDbReady() && parsedIds.length) {
+      const logsById = await ProjectLog.find(
+        { sessionId: { $in: parsedIds } }
+      ).select("sessionId formData.brandName formData.contactInfo createdAt").lean();
+
+      for (const l of logsById) {
+        requestBySession.set(l.sessionId, {
+          sessionId: l.sessionId,
+          brandName: l.formData?.brandName || "",
+          contactName: l.formData?.contactInfo?.name || "",
+          contactEmail: l.formData?.contactInfo?.email || "",
+          createdAt: l.createdAt,
+        });
+      }
+    }
+
+    const result = details.map(f => {
+      const byName = requestByFilename.get(f.name);
+      const bySid = (!byName && f.name.match(UUID_RE))
+        ? requestBySession.get(f.name.match(UUID_RE)[0])
+        : null;
+
+      return { ...f, request: byName || bySid || null };
+    });
+
+    res.json({ files: result });
   } catch (error) {
     console.error("Errore nel recupero dei file:", error);
     res.status(500).json({ error: "Errore nel recupero dei file" });
   }
 });
+
 
 // Endpoint per cancellare un file
 app.delete(
