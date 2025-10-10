@@ -7,7 +7,6 @@
   flex-direction: row;
   background-color: rgb(238, 238, 238);
   transition: background-color 0.5s ease-in-out;
-  font-family: "Inter", Arial, Helvetica, sans-serif;
 }
 
 /* slider-section: 100vw per le immagini */

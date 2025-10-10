@@ -58,3 +58,31 @@ body.no-default-cursor a {
   --toggle-fg: #00a6ff;
   --contrast-color: #000000;
 }
+
+/* Inter variabile self-hosted */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter/Inter-roman.var.woff2") format("woff2-variations");
+  font-weight: 100 900;           
+  font-style: normal;
+  font-display: swap;            
+  font-named-instance: "Regular";  
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter/Inter-italic.var.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+  font-named-instance: "Italic";
+}
+
+/* Famiglia globale + fallback di sistema */
+:root, body {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI",
+               Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-optical-sizing: auto; 
+  font-synthesis-weight: none; 
+  font-synthesis-style: none;  
+}
