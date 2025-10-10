@@ -785,41 +785,40 @@ td.centered .feedback-btn {
   border: 1px solid var(--error-color);
 }
 
-/* la seconda riga con data + badge */
 .file-list-section ul li .file-meta-row {
   display: flex;
-  gap: 12px;
   align-items: center;
-  justify-content: space-between; /* mette il badge a destra */
+  justify-content: flex-start;
+  gap: 10px;
 }
 
-/* badge “richiesta” */
-.req-badge {
+/* bottone compatto, stesso stile di .download-btn */
+.link-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: var(--foreground-color);
-  background: rgba(var(--foreground-color-rgb), 0.12);
-  border: 1px solid var(--foreground-color);
-  text-decoration: none;
-  transition: transform .15s ease, background-color .3s ease, color .3s ease;
-  white-space: nowrap;
-}
-.req-badge:hover {
-  transform: translateY(-1px);
-  background: rgba(var(--foreground-color-rgb), 0.18);
+  justify-content: center;
+  background: var(--foreground-color);
   color: #fff;
+  border: 1px solid var(--foreground-color);
+  border-radius: 4px;
+  font-weight: 300;
+  transition: all 0.5s ease;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-/* per i file legacy senza sessionId nel nome */
-.req-badge--unknown {
-  color: var(--primary-text-color);
-  border-color: rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.06);
+.link-btn:hover {
+  background: var(--background-color);
+  color: var(--foreground-color);
+  border: 1px solid var(--foreground-color);
+  text-decoration: none;
+}
+
+/* versione piccola */
+.link-btn--sm {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  line-height: 1;
 }
 
 /* Stile per la riga dei controlli */

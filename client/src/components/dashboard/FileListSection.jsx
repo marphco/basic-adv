@@ -1,43 +1,35 @@
 import PropTypes from "prop-types";
 import { formatDate } from "./DashboardUtils";
 
-const shortId = (id) => (id ? `${id.slice(0,4)}…${id.slice(-4)}` : "");
-
 const FileListSection = ({ fileList, deleteFile, API_URL, onOpenRequest }) => (
   <div className="file-list-section">
     <h2>Lista Allegati</h2>
     {fileList.length > 0 ? (
       <ul>
         {fileList.map((file, index) => {
-          const req = file.request; // { sessionId, brandName, contactName, ... } oppure null
+          const req = file.request; // { sessionId, ... } oppure null
           return (
             <li key={index}>
               <div className="file-info">
                 <div className="file-name">{file.name}</div>
 
                 <div className="file-meta-row">
-                  <div className="file-details">
-                    {Math.round(file.size / 1024)} KB&nbsp;–&nbsp;
-                    {formatDate(new Date(file.lastModified))}
-                  </div>
-
-                  {req?.sessionId ? (
+                  {req?.sessionId && (
                     <button
                       type="button"
-                      className="req-badge"
+                      className="link-btn link-btn--sm"
                       onClick={() => onOpenRequest(req.sessionId)}
-                      title={[
-                        req.brandName,
-                        req.contactName && `• ${req.contactName}`,
-                      ].filter(Boolean).join(" ")}
+                      title="Apri la richiesta collegata"
                     >
-                      Richiesta {shortId(req.sessionId)}
+                      Apri richiesta
                     </button>
-                  ) : (
-                    <span className="req-badge req-badge--unknown" title="File non associato">
-                      Richiesta sconosciuta
-                    </span>
                   )}
+
+                  <div className="file-details">
+                    {formatDate(new Date(file.lastModified))}&nbsp;–&nbsp;
+                    {Math.round(file.size / 1024)} KB
+                    
+                  </div>
                 </div>
               </div>
 
