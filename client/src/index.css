@@ -2,24 +2,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", Arial, Helvetica, sans-serif;
-  /* transition: background-color 500ms ease-in-out, color 500ms ease-in-out; */
 }
 
-/* Nasconde il cursore predefinito su tutto il sito */
-body.no-default-cursor *,
-body.no-default-cursor *::before,
-body.no-default-cursor *::after {
-  cursor: none !important;
+html,
+body {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Nasconde il cursore predefinito su tutto il sito */
-body.no-default-cursor,
-body.no-default-cursor *,
-body.no-default-cursor *::before,
-body.no-default-cursor *::after {
-  cursor: none !important;
-}
+#root.no-cursor, #root.no-cursor * { cursor: none !important; }
+#root.no-cursor input, #root.no-cursor textarea, #root.no-cursor select { cursor: text !important; }
+#root.no-cursor a, #root.no-cursor button, #root.no-cursor [role="button"] { cursor: pointer !important; }
 
 /* Mostra il cursore testo per gli input di testo e select */
 body.no-default-cursor input[type="text"],
@@ -63,26 +56,27 @@ body.no-default-cursor a {
 @font-face {
   font-family: "Inter";
   src: url("/fonts/inter/Inter-roman.var.woff2") format("woff2-variations");
-  font-weight: 100 900;           
+  font-weight: 100 900;
   font-style: normal;
-  font-display: swap;            
-  font-named-instance: "Regular";  
+  font-display: swap;
+  font-named-instance: "Regular";
 }
 
-@font-face {
+/* @font-face {
   font-family: "Inter";
   src: url("/fonts/inter/Inter-italic.var.woff2") format("woff2-variations");
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
   font-named-instance: "Italic";
-}
+} */
 
 /* Famiglia globale + fallback di sistema */
-:root, body {
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI",
-               Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-optical-sizing: auto; 
-  font-synthesis-weight: none; 
-  font-synthesis-style: none;  
+:root,
+body {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-optical-sizing: auto;
+  font-synthesis-weight: none;
+  font-synthesis-style: none;
 }
