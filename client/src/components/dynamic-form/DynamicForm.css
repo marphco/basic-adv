@@ -264,11 +264,10 @@ input:-webkit-autofill:active {
   display: grid;
   grid-template-columns: 10vw 90vw;
   width: 100vw;
-  min-height: 100vh; /* permette alla sezione di crescere */
-  overflow-x: hidden; /* tieni pulito solo in orizzontale */
-  overflow-y: visible; /* (default) niente clip verticale */
-  background: var(--background-color);
-  align-items: start; /* necessario per sticky dentro grid */
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: visible;
+  align-items: start;
 }
 
 .form-rail {
@@ -277,9 +276,9 @@ input:-webkit-autofill:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: sticky; /* come nel Portfolio aggiornato */
+  position: sticky;
   top: 0;
-  height: 100vh; /* colonna sempre alta quanto la viewport */
+  height: 100vh;
 }
 
 .form-rail-text {
