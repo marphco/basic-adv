@@ -15,22 +15,25 @@
       href="/fonts/inter/Inter-roman.var.woff2"
       crossorigin
     />
-    <link rel="preload" as="style" href="/src/index.css" />
+    
+    <!-- index.css -->
     <link
-      rel="stylesheet"
+      rel="preload"
       href="/src/index.css"
-      media="print"
-      onload="this.media='all'"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
     <noscript><link rel="stylesheet" href="/src/index.css" /></noscript>
-    <link rel="preload" as="style" href="/src/App.css" />
+
+    <!-- App.css -->
     <link
-      rel="stylesheet"
+      rel="preload"
       href="/src/App.css"
-      media="print"
-      onload="this.media='all'"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
     <noscript><link rel="stylesheet" href="/src/App.css" /></noscript>
+
     <link rel="preload" as="script" href="/src/main.jsx" />
 
     <title>BASIC.</title>
