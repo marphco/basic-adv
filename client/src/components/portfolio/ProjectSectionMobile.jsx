@@ -49,7 +49,7 @@ export default function ProjectSectionMobilePage() {
 
     Promise.all(loadPromises).then(() => {
       imagesRow.scrollTop = 896; // Inizia con immagine 4 visibile
-      console.log("Immagini caricate, scrollTop:", imagesRow.scrollTop);
+      // console.log("Immagini caricate, scrollTop:", imagesRow.scrollTop);
     });
   }, []);
 

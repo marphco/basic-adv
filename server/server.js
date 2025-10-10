@@ -524,9 +524,9 @@ app.put(
       const { sessionId } = req.params;
       const { feedback } = req.body;
 
-      console.log(
-        `Tentativo di aggiornamento feedback per sessionId: ${sessionId}, nuovo valore: ${feedback}`
-      );
+      // console.log(
+      //   `Tentativo di aggiornamento feedback per sessionId: ${sessionId}, nuovo valore: ${feedback}`
+      // );
 
       if (typeof feedback !== "boolean") {
         console.log("Errore: Il campo feedback non è un booleano");
@@ -550,9 +550,9 @@ app.put(
       await projectLog.save();
 
       const updatedLog = await ProjectLog.findOne({ sessionId });
-      console.log(
-        `Feedback aggiornato con successo per sessionId: ${sessionId}, valore salvato: ${updatedLog.feedback}`
-      );
+      // console.log(
+      //   `Feedback aggiornato con successo per sessionId: ${sessionId}, valore salvato: ${updatedLog.feedback}`
+      // );
 
       res.status(200).json({
         message: "Feedback aggiornato con successo",
@@ -764,17 +764,17 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     .filter(Boolean);
 
   if (process.env.RL_API_BASE) {
-    console.log("[RL] enabled:", process.env.RL_API_BASE);
+    // console.log("[RL] enabled:", process.env.RL_API_BASE);
     try {
       const rawList = await rlGenerateQuestions(
         promptBase,
         { state, askedQuestions: askedSanitized, n: 6 },
         { base: process.env.RL_API_BASE } // 👈 passa esplicitamente la base
       );
-      console.log(
-        "[RL] rawList:",
-        Array.isArray(rawList) ? rawList.length : typeof rawList
-      );
+      // console.log(
+      //   "[RL] rawList:",
+      //   Array.isArray(rawList) ? rawList.length : typeof rawList
+      // );
 
       const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
       if (normalized.length) {
@@ -796,7 +796,7 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
       );
     }
   } else {
-    console.log("[RL] disabilitato (manca RL_API_BASE) -> uso OpenAI");
+    // console.log("[RL] disabilitato (manca RL_API_BASE) -> uso OpenAI");
   }
 
   // ====== 2) FALLBACK: il tuo codice OpenAI ORIGINALE (INVARIATO) ======
@@ -986,7 +986,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       {},
       []
     );
-    console.log(`[QGEN][${aiQuestion.__provider}] first:`, aiQuestion.question);
+    // console.log(`[QGEN][${aiQuestion.__provider}] first:`, aiQuestion.question);
 
     // salva in DB
     if (!isDbReady()) {
@@ -1102,10 +1102,10 @@ app.post("/api/nextQuestion", async (req, res) => {
       );
     }
 
-    console.log(
-      `[QGEN][${aiQuestion.__provider}] next (${nextService}):`,
-      aiQuestion.question
-    );
+    // console.log(
+    //   `[QGEN][${aiQuestion.__provider}] next (${nextService}):`,
+    //   aiQuestion.question
+    // );
 
     logEntry.questions.push(aiQuestion);
     logEntry.questionCount += 1;

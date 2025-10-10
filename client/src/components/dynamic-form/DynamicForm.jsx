@@ -490,10 +490,10 @@ const DynamicForm = () => {
           setCurrentQuestion(question);
           setQuestionNumber(1);
 
-          console.log(
-            "[Provider prima domanda]",
-            question?.__provider || "unknown"
-          );
+          // console.log(
+          //   "[Provider prima domanda]",
+          //   question?.__provider || "unknown"
+          // );
 
           setErrors({});
         } catch (error) {
@@ -532,10 +532,10 @@ const DynamicForm = () => {
 
       const nextQuestion = response.data.question;
 
-      console.log(
-        "[Provider prossima domanda]",
-        nextQuestion?.__provider || "unknown"
-      );
+      // console.log(
+      //   "[Provider prossima domanda]",
+      //   nextQuestion?.__provider || "unknown"
+      // );
 
       if (!nextQuestion || questionNumber >= 10) {
         setIsCompleted(true);
