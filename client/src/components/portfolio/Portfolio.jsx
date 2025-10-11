@@ -487,7 +487,7 @@ const Portfolio = ({ scrollTween = null }) => {
           <div className="intro-portfolio">
             <p>
               Puoi giocare a spostare le cartelle. Serve a qualcosa? No. Però
-              poi guarda anche cosa c&apos;è dentro.
+              poi guarda cosa c&apos;è dentro.
             </p>
           </div>
         ) : (

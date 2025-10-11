@@ -12,14 +12,8 @@ import PropTypes from "prop-types";
 // import "./App.css";
 import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
-import Home from "./components/home/Home";
-import Services from "./components/services/Services";
-import Portfolio from "./components/portfolio/Portfolio";
-import Contacts from "./components/contacts/Contacts";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
-import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
 import AboutUs from "./components/about-us/AboutUs";
 import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
@@ -30,6 +24,23 @@ import PrivacyPolicy from "./components/policies/PrivacyPolicy";
 import CookiePolicy from "./components/policies/CookiePolicy";
 import CookieNotice from "./components/policies/CookieNotice";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+// import Home from "./components/home/Home";
+// import Services from "./components/services/Services";
+// import Portfolio from "./components/portfolio/Portfolio";
+// import Contacts from "./components/contacts/Contacts";
+// import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
+// import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
+
+import Home from "./components/home/Home";
+import { lazy, Suspense } from "react";
+const Services = lazy(() => import("./components/services/Services"));
+const Portfolio = lazy(() => import("./components/portfolio/Portfolio"));
+const Contacts = lazy(() => import("./components/contacts/Contacts"));
+
+import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
+const AboutUsDesktop = lazy(() =>
+  import("./components/about-us/AboutUsDesktop")
+);
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
@@ -235,29 +246,37 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
                 </div>
 
                 <div className="section" id="services">
-                  <Services
-                    scrollTween={scrollTween}
-                    isMobile={isMobile}
-                    windowWidth={windowWidth}
-                    windowHeight={windowHeight}
-                  />
+                  <Suspense fallback={null}>
+                    <Services
+                      scrollTween={scrollTween}
+                      isMobile={isMobile}
+                      windowWidth={windowWidth}
+                      windowHeight={windowHeight}
+                    />
+                  </Suspense>
                 </div>
 
                 <div className="section" id="portfolio">
-                  <DndProvider backend={HTML5Backend}>
-                    <Portfolio scrollTween={scrollTween} />
-                  </DndProvider>
+                  <Suspense fallback={null}>
+                    <DndProvider backend={HTML5Backend}>
+                      <Portfolio scrollTween={scrollTween} />
+                    </DndProvider>
+                  </Suspense>
                 </div>
 
                 <div className="section" id="contacts">
-                  <Contacts />
+                  <Suspense fallback={null}>
+                    <Contacts />
+                  </Suspense>
                 </div>
                 <div className="section-footer">
                   <Footer />
                 </div>
                 {!isMobile && (
                   <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
-                    <AboutUsDesktop />
+                    <Suspense fallback={null}>
+                      <AboutUsDesktop />
+                    </Suspense>
                   </AboutUsPortal>
                 )}
               </>
