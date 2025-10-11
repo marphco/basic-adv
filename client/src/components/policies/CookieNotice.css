@@ -31,13 +31,13 @@
     font-size: 0.7rem;
     font-weight: 400 !important;
     cursor: pointer;
-    transition: opacity 0.3s ease;
+    transition: color .5s ease;
   }
   
   .cookie-notice a:hover,
   .cookie-notice button.accept:hover {
-    opacity: 0.8;
     color: var(--foreground-color);
+    transition: color .5s ease;
   }
   
   .cookie-notice .separator {
