@@ -124,13 +124,13 @@ const Navbar = ({
         {/* SINISTRA */}
         <div className="nav-left">
           {isLoginOrPolicy && (
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
               <LogoStack />
             </Link>
           )}
 
           {!isMobile && isDashboardPage && (
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
               <LogoStack />
             </Link>
           )}
@@ -192,6 +192,7 @@ const Navbar = ({
                     to="/"
                     onClick={handleLinkClick}
                     className="navbar-logo"
+                    aria-label="BASIC. — home"
                   >
                     <LogoStack />
                   </Link>
@@ -247,7 +248,7 @@ const Navbar = ({
         {/* CENTRO: logo solo su mobile/tablet */}
         {showCenterLogo && (
           <div className="nav-center">
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo">
+            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
               <LogoStack />
             </Link>
           </div>

@@ -9,6 +9,7 @@
     display: flex;
     align-items: center;
     cursor: none;
+    background: none;
   }
   
   /* Stile base per i cerchi */
