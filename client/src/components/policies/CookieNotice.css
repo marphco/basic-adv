@@ -23,7 +23,7 @@
   
   .cookie-notice a,
   .cookie-notice button.accept {
-    color: #DB3700;
+    color: var(--primary-text-color);
     text-decoration: none;
     background: none;
     border: none;
@@ -41,7 +41,7 @@
   }
   
   .cookie-notice .separator {
-    color: var(--primary-text-color);
+    color: var(--foreground-color);
   }
   
   @keyframes fadeIn {
