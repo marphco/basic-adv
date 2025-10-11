@@ -22,6 +22,14 @@ export default function AboutUs() {
   const wallRef = useRef(null);
   const windowSectionRef = useRef(null);
 
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "canonical";
+    link.href = "https://www.basicadv.com/about-us";
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {

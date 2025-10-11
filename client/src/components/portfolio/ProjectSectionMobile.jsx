@@ -22,6 +22,23 @@ export default function ProjectSectionMobilePage() {
   };
 
   useEffect(() => {
+    const m = document.createElement("meta");
+    m.name = "robots";
+    m.content = "noindex, follow";
+    document.head.appendChild(m);
+
+    const c = document.createElement("link");
+    c.rel = "canonical";
+    c.href = "https://www.basicadv.com/#portfolio";
+    document.head.appendChild(c);
+
+    return () => {
+      document.head.removeChild(m);
+      document.head.removeChild(c);
+    };
+  }, []);
+
+  useEffect(() => {
     if (containerRef.current) {
       gsap.fromTo(
         containerRef.current,
@@ -94,11 +111,7 @@ export default function ProjectSectionMobilePage() {
       </div>
       <div ref={imagesRowRef} className="project-section-mobile-bottom">
         {content.images.map((img, index) => (
-          <img
-            key={index}
-            src={img}
-            alt={`${content.title} - ${index + 1}`}
-          />
+          <img key={index} src={img} alt={`${content.title} - ${index + 1}`} />
         ))}
       </div>
     </div>

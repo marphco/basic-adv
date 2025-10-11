@@ -1,0 +1,9 @@
+# robots for https://www.basicadv.com/
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /dashboard
+Disallow: /project/
+
+Sitemap: https://www.basicadv.com/sitemap.xml

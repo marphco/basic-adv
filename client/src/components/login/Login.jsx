@@ -16,8 +16,18 @@ const Login = ({ isDark }) => {
   const [loading, setLoading] = useState(false); // Stato per lo spinner
   const navigate = useNavigate();
 
-  const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/$/, "");
+  const API_URL = (
+    import.meta.env.VITE_API_URL || "http://localhost:8080"
+  ).replace(/\/$/, "");
   const loginUrl = `${API_URL}/api/login`;
+
+  useEffect(() => {
+    const el = document.createElement("meta");
+    el.name = "robots";
+    el.content = "noindex, nofollow";
+    document.head.appendChild(el);
+    return () => document.head.removeChild(el);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflowX = "hidden";
@@ -37,7 +47,7 @@ const Login = ({ isDark }) => {
       const response = await axios.post(loginUrl, { username, password });
       localStorage.setItem("token", response.data.token);
       window.location.href = "/dashboard"; // Usa un refresh completo invece di navigate
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError("Credenziali non valide");
     } finally {
@@ -85,7 +95,11 @@ const Login = ({ isDark }) => {
             </span>
           )}
           <div className="form-actions">
-            <button type="submit" className="login-submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="login-submit-btn"
+              disabled={loading}
+            >
               {loading ? <FaSpinner className="spinner" /> : "Accedi"}
             </button>
           </div>

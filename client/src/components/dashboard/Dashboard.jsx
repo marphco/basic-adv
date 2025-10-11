@@ -54,6 +54,14 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     "UI/UX Design",
   ];
 
+  useEffect(() => {
+    const el = document.createElement("meta");
+    el.name = "robots";
+    el.content = "noindex, nofollow";
+    document.head.appendChild(el);
+    return () => document.head.removeChild(el);
+  }, []);
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");

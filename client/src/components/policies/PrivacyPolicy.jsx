@@ -1,7 +1,16 @@
 import "./PrivacyPolicy.css";
+import { useEffect } from "react";
 
 const PrivacyPolicy = () => {
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "canonical";
+    link.href = "https://www.basicadv.com/privacy-policy";
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
 
   return (
     <div className="policy-page">
