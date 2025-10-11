@@ -40,7 +40,7 @@ body.no-default-cursor a {
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
   --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
   --contrast-color: #000000;
-  --link-color: #c23300;
+  --link-color: #DB3700;
 }
 
 [data-theme="dark"] {
