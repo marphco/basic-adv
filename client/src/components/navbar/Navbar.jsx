@@ -120,17 +120,30 @@ const Navbar = ({
 
   return (
     <div className="navbar-block">
-      <nav className={classNames("navbar", { "dark-mode": isDark })}>
+      <nav
+        className={classNames("navbar", { "dark-mode": isDark })}
+        aria-label="Navigazione principale"
+      >
         {/* SINISTRA */}
         <div className="nav-left">
           {isLoginOrPolicy && (
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
+            <Link
+              to="/"
+              onClick={handleLinkClick}
+              className="navbar-logo"
+              aria-label="BASIC. — home"
+            >
               <LogoStack />
             </Link>
           )}
 
           {!isMobile && isDashboardPage && (
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
+            <Link
+              to="/"
+              onClick={handleLinkClick}
+              className="navbar-logo"
+              aria-label="BASIC. — home"
+            >
               <LogoStack />
             </Link>
           )}
@@ -144,48 +157,60 @@ const Navbar = ({
           )}
 
           {isDashboardPage && isMobile && (
-            <div
+            <button
               ref={hamburgerRef}
+              type="button"
               className="hamburger-menu"
               onClick={toggleMenu}
-              aria-label="Open sidebar"
+              aria-label={isSidebarOpen ? "Chiudi sidebar" : "Apri sidebar"}
+              aria-expanded={isSidebarOpen}
             >
-              <div
+              <span
                 className={classNames("hamburger", { "dark-mode": isDark })}
+                aria-hidden="true"
               />
-              <div
+              <span
                 className={classNames("hamburger", { "dark-mode": isDark })}
+                aria-hidden="true"
               />
-            </div>
+            </button>
           )}
 
           {!isLoginOrPolicy &&
             !isDashboardPage &&
             !(inAboutRoute || inProjectRoute) &&
             isMobile && (
-              <div
+              <button
                 ref={hamburgerRef}
+                type="button"
                 className="hamburger-menu"
                 onClick={toggleMenu}
-                aria-label="Open menu"
+                aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
+                aria-expanded={isMenuOpen}
+                aria-controls="primary-nav"
               >
-                <div
+                <span
                   className={classNames("hamburger", {
                     open: isMenuOpen,
                     "dark-mode": isDark,
                   })}
+                  aria-hidden="true"
                 />
-                <div
+                <span
                   className={classNames("hamburger", {
                     open: isMenuOpen,
                     "dark-mode": isDark,
                   })}
+                  aria-hidden="true"
                 />
-              </div>
+              </button>
             )}
 
           {shouldRenderMenu && (
-            <ul className={classNames("navbar-menu", { open: isMenuOpen })}>
+            <ul
+              id="primary-nav"
+              className={classNames("navbar-menu", { open: isMenuOpen })}
+            >
               {!isMobile && (
                 <li className="li-logo-desktop">
                   <Link
@@ -248,7 +273,12 @@ const Navbar = ({
         {/* CENTRO: logo solo su mobile/tablet */}
         {showCenterLogo && (
           <div className="nav-center">
-            <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label="BASIC. — home">
+            <Link
+              to="/"
+              onClick={handleLinkClick}
+              className="navbar-logo"
+              aria-label="BASIC. — home"
+            >
               <LogoStack />
             </Link>
           </div>
