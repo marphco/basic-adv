@@ -23,7 +23,7 @@
   
   .cookie-notice a,
   .cookie-notice button.accept {
-    color: var(--primary-text-color);
+    color: var(--foreground-color);
     text-decoration: none;
     background: none;
     border: none;
@@ -31,17 +31,18 @@
     font-size: 0.7rem;
     font-weight: 400 !important;
     cursor: pointer;
-    transition: color .5s ease;
+    opacity: 1;
+    transition: opacity .5s ease;
   }
   
   .cookie-notice a:hover,
   .cookie-notice button.accept:hover {
-    color: var(--foreground-color);
-    transition: color .5s ease;
+    opacity: .8;
+    transition: opacity .5s ease;
   }
   
   .cookie-notice .separator {
-    color: var(--foreground-color);
+    color: var(--primary-text-color);
   }
   
   @keyframes fadeIn {
