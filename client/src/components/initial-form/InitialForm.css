@@ -24,7 +24,7 @@
 .category-box {
     background: transparent;
     border: 1px solid #d1d1d1;
-    color: grey;
+    color: #707070;
     border-radius: 4px;
     padding: 1rem;
     align-self: start;
@@ -284,7 +284,7 @@
     font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: grey;
+    color: #707070;
     transition: color 0.5s ease;
 }
 
