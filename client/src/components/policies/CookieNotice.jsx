@@ -65,7 +65,7 @@ const CookieNotice = () => {
       <span>Usiamo cookie.</span>
       <Link to="/cookie-policy">COOKIE POLICY</Link>
       <span className="separator"> | </span>
-      <button onClick={handleAccept}>ACCETTA</button>
+      <button className="accept" onClick={handleAccept}>ACCETTA</button>
     </div>
   );
 };

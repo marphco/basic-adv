@@ -40,6 +40,7 @@ body.no-default-cursor a {
   --toggle-active-color: #000; /* Colore del cerchietto attivo */
   --toggle-inactive-color: #ccc; /* Colore del cerchietto inattivo */
   --contrast-color: #000000;
+  --link-color: #c23300;
 }
 
 [data-theme="dark"] {
@@ -50,6 +51,7 @@ body.no-default-cursor a {
   --toggle-bg: #283452;
   --toggle-fg: #00a6ff;
   --contrast-color: #000000;
+  --link-color: #ff6a33; 
 }
 
 /* Inter variabile self-hosted */
