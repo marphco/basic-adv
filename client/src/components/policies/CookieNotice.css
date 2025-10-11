@@ -1,7 +1,7 @@
 .cookie-notice {
     position: fixed;
     bottom: 20px;
-    right: 80px;
+    right: 82px;
     z-index: 1000;
     opacity: 0;
     animation: fadeIn 0.5s ease forwards;
@@ -23,7 +23,7 @@
   
   .cookie-notice a,
   .cookie-notice button.accept {
-    color: var(--foreground-color);
+    color: #DB3700;
     text-decoration: none;
     background: none;
     border: none;
