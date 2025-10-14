@@ -19,38 +19,58 @@ async function rlSaveTraining(body, { base, token } = {}) {
 
 /**
  * Richiesta generazione domande.
- * Il tuo RL espone: POST /api/generate-questions  → { content: "<json string>" }
- * Ritorna SEMPRE un array di item "raw" (anche se il JSON contiene un singolo oggetto).
+ * RL espone: POST /api/generate-questions → { content: "<json string>", meta: {...} }
+ * Ritorna SEMPRE un array di item "raw".
  */
 async function rlGenerateQuestions(
   prompt,
-  { /* state, askedQuestions, n non usati dal RL attuale */ } = {},
+  {
+    state,
+    askedQuestions,
+    n,
+    language,
+    max_tokens = 600,
+    temperature = 0.7,
+  } = {},
   { base, token } = {}
 ) {
   const RL_BASE = trim(base || process.env.RL_API_BASE || "");
   if (!RL_BASE) throw new Error("RL_API_BASE missing");
 
+  // lingua robusta: preferisci il parametro esplicito, poi state.language/ state.lang
+  const lang = language || state.language || state.lang || "it";
+
   const url = `${RL_BASE}/api/generate-questions`;
-  const headers = { "Content-Type": "application/json" };
+  const headers = {
+    "Content-Type": "application/json",
+    // hint non vincolante ma utile ai log/server RL
+    "X-Lang": lang,
+    "Accept-Language": lang === "en" ? "en-US,en;q=0.9" : "it-IT,it;q=0.9",
+  };
   const key = token || process.env.RL_API_KEY;
   if (key) headers.Authorization = `Bearer ${key}`;
 
-  // tieni i default coerenti con il tuo server RL
-  const payload = { prompt, max_tokens: 300, temperature: 0.7 };
+  // inoltra metadata utili a RL (fallback sicuro se mancano)
+  const payload = {
+    prompt,
+    state,
+    askedQuestions,
+    n,
+    language,
+    max_tokens,
+    temperature,
+  };
 
   const { data } = await axios.post(url, payload, { headers, timeout: 20000 });
 
   let content = data?.content;
-  if (typeof content !== "string") {
-    return []; // innesca fallback OpenAI
-  }
+  if (typeof content !== "string") return [];
 
-  // Prova a fare il parse diretto…
+  // Parse robusto: array o oggetto singolo
   let parsed;
   try {
     parsed = JSON.parse(content);
   } catch {
-    // …oppure ritaglia la porzione JSON se ci sono testi/righe extra
     const pickBetween = (txt, open, close) => {
       const i = txt.indexOf(open);
       const j = txt.lastIndexOf(close);
@@ -60,14 +80,16 @@ async function rlGenerateQuestions(
     const obj = pickBetween(content, "{", "}");
     const jsonStr = arr || obj;
     if (jsonStr) {
-      try { parsed = JSON.parse(jsonStr); } catch {}
+      try {
+        parsed = JSON.parse(jsonStr);
+      } catch {}
     }
   }
 
-  if (!parsed) return [];                 // fallback OpenAI
+  if (!parsed) return [];
   if (Array.isArray(parsed)) return parsed;
   if (typeof parsed === "object") return [parsed];
-  return [];                               // fallback OpenAI
+  return [];
 }
 
 module.exports = { rlSaveTraining, rlGenerateQuestions };

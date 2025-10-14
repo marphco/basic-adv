@@ -1,0 +1,15 @@
+{
+  "navbar": {
+    "about": "ABOUT US",
+    "portfolio": "PORTFOLIO",
+    "contacts": "CONTACTS",
+    "close": "CLOSE"
+  },
+  "aria": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar",
+    "home": "BASIC. — home"
+  }
+}

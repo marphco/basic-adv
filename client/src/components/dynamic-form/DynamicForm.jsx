@@ -48,6 +48,9 @@ const debounce = (func, wait) => {
 // === PERSISTENZA STATO ===
 const STORAGE_KEY = "ba_form_state_v1";
 
+const guessLang = () =>
+  (navigator.language || "").toLowerCase().startsWith("it") ? "it" : "en";
+
 const defaultFormData = {
   brandName: "",
   projectType: "Tipo di progetto",
@@ -56,6 +59,7 @@ const defaultFormData = {
   projectObjectives: "",
   contactInfo: { name: "", email: "", phone: "" },
   budget: "",
+  lang: localStorage.getItem("lang") || guessLang(),
 };
 
 const DynamicForm = () => {
@@ -78,15 +82,8 @@ const DynamicForm = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    brandName: "",
-    projectType: "Tipo di progetto",
-    businessField: "Ambito",
-    otherBusinessField: "",
-    projectObjectives: "",
-    contactInfo: { name: "", email: "", phone: "" },
-    budget: "",
-  });
+  const [formData, setFormData] = useState(defaultFormData);
+
   const [answers, setAnswers] = useState({});
   // eslint-disable-next-line no-unused-vars
   const [isLogoSelected, setIsLogoSelected] = useState(false);
@@ -473,7 +470,12 @@ const DynamicForm = () => {
           }
 
           const response = await api.post("/generate", formDataToSend, {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: {
+              "Content-Type": "multipart/form-data",
+              "X-Lang": formData.lang,
+              "Accept-Language":
+                formData.lang === "en" ? "en-US,en;q=0.9" : "it-IT,it;q=0.9",
+            },
           });
 
           // 👇 prende { sessionId, question } dal server
@@ -527,7 +529,14 @@ const DynamicForm = () => {
       const response = await api.post(
         "/nextQuestion",
         { currentAnswer: userAnswer, sessionId },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-Lang": formData.lang,
+            "Accept-Language":
+              formData.lang === "en" ? "en-US,en;q=0.9" : "it-IT,it;q=0.9",
+          },
+        }
       );
 
       const nextQuestion = response.data.question;

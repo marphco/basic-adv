@@ -17,6 +17,27 @@ const { rlGenerateQuestions } = require("./services/rlClient");
 
 dotenv.config();
 
+// --- Language picker: it solo per Italia/San Marino/Vaticano, altrimenti en ---
+function pickLang(reqBodyLang, headers = {}) {
+  if (reqBodyLang === "it" || reqBodyLang === "en") return reqBodyLang;
+
+  const xlang = (headers["x-lang"] || headers["X-Lang"] || "").toLowerCase();
+  if (xlang === "it" || xlang === "en") return xlang;
+
+  const al = (headers["accept-language"] || "").toLowerCase();
+  if (al.startsWith("it") || al.includes(" it,")) return "it";
+
+  const cc = (
+    headers["cf-ipcountry"] ||
+    headers["x-vercel-ip-country"] ||
+    headers["x-country-code"] ||
+    ""
+  ).toUpperCase();
+  if (cc === "IT" || cc === "SM" || cc === "VA") return "it";
+
+  return "en";
+}
+
 const app = express();
 
 // ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
@@ -27,6 +48,8 @@ const allowedOrigins = new Set([
   "https://basicadv.com",
   "https://www.basicadv.com",
 ]);
+
+
 
 app.use(
   require("cors")({
@@ -71,6 +94,34 @@ const isDbReady = () => mongoose.connection.readyState === 1;
 // monta il router RL rating (CommonJS)
 const rlTrainingRouter = require("./routes/rlTraining");
 app.use("/api", rlTrainingRouter);
+
+// --- Language picker: it solo per Italia/San Marino/Vaticano, altrimenti en ---
+function pickLang(reqBodyLang, headers = {}) {
+  // 1) fidati solo se è già "it" o "en"
+  if (reqBodyLang === "it" || reqBodyLang === "en") return reqBodyLang;
+
+  // 2) header esplicito (puoi inviarlo anche dal client)
+  const xlang = (headers["x-lang"] || headers["X-Lang"] || "").toLowerCase();
+  if (xlang === "it" || xlang === "en") return xlang;
+
+  // 3) Accept-Language
+  const al = (headers["accept-language"] || "").toLowerCase();
+  if (al.startsWith("it") || al.includes(" it,")) return "it";
+
+  // 4) Country headers di edge/CDN: Cloudflare / Vercel
+  const cc = (
+    headers["cf-ipcountry"] ||
+    headers["x-vercel-ip-country"] ||
+    headers["x-country-code"] ||
+    ""
+  ).toUpperCase();
+
+  // Italia + microstati italofoni
+  if (cc === "IT" || cc === "SM" || cc === "VA") return "it";
+
+  // default: en
+  return "en";
+}
 
 // ---- JWT middleware ----
 function authenticateToken(req, res, next) {
@@ -268,14 +319,14 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname || "");
     const base = file.fieldname || "file";
     const rawSid = (req.body?.sessionId || "").toString();
-    const safeSid = rawSid.replace(/[^a-z0-9-]/gi, "").slice(0, 64) || "no-session";
+    const safeSid =
+      rawSid.replace(/[^a-z0-9-]/gi, "").slice(0, 64) || "no-session";
     const uniq = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
 
     // Esempio: currentLogo-<sessionId>-<timestamp>-<rnd>.pdf
     cb(null, `${base}-${safeSid}-${uniq}${ext}`);
   },
 });
-
 
 const upload = multer({
   storage: storage,
@@ -454,7 +505,8 @@ app.get("/api/download/:filename", (req, res) => {
     }
 
     // Imposta il Content-Type corretto (facoltativo, res.download lo gestisce da solo)
-    const ctype = mime.contentType(path.extname(filename)) || "application/octet-stream";
+    const ctype =
+      mime.contentType(path.extname(filename)) || "application/octet-stream";
     res.setHeader("Content-Type", ctype);
 
     // 🔑 Usa res.download: setta Content-Disposition correttamente e gestisce lo stream
@@ -462,7 +514,9 @@ app.get("/api/download/:filename", (req, res) => {
       if (e) {
         console.error("Errore nel download:", e);
         if (!res.headersSent) {
-          res.status(e.code === "ENOENT" ? 404 : 500).json({ error: "Errore nel download del file" });
+          res
+            .status(e.code === "ENOENT" ? 404 : 500)
+            .json({ error: "Errore nel download del file" });
         }
       }
     });
@@ -472,23 +526,34 @@ app.get("/api/download/:filename", (req, res) => {
 // Endpoint per elencare i file
 app.get("/api/uploads/list", authenticateToken, async (req, res) => {
   try {
-    const files = (await fs.promises.readdir(UPLOAD_DIR))
-      .filter((f) => f !== "lost+found");
+    const files = (await fs.promises.readdir(UPLOAD_DIR)).filter(
+      (f) => f !== "lost+found"
+    );
 
-    const details = (await Promise.all(files.map(async (name) => {
-      const filePath = path.join(UPLOAD_DIR, name);
-      const stats = await fs.promises.stat(filePath);
-      return stats.isFile() ? { name, size: stats.size, lastModified: stats.mtime } : null;
-    }))).filter(Boolean);
+    const details = (
+      await Promise.all(
+        files.map(async (name) => {
+          const filePath = path.join(UPLOAD_DIR, name);
+          const stats = await fs.promises.stat(filePath);
+          return stats.isFile()
+            ? { name, size: stats.size, lastModified: stats.mtime }
+            : null;
+        })
+      )
+    ).filter(Boolean);
 
-    const names = details.map(f => f.name);
+    const names = details.map((f) => f.name);
 
     // --- 1) Join diretto: filename salvato nel DB (vecchi file) ---
     const requestByFilename = new Map();
     if (isDbReady() && names.length) {
-      const logs = await ProjectLog.find(
-        { "formData.currentLogo": { $in: names } }
-      ).select("sessionId formData.brandName formData.contactInfo createdAt formData.currentLogo").lean();
+      const logs = await ProjectLog.find({
+        "formData.currentLogo": { $in: names },
+      })
+        .select(
+          "sessionId formData.brandName formData.contactInfo createdAt formData.currentLogo"
+        )
+        .lean();
 
       for (const l of logs) {
         requestByFilename.set(l.formData.currentLogo, {
@@ -502,19 +567,22 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
     }
 
     // --- 2) Fallback: estrai sessionId dal nome file (nuovi file) ---
-    const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
-    const parsedIds = Array.from(new Set(
-      names
-        .filter(n => !requestByFilename.has(n))
-        .map(n => (n.match(UUID_RE)?.[0] || null))
-        .filter(Boolean)
-    ));
+    const UUID_RE =
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+    const parsedIds = Array.from(
+      new Set(
+        names
+          .filter((n) => !requestByFilename.has(n))
+          .map((n) => n.match(UUID_RE)?.[0] || null)
+          .filter(Boolean)
+      )
+    );
 
     const requestBySession = new Map();
     if (isDbReady() && parsedIds.length) {
-      const logsById = await ProjectLog.find(
-        { sessionId: { $in: parsedIds } }
-      ).select("sessionId formData.brandName formData.contactInfo createdAt").lean();
+      const logsById = await ProjectLog.find({ sessionId: { $in: parsedIds } })
+        .select("sessionId formData.brandName formData.contactInfo createdAt")
+        .lean();
 
       for (const l of logsById) {
         requestBySession.set(l.sessionId, {
@@ -527,11 +595,12 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
       }
     }
 
-    const result = details.map(f => {
+    const result = details.map((f) => {
       const byName = requestByFilename.get(f.name);
-      const bySid = (!byName && f.name.match(UUID_RE))
-        ? requestBySession.get(f.name.match(UUID_RE)[0])
-        : null;
+      const bySid =
+        !byName && f.name.match(UUID_RE)
+          ? requestBySession.get(f.name.match(UUID_RE)[0])
+          : null;
 
       return { ...f, request: byName || bySid || null };
     });
@@ -542,7 +611,6 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Errore nel recupero dei file" });
   }
 });
-
 
 // Endpoint per cancellare un file
 app.delete(
@@ -749,6 +817,7 @@ const generateQuestionForService = async (
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
+  const language = (formData && formData.lang) === "en" ? "en" : "it";
 
   const askedQuestionsList = askedQuestions.join("\n");
 
@@ -805,10 +874,12 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
   // ====== 1) Tenta PRIMA il modello RL con IL TUO PROMPT ======
   // subito prima della chiamata RL
   const state = {
-    service,
-    brandNamePresent: brandName !== "non specificato",
-    projectType,
-    businessField,
+    service, // es: "Logo"
+    lang: language, // "en" | "it"
+    industry: businessField || "Altro",
+    budget: formData?.budget || "unknown",
+    brandNameKnown: brandName !== "non specificato",
+    isRestyling: !!formData?.isRestyling,
   };
 
   // assicuriamoci che askedQuestions sia un array di stringhe
@@ -821,8 +892,8 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     try {
       const rawList = await rlGenerateQuestions(
         promptBase,
-        { state, askedQuestions: askedSanitized, n: 6 },
-        { base: process.env.RL_API_BASE } // 👈 passa esplicitamente la base
+        { state, askedQuestions: askedSanitized, n: 6, language }, // 👈 NEW
+        { base: process.env.RL_API_BASE }
       );
       // console.log(
       //   "[RL] rawList:",
@@ -852,102 +923,70 @@ Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecni
     // console.log("[RL] disabilitato (manca RL_API_BASE) -> uso OpenAI");
   }
 
-  // ====== 2) FALLBACK: il tuo codice OpenAI ORIGINALE (INVARIATO) ======
-  if (!process.env.OPEN_AI_KEY) {
-    throw new Error("OPEN_AI_KEY mancante");
+  // ====== SOLO RL (niente fallback OpenAI) ======
+  if (!process.env.RL_API_BASE) {
+    throw new Error(
+      "RL_API_BASE mancante: Basic non può generare domande senza RL"
+    );
   }
 
   try {
-    const response = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: promptBase,
-          },
-        ],
-        max_tokens: 300,
-        temperature: 0.7,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
+    const askedSanitized = (askedQuestions || [])
+      .map((q) => (typeof q === "string" ? q : q?.question || ""))
+      .filter(Boolean);
+
+    const rawList = await rlGenerateQuestions(
+      promptBase,
+      { state, askedQuestions: askedSanitized, n: 6, language }, // passo sia language sia state.lang
+      { base: process.env.RL_API_BASE }
     );
 
-    const aiResponseText = response.data.choices[0].message.content;
-
-    let aiQuestion;
-    try {
-      aiQuestion = JSON.parse(aiResponseText);
-    } catch (error) {
-      const jsonStartIndex = aiResponseText.indexOf("{");
-      const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1;
-      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        const jsonString = aiResponseText.substring(
-          jsonStartIndex,
-          jsonEndIndex
-        );
-        aiQuestion = JSON.parse(jsonString);
-      } else {
-        throw new Error("Errore nel parsing della risposta AI");
-      }
+    const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
+    if (!normalized.length) {
+      throw new Error("RL non ha prodotto domande valide");
     }
 
-    if (aiQuestion.question && aiQuestion.question.endsWith(".")) {
-      aiQuestion.question = aiQuestion.question.slice(0, -1);
-    }
-
-    if (!aiQuestion.question) {
-      throw new Error("La risposta dell'AI non contiene una domanda valida");
-    }
-
-    if (typeof aiQuestion.requiresInput === "undefined") {
-      aiQuestion.requiresInput = false;
-    }
-
-    if (!Array.isArray(aiQuestion.options)) {
-      aiQuestion.options = [];
-    }
-
-    if (askedQuestions.includes(aiQuestion.question)) {
-      // ricorsione con le stesse regole (prompt invariato)
-      return await generateQuestionForService(
-        service,
-        formData,
-        answers,
-        askedQuestions
-      );
-    }
-
-    // Sanitizza la domanda prima di salvarla
-    aiQuestion.question = sanitizeKey(aiQuestion.question);
-    aiQuestion.__provider = "OpenAI";
-
-    return aiQuestion;
-  } catch (error) {
-    throw error;
+    const askedSet = new Set(askedSanitized);
+    const pick =
+      normalized.find((q) => q && !askedSet.has(q.question)) || normalized[0];
+    pick.__provider = "RL";
+    return pick;
+  } catch (e) {
+    // Propaga: sarà il client o RL a decidere cosa fare
+    throw new Error(`[RL_ERROR] ${e?.message || e}`);
   }
 };
 
-const buildFontQuestion = (formData = {}) => ({
-  question: sanitizeKey("Quale stile tipografico preferisci per il logo?"),
-  options: [
-    "Serif",
-    "Sans-serif",
-    "Script",
-    "Monospaced",
-    "Manoscritto",
-    "Decorativo",
-  ],
-  type: "font_selection",
-  requiresInput: false,
-  __provider: "rule", // 👈 per distinguerla
-});
+const buildFontQuestion = (formData = {}) => {
+  const isEn = formData?.lang === "en";
+  return {
+    question: sanitizeKey(
+      isEn
+        ? "Which typographic style do you prefer for the logo?"
+        : "Quale stile tipografico preferisci per il logo?"
+    ),
+    options: isEn
+      ? [
+          "Serif",
+          "Sans-serif",
+          "Script",
+          "Monospaced",
+          "Handwritten",
+          "Decorative",
+        ]
+      : [
+          "Serif",
+          "Sans-serif",
+          "Script",
+          "Monospaziato",
+          "Manoscritto",
+          "Decorativo",
+        ],
+    type: "font_selection",
+    requiresInput: false,
+    __provider: "rule",
+  };
+};
 
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   try {
@@ -965,29 +1004,41 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     if (isDbReady()) {
       const existing = await ProjectLog.findOne({ sessionId });
       if (existing) {
-        // answers può essere Map o plain object: normalizziamo
-        const answersObj =
-          existing.answers instanceof Map
-            ? Object.fromEntries(existing.answers)
-            : existing.answers || {};
+        // 👇 NEW: se la sessione era nata con OpenAI o la lingua è cambiata -> NON fare resume
+        const storedLang = existing.formData?.lang;
+        const incomingLang = pickLang(req.body.lang, req.headers);
+        const firstProvider = existing.questions?.[0]?.__provider;
 
-        let pending = null;
-        if (Array.isArray(existing.questions)) {
-          for (let i = existing.questions.length - 1; i >= 0; i--) {
-            const q = existing.questions[i];
-            const key = q && q.question ? q.question : q;
-            const sanitized = sanitizeKey(key || "");
-            if (!answersObj[sanitized]) {
-              pending = q;
-              break;
+        const shouldSkipResume =
+          firstProvider === "OpenAI" ||
+          (storedLang && storedLang !== incomingLang);
+
+        if (!shouldSkipResume) {
+          // answers può essere Map o plain object: normalizziamo
+          const answersObj =
+            existing.answers instanceof Map
+              ? Object.fromEntries(existing.answers)
+              : existing.answers || {};
+
+          let pending = null;
+          if (Array.isArray(existing.questions)) {
+            for (let i = existing.questions.length - 1; i >= 0; i--) {
+              const q = existing.questions[i];
+              const key = q && q.question ? q.question : q;
+              const sanitized = sanitizeKey(key || "");
+              if (!answersObj[sanitized]) {
+                pending = q;
+                break;
+              }
             }
           }
+          if (pending && typeof pending === "object" && !pending.__provider) {
+            pending.__provider =
+              pending.type === "font_selection" ? "rule" : "unknown(db)";
+          }
+          return res.json({ sessionId, question: pending || null });
         }
-        if (pending && typeof pending === "object" && !pending.__provider) {
-          pending.__provider =
-            pending.type === "font_selection" ? "rule" : "unknown(db)";
-        }
-        return res.json({ sessionId, question: pending || null });
+        // else: salto il resume e procedo con nuova generazione
       }
     } else {
       console.warn("DB non connesso: salto il resume session");
@@ -995,6 +1046,15 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     // --- da qui creazione nuovo log ---
     const formData = { ...req.body };
+
+    formData.lang = pickLang(formData.lang, req.headers);
+
+    console.log(
+      "[LANG]",
+      formData.lang,
+      req.headers["cf-ipcountry"],
+      req.headers["accept-language"]
+    );
 
     // currentLogo opzionale
     if (req.file) {
@@ -1024,10 +1084,10 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       return res.status(400).json({ error: "Nessun servizio selezionato" });
 
     // 🔐 chiave OpenAI
-    if (!process.env.RL_API_BASE && !process.env.OPEN_AI_KEY) {
+    if (!process.env.RL_API_BASE) {
       return res.status(500).json({
         error: "CONFIG",
-        details: "Nessun generatore configurato (RL_API_BASE o OPEN_AI_KEY)",
+        details: "RL obbligatorio: manca RL_API_BASE",
       });
     }
 

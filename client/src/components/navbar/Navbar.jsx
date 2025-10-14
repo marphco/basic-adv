@@ -5,6 +5,7 @@ import "./Navbar.css";
 import Toggle from "../toggle/Toggle";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
 
 // 3 asset separati
 import IconOrange from "../../assets/icon-orange.svg";
@@ -23,6 +24,7 @@ const Navbar = ({
   const hamburgerRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(["common"]);
 
   const pathname = (location.pathname || "/").replace(/\/+$/, "");
 
@@ -151,7 +153,7 @@ const Navbar = ({
           {(inAboutRoute || inProjectRoute) && (
             <div className="navbar-close">
               <button onClick={handleClose} className="close-btn">
-                [CHIUDI]
+                [{t("navbar.close")}]
               </button>
             </div>
           )}
@@ -162,7 +164,9 @@ const Navbar = ({
               type="button"
               className="hamburger-menu"
               onClick={toggleMenu}
-              aria-label={isSidebarOpen ? "Chiudi sidebar" : "Apri sidebar"}
+              aria-label={
+                isSidebarOpen ? t("aria.closeSidebar") : t("aria.openSidebar")
+              }
               aria-expanded={isSidebarOpen}
             >
               <span
@@ -185,7 +189,9 @@ const Navbar = ({
                 type="button"
                 className="hamburger-menu"
                 onClick={toggleMenu}
-                aria-label={isMenuOpen ? "Chiudi menu" : "Apri menu"}
+                aria-label={
+                  isMenuOpen ? t("aria.closeMenu") : t("aria.openMenu")
+                }
                 aria-expanded={isMenuOpen}
                 aria-controls="primary-nav"
               >
@@ -217,7 +223,7 @@ const Navbar = ({
                     to="/"
                     onClick={handleLinkClick}
                     className="navbar-logo"
-                    aria-label="BASIC. — home"
+                    aria-label={t("aria.home")}
                   >
                     <LogoStack />
                   </Link>
@@ -226,11 +232,11 @@ const Navbar = ({
               <li>
                 {isMobile ? (
                   <Link to="/about-us" onClick={handleLinkClick}>
-                    ABOUT US
+                    {t("navbar.about")}
                   </Link>
                 ) : (
                   <a href="#" onClick={handleAboutDesktop}>
-                    ABOUT US
+                    {t("navbar.about")}
                   </a>
                 )}
               </li>
@@ -247,7 +253,7 @@ const Navbar = ({
                     );
                   }}
                 >
-                  PORTFOLIO
+                  {t("navbar.portfolio")}
                 </a>
               </li>
               <li>
@@ -263,7 +269,7 @@ const Navbar = ({
                     );
                   }}
                 >
-                  CONTACTS
+                  {t("navbar.contacts")}
                 </a>
               </li>
             </ul>
@@ -286,6 +292,41 @@ const Navbar = ({
 
         {/* DESTRA */}
         <div className="nav-right">
+          <div className="lang-switch">
+            <div
+              className="lang-inline"
+              role="group"
+              aria-label="Language switch"
+            >
+              <button
+                type="button"
+                className="lang-btn"
+                data-active={!i18n.language || !i18n.language.startsWith("it")}
+                onClick={() => {
+                  i18n.changeLanguage("en");
+                  setIsMenuOpen(false);
+                }}
+                aria-pressed={!i18n.language || !i18n.language.startsWith("it")}
+              >
+                EN
+              </button>
+              <span className="lang-sep" aria-hidden="true">
+                ·
+              </span>
+              <button
+                type="button"
+                className="lang-btn"
+                data-active={i18n.language?.startsWith("it")}
+                onClick={() => {
+                  i18n.changeLanguage("it");
+                  setIsMenuOpen(false);
+                }}
+                aria-pressed={i18n.language?.startsWith("it")}
+              >
+                IT
+              </button>
+            </div>
+          </div>
           <Toggle isChecked={isDark} handleChange={handleToggleChange} />
         </div>
       </nav>

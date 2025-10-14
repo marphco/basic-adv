@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Schema per il modello ProjectLog
 const ProjectLogSchema = new mongoose.Schema({
@@ -11,6 +11,12 @@ const ProjectLogSchema = new mongoose.Schema({
 
   // Dati del form compilato dall'utente
   formData: {
+    // Lingua
+    lang: {
+      type: String,
+      enum: ["en", "it"],
+      default: undefined,
+    },
     // Nome del brand (opzionale)
     brandName: {
       type: String,
@@ -139,15 +145,18 @@ const ProjectLogSchema = new mongoose.Schema({
     default: false,
   },
   ratings: {
-  // mappa: chiave = domanda (sanitizzata), valore = { q: -1|0|1, o: -1|0|1 }
-  type: Map,
-  of: new mongoose.Schema(
-    { q: { type: Number, default: null }, o: { type: Number, default: null } },
-    { _id: false }
-  ),
-  default: new Map(),
-},
+    // mappa: chiave = domanda (sanitizzata), valore = { q: -1|0|1, o: -1|0|1 }
+    type: Map,
+    of: new mongoose.Schema(
+      {
+        q: { type: Number, default: null },
+        o: { type: Number, default: null },
+      },
+      { _id: false }
+    ),
+    default: new Map(),
+  },
 });
 
 // Esporta il modello Mongoose
-module.exports = mongoose.model('ProjectLog', ProjectLogSchema);
+module.exports = mongoose.model("ProjectLog", ProjectLogSchema);

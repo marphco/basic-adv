@@ -50,6 +50,7 @@ body[data-theme="dark"] .navbar-block::before {
 .nav-right {
   display: flex;
   align-items: center;
+  gap: 12px; /* piccolo spacing costante tra switch e toggle */
 }
 
 /* [CHIUDI] */
@@ -191,6 +192,54 @@ body[data-theme="dark"]
   margin-right: 15px;
 }
 
+
+
+
+/* -------- Language switch inline (minimal) -------- */
+.lang-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;          /* allineato alle voci menu */
+  line-height: 1;
+  pointer-events: auto;       /* perché il wrapper navbar-block usa pointer-events: none */
+}
+
+.lang-btn {
+  background: transparent;
+  border: none;
+  padding: 2px 0;             /* zero “box” */
+  color: inherit;             /* usa currentColor -> si adatta al tema */
+  opacity: 0.5;               /* stato "muted" di base */
+  cursor: pointer;
+  transition: opacity .2s ease, color .2s ease, text-decoration-color .2s ease;
+  text-underline-offset: 3px;
+  transition: color .5s ease;
+}
+
+.lang-btn[data-active="true"] {
+  opacity: 1;                 /* attiva ben leggibile */
+}
+
+.lang-btn:hover {
+  opacity: 0.85;
+  text-decoration: underline; /* feedback leggero */
+}
+
+.lang-btn:focus-visible {
+  outline: 2px solid var(--foreground-color);
+  outline-offset: 2px;
+}
+
+.lang-sep {
+  color: var(--foreground-color);
+}
+
+
+
+
+
+
 /* --------- Mobile / Tablet --------- */
 @media screen and (max-width: 768px) {
   .navbar {
@@ -267,6 +316,15 @@ body[data-theme="dark"]
       transform: translateX(-20px);
     }
   }
+
+  .nav-right {
+    display: flex;          /* è già flex, qui ribadiamo */
+    flex-direction: column; /* verticale */
+    align-items: flex-end;  /* allineato a destra */
+    gap: 6px;               /* spazio tra lingua e toggle */
+  }
+
+
 }
 
 /* ---------- Desktop (>768px) ---------- */
