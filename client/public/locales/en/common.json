@@ -103,7 +103,44 @@
     "whatsapp": ["File","Chat","Edit","Call","View","Window","Help"],
     "apps":     ["Edit","Store","Window","Help"],
     "mail":     ["File","Edit","View","Mailbox","Message","Format","Window","Help"]
-  }
+  },
+  "visitSite": "Visit site",
+  "notFound": "Project not found",
+  "noDescription": "No description available",
+    "projects": {
+      "Progetto1": {
+        "title": "Project 1",
+        "description": "Project 1 description..."
+      },
+      "Progetto2": {
+        "title": "Project 2",
+        "description": "Project 2 description..."
+      },
+      "Progetto3": {
+        "title": "Project 3",
+        "description": "Project 3 description..."
+      },
+      "Progetto4": {
+        "title": "Project 4",
+        "description": "Project 4 description..."
+      },
+      "Progetto5": {
+        "title": "Project 5",
+        "description": "Project 5 description..."
+      },
+      "Progetto6": {
+        "title": "Project 6",
+        "description": "Project 6 description..."
+      },
+      "Progetto7": {
+        "title": "Project 7",
+        "description": "Project 7 description..."
+      },
+      "Progetto8": {
+        "title": "Project 8",
+        "description": "Project 8 description..."
+      }
+    }
   }
 }
 

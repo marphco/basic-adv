@@ -332,8 +332,8 @@ const Portfolio = ({ scrollTween = null }) => {
         </DndContext>
 
         <div className="dock-strip">
-+          <Dock icons={dockApps} onToggleActive={handleToggleApp} />
-+        </div>
+          <Dock icons={dockApps} onToggleActive={handleToggleApp} />
+        </div>
       </div>
     </div>
   );

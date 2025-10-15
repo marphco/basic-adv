@@ -103,7 +103,44 @@
     "whatsapp": ["File","Chat","Modifica","Chiama","Vista","Finestra","Aiuto"],
     "apps":     ["Modifica","Store","Finestra","Aiuto"],
     "mail":     ["File","Modifica","Vista","Casella","Messaggio","Formato","Finestra","Aiuto"]
-  }
+  },
+  "visitSite": "Visita il sito",
+  "notFound": "Progetto non trovato",
+  "noDescription": "Nessuna descrizione disponibile",
+    "projects": {
+      "Progetto1": {
+        "title": "Progetto 1",
+        "description": "Descrizione italiana del progetto 1..."
+      },
+      "Progetto2": {
+        "title": "Progetto 2",
+        "description": "Descrizione italiana del progetto 2..."
+      },
+      "Progetto3": {
+        "title": "Progetto 3",
+        "description": "Descrizione italiana del progetto 3..."
+      },
+      "Progetto4": {
+        "title": "Progetto 4",
+        "description": "Descrizione italiana del progetto 4..."
+      },
+      "Progetto5": {
+        "title": "Progetto 5",
+        "description": "Descrizione italiana del progetto 5..."
+      },
+      "Progetto6": {
+        "title": "Progetto 6",
+        "description": "Descrizione italiana del progetto 6..."
+      },
+      "Progetto7": {
+        "title": "Progetto 7",
+        "description": "Descrizione italiana del progetto 7..."
+      },
+      "Progetto8": {
+        "title": "Progetto 8",
+        "description": "Descrizione italiana del progetto 8..."
+      }
+    }
   }
 }
 

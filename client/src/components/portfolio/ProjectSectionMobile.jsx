@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Portfolio.css";
 import projectData from "./projectData";
+import { useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,14 +13,24 @@ export default function ProjectSectionMobilePage() {
   const containerRef = useRef(null);
   const imagesRowRef = useRef(null);
   const topSectionRef = useRef(null);
+  const { t } = useTranslation(["common"]);
 
   const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
-  const content = projectData[normalizedId] || {
-    title: "Progetto non trovato",
-    description: "Nessuna descrizione disponibile",
-    images: [],
-    link: null,
-  };
+
+  // dati non tradotti (immagini/link)
+  const base = projectData[normalizedId] || { images: [], link: null };
+
+  // testi tradotti con fallback
+  const title = t(
+    `portfolio.projects.${normalizedId}.title`,
+    t("portfolio.notFound")
+  );
+  const description = t(
+    `portfolio.projects.${normalizedId}.description`,
+    t("portfolio.noDescription")
+  );
+
+  const content = { ...base, title, description };
 
   useEffect(() => {
     const m = document.createElement("meta");
@@ -50,43 +61,36 @@ export default function ProjectSectionMobilePage() {
 
   useEffect(() => {
     const imagesRow = imagesRowRef.current;
-    if (!imagesRow) return;
-
-    const images = imagesRow.querySelectorAll("img");
-    const loadPromises = Array.from(images).map(
-      (img) =>
-        new Promise((resolve) => {
-          if (img.complete) resolve();
-          else {
-            img.addEventListener("load", resolve);
-            img.addEventListener("error", resolve);
-          }
-        })
-    );
-
-    Promise.all(loadPromises).then(() => {
-      imagesRow.scrollTop = 896; // Inizia con immagine 4 visibile
-      // console.log("Immagini caricate, scrollTop:", imagesRow.scrollTop);
-    });
-  }, []);
-
-  useEffect(() => {
-    const imagesRow = imagesRowRef.current;
     const topSection = topSectionRef.current;
     if (!imagesRow || !topSection) return;
 
-    gsap.to(topSection, {
-      x: "-100vw", // Sposta a sinistra fuori dallo schermo
-      opacity: 0, // Scompare
-      ease: "power2.easeOut",
+    const anim = gsap.to(topSection, {
+      x: "-100vw",
+      opacity: 0,
+      ease: "power2.out",
       scrollTrigger: {
-        trigger: imagesRow, // L'animazione è legata allo scroll di imagesRow
-        start: "top center", // Inizia quando il top di imagesRow è al centro dello schermo
-        end: "+=500", // Finisce dopo 500px di scroll
-        scrub: 1, // Scrub fluido con un leggero ritardo (1 secondo)
-        markers: false, // Lascia i marker per debug
+        trigger: imagesRow,
+        start: "top center",
+        end: "+=500",
+        scrub: 1,
+        markers: false,
       },
     });
+
+    return () => {
+      anim.scrollTrigger && anim.scrollTrigger.kill();
+      anim.kill();
+    };
+  }, [id]);
+
+  const openExternal = (url) =>
+    window.open(url, "_blank", "noopener,noreferrer");
+
+  useEffect(() => {
+    return () => {
+      // sicurezza extra: rimuovi eventuali trig rimasti
+      gsap.utils.toArray(ScrollTrigger.getAll()).forEach((st) => st.kill());
+    };
   }, []);
 
   return (
@@ -98,12 +102,11 @@ export default function ProjectSectionMobilePage() {
             <p className="project-description">{content.description}</p>
             {content.link && (
               <button
-                href={content.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                type="button"
                 className="project-link"
+                onClick={() => openExternal(content.link)}
               >
-                Visita il sito
+                {t("portfolio.visitSite")}
               </button>
             )}
           </div>

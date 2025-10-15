@@ -4,12 +4,14 @@ import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import PropTypes from "prop-types";
 import projectData from "./projectData"; // Importa i dati centralizzati
+import { useTranslation } from "react-i18next";
 import "./Portfolio.css";
 
 function ProjectSectionDesktop({ onClose, project }) {
   const overlayRef = useRef(null);
   const sectionRef = useRef(null);
   const leftColumnRef = useRef(null);
+  const { t } = useTranslation(["common"]);
 
   // Blocca lo scroll del sito usando una classe CSS
   useEffect(() => {
@@ -22,13 +24,16 @@ function ProjectSectionDesktop({ onClose, project }) {
   // Configura l’overlay full‑screen e anima l’entrata dal basso
   useEffect(() => {
     if (!overlayRef.current || !sectionRef.current) return;
-    // Previeni la propagazione dello scroll esterno
-    overlayRef.current.addEventListener("wheel", (e) => e.stopPropagation(), {
-      passive: false,
-    });
+    // Previeni la propagazione dello scroll esterno (con cleanup)
+    const stopProp = (e) => e.stopPropagation();
+    overlayRef.current.addEventListener("wheel", stopProp, { passive: false });
 
     gsap.set(sectionRef.current, { y: "100%" });
     gsap.to(sectionRef.current, { y: "0%", duration: 0.5, ease: "power3.out" });
+    return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      overlayRef.current?.removeEventListener("wheel", stopProp);
+    };
   }, []);
 
   // Chiusura con ESC
@@ -38,7 +43,7 @@ function ProjectSectionDesktop({ onClose, project }) {
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClose = () => {
@@ -54,57 +59,65 @@ function ProjectSectionDesktop({ onClose, project }) {
     });
   };
 
-  const content = projectData[project] || {
-    title: "Errore",
-    description: "Progetto non trovato",
-    images: [],
-    link: null,
-  };
+  const base = projectData[project] || { images: [], link: null };
+  const title = t(
+    `portfolio.projects.${project}.title`,
+    t("portfolio.notFound")
+  );
+  const description = t(
+    `portfolio.projects.${project}.description`,
+    t("portfolio.noDescription")
+  );
+  const content = { ...base, title, description };
 
   // Duplica le immagini per ottenere il looping infinito
   const duplicatedImages = content.images.concat(content.images);
 
   // Funzione che attende il caricamento di tutte le immagini e imposta il looping
+  // Funzione che attende il caricamento di tutte le immagini e imposta il looping
   useEffect(() => {
     const leftCol = leftColumnRef.current;
     if (!leftCol) return;
-  
-    // Attendi il caricamento di tutte le immagini
+
     const imgs = leftCol.querySelectorAll("img");
     const waitForImages = Array.from(imgs).map(
       (img) =>
         new Promise((resolve) => {
-          if (img.complete) {
-            resolve();
-          } else {
-            img.addEventListener("load", resolve);
-            img.addEventListener("error", resolve);
+          if (img.complete) resolve();
+          else {
+            img.addEventListener("load", resolve, { once: true });
+            img.addEventListener("error", resolve, { once: true });
           }
         })
     );
+
+    const TOLERANCE = 1;
+    let handleScroll;
+
     Promise.all(waitForImages).then(() => {
-      // Dopo che tutte le immagini sono state caricate, calcola l'altezza della prima copia
-      const singleContentHeight = leftCol.scrollHeight / 2;
-      // Imposta lo scroll iniziale (opzionale)
-      leftCol.scrollTop = 1; // imposta a 1 px per evitare 0 esatto
-  
-      const TOLERANCE = 1; // Puoi regolare questo valore se necessario
-  
-      const handleScroll = () => {
+      // ricalcola sempre la metà (se cambiano dimensioni)
+      const singleContentHeight = () => leftCol.scrollHeight / 2;
+
+      if (leftCol.scrollTop === 0) leftCol.scrollTop = 1;
+
+      handleScroll = () => {
+        const half = singleContentHeight();
         if (leftCol.scrollTop < TOLERANCE) {
-          // Se l'utente ha scrollato troppo in alto, riporta alla fine della prima copia
-          leftCol.scrollTop = leftCol.scrollTop + singleContentHeight - TOLERANCE;
-        } else if (leftCol.scrollTop > singleContentHeight - TOLERANCE) {
-          // Se l'utente ha scrollato troppo in basso, riportalo all'inizio della prima copia
-          leftCol.scrollTop = leftCol.scrollTop - singleContentHeight + TOLERANCE;
+          leftCol.scrollTop = leftCol.scrollTop + half - TOLERANCE;
+        } else if (leftCol.scrollTop > half - TOLERANCE) {
+          leftCol.scrollTop = leftCol.scrollTop - half + TOLERANCE;
         }
       };
-  
+
       leftCol.addEventListener("scroll", handleScroll);
-      // Pulizia del listener quando il componente viene smontato
-      return () => leftCol.removeEventListener("scroll", handleScroll);
     });
-  }, [duplicatedImages]);
+
+    return () => {
+      if (handleScroll && leftCol) {
+        leftCol.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [content.images.length]);
 
   useEffect(() => {
     const container = overlayRef.current;
@@ -119,9 +132,12 @@ function ProjectSectionDesktop({ onClose, project }) {
         leftColumnRef.current.scrollTop += e.deltaY;
       }
     };
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => container.removeEventListener('wheel', handleWheel);
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
   }, []);
+
+  const openExternal = (url) =>
+    window.open(url, "_blank", "noopener,noreferrer");
 
   const modalJSX = (
     <div
@@ -133,12 +149,16 @@ function ProjectSectionDesktop({ onClose, project }) {
         ref={sectionRef}
         className="project-section"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={content.title}
       >
         <button
+          type="button"
           className="project-section-close"
           onClick={handleClose}
         >
-          [CHIUDI]
+          [{t("navbar.close")}]
         </button>
         <div
           className="project-content"
@@ -152,32 +172,28 @@ function ProjectSectionDesktop({ onClose, project }) {
           }}
         >
           {/* Colonna sinistra: immagini con scroll infinito */}
-          <div
-            className="project-left"
-            ref={leftColumnRef}
-          >
+          <div className="project-left" ref={leftColumnRef}>
             {duplicatedImages.map((img, index) => (
               <img
                 key={index}
                 src={img}
-                alt={`${content.title} - ${(index % content.images.length) + 1}`}
+                alt={`${content.title} - ${
+                  (index % content.images.length) + 1
+                }`}
               />
             ))}
           </div>
           {/* Colonna destra: testo e pulsante */}
-          <div
-            className="project-right"
-          >
+          <div className="project-right">
             <h2>{content.title}</h2>
             <p>{content.description}</p>
             {content.link && (
               <button
-                href={content.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                type="button"
                 className="project-link"
+                onClick={() => openExternal(content.link)}
               >
-                Visita il sito
+                {t("portfolio.visitSite")}
               </button>
             )}
           </div>
