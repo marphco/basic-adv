@@ -19,6 +19,7 @@ import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
+import { useTranslation } from "react-i18next";
 
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -76,6 +77,27 @@ const defaultFormData = {
 const DynamicForm = () => {
   const isMobile = useIsMobile();
   const railRef = useRef(null);
+  const { t } = useTranslation(["common"]);
+  // Converte gli errori: se è una chiave i18n ("form.*") la traduce, altrimenti la lascia com'è.
+  const translateErrors = useCallback(
+    (errs) => {
+      if (!errs) return errs;
+      const out = {};
+      for (const [k, v] of Object.entries(errs)) {
+        out[k] = typeof v === "string" && v.startsWith("form.") ? t(v) : v;
+      }
+      return out;
+    },
+    [t]
+  );
+
+  const [errors, setErrors] = useState({});
+
+  // Versione localizzata di errors usata SOLO a render time / passaggio ai figli
+  const i18nErrors = useMemo(
+    () => translateErrors(errors),
+    [errors, translateErrors]
+  );
 
   const [sessionId, setSessionId] = useState(() => {
     try {
@@ -100,7 +122,7 @@ const DynamicForm = () => {
   const [isLogoSelected, setIsLogoSelected] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
-  const [errors, setErrors] = useState({});
+  
 
   // eslint-disable-next-line no-unused-vars
   const questionRef = useRef(null);
@@ -245,7 +267,6 @@ const DynamicForm = () => {
     []
   );
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const categoriesRequiringBrand = ["Branding", "Web", "App"];
 
   const handleRestart = () => {
@@ -404,30 +425,30 @@ const DynamicForm = () => {
         let newErrors = {};
 
         if (selectedServices.length === 0) {
-          newErrors.services = "Seleziona almeno un servizio.";
+          newErrors.services = "form.errors.services";
         }
         if (formData.businessField === "Ambito") {
-          newErrors.businessField = "Seleziona un ambito.";
+          newErrors.businessField = "form.errors.businessField";
         }
         if (
           formData.businessField === "Altro" &&
           !formData.otherBusinessField.trim()
         ) {
-          newErrors.otherBusinessField = "Specifica l’ambito.";
+          newErrors.otherBusinessField = "form.errors.otherBusinessField";
         }
         // Validazione di projectType solo se almeno una categoria richiede il brand
         const requiresBrand = selectedCategories.some((cat) =>
           categoriesRequiringBrand.includes(cat)
         );
         if (requiresBrand && formData.projectType === "Tipo di progetto") {
-          newErrors.projectType = "Seleziona un tipo di progetto.";
+          newErrors.projectType = "form.errors.projectType";
         }
         if (
           requiresBrand &&
           formData.projectType === "restyling" &&
           !formData.currentLogo
         ) {
-          newErrors.currentLogo = "Carica un’immagine per il restyling.";
+          newErrors.currentLogo = "form.errors.currentLogo.type";
         } else if (
           requiresBrand &&
           formData.projectType === "restyling" &&
@@ -445,14 +466,13 @@ const DynamicForm = () => {
           ];
           const maxSize = 5 * 1024 * 1024;
           if (!allowedTypes.includes(file.type)) {
-            newErrors.currentLogo =
-              "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.";
+            newErrors.currentLogo = "form.errors.currentLogo.type";
           } else if (file.size > maxSize) {
-            newErrors.currentLogo = "Il file supera i 5MB.";
+            newErrors.currentLogo = "form.errors.currentLogo.size";
           }
         }
         if (!formData.budget) {
-          newErrors.budget = "Seleziona un budget.";
+          newErrors.budget = "form.errors.budget";
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -519,12 +539,14 @@ const DynamicForm = () => {
           setLoading(false);
         }
       }, 300),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       selectedServices,
       selectedCategories,
       formData,
       sessionId,
       categoriesRequiringBrand,
+      t,
     ]
   );
 
@@ -682,18 +704,17 @@ const DynamicForm = () => {
   return (
     <div className="form-rail-section" ref={railRef}>
       <div className="form-rail">
-        <div className="form-rail-text">
-          hai scrollato abbastanza: scegli e partiamo.
-        </div>
+        <div className="form-rail-text">{t("form.railText")}</div>
       </div>
 
       {/* Pannello form (90vw), centrato verticalmente come prima */}
       <div className="dynamic-form">
         {!currentQuestion && !isCompleted && !showThankYou && (
           <div className="dynamic-form-hero">
-            <h2>Pronto a fare sul serio?</h2>
+            <h2>{t("form.hero.title")}</h2>
             <p>
-              <span>Scegli categoria e servizi.</span> Al resto pensiamo noi.
+              <span>{t("form.hero.subtitlePrefix")}</span>{" "}
+              {t("form.hero.subtitleSuffix")}
             </p>
           </div>
         )}
@@ -718,7 +739,7 @@ const DynamicForm = () => {
                     handleInputChange={handleInputChange}
                     handleAnswerChange={handleAnswerChange}
                     loading={loading}
-                    errors={errors}
+                    errors={i18nErrors}
                     formData={formData}
                   />
                 </div>
@@ -735,7 +756,7 @@ const DynamicForm = () => {
             setFormData={setFormData}
             handleSubmitContactInfo={handleSubmitContactInfo}
             loading={loading}
-            errors={errors}
+            errors={i18nErrors}
             setErrors={setErrors}
           />
         ) : (
@@ -751,19 +772,19 @@ const DynamicForm = () => {
                 toggleService={toggleService}
                 services={services}
                 categoriesRequiringBrand={categoriesRequiringBrand}
-                errors={errors}
+                errors={i18nErrors}
               />
               {selectedCategories.length > 0 && (
                 <div className="budget-and-submit">
                   <div className="form-group budget-group">
-                    <h3 className="budget-title">Qual è il tuo budget?</h3>
+                    <h3 className="budget-title">{t("form.budget.title")}</h3>
                     <div className="budget-circles">
                       {[
-                        { label: "Non lo so", value: "unknown" },
-                        { label: "0-1.000 €", value: "0-1000" },
-                        { label: "1-5.000 €", value: "1000-5000" },
-                        { label: "5-10.000 €", value: "5000-10000" },
-                        { label: "+10.000 €", value: "10000+" },
+                        { label: t("form.budget.unknown"), value: "unknown" },
+                        { label: t("form.budget.r1"), value: "0-1000" },
+                        { label: t("form.budget.r2"), value: "1000-5000" },
+                        { label: t("form.budget.r3"), value: "5000-10000" },
+                        { label: t("form.budget.r4"), value: "10000+" },
                       ].map((option) => (
                         <button
                           key={option.value}
@@ -784,7 +805,7 @@ const DynamicForm = () => {
                     {errors.budget && (
                       <span className="error-message budget-error">
                         <FaExclamationCircle className="error-icon" />
-                        {errors.budget}
+                        {i18nErrors.budget}
                       </span>
                     )}
                   </div>
@@ -801,23 +822,26 @@ const DynamicForm = () => {
                       {loading ? (
                         <FaSpinner className="spinner" />
                       ) : (
-                        "COMINCIAMO!"
+                        t("form.submit")
                       )}
                     </button>
-                    {errors.general && (
+                    {i18nErrors.general && (
                       <span className="error-message">
                         <FaExclamationCircle className="error-icon" />
                         <span
-                          dangerouslySetInnerHTML={{ __html: errors.general }}
+                          dangerouslySetInnerHTML={{
+                            __html: i18nErrors.general,
+                          }}
                         />
                       </span>
                     )}
-                    {Object.keys(errors).length > 0 && !errors.general && (
-                      <span className="error-message">
-                        <FaExclamationCircle className="error-icon" />
-                        Errore nel form. Controlla i campi sopra.
-                      </span>
-                    )}
+                    {Object.keys(i18nErrors).length > 0 &&
+                      !i18nErrors.general && (
+                        <span className="error-message">
+                          <FaExclamationCircle className="error-icon" />
+                          {t("form.errors.general")}
+                        </span>
+                      )}
                   </div>
                 </div>
               )}
