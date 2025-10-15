@@ -5,6 +5,7 @@ import AboutUs from "./AboutUs"; // Mobile
 import AboutUsDesktop from "./AboutUsDesktop"; // Desktop
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,6 +14,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
   const overlayRef = useRef(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const scrollYRef = useRef(0);
+  const { t } = useTranslation(["common"]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -171,7 +173,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
           className="aboutus-overlay-close"
           onClick={handleClose}
         >
-          [CHIUDI]
+          [{t("navbar.close")}]
         </button>
       </div>
       <AboutUsDesktop overlayRef={overlayRef} isOpen={isOpen} />

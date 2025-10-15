@@ -56,6 +56,8 @@
     box-sizing: border-box;
     resize: vertical;
     min-height: 60px;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   }
   
   .form-textarea:hover,
