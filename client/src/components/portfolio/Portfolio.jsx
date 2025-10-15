@@ -212,33 +212,59 @@ const Portfolio = ({ scrollTween = null }) => {
     return () => ctx.revert();
   }, [isMobile]);
 
-  // ⬇️ etichette dock localizzate (TRASH => Cestino in IT)
-  const dockIcons = [
-    {
-      id: "finder",
-      label: t("portfolio.dock.finder"),
-      src: finderIcon,
-      active: true,
-    },
-    { id: "apps", label: t("portfolio.dock.apps"), src: appsIcon },
-    { id: "whatsapp", label: t("portfolio.dock.whatsapp"), src: whatsappIcon },
-    { id: "chrome", label: t("portfolio.dock.chrome"), src: chromeIcon },
-    { id: "figma", label: t("portfolio.dock.figma"), src: figmaIcon },
-    { id: "vscode", label: t("portfolio.dock.vscode"), src: vscodeIcon },
-    {
-      id: "illustrator",
-      label: t("portfolio.dock.illustrator"),
-      src: illustratorIcon,
-    },
-    {
-      id: "photoshop",
-      label: t("portfolio.dock.photoshop"),
-      src: photoshopIcon,
-    },
+// Stato Dock: app aperte e app "in focus"
+  const [dockApps, setDockApps] = useState(() => ([
+    { id: "finder",      label: t("portfolio.dock.finder"),      src: finderIcon,      active: true },
+    { id: "apps",        label: t("portfolio.dock.apps"),        src: appsIcon,        active: false },
+    { id: "whatsapp",    label: t("portfolio.dock.whatsapp"),    src: whatsappIcon,    active: false },
+    { id: "chrome",      label: t("portfolio.dock.chrome"),      src: chromeIcon,      active: false },
+    { id: "figma",       label: t("portfolio.dock.figma"),       src: figmaIcon,       active: false },
+    { id: "vscode",      label: t("portfolio.dock.vscode"),      src: vscodeIcon,      active: false },
+    { id: "illustrator", label: t("portfolio.dock.illustrator"), src: illustratorIcon, active: false },
+    { id: "photoshop",   label: t("portfolio.dock.photoshop"),   src: photoshopIcon,   active: false },
     { type: "separator" },
-    { id: "mail", label: t("portfolio.dock.mail"), src: mailIcon },
-    { id: "trash", label: t("portfolio.dock.trash"), src: trashIcon },
-  ];
+    { id: "mail",        label: t("portfolio.dock.mail"),        src: mailIcon,        active: false },
+    { id: "trash",       label: t("portfolio.dock.trash"),       src: trashIcon,       active: false },
+  ]));
+  const [focusedId, setFocusedId] = useState("finder");
+
+  // Se cambi lingua, rigenera le label mantenendo stato open/focus
+  useEffect(() => {
+    setDockApps(prev => prev.map(it =>
+      it.type === "separator" ? it : {
+        ...it,
+        label: t(`portfolio.dock.${it.id}`),
+      }
+    ));
+  }, [t]);
+
+  const handleToggleApp = (id) => {
+    setDockApps(prev => {
+      // Finder non si chiude mai: resta attivo e prende focus
+      if (id === "finder") {
+        setFocusedId("finder");
+        return prev.map(it => it.id === "finder" ? { ...it, active: true } : it);
+      }
+
+      const next = prev.map(it => it.id === id ? { ...it, active: !it.active } : it);
+      const clicked = next.find(it => it.id === id);
+
+      if (clicked?.active) {
+        // attivata => prende focus
+        setFocusedId(id);
+      } else {
+        // disattivata: se era in focus, scegli nuovo focus
+        if (focusedId === id) {
+          const finderActive = next.find(it => it.id === "finder")?.active;
+          const another = next.find(it => it.active && it.id !== "finder");
+          setFocusedId(finderActive ? "finder" : (another?.id || "finder"));
+        }
+      }
+      return next;
+    });
+  };
+
+  const activeAppLabel = dockApps.find(a => a.id === focusedId)?.label;
 
   return (
     <div className="portfolio-section" ref={portfolioRef}>
@@ -255,7 +281,7 @@ const Portfolio = ({ scrollTween = null }) => {
           aria-hidden
         />
 
-        <MacMenuBar />
+        <MacMenuBar activeAppLabel={activeAppLabel} />
 
         {!isMobile ? (
           <div className="intro-portfolio">
@@ -306,8 +332,8 @@ const Portfolio = ({ scrollTween = null }) => {
         </DndContext>
 
         <div className="dock-strip">
-          <Dock icons={dockIcons} />
-        </div>
++          <Dock icons={dockApps} onToggleActive={handleToggleApp} />
++        </div>
       </div>
     </div>
   );

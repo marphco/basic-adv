@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
-export default function MacMenuBar({ className = "" }) {
+export default function MacMenuBar({ className = "", activeAppLabel }) {
   const { i18n, t } = useTranslation(["common"]);
   const [now, setNow] = useState(() => new Date());
 
@@ -49,8 +49,8 @@ export default function MacMenuBar({ className = "" }) {
           
         </span>
         <span className="menu-item active">
-          {t("portfolio.menubar.finder")}
-        </span>
+         {activeAppLabel || t("portfolio.menubar.finder")}
+       </span>
         <span className="menu-item">{t("portfolio.menubar.file")}</span>
         <span className="menu-item">{t("portfolio.menubar.edit")}</span>
         <span className="menu-item">{t("portfolio.menubar.view")}</span>
@@ -69,4 +69,5 @@ export default function MacMenuBar({ className = "" }) {
 
 MacMenuBar.propTypes = {
   className: PropTypes.string,
+  activeAppLabel: PropTypes.string,
 };
