@@ -12,8 +12,10 @@
     "closeSidebar": "Chiudi sidebar",
     "home": "BASIC. — home"
   },
-  "cookie": {
-    "usage": "Usiamo cookie.",
-    "acceptance": "ACCETTA"
+  "cookie": { "usage": "Usiamo cookie.", "acceptance": "ACCETTA" },
+
+  "home": {
+    "hero": "Se c’è da comunicare, ci siamo.<1/>Trasformiamo idee in storie, progetti in esperienze.<1/>Il tuo pubblico non aspetta:<1/><2>facciamolo innamorare.</2>",
+    "cta": "COMINCIAMO?"
   }
 }

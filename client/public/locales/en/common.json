@@ -12,8 +12,10 @@
     "closeSidebar": "Close sidebar",
     "home": "BASIC. — home"
   },
-  "cookie": {
-    "usage": "We use cookies.",
-    "acceptance": "ACCEPT"
+  "cookie": { "usage": "We use cookies.", "acceptance": "ACCEPT" },
+
+  "home": {
+    "hero": "If there’s something to communicate, we’re in.<1/>We turn ideas into stories, projects into experiences.<1/>Your audience won’t wait:<1/><2>let’s make them fall in love.</2>",
+    "cta": "SHALL WE START?"
   }
 }

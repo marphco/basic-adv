@@ -4,12 +4,14 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Home.css";
 import logoLight from "../../assets/logo-light.svg";
 import logoDark from "../../assets/logo-dark.svg";
+import { Trans, useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
 // Utilizziamo React.forwardRef per accettare il ref
 const Home = () => {
   const homeRef = useRef(null);
+  const { t } = useTranslation(["common"]);
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
@@ -60,25 +62,23 @@ const Home = () => {
   return (
     <div className="home-container" ref={homeRef}>
       <div className="stripes-container"></div>
+
       <div className="home-text">
         <p>
-          Se c’è da comunicare, ci siamo.<br/>Trasformiamo idee in storie, progetti in esperienze.
-          <br/>Il tuo pubblico non aspetta:
-          <br/>
-          <span className="tagline">facciamolo innamorare.</span>
+          <Trans i18nKey="home.hero" ns="common" components={{
+            1: <br />,                          // <1/> nei testi = <br/>
+            2: <span className="tagline" />     // <2>...</2> = <span class="tagline">...</span>
+          }}/>
         </p>
       </div>
+
       <div className="bottom-section">
         <div className="home-logo-container">
-          <img
-            src={logoLight}
-            alt="Logo Light"
-            className="home-logo light-logo"
-          />
-          <img src={logoDark} alt="Logo Dark" className="home-logo dark-logo" />
+          <img src={logoLight} alt="Logo Light" className="home-logo light-logo" />
+          <img src={logoDark}  alt="Logo Dark"  className="home-logo dark-logo" />
         </div>
         <div className="scroll-hint">
-          COMINCIAMO?<span className="scroll-arrow">↓</span>
+          {t("home.cta")}<span className="scroll-arrow">↓</span>
         </div>
       </div>
     </div>
