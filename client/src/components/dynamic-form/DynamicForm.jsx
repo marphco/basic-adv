@@ -37,6 +37,20 @@ const api = axios.create({
   baseURL: `${API_BASE}/api`, // sempre verso il dominio API
 });
 
+// Invia sempre la lingua in header (oltre che nel body, dove già c'è)
+const guessLang = () =>
+  (navigator.language || "").toLowerCase().startsWith("it") ? "it" : "en";
+
+api.interceptors.request.use((config) => {
+  // const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
+  // config.headers = {
+  //   ...(config.headers || {}),
+  //   "X-Lang": lang,
+  //   "Accept-Language": lang,
+  // };
+  return config;
+});
+
 const debounce = (func, wait) => {
   let timeout;
   return (...args) => {
@@ -47,9 +61,6 @@ const debounce = (func, wait) => {
 
 // === PERSISTENZA STATO ===
 const STORAGE_KEY = "ba_form_state_v1";
-
-const guessLang = () =>
-  (navigator.language || "").toLowerCase().startsWith("it") ? "it" : "en";
 
 const defaultFormData = {
   brandName: "",
@@ -254,6 +265,7 @@ const DynamicForm = () => {
       projectObjectives: "",
       contactInfo: { name: "", email: "", phone: "" },
       budget: "",
+      lang: localStorage.getItem("lang") || guessLang(),
     });
     setAnswers({});
     setIsLogoSelected(false);
@@ -445,7 +457,6 @@ const DynamicForm = () => {
 
         if (Object.keys(newErrors).length > 0) {
           setErrors(newErrors);
-          setLoading(false);
           return;
         }
 
@@ -472,9 +483,6 @@ const DynamicForm = () => {
           const response = await api.post("/generate", formDataToSend, {
             headers: {
               "Content-Type": "multipart/form-data",
-              "X-Lang": formData.lang,
-              "Accept-Language":
-                formData.lang === "en" ? "en-US,en;q=0.9" : "it-IT,it;q=0.9",
             },
           });
 
@@ -532,9 +540,6 @@ const DynamicForm = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-Lang": formData.lang,
-            "Accept-Language":
-              formData.lang === "en" ? "en-US,en;q=0.9" : "it-IT,it;q=0.9",
           },
         }
       );
@@ -561,7 +566,6 @@ const DynamicForm = () => {
       setErrors({
         general: "Errore nel recupero della domanda. Riprova più tardi.",
       });
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -665,6 +669,15 @@ const DynamicForm = () => {
     : "none";
 
   const nodeRef = currentQuestion ? getRefForKey(qKey) : null;
+
+  useEffect(() => {
+    const onLang = (e) => {
+      const lng = e?.detail === "it" ? "it" : "en";
+      setFormData((prev) => ({ ...prev, lang: lng }));
+    };
+    window.addEventListener("basic:lang", onLang);
+    return () => window.removeEventListener("basic:lang", onLang);
+  }, []);
 
   return (
     <div className="form-rail-section" ref={railRef}>

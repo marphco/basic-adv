@@ -17,30 +17,30 @@ const { rlGenerateQuestions } = require("./services/rlClient");
 
 dotenv.config();
 
-// --- Language picker: it solo per Italia/San Marino/Vaticano, altrimenti en ---
-function pickLang(reqBodyLang, headers = {}) {
-  if (reqBodyLang === "it" || reqBodyLang === "en") return reqBodyLang;
+// // --- Language picker: it solo per Italia/San Marino/Vaticano, altrimenti en ---
+// function pickLang(reqBodyLang, headers = {}) {
+//   if (reqBodyLang === "it" || reqBodyLang === "en") return reqBodyLang;
 
-  const xlang = (headers["x-lang"] || headers["X-Lang"] || "").toLowerCase();
-  if (xlang === "it" || xlang === "en") return xlang;
+//   const xlang = (headers["x-lang"] || headers["X-Lang"] || "").toLowerCase();
+//   if (xlang === "it" || xlang === "en") return xlang;
 
-  const al = (headers["accept-language"] || "").toLowerCase();
-  if (al.startsWith("it") || al.includes(" it,")) return "it";
+//   const al = (headers["accept-language"] || "").toLowerCase();
+//   if (al.startsWith("it") || al.includes(" it,")) return "it";
 
-  const cc = (
-    headers["cf-ipcountry"] ||
-    headers["x-vercel-ip-country"] ||
-    headers["x-country-code"] ||
-    ""
-  ).toUpperCase();
-  if (cc === "IT" || cc === "SM" || cc === "VA") return "it";
+//   const cc = (
+//     headers["cf-ipcountry"] ||
+//     headers["x-vercel-ip-country"] ||
+//     headers["x-country-code"] ||
+//     ""
+//   ).toUpperCase();
+//   if (cc === "IT" || cc === "SM" || cc === "VA") return "it";
 
-  return "en";
-}
+//   return "en";
+// }
 
 const app = express();
 
-// ---- CORS CONFIG (SOSTITUISCE IL TUO) ----
+// ---- CORS CONFIG (FIX PRECISE) ----
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -49,29 +49,43 @@ const allowedOrigins = new Set([
   "https://www.basicadv.com",
 ]);
 
+const corsOpts = {
+  origin: (origin, cb) =>
+    allowedOrigins.has(origin) || !origin
+      ? cb(null, true)
+      : cb(new Error("Not allowed by CORS")),
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Lang",
+    "Accept-Language",
+    "X-Requested-With",
+  ],
+};
 
-
-app.use(
-  require("cors")({
-    origin: (origin, cb) => {
-      if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-
-// Preflight global + specifico RL
-app.options("*", require("cors")());
-app.options("/api/rl/*", require("cors")());
+app.use((req, res, next) => {
+  res.header("Vary", "Origin, Access-Control-Request-Headers");
+  next();
+});
+app.use(cors(corsOpts));
+app.options("*", cors(corsOpts));
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.header("Vary", "Origin");
-  next();
+app.get("/api/geo", (req, res) => {
+  const country =
+    req.headers["x-vercel-ip-country"] ||
+    req.headers["cf-ipcountry"] ||
+    req.headers["x-country-code"] ||
+    "ZZ";
+
+  res.setHeader(
+    "Cache-Control",
+    "public, max-age=600, s-maxage=600, stale-while-revalidate=60"
+  );
+  res.json({ country });
 });
 
 // === Upload dir su volume persistente ===
@@ -91,9 +105,21 @@ const isDbReady = () => mongoose.connection.readyState === 1;
 // const aiRouter = require("./routes/ai");
 // app.use("/api", aiRouter);
 
-// monta il router RL rating (CommonJS)
+// prima di definire le tue rotte /api/generate e /api/nextQuestion
 const rlTrainingRouter = require("./routes/rlTraining");
-app.use("/api", rlTrainingRouter);
+// Solo se ti serve davvero in locale:
+app.use("/api/rl", rlTrainingRouter); // ✅ NON collide con /api/generate
+// oppure commentalo del tutto in produzione.
+
+// api.interceptors.request.use((config) => {
+//   const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
+//   config.headers = {
+//     ...(config.headers || {}),
+//     "X-Lang": lang,
+//     "Accept-Language": lang,
+//   };
+//   return config;
+// });
 
 // --- Language picker: it solo per Italia/San Marino/Vaticano, altrimenti en ---
 function pickLang(reqBodyLang, headers = {}) {
@@ -348,6 +374,82 @@ const upload = multer({
     }
   },
 });
+
+function normalizeFontOption(lang, v) {
+  if (lang === "it") {
+    if (/^monospac(ed|e|ato)/i.test(v)) return "Monospaziato";
+    if (/^hand ?writ/i.test(v)) return "Manoscritto";
+    return v.replace(/^decorative$/i, "Decorativo");
+  } else {
+    if (/^monospaziato$/i.test(v)) return "Monospaced";
+    if (/^manoscritto$/i.test(v)) return "Handwritten";
+    return v.replace(/^decorativo$/i, "Decorative");
+  }
+}
+
+function ensureLanguage(q, lang) {
+  if (!q || typeof q !== "object") return q;
+  // normalizza Q tipografica
+  if (q.type === "font_selection") {
+    q.options = (q.options || []).map((o) => normalizeFontOption(lang, o));
+    q.question =
+      lang === "en"
+        ? "Which typographic style do you prefer for the logo?"
+        : "Quale stile tipografico preferisci per il logo?";
+  }
+  // piccola correzione colori aperti (evita opzioni se requiresInput)
+  if (lang === "it" && /color/i.test(q.question) && q.requiresInput) {
+    q.options = [];
+  }
+  return q;
+}
+
+// --- 2A: helper lingua + normalizzazione forte ---
+function isEnglish(s = "") {
+  return /\b(which|what|do you|color|typographic|prefer|logo)\b/i.test(s);
+}
+function isItalian(s = "") {
+  return /\b(quale|hai|preferenze|colore|tipografico|logo)\b/i.test(s);
+}
+
+// normalizza chiave in modo più robusto per deduplica
+function normKey(s = "") {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // senza accenti
+    .replace(/[^\w]+/g, " ") // solo lettere/numeri/_
+    .trim();
+}
+
+// Se una domanda parla di "font" la forzo nel formato corretto
+function hardNormalizeFont(q, lang) {
+  if (!q) return q;
+  if (/(font|tipograf|typograf)/i.test(q.question)) {
+    q.type = "font_selection";
+    q.requiresInput = false;
+    q.options =
+      lang === "en"
+        ? [
+            "Serif",
+            "Sans-serif",
+            "Script",
+            "Monospaced",
+            "Handwritten",
+            "Decorative",
+          ]
+        : [
+            "Serif",
+            "Sans-serif",
+            "Script",
+            "Monospaziato",
+            "Manoscritto",
+            "Decorativo",
+          ];
+  }
+
+  return ensureLanguage(q, lang);
+}
 
 app.post("/api/sendEmails", async (req, res) => {
   try {
@@ -813,20 +915,21 @@ const generateQuestionForService = async (
   answers,
   askedQuestions
 ) => {
-  // ====== INVARIATO: variabili di contesto ======
   const brandName = formData.brandName || "non specificato";
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
   const language = (formData && formData.lang) === "en" ? "en" : "it";
 
-  const askedQuestionsList = askedQuestions.join("\n");
+  const askedSanitized = (askedQuestions || [])
+    .map((q) => (typeof q === "string" ? q : q?.question || ""))
+    .filter(Boolean);
 
+  const askedListForPrompt = askedSanitized.join("\n");
   let imageInfo = "";
   if (formData.currentLogoDescription) {
     imageInfo = `\nIl cliente ha fornito una descrizione del logo attuale: ${formData.currentLogoDescription}`;
   }
 
-  // ⚠️ PROMPT INVARIATO (COPIATO DAL TUO CODICE, SENZA MODIFICHE)
   const promptBase = `Sei un assistente che aiuta a raccogliere dettagli per un progetto ${
     brandName !== "non specificato"
       ? `per il brand "${brandName}"`
@@ -845,7 +948,7 @@ Non fare nuovamente domande su queste informazioni.
 Risposte precedenti: ${JSON.stringify(answers || {})}
 
 Domande già poste per questo servizio:
-${askedQuestionsList}
+${askedListForPrompt}
 
 Ora, fai una nuova domanda pertinente al servizio selezionato (${service}), assicurandoti che non sia simile a nessuna delle domande già poste.
 
@@ -866,95 +969,67 @@ Per ogni domanda:
 
 - Se "requiresInput" è true, significa che la domanda richiede una risposta aperta e **non devi fornire opzioni**.
 - Se "requiresInput" è false, fornisci le opzioni come specificato.
+`;
 
-Assicurati che il JSON sia valido e non includa altro testo o caratteri.
-
-Utilizza un linguaggio semplice e chiaro, adatto a utenti senza conoscenze tecniche. Mantieni le domande e le opzioni concise e facili da comprendere.`;
-
-  // ====== 1) Tenta PRIMA il modello RL con IL TUO PROMPT ======
-  // subito prima della chiamata RL
-  const state = {
-    service, // es: "Logo"
-    lang: language, // "en" | "it"
-    industry: businessField || "Altro",
-    budget: formData?.budget || "unknown",
-    brandNameKnown: brandName !== "non specificato",
-    isRestyling: !!formData?.isRestyling,
-  };
-
-  // assicuriamoci che askedQuestions sia un array di stringhe
-  const askedSanitized = (askedQuestions || [])
-    .map((q) => (typeof q === "string" ? q : q?.question || ""))
-    .filter(Boolean);
-
-  if (process.env.RL_API_BASE) {
-    // console.log("[RL] enabled:", process.env.RL_API_BASE);
-    try {
-      const rawList = await rlGenerateQuestions(
-        promptBase,
-        { state, askedQuestions: askedSanitized, n: 6, language }, // 👈 NEW
-        { base: process.env.RL_API_BASE }
-      );
-      // console.log(
-      //   "[RL] rawList:",
-      //   Array.isArray(rawList) ? rawList.length : typeof rawList
-      // );
-
-      const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
-      if (normalized.length) {
-        const askedSet = new Set(askedSanitized);
-        const pick =
-          normalized.find((q) => q && !askedSet.has(q.question)) ||
-          normalized[0];
-        if (pick?.question) {
-          pick.__provider = "RL";
-          return pick;
-        }
-      } else {
-        console.warn("[RL] nessuna domanda valida -> fallback OpenAI");
-      }
-    } catch (e) {
-      console.warn(
-        "[RL] fallback OpenAI:",
-        e?.response?.status || e.code || e.message
-      );
-    }
-  } else {
-    // console.log("[RL] disabilitato (manca RL_API_BASE) -> uso OpenAI");
-  }
-
-  // ====== SOLO RL (niente fallback OpenAI) ======
   if (!process.env.RL_API_BASE) {
     throw new Error(
       "RL_API_BASE mancante: Basic non può generare domande senza RL"
     );
   }
 
+  // --- RL principale
   try {
-    const askedSanitized = (askedQuestions || [])
-      .map((q) => (typeof q === "string" ? q : q?.question || ""))
-      .filter(Boolean);
-
     const rawList = await rlGenerateQuestions(
       promptBase,
-      { state, askedQuestions: askedSanitized, n: 6, language }, // passo sia language sia state.lang
+      { askedQuestions: askedSanitized, n: 6, language },
       { base: process.env.RL_API_BASE }
     );
 
+    // ✅ MANCAVA QUESTA RIGA
     const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
-    if (!normalized.length) {
-      throw new Error("RL non ha prodotto domande valide");
-    }
 
-    const askedSet = new Set(askedSanitized);
-    const pick =
-      normalized.find((q) => q && !askedSet.has(q.question)) || normalized[0];
-    pick.__provider = "RL";
-    return pick;
+    if (normalized.length) {
+      const askedSet = new Set(askedSanitized);
+      let pick =
+        normalized.find((q) => q && !askedSet.has(q.question)) || normalized[0];
+
+      if (pick?.question) {
+        pick.__provider = "RL";
+        let ensured = hardNormalizeFont(pick, language);
+
+        // se lingua sbagliata, rigenera fino a 2 volte
+        for (let i = 0; i < 2 && ensured; i++) {
+          const badIt = language === "it" && isEnglish(ensured.question);
+          const badEn = language === "en" && isItalian(ensured.question);
+          if (!badIt && !badEn) break;
+
+          const retry = await rlGenerateQuestions(
+            promptBase,
+            { askedQuestions: askedSanitized, n: 6, language },
+            { base: process.env.RL_API_BASE }
+          );
+          const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
+
+          pick =
+            reNorm.find(
+              (q) =>
+                q &&
+                (language === "it"
+                  ? !isEnglish(q.question)
+                  : !isItalian(q.question))
+            ) || reNorm[0];
+
+          ensured = hardNormalizeFont(pick, language);
+        }
+        return ensured;
+      }
+    }
   } catch (e) {
-    // Propaga: sarà il client o RL a decidere cosa fare
-    throw new Error(`[RL_ERROR] ${e?.message || e}`);
+    console.warn("[RL] errore:", e?.response?.status || e.code || e.message);
   }
+
+  // --- se RL non ha prodotto nulla di valido:
+  throw new Error("RL non ha prodotto domande valide");
 };
 
 const buildFontQuestion = (formData = {}) => {
@@ -1048,6 +1123,13 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     const formData = { ...req.body };
 
     formData.lang = pickLang(formData.lang, req.headers);
+    const sessionLang = formData.lang;
+    console.log(
+      "[/generate] lang received:",
+      req.body.lang,
+      "-> used:",
+      formData.lang
+    );
 
     console.log(
       "[LANG]",
@@ -1107,6 +1189,8 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       return res.json({ sessionId, question: aiQuestion });
     }
 
+    const firstKey = sanitizeKey(aiQuestion.question);
+
     const newLogEntry = new ProjectLog({
       sessionId,
       formData,
@@ -1119,7 +1203,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       maxQuestionsPerService: servicesSelected.length === 1 ? 10 : 8,
       totalQuestions:
         servicesSelected.length === 1 ? 10 : 8 * servicesSelected.length,
-      askedQuestions: new Map([[firstService, [aiQuestion.question]]]),
+      askedQuestions: new Map([[firstService, [firstKey]]]),
     });
 
     await newLogEntry.save();
@@ -1142,28 +1226,33 @@ app.post("/api/nextQuestion", async (req, res) => {
 
   try {
     const logEntry = await ProjectLog.findOne({ sessionId });
-
     if (!logEntry) {
       return res.status(404).json({ error: "Sessione non trovata" });
     }
 
+    // --- salva risposta corrente usando chiave SANITIZZATA
     const questionText = Object.keys(currentAnswer)[0];
     const sanitizedQuestionText = sanitizeKey(questionText);
     const answerData = currentAnswer[questionText];
     logEntry.answers.set(sanitizedQuestionText, answerData);
 
+    // --- registra la domanda appena risolta nell'elenco asked del servizio corrente (senza duplicati)
     const currentService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-
     if (!logEntry.askedQuestions.has(currentService)) {
       logEntry.askedQuestions.set(currentService, []);
     }
-    logEntry.askedQuestions.get(currentService).push(sanitizedQuestionText); // Usa la chiave sanitizzata
+    // const askedCurr = logEntry.askedQuestions.get(currentService);
+    // if (!askedCurr.includes(sanitizedQuestionText)) {
+    //   askedCurr.push(sanitizedQuestionText);
+    // }
 
+    // --- stop se abbiamo raggiunto il totale
     if (logEntry.questionCount >= logEntry.totalQuestions) {
       await logEntry.save();
       return res.json({ question: null });
     }
 
+    // --- se superato max del servizio, passa al successivo
     const serviceCount = logEntry.serviceQuestionCount.get(currentService) || 0;
     if (serviceCount >= logEntry.maxQuestionsPerService) {
       logEntry.currentServiceIndex += 1;
@@ -1178,14 +1267,12 @@ app.post("/api/nextQuestion", async (req, res) => {
     const askedQuestionsForNextService =
       logEntry.askedQuestions.get(nextService) || [];
 
-    // controlla se la font question è già stata fatta in qualsiasi momento
     const hasFontQuestion = (logEntry.questions || []).some(
       (q) => q && q.type === "font_selection"
     );
 
     let aiQuestion;
     if (nextService === "Logo") {
-      // se è la prima domanda del servizio Logo -> NON chiedere i font
       if (askedQuestionsForNextService.length === 0) {
         aiQuestion = await generateQuestionForService(
           nextService,
@@ -1194,10 +1281,8 @@ app.post("/api/nextQuestion", async (req, res) => {
           askedQuestionsForNextService
         );
       } else if (!hasFontQuestion) {
-        // dalla seconda domanda in poi, se i font non sono ancora stati chiesti -> forzali ora
         aiQuestion = buildFontQuestion(logEntry.formData);
       } else {
-        // font già chiesti -> domanda normale
         aiQuestion = await generateQuestionForService(
           nextService,
           logEntry.formData,
@@ -1206,7 +1291,6 @@ app.post("/api/nextQuestion", async (req, res) => {
         );
       }
     } else {
-      // servizi diversi da Logo -> normale
       aiQuestion = await generateQuestionForService(
         nextService,
         logEntry.formData,
@@ -1215,21 +1299,71 @@ app.post("/api/nextQuestion", async (req, res) => {
       );
     }
 
-    // console.log(
-    //   `[QGEN][${aiQuestion.__provider}] next (${nextService}):`,
-    //   aiQuestion.question
-    // );
+    // --- 2D: evita doppia domanda sui font ---
+    const isFontQuestion = (q) =>
+      q &&
+      (q.type === "font_selection" || /font|typograf/i.test(q.question || ""));
 
+    if (hasFontQuestion && isFontQuestion(aiQuestion)) {
+      // 1) chiedo al generatore una domanda diversa escludendo esplicitamente i "font"
+      const excludeFontQs = [
+        "Which typographic style do you prefer for the logo",
+        "Quale stile tipografico preferisci per il logo",
+        "What typographic style do you prefer for the logo",
+      ];
+
+      aiQuestion = await generateQuestionForService(
+        nextService,
+        logEntry.formData,
+        Object.fromEntries(logEntry.answers),
+        askedQuestionsForNextService.concat(excludeFontQs)
+      );
+
+      // 2) paracadute: se nonostante tutto è ancora una domanda "font", forzo una domanda neutra non-font
+      if (isFontQuestion(aiQuestion)) {
+        const isEn = logEntry.formData?.lang === "en";
+        aiQuestion = {
+          question: isEn
+            ? "Do you prefer a symbol-only logo or text + symbol?"
+            : "Preferisci un logo solo simbolo o testo + simbolo?",
+          options: isEn
+            ? ["Symbol only", "Text + symbol", "Text only", "Not sure"]
+            : [
+                "Solo simbolo",
+                "Testo + simbolo",
+                "Solo testo",
+                "Non sono sicuro/a",
+              ],
+          type: "multiple",
+          requiresInput: false,
+          __provider: "rule",
+        };
+      }
+    }
+
+    // --- aggiorna stato sessione
     logEntry.questions.push(aiQuestion);
     logEntry.questionCount += 1;
     logEntry.serviceQuestionCount.set(
       nextService,
       (logEntry.serviceQuestionCount.get(nextService) || 0) + 1
     );
-    logEntry.askedQuestions.get(nextService).push(aiQuestion.question);
+
+    // 🔑 registra la NUOVA domanda in askedQuestions del servizio "next" con chiave sanitizzata e senza duplicati
+    const askedNext = logEntry.askedQuestions.get(nextService) || [];
+    const nextKey = sanitizeKey(aiQuestion.question);
+
+    // deduplica robusta: confronta anche una versione "normale"
+    const askedNorm = askedNext.map(normKey);
+    if (
+      !askedNext.includes(nextKey) &&
+      !askedNorm.includes(normKey(aiQuestion.question))
+    ) {
+      askedNext.push(nextKey);
+      logEntry.askedQuestions.set(nextService, askedNext);
+    }
 
     await logEntry.save();
-
     res.json({ question: aiQuestion });
   } catch (error) {
     res.status(500).json({ error: "Errore nella generazione della domanda" });

@@ -39,6 +39,18 @@ const Navbar = ({
 
   const handleToggleChange = () => setIsDark(!isDark);
 
+  // helper locale
+  const setLang = (lng) => {
+  i18n.changeLanguage(lng);
+  localStorage.setItem("lang", lng);
+  document.documentElement.setAttribute("lang", lng);
+  window.dispatchEvent(new CustomEvent("basic:lang", { detail: lng }));
+  // suggerisci al form di riavviare se una sessione è in corso
+  window.dispatchEvent(new CustomEvent("basic:lang:maybe-restart", { detail: lng }));
+  setIsMenuOpen(false);
+};
+
+
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
       if (hamburgerRef.current)
@@ -56,6 +68,11 @@ const Navbar = ({
         : "visible";
     }
   }, [isSidebarOpen, isDashboardPage, isMobile]);
+
+  useEffect(() => {
+  const lng = localStorage.getItem("lang") || (i18n.language?.startsWith("it") ? "it" : "en");
+  document.documentElement.setAttribute("lang", lng);
+}, [i18n.language]);
 
   const handleLinkClick = () => setIsMenuOpen(false);
   const handleClose = () => navigate(-1);
@@ -302,10 +319,7 @@ const Navbar = ({
                 type="button"
                 className="lang-btn"
                 data-active={!i18n.language || !i18n.language.startsWith("it")}
-                onClick={() => {
-                  i18n.changeLanguage("en");
-                  setIsMenuOpen(false);
-                }}
+                onClick={() => setLang("en")}
                 aria-pressed={!i18n.language || !i18n.language.startsWith("it")}
               >
                 EN
@@ -317,10 +331,7 @@ const Navbar = ({
                 type="button"
                 className="lang-btn"
                 data-active={i18n.language?.startsWith("it")}
-                onClick={() => {
-                  i18n.changeLanguage("it");
-                  setIsMenuOpen(false);
-                }}
+                onClick={() => setLang("it")}
                 aria-pressed={i18n.language?.startsWith("it")}
               >
                 IT
