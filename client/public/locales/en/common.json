@@ -53,6 +53,45 @@
         "items": ["Concept Development", "Cross-Platform Solutions", "User-Centric Design", "Performance Optimization", "App Launch Strategy"]
       }
     }
+  },
+  "portfolio": {
+    "banner": "we cleaned up the desktop just for you.",
+    "introDesktop": "You can drag folders around. Does it help? Not really. <hl>But then check what's inside.</hl>",
+    "introMobile": {
+      "pre": "No excuses. ",
+      "cta": "Open a folder."
+    },
+    "folders": {
+      "Progetto1": "Project 1",
+      "Progetto2": "Project 2",
+      "Progetto3": "Project 3",
+      "Progetto4": "Project 4",
+      "Progetto5": "Project 5",
+      "Progetto6": "Project 6",
+      "Progetto7": "Project 7",
+      "Progetto8": "Project 8"
+    },
+    "menubar": {
+      "finder": "Finder",
+      "file": "File",
+      "edit": "Edit",
+      "view": "View",
+      "go": "Go",
+      "window": "Window",
+      "help": "Help"
+    },
+    "dock": {
+      "finder": "Finder",
+      "apps": "Apps",
+      "whatsapp": "WhatsApp",
+      "chrome": "Chrome",
+      "figma": "Figma",
+      "vscode": "VS Code",
+      "illustrator": "Illustrator",
+      "photoshop": "Photoshop",
+      "mail": "Mail",
+      "trash": "Trash"
+    }
   }
 }
 

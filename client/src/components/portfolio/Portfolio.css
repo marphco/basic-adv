@@ -187,6 +187,10 @@ body.freeze-scroll {
   z-index: 3; /* sopra il gradient */
   padding: 0; /* niente padding-left “10em” */
 }
+.intro-accent {
+  font-weight: 400;
+  color: var(--foreground-color);
+}
 .intro-mobile {
   display: none;
 }

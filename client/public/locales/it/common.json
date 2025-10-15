@@ -53,5 +53,45 @@
         "items": ["Concept Development", "Cross-Platform Solutions", "User-Centric Design", "Performance Optimization", "App Launch Strategy"]
       }
     }
+  },
+  "portfolio": {
+    "banner": "abbiamo riordinato il desktop solo per te.",
+    "introDesktop": "Puoi giocare a spostare le cartelle. Serve a qualcosa? No. <hl>Però poi guarda cosa c'è dentro.</hl>",
+    "introMobile": {
+      "pre": "Niente scuse. ",
+      "cta": "Apri una cartella."
+    },
+    "folders": {
+      "Progetto1": "Progetto 1",
+      "Progetto2": "Progetto 2",
+      "Progetto3": "Progetto 3",
+      "Progetto4": "Progetto 4",
+      "Progetto5": "Progetto 5",
+      "Progetto6": "Progetto 6",
+      "Progetto7": "Progetto 7",
+      "Progetto8": "Progetto 8"
+    },
+    "menubar": {
+      "finder": "Finder",
+      "file": "File",
+      "edit": "Modifica",
+      "view": "Vista",
+      "go": "Vai",
+      "window": "Finestra",
+      "help": "Aiuto"
+    },
+    "dock": {
+      "finder": "Finder",
+      "apps": "Applicazioni",
+      "whatsapp": "WhatsApp",
+      "chrome": "Chrome",
+      "figma": "Figma",
+      "vscode": "VS Code",
+      "illustrator": "Illustrator",
+      "photoshop": "Photoshop",
+      "mail": "Mail",
+      "trash": "Cestino"
+    }
   }
 }
+
