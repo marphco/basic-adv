@@ -493,7 +493,7 @@ const Portfolio = ({ scrollTween = null }) => {
         ) : (
           <div className="intro-mobile">
             <p>
-              Non hai scuse, dai un&apos;occhiata al contenuto delle cartelle.
+              Niente scuse. <span>Apri una cartella.</span>
             </p>
           </div>
         )}

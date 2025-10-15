@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./CookieNotice.css";
+import { useTranslation } from "react-i18next";
 
 const CookieNotice = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const { t } = useTranslation(["common"]);
 
   // Controlliamo se l'utente ha dato il consenso
   useEffect(() => {
@@ -58,16 +60,20 @@ const CookieNotice = () => {
   if (!isVisible) return null;
 
   return (
-    <div
-      className={`cookie-notice ${isExiting ? "exiting" : ""}`}
-      onAnimationEnd={handleAnimationEnd}
-    >
-      <span>Usiamo cookie.</span>
+  <div
+    className={`cookie-notice-wrap ${isExiting ? "exiting" : ""}`}
+    onAnimationEnd={handleAnimationEnd}
+  >
+    <div className="cookie-notice">
+      <span>{t("cookie.usage")}</span>
       <Link to="/cookie-policy">COOKIE POLICY</Link>
       <span className="separator"> | </span>
-      <button className="accept" onClick={handleAccept}>ACCETTA</button>
+      <button className="accept" onClick={handleAccept}>
+        {t("cookie.acceptance")}
+      </button>
     </div>
-  );
+  </div>
+);
 };
 
 export default CookieNotice;

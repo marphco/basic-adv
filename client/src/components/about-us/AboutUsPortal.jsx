@@ -139,7 +139,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
               color: "#161616",
             }}
           >
-            [CHIUDI]
+            [{t("navbar.close")}]
           </button>
         </div>
         <AboutUs isOpen={isOpen} />

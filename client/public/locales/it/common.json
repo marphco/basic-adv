@@ -11,5 +11,9 @@
     "openSidebar": "Apri sidebar",
     "closeSidebar": "Chiudi sidebar",
     "home": "BASIC. — home"
+  },
+  "cookie": {
+    "usage": "Usiamo cookie.",
+    "acceptance": "ACCETTA"
   }
 }

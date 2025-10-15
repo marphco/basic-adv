@@ -69,7 +69,7 @@
 
   @media screen and (max-width: 768px) {
     .cookie-notice {
-        top: 380px;
+        top: 336px;
         right: -95px;
         rotate: -90deg;
     }
