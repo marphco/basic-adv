@@ -91,7 +91,19 @@
       "photoshop": "Photoshop",
       "mail": "Mail",
       "trash": "Trash"
-    }
+    },
+    "menus": {
+    "default": ["File","Edit","View","Go","Window","Help"],
+    "finder":  ["File","Edit","View","Go","Window","Help"],
+    "chrome":  ["File","Edit","View","History","Bookmarks","Profiles","Tab","Window","Help"],
+    "figma":   ["File","Edit","View","Object","Text","Arrange","Vector","Plugins","Widgets","Window","Help"],
+    "vscode":  ["File","Edit","Selection","View","Go","Run","Terminal","Window","Help"],
+    "illustrator": ["File","Edit","Object","Type","Select","Effect","View","Window","Help"],
+    "photoshop":   ["File","Edit","Image","Layer","Type","Select","Filter","View","Plugins","Window","Help"],
+    "whatsapp": ["File","Chat","Edit","Call","View","Window","Help"],
+    "apps":     ["Edit","Store","Window","Help"],
+    "mail":     ["File","Edit","View","Mailbox","Message","Format","Window","Help"]
+  }
   }
 }
 

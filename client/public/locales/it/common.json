@@ -91,7 +91,19 @@
       "photoshop": "Photoshop",
       "mail": "Mail",
       "trash": "Cestino"
-    }
+    },
+    "menus": {
+    "default": ["File","Modifica","Vista","Vai","Finestra","Aiuto"],
+    "finder":  ["File","Modifica","Vista","Vai","Finestra","Aiuto"],
+    "chrome":  ["File","Modifica","Vista","Cronologia","Preferiti","Profili","Scheda","Finestra","Aiuto"],
+    "figma":   ["File","Modifica","Vista","Oggetto","Testo","Disponi","Vettore","Plugin","Widget","Finestra","Aiuto"],
+    "vscode":  ["File","Modifica","Selezione","Vista","Vai","Esegui","Terminale","Finestra","Aiuto"],
+    "illustrator": ["File","Modifica","Oggetto","Testo","Seleziona","Effetto","Vista","Finestra","Aiuto"],
+    "photoshop":   ["File","Modifica","Immagine","Livello","Testo","Seleziona","Filtro","Vista","Plugin", "Finestra","Aiuto"],
+    "whatsapp": ["File","Chat","Modifica","Chiama","Vista","Finestra","Aiuto"],
+    "apps":     ["Modifica","Store","Finestra","Aiuto"],
+    "mail":     ["File","Modifica","Vista","Casella","Messaggio","Formato","Finestra","Aiuto"]
+  }
   }
 }
 

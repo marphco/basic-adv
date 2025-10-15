@@ -281,7 +281,7 @@ const Portfolio = ({ scrollTween = null }) => {
           aria-hidden
         />
 
-        <MacMenuBar activeAppLabel={activeAppLabel} />
+        <MacMenuBar activeAppId={focusedId} activeAppLabel={activeAppLabel} />
 
         {!isMobile ? (
           <div className="intro-portfolio">
