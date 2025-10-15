@@ -5,12 +5,14 @@ import { mergeRefs } from "react-merge-refs";
 import PropTypes from "prop-types";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { Trans, useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) => {
   const servicesRef = useRef(null);
   const lineRef = useRef(null);
+  const { t } = useTranslation(["common"]);
 
   const macroAreasRef = useRef(null);
   const brandingRef = useRef(null);
@@ -192,101 +194,81 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
     <div className="services-section" ref={servicesRef}>
       <div className="chi-siamo">
         <div className="services-text">
-          ci mettiamo meno a farlo che a spiegarlo.
+          {t("services.ribbon")}
         </div>
       </div>
+
       <div className="services-content">
         <div className="intro">
           <p>
-            Più il progetto punta in alto,<br/>più ci piace. Le sfide grandi sono la nostra routine.<br/> Hai una visione?<br/><span>Partiamo.</span>
+            <Trans i18nKey="services.intro" ns="common" components={{
+              1: <br />,
+              2: <span />
+            }}/>
           </p>
         </div>
         <div className="horizontal-line" ref={lineRef}></div>
       </div>
+
       {/* Sezione Servizi */}
       <section className="services-list-section">
-        {/* Macroaree */}
-        <div
-          className="macro-areas"
-          ref={mergeRefs([macroAreasRef, servicesSectionRef])}
-        >
+        <div className="macro-areas" ref={mergeRefs([macroAreasRef, servicesSectionRef])}>
+          {/* BRANDING */}
           <div className="branding macroarea" ref={brandingRef}>
-            <h2>BRANDING</h2>
+            <h2>{t("services.groups.branding.title")}</h2>
             <ul className="branding-list services-list" ref={brandingListRef}>
-              {["Logo", "Brand Identity", "Naming Strategy", "Rebranding", "Packaging Design"].map(
-                (service, idx) => (
-                  <li key={idx}>{service}</li>
-                )
-              )}
+              {t("services.groups.branding.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
             </ul>
           </div>
+
+          {/* SOCIAL */}
           <div className="social macroarea" ref={socialRef}>
-            <h2>SOCIAL</h2>
+            <h2>{t("services.groups.social.title")}</h2>
             <ul className="social-list services-list" ref={socialListRef}>
-              {[
-                "Social Media Strategy",
-                "Campaign Management",
-                "Content Creation",
-                "Analytics and Reporting",
-                "Community Engagement",
-              ].map((service, idx) => (
-                <li key={idx}>{service}</li>
+              {t("services.groups.social.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
               ))}
             </ul>
           </div>
+
+          {/* PHOTO */}
           <div className="photo macroarea" ref={photoRef}>
-            <h2>PHOTO</h2>
+            <h2>{t("services.groups.photo.title")}</h2>
             <ul className="photo-list services-list" ref={photoListRef}>
-              {[
-                "Concept",
-                "Brand Imagery",
-                "Event Shoots",
-                "Lifestyle Visuals",
-                "Post-Production",
-              ].map((service, idx) => (
-                <li key={idx}>{service}</li>
+              {t("services.groups.photo.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
               ))}
             </ul>
           </div>
+
+          {/* VIDEO */}
           <div className="video macroarea" ref={videoRef}>
-            <h2>VIDEO</h2>
+            <h2>{t("services.groups.video.title")}</h2>
             <ul className="video-list services-list" ref={videoListRef}>
-              {[
-                "Brand Storytelling",
-                "3D Motion Graphics",
-                "Content Series",
-                "Drone Footage",
-                "Video Editing",
-              ].map((service, idx) => (
-                <li key={idx}>{service}</li>
+              {t("services.groups.video.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
               ))}
             </ul>
           </div>
+
+          {/* WEB */}
           <div className="web macroarea" ref={webRef}>
-            <h2>WEB</h2>
+            <h2>{t("services.groups.web.title")}</h2>
             <ul className="web-list services-list" ref={webListRef}>
-              {[
-                "UX/UI Design",
-                "E-Commerce",
-                "CMS Integration",
-                "Website Maintenance",
-                "Web Accessibility",
-              ].map((service, idx) => (
-                <li key={idx}>{service}</li>
+              {t("services.groups.web.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
               ))}
             </ul>
           </div>
+
+          {/* APP */}
           <div className="application macroarea" ref={applicationRef}>
-            <h2>APP</h2>
+            <h2>{t("services.groups.app.title")}</h2>
             <ul className="application-list services-list" ref={applicationListRef}>
-              {[
-                "Concept Development",
-                "Cross-Platform Solutions",
-                "User-Centric Design",
-                "Performance Optimization",
-                "App Launch Strategy",
-              ].map((service, idx) => (
-                <li key={idx}>{service}</li>
+              {t("services.groups.app.items", { returnObjects: true }).map((s, i) => (
+                <li key={i}>{s}</li>
               ))}
             </ul>
           </div>

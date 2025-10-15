@@ -60,11 +60,11 @@ const CookieNotice = () => {
   if (!isVisible) return null;
 
   return (
-  <div
-    className={`cookie-notice-wrap ${isExiting ? "exiting" : ""}`}
-    onAnimationEnd={handleAnimationEnd}
-  >
-    <div className="cookie-notice">
+  <div className="cookie-notice-wrap">
+    <div
+      className={`cookie-notice ${isExiting ? "exiting" : ""}`}
+      onAnimationEnd={handleAnimationEnd}
+    >
       <span>{t("cookie.usage")}</span>
       <Link to="/cookie-policy">COOKIE POLICY</Link>
       <span className="separator"> | </span>

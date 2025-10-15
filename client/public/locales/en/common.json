@@ -17,5 +17,42 @@
   "home": {
     "hero": "If there’s something to communicate, we’re in.<1/>We turn ideas into stories, projects into experiences.<1/>Your audience won’t wait:<1/><2>let’s make them fall in love.</2>",
     "cta": "SHALL WE START?"
+  },
+  "services": {
+    "ribbon": "we get it done faster than we can explain it.",
+    "intro": "The bigger the ambition,<1/>the more we love it. Bold challenges are our routine.<1/>Got a vision?<1/><2>Let’s begin.</2>",
+    "groups": {
+      "branding": {
+        "title": "BRANDING",
+        "items": ["Logo", "Brand Identity", "Naming Strategy", "Rebranding", "Packaging Design"]
+      },
+      "social": {
+        "title": "SOCIAL",
+        "items": [
+          "Social Media Strategy",
+          "Campaign Management",
+          "Content Creation",
+          "Analytics and Reporting",
+          "Community Engagement"
+        ]
+      },
+      "photo": {
+        "title": "PHOTO",
+        "items": ["Concept", "Brand Imagery", "Event Shoots", "Lifestyle Visuals", "Post-Production"]
+      },
+      "video": {
+        "title": "VIDEO",
+        "items": ["Brand Storytelling", "3D Motion Graphics", "Content Series", "Drone Footage", "Video Editing"]
+      },
+      "web": {
+        "title": "WEB",
+        "items": ["UX/UI Design", "E-Commerce", "CMS Integration", "Website Maintenance", "Web Accessibility"]
+      },
+      "app": {
+        "title": "APP",
+        "items": ["Concept Development", "Cross-Platform Solutions", "User-Centric Design", "Performance Optimization", "App Launch Strategy"]
+      }
+    }
   }
 }
+
