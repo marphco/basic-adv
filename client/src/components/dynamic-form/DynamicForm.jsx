@@ -122,7 +122,6 @@ const DynamicForm = () => {
   const [isLogoSelected, setIsLogoSelected] = useState(false);
   // eslint-disable-next-line no-unused-vars
   const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
-  
 
   // eslint-disable-next-line no-unused-vars
   const questionRef = useRef(null);
@@ -531,10 +530,7 @@ const DynamicForm = () => {
             "Errore nella generazione della prima domanda AI:",
             error
           );
-          setErrors({
-            general:
-              "Errore nella generazione della domanda.<br />Riprova più tardi.",
-          });
+          setErrors({ general: "form.errors.backend.generate" });
         } finally {
           setLoading(false);
         }
@@ -585,9 +581,7 @@ const DynamicForm = () => {
       }
     } catch (error) {
       console.error("Errore nel recupero della prossima domanda:", error);
-      setErrors({
-        general: "Errore nel recupero della domanda. Riprova più tardi.",
-      });
+      setErrors({ general: "form.errors.backend.nextQuestion" });
     } finally {
       setLoading(false);
     }
@@ -595,25 +589,29 @@ const DynamicForm = () => {
 
   const handleAnswerSubmit = (e) => {
     e.preventDefault();
+    if (!currentQuestion) return;
+
     const questionText = currentQuestion.question;
     const userAnswer = answers[questionText] || {};
     const selectedOptions = userAnswer.options || [];
-    const inputAnswer = userAnswer.input || "";
-    let newErrors = {};
+    const inputAnswer = (userAnswer.input || "").trim();
+
+    const newErrors = {};
 
     if (currentQuestion.type === "font_selection") {
-      if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] =
-          "Seleziona un font o inserisci il nome di uno.";
+      // serve almeno un'opzione selezionata OPPURE un input non vuoto
+      if (selectedOptions.length === 0 && inputAnswer === "") {
+        newErrors[questionText] = "form.errors.fontOrName";
       }
     } else if (currentQuestion.requiresInput) {
-      if (inputAnswer.trim() === "") {
-        newErrors[questionText] = "Inserisci una risposta.";
+      // serve input non vuoto
+      if (inputAnswer === "") {
+        newErrors[questionText] = "form.errors.inputRequired";
       }
     } else {
-      if (selectedOptions.length === 0 && inputAnswer.trim() === "") {
-        newErrors[questionText] =
-          "Seleziona almeno una risposta o inserisci un commento.";
+      // serve almeno un'opzione OPPURE un commento
+      if (selectedOptions.length === 0 && inputAnswer === "") {
+        newErrors[questionText] = "form.errors.answerOrComment";
       }
     }
 
@@ -630,10 +628,10 @@ const DynamicForm = () => {
     let newErrors = {};
 
     if (!formData.contactInfo.name) {
-      newErrors.name = "Il nome è obbligatorio.";
+      newErrors.name = "form.errors.contact.nameRequired";
     }
     if (!formData.contactInfo.email) {
-      newErrors.email = "L’email è obbligatoria.";
+      newErrors.email = "form.errors.contact.emailRequired";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -669,12 +667,7 @@ const DynamicForm = () => {
 
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      setErrors({
-        general:
-          "Errore nell'invio dei contatti o delle email. Riprova più tardi.",
-      });
-    } finally {
-      setLoading(false);
+      setErrors({ general: "form.errors.backend.contact" });
     }
   };
 
@@ -802,7 +795,7 @@ const DynamicForm = () => {
                         </button>
                       ))}
                     </div>
-                    {errors.budget && (
+                    {i18nErrors.budget && (
                       <span className="error-message budget-error">
                         <FaExclamationCircle className="error-icon" />
                         {i18nErrors.budget}

@@ -269,7 +269,19 @@
         "size": "Il file supera i 5MB."
       },
       "budget": "Seleziona un budget.",
-      "general": "Errore nel form. Controlla i campi sopra."
+      "general": "Errore nel form. Controlla i campi sopra.",
+      "fontOrName": "Seleziona un font o inserisci il nome di uno.",
+      "inputRequired": "Inserisci una risposta.",
+      "answerOrComment": "Seleziona almeno una risposta o inserisci un commento.",
+      "contact": {
+        "nameRequired": "Il nome è obbligatorio.",
+        "emailRequired": "L’email è obbligatoria."
+      },
+      "backend": {
+        "generate": "Errore nella generazione della prima domanda. Riprova più tardi.",
+        "nextQuestion": "Errore nel recupero della prossima domanda. Riprova più tardi.",
+        "contact": "Errore nell'invio dei contatti o delle email. Riprova più tardi."
+      }
     }
   }
 }

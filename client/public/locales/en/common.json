@@ -255,13 +255,25 @@
       "services": "Select at least one service.",
       "projectType": "Select a project type.",
       "businessField": "Select a business field.",
-      "otherBusinessField": "Specify the field.",
+      "otherBusinessField": "Specify the business field.",
       "currentLogo": {
         "type": "Unsupported file format. Use JPG, PNG, TIFF, SVG, PDF, HEIC or HEIF.",
         "size": "The file exceeds 5MB."
       },
       "budget": "Select a budget.",
-      "general": "Form error. Please check the fields above."
+      "general": "Form error. Please check the fields above.",
+      "fontOrName": "Select a font or type its name.",
+      "inputRequired": "Please enter an answer.",
+      "answerOrComment": "Select at least one option or enter a comment.",
+      "contact": {
+        "nameRequired": "Name is required.",
+        "emailRequired": "Email is required."
+      },
+      "backend": {
+        "generate": "Error creating the first question. Please try again later.",
+        "nextQuestion": "Error loading the next question. Please try again later.",
+        "contact": "Error submitting contact info or sending emails. Please try again later."
+      }
     }
   }
 }
