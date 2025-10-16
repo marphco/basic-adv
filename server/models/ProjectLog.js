@@ -1,5 +1,26 @@
 const mongoose = require("mongoose");
 
+const RestylingMetaSchema = new mongoose.Schema(
+  {
+    branding: {
+      currentLogoPath: { type: String }, // se vorrai salvare qui il logo (in aggiunta o al posto di formData.currentLogo)
+    },
+    web: {
+      siteUrl: { type: String },
+      cms: { type: String }, // "WordPress", "Shopify", "Joomla", "Custom", "Non lo so", ecc.
+      repoUrl: { type: String }, // opzionale
+    },
+    app: {
+      platforms: { type: [String] }, // ["ios","android","webapp"]
+      iosUrl: { type: String },
+      androidUrl: { type: String },
+      designLink: { type: String },
+      repoUrl: { type: String },
+    },
+  },
+  { _id: false }
+);
+
 // Schema per il modello ProjectLog
 const ProjectLogSchema = new mongoose.Schema({
   // ID univoco della sessione
@@ -67,6 +88,10 @@ const ProjectLogSchema = new mongoose.Schema({
       type: String,
       required: true,
       default: "",
+    },
+    restylingMeta: {
+      type: RestylingMetaSchema,
+      default: undefined
     },
   },
 
