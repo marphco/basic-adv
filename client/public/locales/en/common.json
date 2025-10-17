@@ -236,44 +236,311 @@
     }
   },
   "form": {
-    "railText": "you’ve scrolled enough: pick and let’s start.",
-    "hero": {
-      "title": "Ready to get serious?",
-      "subtitlePrefix": "Pick category and services.",
-      "subtitleSuffix": "We’ll take care of the rest."
+    "placeholders": {
+      "websiteUrl": "Website (optional)",
+      "instagramUrl": "Instagram (optional)",
+      "facebookUrl": "Facebook (optional)",
+      "assetsLink": "Assets link (Drive/Dropbox, optional)",
+      "referenceUrls": "Reference URLs separated by commas",
+      "referenceOne": "Add a reference URL",
+      "iosUrl": "App Store link (optional)",
+      "androidUrl": "Google Play link (optional)",
+      "webappUrl": "Web app URL (optional)",
+      "repoUrl": "Repository (GitHub/GitLab, optional)",
+      "designLink": "Design link (Figma, optional)"
     },
-    "submit": "LET’S START!",
+    "help": {
+      "platforms": "Select one or more platforms.",
+      "referenceUrls": "Tip: separate multiple URLs with commas."
+    },
+    "hero": {
+      "title": "Tell us about your project",
+      "subtitlePrefix": "We'll guide you with a few questions",
+      "subtitleSuffix": "to understand what you really need."
+    },
+    "initial": {
+      "brandName": {
+        "placeholder": "Brand name"
+      },
+      "projectType": {
+        "placeholder": "Project type",
+        "new": "New project",
+        "restyling": "Restyling"
+      },
+      "businessField": {
+        "placeholder": "Business field",
+        "options": {
+          "Tech": "Tech",
+          "Food": "Food",
+          "Shop": "Shop",
+          "Events": "Events",
+          "Services": "Services",
+          "Production": "Production",
+          "Other": "Other"
+        },
+        "otherPlaceholder": "Specify the field"
+      },
+      "uploadLogo": "Upload your current logo"
+    },
     "budget": {
-      "title": "What’s your budget?",
-      "unknown": "I don’t know",
+      "title": "What’s your indicative budget?",
+      "unknown": "Not sure",
       "r1": "0–1,000 €",
       "r2": "1–5,000 €",
       "r3": "5–10,000 €",
       "r4": "10,000+ €"
     },
+    "submit": "START!",
     "errors": {
-      "services": "Select at least one service.",
-      "projectType": "Select a project type.",
-      "businessField": "Select a business field.",
-      "otherBusinessField": "Specify the business field.",
+      "general": "Please check the highlighted fields",
+      "services": "Select at least one service",
+      "businessField": "Select a business field",
+      "otherBusinessField": "Specify the business field",
+      "projectType": "Select a project type",
       "currentLogo": {
-        "type": "Unsupported file format. Use JPG, PNG, TIFF, SVG, PDF, HEIC or HEIF.",
-        "size": "The file exceeds 5MB."
+        "type": "Unsupported file format",
+        "size": "File too large (max 5 MB)"
       },
-      "budget": "Select a budget.",
-      "general": "Form error. Please check the fields above.",
-      "fontOrName": "Select a font or type its name.",
-      "inputRequired": "Please enter an answer.",
-      "answerOrComment": "Select at least one option or enter a comment.",
-      "contact": {
-        "nameRequired": "Name is required.",
-        "emailRequired": "Email is required."
-      },
+      "budget": "Select a budget",
       "backend": {
-        "generate": "Error creating the first question. Please try again later.",
-        "nextQuestion": "Error loading the next question. Please try again later.",
-        "contact": "Error submitting contact info or sending emails. Please try again later."
-      }
+        "generate": "We had trouble generating the first question. Try again.",
+        "nextQuestion": "We had trouble continuing. Try again.",
+        "contact": "Error while sending. Try again."
+      },
+      "fontOrName": "Pick at least one font or type a name",
+      "inputRequired": "Please enter a response",
+      "answerOrComment": "Pick at least one option or add a comment",
+      "url": "Please enter a valid URL (e.g., https://…)",
+      "urlList": "One or more URLs are invalid.",
+      "appPlatforms": "Pick at least one platform"
+    },
+    "labels": {
+      "optionalLinks": "If you’d like, share any useful links.",
+      "referencesShort": "References",
+      "platforms": "Tell us where you’d like to launch your app."
+    },
+    "actions": {
+      "clear": "Clear",
+      "close": "Close"
+    },
+    "platforms": {
+      "ios": "App Store",
+      "android": "Google Play",
+      "webapp": "Web App"
+    },
+    "links": {
+      "website": "Website",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "assets": "Assets",
+      "referencesShort": "References",
+      "iosUrl": "App Store link",
+      "androidUrl": "Play Store link",
+      "webappUrl": "Web App URL",
+      "repoUrl": "Repository",
+      "designLink": "Design link"
+    },
+    "railText": "Tell us what you need: we’ll handle the rest."
+  },
+  "legal": {
+    "cookie": {
+      "title": "Cookie Policy",
+      "updated": "Last updated: {{date}}",
+      "intro": "Basic adv srls (“we”, “our”, or “us”) uses cookies and similar technologies on our website to improve your browsing experience and analyze site usage. This Cookie Policy explains what cookies are, how we use them, and how you can manage them.",
+      "what": {
+        "title": "1. What Are Cookies?",
+        "body": "Cookies are small text files stored on your device (computer, smartphone, tablet) when you visit a website. They can be used to remember your preferences, enhance your browsing experience, or collect analytics data."
+      },
+      "types": {
+        "title": "2. Types of Cookies We Use",
+        "intro": "We use the following types of cookies:",
+        "essential": "<strong>Essential cookies:</strong> Necessary for the website to function (e.g., session cookies to keep your navigation active). These cookies do not require your consent.",
+        "analytics": "<strong>Analytics cookies:</strong> Help us understand how users interact with our site (e.g., Google Analytics). These cookies collect anonymous data such as the number of visitors and the most visited pages. Your consent is required."
+      },
+      "use": {
+        "title": "3. How We Use Cookies",
+        "intro": "We use cookies to:",
+        "li1": "Ensure the proper functioning of the site (essential cookies).",
+        "li2": "Analyze traffic and improve our services (analytics cookies)."
+      },
+      "duration": {
+        "title": "4. Cookie Duration",
+        "intro": "Cookies can be:",
+        "session": "<strong>Session cookies:</strong> Deleted when you close your browser.",
+        "persistent": "<strong>Persistent cookies:</strong> Remain on your device for a specified period (e.g., Google Analytics cookies are stored for up to 24 months)."
+      },
+      "manage": {
+        "title": "5. Managing Cookies",
+        "intro": "You can manage cookies in several ways:",
+        "banner": "<strong>Through our consent banner:</strong> When you visit our site, we display a banner that lets you accept or reject non-essential cookies.",
+        "browser": "<strong>Through your browser settings:</strong> You can configure your browser to block or delete cookies. For example:",
+        "chrome": "Chrome: Settings > Privacy and security > Cookies and other site data.",
+        "firefox": "Firefox: Settings > Privacy & Security > Cookies and Site Data.",
+        "safari": "Safari: Preferences > Privacy > Manage Website Data."
+      },
+      "third": {
+        "title": "6. Third-Party Cookies",
+        "intro": "We use third-party services that may set cookies on your device, for example:",
+        "ga": "Google Analytics: To analyze traffic on our site. Learn more in <0>Google’s Privacy Policy</0>."
+      },
+      "contact": {
+        "title": "7. Contact",
+        "intro": "If you have questions about our use of cookies, contact us:",
+        "block": "Basic adv srls\nVAT IT09456771212\nEmail: <0>info@basicadv.com</0>\nOffices: Naples, Rome, New York"
+      },
+      "footer": "© {{year}} Basic adv srls. All rights reserved."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "updated": "Last updated: {{date}}",
+      "intro": "Basic adv srls (“we”, “our”, or “us”) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, share, and protect your personal data in accordance with the GDPR and other applicable laws.",
+      "data": {
+        "title": "1. Personal Data We Collect",
+        "intro": "We collect the following personal data when you interact with our site:",
+        "direct": "<strong>Data provided directly:</strong> Name, email, project type, budget, and other information you provide through the contact form in the “Contacts” section.",
+        "auto": "<strong>Data collected automatically:</strong> Information about your device (e.g., IP address, browser type, operating system), browsing data (e.g., pages visited, time spent on the site), and data collected via cookies (see our <0>Cookie Policy</0> for details)."
+      },
+      "purposes": {
+        "title": "2. Purposes of Processing",
+        "intro": "We use your personal data for the following purposes:",
+        "li1": "To respond to your requests submitted via the contact form.",
+        "li2": "To improve our site and services by analyzing user behavior (e.g., through analytics cookies).",
+        "li3": "To comply with legal and regulatory obligations."
+      },
+      "legal": {
+        "title": "3. Legal Basis for Processing",
+        "intro": "We process your personal data based on the following legal bases:",
+        "consent": "<strong>Consent:</strong> For the use of non-essential cookies (e.g., analytics or marketing cookies).",
+        "contract": "<strong>Performance of a contract:</strong> To respond to your requests via the contact form.",
+        "law": "<strong>Legal obligation:</strong> To comply with laws such as the GDPR.",
+        "legit": "<strong>Legitimate interest:</strong> To improve our site and services (e.g., anonymous traffic analysis)."
+      },
+      "sharing": {
+        "title": "4. Data Sharing",
+        "intro": "We do not share your personal data with third parties except in the following cases:",
+        "li1": "Service providers that help us operate the site (e.g., hosting providers, analytics services like Google Analytics).",
+        "li2": "When required by law or to protect our legal rights."
+      },
+      "transfers": {
+        "title": "5. International Transfers",
+        "body": "Your personal data may be transferred outside the European Union (e.g., when using third-party services such as Google Analytics). In such cases, we ensure appropriate safeguards are in place, such as the European Commission’s Standard Contractual Clauses."
+      },
+      "rights": {
+        "title": "6. Your Rights",
+        "intro": "Under the GDPR, you have the following rights over your personal data:",
+        "access": "Access — request a copy of your personal data.",
+        "rect": "Rectification — correct inaccurate or incomplete data.",
+        "erase": "Erasure — request deletion of your data.",
+        "restrict": "Restriction — limit processing in certain circumstances.",
+        "object": "Objection — object to processing for reasons related to your particular situation.",
+        "port": "Portability — request transfer of your data to another controller.",
+        "withdraw": "Withdrawal of consent — withdraw consent at any time without affecting the lawfulness of prior processing.",
+        "how": "To exercise these rights, contact us at <0>info@basicadv.com</0>."
+      },
+      "retention": {
+        "title": "7. Data Retention",
+        "intro": "We retain your personal data only as long as necessary to achieve the purposes for which it was collected, or to comply with legal obligations. For example:",
+        "li1": "Contact form data is retained for 2 years from the last interaction.",
+        "li2": "Cookie-derived data is retained for the period indicated in our Cookie Policy."
+      },
+      "security": {
+        "title": "8. Data Security",
+        "body": "We implement technical and organizational measures to protect your personal data from unauthorized access, loss, or misuse, such as using secure protocols (HTTPS) and limiting access to data."
+      },
+      "cookies": {
+        "title": "9. Cookies",
+        "body": "We use cookies to enhance your experience on our site. For more information, see our <0>Cookie Policy</0>."
+      },
+      "contact": {
+        "title": "10. Contact",
+        "intro": "If you have questions about this Privacy Policy or how we process your personal data, contact us:",
+        "block": "Basic adv srls\nVAT IT09456771212\nEmail: <0>info@basicadv.com</0>\nOffices: Naples, Rome, New York"
+      },
+      "complaints": {
+        "title": "11. Complaints",
+        "body": "If you believe the processing of your personal data violates the GDPR, you have the right to lodge a complaint with a supervisory authority, such as the Italian Data Protection Authority (Garante per la Protezione dei Dati Personali)."
+      },
+      "footer": "© {{year}} Basic adv srls. All rights reserved."
     }
+  },
+  "about": {
+    "mobile": {
+      "title": "MAYBE READ<0/>A BIT OF OUR STORY",
+      "subtitle": "No hard feelings if you skip (well, almost)."
+    },
+    "desktop": {
+      "title": "MAYBE READ<0/>A BIT OF OUR STORY",
+      "subtitle": "No hard feelings if you skip (well, almost)."
+    },
+    "story": {
+      "title": "From ink<0/>to digital:<0/>our passion,<0/><1>our roots</1>",
+      "paragraph1": "We grew up among the printing presses in our father Crescenzo’s workshop. From him we inherited a passion for communication and the stubbornness of those who don’t stop in front of a challenge. After his passing, we turned that spark into a creative fire, carrying on his vision with innovation and courage."
+    },
+    "modern": {
+      "paragraph1": "We are where tradition meets technology. A young team with experience to spare: from web to print, all the way to apps. We craft strategy and design that speak to the market. We’re curious, a bit bold, and focused on growing brands with measurable results. For us, making a difference isn’t just a job—it’s a way of life.",
+      "paragraph2": "We are where tradition meets technology. A young team with experience to spare: from web to print, all the way to apps. We craft strategy and design that speak to the market. We’re curious, a bit bold, and focused on growing brands with measurable results. For us, making a difference isn’t just a job—it’s a way of life."
+    },
+    "team": {
+      "marco": {
+        "mobile": "An innovator in digital, he looks beyond the horizon and turns every project into a mission of discovery: each pixel is a step toward new worlds. He finds inspiration in New York, but his vision is universal. He creates with the precision of a craftsman of the future.",
+        "desktop": "An innovator in the digital field, with a mind that sees beyond the horizon, he has turned every project into a mission of discovery—where each pixel is a step toward new worlds. In New York he finds inspiration, but his vision is universal, creating with the precision of a craftsman of the future."
+      },
+      "alessio": "He has the eye of someone who sees the brand even before the logo. He lines up ideas, images, and words until they find their voice. Raised between typography and photography, he kneads light, letterforms, and rhythm, building visual systems that don’t age. He leads the team without raising his voice: he tests, errs, recomposes, until everything “rings true.” With him, creativity has direction—what you see is beautiful because it works.",
+      "giorgia": "Where others see files, she sees rhythm. Between grids and layers, hex codes and color profiles, she brings concepts down to earth. She lays out, adapts, optimizes: from posts to packaging, from web to print—with aligned pixels, true blacks, and logos that never give up. Gentle precision, disarming speed. If something looks simple, it’s because Giorgia worked on it.",
+      "alt": {
+        "marco": "Marco’s photo",
+        "alessio": "Alessio’s photo",
+        "giorgia": "Giorgia’s photo"
+      }
+    },
+    "images": {
+      "alt1": "Archive photo of a young printer in the family print shop",
+      "alt2": "Visual reconstruction of printmaking work with traditional tools and inks",
+      "alt3": "Scene of traditional printing with vintage press machines",
+      "alt4": "Close-up of hands arranging metal type on a workbench",
+      "alt5": "Printer carrying freshly printed sheets in a classic print shop",
+      "alt6": "Detail of a vintage printing press being prepared for operation"
+    }
+  },
+  "allRightsReserved": "All rights reserved",
+  "common": {
+    "submit": "Submit",
+    "sending": "Sending..."
+  },
+  "contactForm": {
+    "cta": {
+      "title": "We’re almost there! Leave your details and we’ll get back soon —",
+      "sub": "no spam, promise!"
+    },
+    "placeholders": {
+      "name": "Name *",
+      "email": "Email *",
+      "phone": "Phone"
+    },
+    "privacy": {
+      "text": "I agree to the processing of my personal data as per the",
+      "linkLabel": "Privacy Policy"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "privacyRequired": "You must accept the Privacy Policy"
+    }
+  },
+  "fontSelection": {
+    "invalidQuestion": "Error: invalid font question",
+    "previewPlaceholder": "Type here to preview",
+    "sampleText": "Sample text",
+    "fontNamePlaceholder": "Or write the font name if you already have one in mind"
+  },
+  "questionForm": {
+    "answerPlaceholder": "Enter your answer here...",
+    "detailsPlaceholder": "Add more details if you like..."
+  },
+  "thankyou": {
+    "line1": "Thanks for trusting us.",
+    "line2": "We’ll get back to you shortly—promise!",
+    "restart": "Back to start"
   }
 }
