@@ -75,7 +75,12 @@ app.options("*", cors(corsOpts));
 
 app.use(express.json());
 
-app.use("/api", normalizeLang);
+app.use((req, res, next) => {
+  const l = pickLang(req.body?.lang, req.headers); // se body manca (multipart), usa gli header
+  req.lang = l;
+  res.locals.lang = l;
+  next();
+});
 
 app.get("/api/geo", (req, res) => {
   const country =
@@ -409,10 +414,16 @@ function ensureLanguage(q, lang) {
 
 // --- 2A: helper lingua + normalizzazione forte ---
 function isEnglish(s = "") {
-  return /\b(which|what|do you|color|typographic|prefer|logo)\b/i.test(s);
+  // niente 'logo'; usa marker più univoci
+  return /\b(which|what|do you|would you|color|colour|typograph\w*|prefer|choose|brand|text|symbol)\b/i.test(
+    s
+  );
 }
 function isItalian(s = "") {
-  return /\b(quale|hai|preferenze|colore|tipografico|logo)\b/i.test(s);
+  // includi forme italiane forti
+  return /\b(quale|cosa|preferisci|vorresti|colore|tipograf\w*|scegli|marchio|testo|simbolo)\b/i.test(
+    s
+  );
 }
 
 // normalizza chiave in modo più robusto per deduplica
@@ -452,6 +463,79 @@ function hardNormalizeFont(q, lang) {
   }
 
   return ensureLanguage(q, lang);
+}
+
+// ===== SERVICE POLICY (no domande fuori contesto, no open) =====
+function isBrandingServiceName(svc = "") {
+  return /(^|\b)(logo|brand)(\b|$)/i.test(svc);
+}
+
+function violatesPolicy(q, service, lang) {
+  if (!q || typeof q !== "object") return "empty";
+  const isBrand = isBrandingServiceName(service);
+
+  // lingua
+  if (lang === "it" && isEnglish(q.question || "")) return "lang";
+  if (lang === "en" && isItalian(q.question || "")) return "lang";
+
+  // branding fuori contesto
+  if (!isBrand) {
+    if (/logo|font|tipograf|marchio/i.test(q.question || "")) return "branding";
+    if (q.type === "font_selection") return "branding";
+  }
+
+  // schema per servizi non-branding: niente open, 4 opzioni
+  if (!isBrand) {
+    if (q.requiresInput === true) return "open";
+    if (
+      q.requiresInput === false &&
+      q.type !== "font_selection" &&
+      (!Array.isArray(q.options) || q.options.length !== 4)
+    ) {
+      return "options";
+    }
+  }
+
+  return null; // ok
+}
+
+async function regenerateWithPolicy({
+  promptBase,
+  askedSanitized,
+  language,
+  service,
+  baseUrl,
+  extraExclude = [],
+  extraAskCount = 6,
+  maxTries = 3,
+}) {
+  let lastCandidate = null;
+  for (let t = 0; t < maxTries; t++) {
+    const retry = await rlGenerateQuestions(
+      `${promptBase}
+- NON fare domande su logo, font e identità visiva quando il servizio non è di branding.
+- Se il servizio NON è branding, la domanda deve essere a scelta multipla con **esattamente 4 opzioni** (nessuna risposta aperta).
+- Non usare "font_selection" se il servizio non è branding.
+${
+  extraExclude.length
+    ? "- Evita anche queste formulazioni: " + extraExclude.join(" | ")
+    : ""
+}`,
+      { askedQuestions: askedSanitized, n: extraAskCount, language },
+      { base: baseUrl }
+    );
+    const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
+    const candidate =
+      reNorm.find((qq) => !violatesPolicy(qq, service, language)) ||
+      reNorm[0] ||
+      null;
+    if (candidate) {
+      lastCandidate = ensureLanguage(candidate, language);
+      if (!violatesPolicy(lastCandidate, service, language))
+        return lastCandidate;
+    }
+  }
+  return lastCandidate; // può ancora violare: il chiamante decide se accettare o alzare errore
 }
 
 app.post("/api/sendEmails", async (req, res) => {
@@ -922,6 +1006,7 @@ const generateQuestionForService = async (
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
   const language = (formData && formData.lang) === "en" ? "en" : "it";
+  const isBranding = /logo|brand/i.test(service);
 
   // askedQuestions può contenere oggetti o stringhe: portiamolo a chiavi "sanitized"
   const askedSanitized = (askedQuestions || [])
@@ -1021,23 +1106,73 @@ Per ogni domanda:
       if (candidates.length) {
         let pick = candidates[0];
         pick.__provider = "RL";
-
-        // Forza il formato corretto per le domande font + allinea lingua/etichette
-        let ensured = hardNormalizeFont(pick, language);
+        let ensured = isBranding
+          ? hardNormalizeFont(pick, language)
+          : ensureLanguage(pick, language);
 
         // Micro retry locale se (nonostante tutto) la lingua è errata
         for (let i = 0; i < 2 && ensured; i++) {
-          const badIt = language === "it" && isEnglish(ensured.question);
-          const badEn = language === "en" && isItalian(ensured.question);
-          if (!badIt && !badEn) break;
+          const wrongIt = language === "it" && isEnglish(ensured.question);
+          const wrongEn = language === "en" && isItalian(ensured.question);
+          if (!wrongIt && !wrongEn) break;
 
-          // Aggiungi la domanda problematica all'exclusion bag e riprova tutto il giro
-          exclusionBag.push(ensured.question);
-          ensured = null;
+          const retry = await rlGenerateQuestions(
+            promptBase,
+            { askedQuestions: askedSanitized, n: 6, language },
+            { base: process.env.RL_API_BASE }
+          );
+          const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
+
+          pick =
+            reNorm.find(
+              (q) =>
+                q &&
+                (language === "it"
+                  ? !isEnglish(q.question)
+                  : !isItalian(q.question))
+            ) || reNorm[0];
+
+          ensured = isBranding
+            ? hardNormalizeFont(pick, language)
+            : ensureLanguage(pick, language);
+        }
+        // ---------- VALIDAZIONE UNICA BASATA SU POLICY ----------
+        let reason = violatesPolicy(ensured, service, language);
+
+        if (reason) {
+          const repaired = await regenerateWithPolicy({
+            promptBase,
+            askedSanitized: askedSanitized.concat([
+              sanitizeKey(ensured.question || "__bad__"),
+            ]),
+            language,
+            service,
+            baseUrl: process.env.RL_API_BASE,
+            extraExclude: [
+              "Which typographic style do you prefer for the logo",
+              "Quale stile tipografico preferisci per il logo",
+              "What typographic style do you prefer for the logo",
+            ],
+          });
+
+          if (repaired && !violatesPolicy(repaired, service, language)) {
+            ensured = repaired;
+          } else {
+            // ultimo tentativo: scegli dalla prima lista qualcosa che non violi la policy
+            const fallbackFromBatch = (normalized || []).find(
+              (qq) => !violatesPolicy(qq, service, language)
+            );
+            if (fallbackFromBatch)
+              ensured = ensureLanguage(fallbackFromBatch, language);
+          }
         }
 
-        if (ensured) return ensured;
-        // altrimenti si ricomincia il ciclo for con exclusionBag aggiornata
+        // se ancora viola, solleva errore per farci rigenerare dal chiamante
+        if (violatesPolicy(ensured, service, language)) {
+          throw new Error("RL policy violation for service: " + service);
+        }
+
+        return ensured;
       }
 
       // Nessun candidato: amplia l’exclusion bag con tutte le proposte viste per evitare ripetizioni al prossimo giro
@@ -1105,7 +1240,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       if (existing) {
         // 👇 NEW: se la sessione era nata con OpenAI o la lingua è cambiata -> NON fare resume
         const storedLang = existing.formData?.lang;
-        const incomingLang = pickLang(req.body.lang, req.headers);
+        const incomingLang = req.lang;
         const firstProvider = existing.questions?.[0]?.__provider;
 
         const shouldSkipResume =
@@ -1146,14 +1281,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     // --- da qui creazione nuovo log ---
     const formData = { ...req.body };
 
-    formData.lang = pickLang(formData.lang, req.headers);
+    const incomingLang = req.lang;
     const sessionLang = formData.lang;
-    console.log(
-      "[/generate] lang received:",
-      req.body.lang,
-      "-> used:",
-      formData.lang
-    );
+    console.log("[/generate] lang used:", sessionLang);
 
     console.log(
       "[LANG]",
@@ -1323,27 +1453,54 @@ app.post("/api/nextQuestion", async (req, res) => {
       );
     }
 
-    // --- 2D: evita doppia domanda sui font (senza fallback hardcoded) ---
-    const isFontQuestion = (q) =>
-      q &&
-      (q.type === "font_selection" || /font|typograf/i.test(q.question || ""));
-
-    if (hasFontQuestion && isFontQuestion(aiQuestion)) {
-      const excludeFontQs = [
-        "Which typographic style do you prefer for the logo",
-        "Quale stile tipografico preferisci per il logo",
-        "What typographic style do you prefer for the logo",
-      ];
-
-      let retryCount = 0;
-      while (retryCount < 2 && isFontQuestion(aiQuestion)) {
-        retryCount += 1;
-        aiQuestion = await generateQuestionForService(
-          nextService,
-          logEntry.formData,
-          Object.fromEntries(logEntry.answers),
-          askedQuestionsForNextService.concat(excludeFontQs)
-        );
+    // --- 2D: last gate policy senza fallback hard-coded ---
+    let lastReason = violatesPolicy(
+      aiQuestion,
+      nextService,
+      logEntry.formData?.lang === "en" ? "en" : "it"
+    );
+    if (lastReason) {
+      const askedQuestionsForNextServiceSan =
+        askedQuestionsForNextService.concat([
+          sanitizeKey(aiQuestion.question || "__invalid__"),
+        ]);
+      try {
+        const regenerated = await regenerateWithPolicy({
+          promptBase: `Sei un assistente che aiuta a raccogliere dettagli per un progetto.`,
+          askedSanitized: askedQuestionsForNextServiceSan,
+          language: logEntry.formData?.lang === "en" ? "en" : "it",
+          service: nextService,
+          baseUrl: process.env.RL_API_BASE,
+          extraExclude: [
+            "Which typographic style do you prefer for the logo",
+            "Quale stile tipografico preferisci per il logo",
+            "What typographic style do you prefer for the logo",
+          ],
+          extraAskCount: 8,
+          maxTries: 3,
+        });
+        if (
+          regenerated &&
+          !violatesPolicy(
+            regenerated,
+            nextService,
+            logEntry.formData?.lang === "en" ? "en" : "it"
+          )
+        ) {
+          aiQuestion = regenerated;
+        } else {
+          throw new Error(
+            "Unable to get a valid question for service " + nextService
+          );
+        }
+      } catch (e) {
+        // Propaga errore: il client riproverà /nextQuestion (niente domande fasulle)
+        return res
+          .status(502)
+          .json({
+            error: "GENERATION_FAILED",
+            details: e?.message || "Rigenerazione fallita",
+          });
       }
     }
 

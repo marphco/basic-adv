@@ -3,6 +3,7 @@ import "./ContactForm.css";
 import { FaExclamationCircle } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const ContactForm = ({
   formData,
@@ -12,6 +13,7 @@ const ContactForm = ({
   errors = {},
   setErrors,
 }) => {
+  const { t } = useTranslation();
   const [privacyConsent, setPrivacyConsent] = useState(false);
 
   const handleChange = (e) => {
@@ -66,16 +68,16 @@ const ContactForm = ({
     let newErrors = {};
 
     if (!formData.contactInfo.name.trim()) {
-      newErrors.name = "Il nome è obbligatorio";
+      newErrors.name = t("contactForm.errors.nameRequired");
     }
     if (!formData.contactInfo.email.trim()) {
-      newErrors.email = "L'email è obbligatoria";
+      newErrors.email = t("contactForm.errors.emailRequired");
     } else if (!/\S+@\S+\.\S+/.test(formData.contactInfo.email)) {
-      newErrors.email = "Inserisci un'email valida";
+      newErrors.email = t("contactForm.errors.emailInvalid");
     }
 
     if (!privacyConsent) {
-      newErrors.privacyConsent = "Devi accettare la Privacy Policy";
+      newErrors.privacyConsent = t("contactForm.errors.privacyRequired");
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -89,9 +91,10 @@ const ContactForm = ({
   return (
     <form className="contact-form fade-in" onSubmit={handleSubmit} noValidate>
       <h2 className="contact-cta">
-        Ci siamo! Lascia i tuoi contatti e ci sentiamo presto –{" "}
-        <span>niente spam, promesso!</span>
+        {t("contactForm.cta.title")}{" "}
+        <span>{t("contactForm.cta.sub")}</span>
       </h2>
+
       <div className="form-group">
         <input
           type="text"
@@ -99,7 +102,7 @@ const ContactForm = ({
           name="name"
           value={formData.contactInfo.name}
           onChange={handleChange}
-          placeholder="Nome *"
+          placeholder={t("contactForm.placeholders.name")}
           required
           className="form-input"
         />
@@ -110,6 +113,7 @@ const ContactForm = ({
           </span>
         )}
       </div>
+
       <div className="form-group">
         <input
           type="email"
@@ -117,7 +121,7 @@ const ContactForm = ({
           name="email"
           value={formData.contactInfo.email}
           onChange={handleChange}
-          placeholder="Email *"
+          placeholder={t("contactForm.placeholders.email")}
           required
           className="form-input"
         />
@@ -128,6 +132,7 @@ const ContactForm = ({
           </span>
         )}
       </div>
+
       <div className="form-group">
         <input
           type="tel"
@@ -135,11 +140,12 @@ const ContactForm = ({
           name="phone"
           value={formData.contactInfo.phone}
           onChange={handlePhoneInput}
-          placeholder="Telefono"
+          placeholder={t("contactForm.placeholders.phone")}
           pattern="[0-9]*|(\+[0-9]+)"
           className="form-input"
         />
       </div>
+
       <div className="form-actions">
         <div className="privacy-consent">
           <label className="privacy-consent-label">
@@ -149,7 +155,12 @@ const ContactForm = ({
               onChange={handlePrivacyConsentChange}
               required
             />
-            <span className="consent-text">Accetto il trattamento dei miei dati personali ai sensi della <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>.</span>
+            <span className="consent-text">
+              {t("contactForm.privacy.text")}{" "}
+              <Link to="/privacy-policy" target="_blank">
+                {t("contactForm.privacy.linkLabel")}
+              </Link>.
+            </span>
           </label>
           {errors.privacyConsent && (
             <span className="error-message">
@@ -158,8 +169,9 @@ const ContactForm = ({
             </span>
           )}
         </div>
+
         <button type="submit" className="contact-submit-btn" disabled={loading}>
-          {loading ? "Invio..." : "Invia"}
+          {loading ? t("common.sending") : t("common.submit")}
         </button>
       </div>
     </form>
