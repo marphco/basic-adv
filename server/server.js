@@ -14,6 +14,7 @@ const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
 const mime = require("mime-types");
 const { rlGenerateQuestions } = require("./services/rlClient");
+const normalizeLang = require("./middleware/lang");
 
 dotenv.config();
 
@@ -1007,9 +1008,13 @@ const generateQuestionForService = async (
   const language = (formData && formData.lang) === "en" ? "en" : "it";
   const isBranding = /logo|brand/i.test(service);
 
+  // askedQuestions può contenere oggetti o stringhe: portiamolo a chiavi "sanitized"
   const askedSanitized = (askedQuestions || [])
     .map((q) => (typeof q === "string" ? q : q?.question || ""))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(sanitizeKey);
+
+  const askedSet = new Set(askedSanitized);
 
   const askedListForPrompt = askedSanitized.join("\n");
   let imageInfo = "";
@@ -1064,29 +1069,48 @@ Per ogni domanda:
     );
   }
 
-  // --- RL principale
-  try {
-    const rawList = await rlGenerateQuestions(
-      promptBase,
-      { askedQuestions: askedSanitized, n: 6, language },
-      { base: process.env.RL_API_BASE }
-    );
+  // Filtro lingua: accetta solo item nella lingua voluta
+  const inRightLang = (qText) => {
+    const t = qText || "";
+    return language === "it" ? !isEnglish(t) : !isItalian(t);
+  };
 
-    // ✅ MANCAVA QUESTA RIGA
-    const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
+  // Tentiamo fino a 3 volte a ottenere almeno 1 domanda valida, nella lingua giusta e non già chiesta
+  const MAX_TRIES = 3;
+  let exclusionBag = []; // elenco extra di domande da evitare nei retry
 
-    if (normalized.length) {
-      const askedSet = new Set(askedSanitized);
-      let pick =
-        normalized.find((q) => q && !askedSet.has(q.question)) || normalized[0];
+  for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    try {
+      const rawList = await rlGenerateQuestions(
+        promptBase,
+        {
+          askedQuestions: askedSanitized.concat(exclusionBag),
+          n: 6,
+          language,
+        },
+        { base: process.env.RL_API_BASE }
+      );
 
-      if (pick?.question) {
+      // Normalizza tutto
+      const normalized = (rawList || []).map(normalizeFromRl).filter(Boolean);
+
+      // 1) lingua corretta
+      let candidates = normalized.filter((q) => inRightLang(q.question));
+
+      // 2) dedup contro askedSet (usiamo chiave sanitizzata)
+      candidates = candidates.filter(
+        (q) => !askedSet.has(sanitizeKey(q.question))
+      );
+
+      // 3) prendi il primo valido
+      if (candidates.length) {
+        let pick = candidates[0];
         pick.__provider = "RL";
         let ensured = isBranding
           ? hardNormalizeFont(pick, language)
           : ensureLanguage(pick, language);
 
-        // se lingua sbagliata, rigenera fino a 2 volte
+        // Micro retry locale se (nonostante tutto) la lingua è errata
         for (let i = 0; i < 2 && ensured; i++) {
           const wrongIt = language === "it" && isEnglish(ensured.question);
           const wrongEn = language === "en" && isItalian(ensured.question);
@@ -1150,13 +1174,20 @@ Per ogni domanda:
 
         return ensured;
       }
+
+      // Nessun candidato: amplia l’exclusion bag con tutte le proposte viste per evitare ripetizioni al prossimo giro
+      exclusionBag.push(...normalized.map((q) => q.question).filter(Boolean));
+    } catch (e) {
+      console.warn(
+        "[RL] errore tentativo generateQuestionForService:",
+        e?.response?.status || e.code || e.message
+      );
+      // prova con il prossimo tentativo
     }
-  } catch (e) {
-    console.warn("[RL] errore:", e?.response?.status || e.code || e.message);
   }
 
-  // --- se RL non ha prodotto nulla di valido:
-  throw new Error("RL non ha prodotto domande valide");
+  // Se esauriti i tentativi senza domanda valida:
+  throw new Error("RL non ha prodotto domande valide nella lingua richiesta");
 };
 
 const buildFontQuestion = (formData = {}) => {
@@ -1192,6 +1223,7 @@ const buildFontQuestion = (formData = {}) => {
 
 app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
   try {
+    console.log("[/generate] req.lang (middleware):", req.lang);
     // ⬇️ parse leggero, non blocca se session già esiste
     let servicesSelected;
     try {
