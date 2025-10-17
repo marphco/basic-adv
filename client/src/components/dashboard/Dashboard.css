@@ -2,11 +2,13 @@
   cursor: inherit !important; /* Reset per evitare cursori nascosti */
 }
 
-html, body {
+html,
+body {
   cursor: auto !important;
 }
 
-.custom-cursor-dot, .custom-cursor-circle {
+.custom-cursor-dot,
+.custom-cursor-circle {
   visibility: visible !important;
   pointer-events: none !important;
 }
@@ -76,17 +78,19 @@ html, body {
 
 /* Stile dell'elemento attivo nella sidebar */
 .sidebar ul li.active {
-  background: var(--background-color); /* Colore di sfondo dell'elemento attivo */
+  background: var(
+    --background-color
+  ); /* Colore di sfondo dell'elemento attivo */
   color: var(--primary-text-color); /* Colore del testo */
   position: relative; /* Per posizionare i pseudo-elementi */
   z-index: 1; /* Assicura che l'elemento attivo sia sopra gli altri */
   border-radius: 40px 0 0 40px; /* Rimuove l'arrotondamento dall'elemento principale */
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 /* Pseudo-elemento per l'angolo superiore destro */
 .sidebar ul li.active::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -20px; /* Sopra l'elemento */
   right: 0;
@@ -95,24 +99,26 @@ html, body {
   background: var(--foreground-color); /* Stesso colore dell'elemento attivo */
   border-bottom-right-radius: 20px; /* Angolo arrotondato in basso a destra */
   z-index: 2;
-  transition: all .0s;
+  transition: all 0s;
 }
 
 .sidebar ul li.active .active-before::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -20px; /* Sopra l'elemento */
   right: 0;
   width: 20px; /* Larghezza della parte che sporge */
   height: 20px; /* Altezza della parte sopra */
-  background-color: var(--background-color); /* Stesso colore dell'elemento attivo */
+  background-color: var(
+    --background-color
+  ); /* Stesso colore dell'elemento attivo */
   z-index: 1;
-  transition: background-color .5s ease;
+  transition: background-color 0.5s ease;
 }
 
 /* Pseudo-elemento per l'angolo inferiore destro */
 .sidebar ul li.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -20px; /* Sotto l'elemento */
   right: 0;
@@ -121,30 +127,32 @@ html, body {
   background: var(--foreground-color); /* Stesso colore dell'elemento attivo */
   border-top-right-radius: 20px; /* Angolo arrotondato in alto a destra */
   z-index: 2;
-  transition: all .0s;
+  transition: all 0s;
 }
 
 .sidebar ul li.active .active-after::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -20px; /* Sopra l'elemento */
   right: 0;
   width: 20px; /* Larghezza della parte che sporge */
   height: 20px; /* Altezza della parte sopra */
-  background-color: var(--background-color); /* Stesso colore dell'elemento attivo */
+  background-color: var(
+    --background-color
+  ); /* Stesso colore dell'elemento attivo */
   z-index: 1;
-  transition: background-color .5s ease;
+  transition: background-color 0.5s ease;
 }
 
 .sidebar li:hover:not(.active) {
   color: black; /* Colore nero per testo e icone in hover */
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .sidebar li:hover:not(.active) .icon,
 .sidebar li:hover:not(.active) .text {
   color: black; /* Assicura che sia icone che testo siano neri */
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .sidebar ul li.instant-transition.active {
@@ -177,7 +185,8 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   padding: 20px 15px;
   text-align: left;
   border-bottom: none;
@@ -189,7 +198,7 @@ th {
   color: var(--primary-text-color);
   text-transform: uppercase;
   font-size: 0.9rem;
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 /* Per le colonne centrate (Allegati e Stato), sovrascriviamo justify-content */
@@ -254,7 +263,9 @@ td.centered .feedback-btn {
 
 .feedback-btn.not-worked {
   background: transparent;
-  color: var(--error-color); /* Cambiato da --primary-text-color a --error-color per maggiore chiarezza */
+  color: var(
+    --error-color
+  ); /* Cambiato da --primary-text-color a --error-color per maggiore chiarezza */
   border: solid 1px var(--error-color); /* Usiamo --error-color per il bordo */
   transition: all 0.5s ease;
 }
@@ -307,7 +318,7 @@ td.centered .feedback-btn {
   padding: 20px;
   border-radius: 4px;
   border: 1px solid #d1d1d1;
-  transition: background-color .5s ease; 
+  transition: background-color 0.5s ease;
 }
 
 .details-sidebar {
@@ -352,20 +363,20 @@ td.centered .feedback-btn {
   font-size: 1.5rem;
   font-weight: 300;
   color: var(--primary-text-color);
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 .details-content h3 {
   font-size: 1.2rem;
   font-weight: 300;
   color: var(--primary-text-color);
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 .details-content p {
   font-weight: 300;
   color: var(--primary-text-color);
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 .question-answer ul {
@@ -416,7 +427,7 @@ td.centered .feedback-btn {
   font-size: 1.2rem;
   font-weight: 300;
   color: var(--primary-text-color);
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .stat-card p {
@@ -470,7 +481,7 @@ td.centered .feedback-btn {
 }
 .dashboard.dark-theme td {
   border-bottom: 1px solid rgba(228, 228, 228, 0.1);
-  transition: border-bottom .5s ease;
+  transition: border-bottom 0.5s ease;
 }
 
 /* Tema light */
@@ -479,7 +490,7 @@ td.centered .feedback-btn {
 }
 .dashboard.light-theme td {
   border-bottom: 1px solid rgba(228, 228, 228, 0.9);
-  transition: border-bottom .5s ease;
+  transition: border-bottom 0.5s ease;
 }
 
 .header-icon {
@@ -553,13 +564,13 @@ td.centered .feedback-btn {
 .info-section h2 {
   margin-bottom: 20px;
   color: var(--primary-text-color);
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 .info-section h3 {
   margin-bottom: 20px;
   color: var(--primary-text-color);
-  transition: color .5s ease;
+  transition: color 0.5s ease;
 }
 
 .info-item {
@@ -568,7 +579,7 @@ td.centered .feedback-btn {
   margin-bottom: 20px;
   font-size: 1rem;
   color: var(--primary-text-color);
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 .info-icon {
@@ -596,7 +607,7 @@ td.centered .feedback-btn {
   color: var(--primary-text-color);
   font-size: 1.3rem;
   font-weight: 500;
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
 /* Stili per i badge delle risposte */
@@ -635,10 +646,11 @@ td.centered .feedback-btn {
 .piano p {
   margin-top: 20px;
   margin-bottom: 5px;
-  transition: color .5s ease; 
+  transition: color 0.5s ease;
 }
 
-.piano ul, .piano ol {
+.piano ul,
+.piano ol {
   font-weight: 300;
 }
 
@@ -789,14 +801,14 @@ td.centered .feedback-btn {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;               /* spazio tra bottone e meta */
+  gap: 10px; /* spazio tra bottone e meta */
 }
 
 /* meta con iconcine */
 .file-list-section .file-details {
-  display: inline-flex;    /* da testo -> inline-flex */
+  display: inline-flex; /* da testo -> inline-flex */
   align-items: center;
-  gap: 14px;               /* spazio tra data e dimensione */
+  gap: 14px; /* spazio tra data e dimensione */
   font-size: 0.9rem;
   color: var(--primary-text-color);
   transition: color 0.5s ease;
@@ -805,12 +817,12 @@ td.centered .feedback-btn {
 .meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;                /* spazio icona-testo */
+  gap: 6px; /* spazio icona-testo */
 }
 .meta-icon {
   width: 14px;
   height: 14px;
-  color: var(--foreground-color);  /* stessa tinta usata per le altre iconcine */
+  color: var(--foreground-color); /* stessa tinta usata per le altre iconcine */
 }
 
 /* bottone compatto, stesso stile di .download-btn */
@@ -1067,17 +1079,146 @@ td.centered .feedback-btn {
   border-color: var(--foreground-color);
 }
 
-.rating-label { font-size: .8rem; opacity: .75; min-width: 120px; }
+.rating-label {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  min-width: 120px;
+}
 .chip {
   border: 1px solid var(--foreground-color);
   background: transparent;
-  width: 28px; height: 28px; border-radius: 6px;
-  display: inline-flex; align-items: center; justify-content: center;
-  color: var(--primary-text-color); font-size: .9rem; cursor: pointer;
-  transition: all .2s ease;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.chip.active { background: rgba(255,64,3,.2); color: var(--foreground-color); }
+.chip.active {
+  background: rgba(255, 64, 3, 0.2);
+  color: var(--foreground-color);
+}
 
+/* ====== Grid compatta e pill ====== */
+.info-grid {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px 24px;
+  margin-top: 4px;
+}
+.irow {
+  display: contents;
+}
+.ilabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary-text-color);
+  opacity: 0.9;
+  padding: 6px 10px;
+}
+.iicon {
+  color: var(--foreground-color);
+  font-size: 1rem;
+}
+.ival {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.pill-ico {
+  font-size: 12px !important; /* misura unica */
+  width: 12px;
+  height: 12px;
+  line-height: 1;
+  flex: 0 0 16px;            /* evita stretching/shrink */
+  display: inline-block;
+  vertical-align: -1px;      /* allineamento ottico col testo */
+}
+
+.pill--link {
+  border: 1px solid var(--foreground-color);
+  color: var(--primary-text-color);
+  text-decoration: none;
+}
+.pill--link:hover {
+  background: rgba(255, 64, 3, 0.08);
+  color: var(--foreground-color);
+}
+
+.pill--on {
+  background: rgba(255, 64, 3, 0.2);
+  border: 1px solid var(--foreground-color);
+  color: var(--foreground-color);
+}
+.pill--off {
+  background: rgba(209, 209, 209, 0.1);
+  color: var(--primary-text-color);
+  border: 1px solid rgba(209, 209, 209, 0.3);
+}
+
+.pill-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+.mt-12 {
+  margin-top: 12px;
+}
+.mt-24 {
+  margin-top: 24px;
+}
+
+/* link nei dettagli */
+.info-link {
+  color: var(--primary-text-color);
+  text-decoration: underline;
+}
+.info-link:hover {
+  color: var(--foreground-color);
+}
+
+/* Limita la lunghezza visiva dei link-pill */
+.pill--link {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pill-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ival {
+  align-items: center;
+  gap: 8px;
+}
+
+.pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* Media query per visualizzazione mobile */
 @media (max-width: 1440px) {
@@ -1095,7 +1236,8 @@ td.centered .feedback-btn {
   }
 
   /* Regola il padding delle celle per mobile */
-  th, td {
+  th,
+  td {
     padding: 10px 8px; /* Riduciamo il padding per adattarci a schermi più piccoli */
   }
 
@@ -1111,7 +1253,7 @@ td.centered .feedback-btn {
     margin-left: 0;
     margin-right: 0;
   }
-  
+
   .header-controls {
     gap: 8px; /* Gap leggermente più piccolo su mobile */
   }
@@ -1227,7 +1369,7 @@ td.centered .feedback-btn {
   }
   .sidebar ul li.active {
     border-radius: 40px 40px 40px 40px;
-    transition: color .5s ease;
+    transition: color 0.5s ease;
   }
   .sidebar ul li.active::before,
   .sidebar ul li.active .active-before::before,
@@ -1245,7 +1387,7 @@ td.centered .feedback-btn {
   }
 
   .filter-dropdown label {
-    font-size: .8rem !important;
+    font-size: 0.8rem !important;
   }
 
   .file-list-section li {
@@ -1289,17 +1431,43 @@ td.centered .feedback-btn {
     gap: 6px;
   }
 
-
-
-
-
   .sidebar .sidebar-logo {
     display: none;
-}
+  }
 
-.sidebar ul {
+  .sidebar ul {
     padding-top: 2vh; /* solo se avevi padding creato per il logo */
   }
 
+   /* La griglia passa a 1 colonna: label e valore su due righe */
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 6px 0;              /* spazio verticale compatto */
+  }
 
+  .ilabel {
+    padding: 2px 0 4px;      /* un filo di spazio sotto la label */
+  }
+
+  .ival {
+    width: 100%;
+    margin-bottom: 16px;     /* spazio tra un blocco e il successivo */
+  }
+
+  /* i link-pill occupano tutta la riga e vanno a capo */
+  .pill--link {
+    display: flex;           /* block-level */
+    width: 100%;
+    max-width: none;
+    white-space: normal;     /* consenti a capo */
+    overflow: visible;
+    text-overflow: initial;
+    line-height: 1.25;
+  }
+
+  .pill-text {
+    white-space: normal;
+    overflow-wrap: anywhere; /* spezza URL lunghi */
+    word-break: break-word;
+  }
 }
