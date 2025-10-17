@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 import "./Footer.css";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const isMobile = window.innerWidth <= 768;
+  const { t } = useTranslation();
 
   return (
     <div className="section-footer footer">
@@ -30,13 +32,13 @@ const Footer = () => {
           {/* Copyright: su una riga con • su mobile, su due su desktop */}
           {isMobile ? (
             <p className="footer-copyright">
-              Copyright © {currentYear} • All rights reserved
+              Copyright © {currentYear} • {t("allRightsReserved")}
             </p>
           ) : (
             <p className="footer-copyright">
               Copyright © {currentYear}
               <br />
-              All rights reserved
+              {t("allRightsReserved")}
             </p>
           )}
           {/* Link: su una riga con separatore su mobile, su due righe su desktop */}

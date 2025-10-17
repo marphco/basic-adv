@@ -315,17 +315,17 @@
       "appPlatforms": "Pick at least one platform"
     },
     "labels": {
-      "optionalLinks": "Optional links",
+      "optionalLinks": "If you’d like, share any useful links.",
       "referencesShort": "References",
-      "platforms": "Platforms"
+      "platforms": "Tell us where you’d like to launch your app."
     },
     "actions": {
       "clear": "Clear",
       "close": "Close"
     },
     "platforms": {
-      "ios": "iOS",
-      "android": "Android",
+      "ios": "App Store",
+      "android": "Google Play",
       "webapp": "Web App"
     },
     "links": {
@@ -462,5 +462,45 @@
       },
       "footer": "© {{year}} Basic adv srls. All rights reserved."
     }
-  }
+  },
+  "about": {
+    "mobile": {
+      "title": "MAYBE READ<0/>A BIT OF OUR STORY",
+      "subtitle": "No hard feelings if you skip (well, almost)."
+    },
+    "desktop": {
+      "title": "MAYBE READ<0/>A BIT OF OUR STORY",
+      "subtitle": "No hard feelings if you skip (well, almost)."
+    },
+    "story": {
+      "title": "From ink<0/>to digital:<0/>our passion,<0/><1>our roots</1>",
+      "paragraph1": "We grew up among the printing presses in our father Crescenzo’s workshop. From him we inherited a passion for communication and the stubbornness of those who don’t stop in front of a challenge. After his passing, we turned that spark into a creative fire, carrying on his vision with innovation and courage."
+    },
+    "modern": {
+      "paragraph1": "We are where tradition meets technology. A young team with experience to spare: from web to print, all the way to apps. We craft strategy and design that speak to the market. We’re curious, a bit bold, and focused on growing brands with measurable results. For us, making a difference isn’t just a job—it’s a way of life.",
+      "paragraph2": "We are where tradition meets technology. A young team with experience to spare: from web to print, all the way to apps. We craft strategy and design that speak to the market. We’re curious, a bit bold, and focused on growing brands with measurable results. For us, making a difference isn’t just a job—it’s a way of life."
+    },
+    "team": {
+      "marco": {
+        "mobile": "An innovator in digital, he looks beyond the horizon and turns every project into a mission of discovery: each pixel is a step toward new worlds. He finds inspiration in New York, but his vision is universal. He creates with the precision of a craftsman of the future.",
+        "desktop": "An innovator in the digital field, with a mind that sees beyond the horizon, he has turned every project into a mission of discovery—where each pixel is a step toward new worlds. In New York he finds inspiration, but his vision is universal, creating with the precision of a craftsman of the future."
+      },
+      "alessio": "He has the eye of someone who sees the brand even before the logo. He lines up ideas, images, and words until they find their voice. Raised between typography and photography, he kneads light, letterforms, and rhythm, building visual systems that don’t age. He leads the team without raising his voice: he tests, errs, recomposes, until everything “rings true.” With him, creativity has direction—what you see is beautiful because it works.",
+      "giorgia": "Where others see files, she sees rhythm. Between grids and layers, hex codes and color profiles, she brings concepts down to earth. She lays out, adapts, optimizes: from posts to packaging, from web to print—with aligned pixels, true blacks, and logos that never give up. Gentle precision, disarming speed. If something looks simple, it’s because Giorgia worked on it.",
+      "alt": {
+        "marco": "Marco’s photo",
+        "alessio": "Alessio’s photo",
+        "giorgia": "Giorgia’s photo"
+      }
+    },
+    "images": {
+      "alt1": "Archive photo of a young printer in the family print shop",
+      "alt2": "Visual reconstruction of printmaking work with traditional tools and inks",
+      "alt3": "Scene of traditional printing with vintage press machines",
+      "alt4": "Close-up of hands arranging metal type on a workbench",
+      "alt5": "Printer carrying freshly printed sheets in a classic print shop",
+      "alt6": "Detail of a vintage printing press being prepared for operation"
+    }
+  },
+  "allRightsReserved": "All rights reserved"
 }

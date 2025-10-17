@@ -324,16 +324,16 @@
     },
     "labels": {
       "referencesShort": "Riferimenti",
-      "platforms": "Piattaforme",
-      "optionalLinks": "Link opzionali"
+      "platforms": "Dicci dove vorresti lanciare la tua app.",
+      "optionalLinks": "Se vuoi, condividi qualche link utile."
     },
     "actions": {
       "clear": "Pulisci",
       "close": "Chiudi"
     },
     "platforms": {
-      "ios": "iOS",
-      "android": "Android",
+      "ios": "App Store",
+      "android": "Google Play",
       "webapp": "Web App"
     },
     "links": {
@@ -470,5 +470,45 @@
       },
       "footer": "© {{year}} Basic adv srls. Tutti i diritti riservati."
     }
-  }
+  },
+  "about": {
+    "mobile": {
+      "title": "MAGARI LEGGI<0/>UN PO' DI STORIA",
+      "subtitle": "Se skippi, niente rancore (quasi)."
+    },
+    "desktop": {
+      "title": "MAGARI LEGGI<0/>UN PO' DI STORIA",
+      "subtitle": "Se skippi, niente rancore (quasi)."
+    },
+    "story": {
+      "title": "Dall'inchiostro<0/>al digitale:<0/>la nostra passione,<0/><1>le nostre radici</1>",
+      "paragraph1": "Siamo cresciuti tra le macchine da stampa della bottega di nostro padre, Crescenzo. Da lui abbiamo ereditato la passione per la comunicazione e la testardaggine di chi non si ferma davanti a una sfida. Dopo la sua scomparsa abbiamo trasformato quella scintilla in un fuoco creativo, portando avanti la sua visione con innovazione e coraggio."
+    },
+    "modern": {
+      "paragraph1": "Siamo l'incontro tra tradizione e tecnologia. Un team giovane con esperienza da vendere: dal web alla stampa, fino alle app. Facciamo strategia e design che parlano al mercato. Siamo curiosi, un po' audaci, e puntiamo a far crescere i brand con risultati misurabili. Per noi fare la differenza non è solo un lavoro: è uno stile di vita.",
+      "paragraph2": "Siamo l'incontro tra tradizione e tecnologia. Un team giovane con esperienza da vendere: dal web alla stampa, fino alle app. Facciamo strategia e design che parlano al mercato. Siamo curiosi, un po' audaci, e puntiamo a far crescere i brand con risultati misurabili. Per noi fare la differenza non è solo un lavoro: è uno stile di vita."
+    },
+    "team": {
+      "marco": {
+        "mobile": "Innovatore nel digitale, vede oltre l'orizzonte e trasforma ogni progetto in una missione di scoperta: ogni pixel è un passo verso nuovi mondi. A New York trova ispirazione, ma la sua visione è universale. Crea con la precisione di un artigiano del futuro.",
+        "desktop": "Un innovatore nel campo digitale, con una mente che vede oltre l'orizzonte, ha trasformato ogni progetto in una missione di scoperta, dove ogni pixel è un passo verso nuovi mondi. A New York, trova ispirazione, ma la sua visione è universale, creando con la precisione di un artigiano del futuro."
+      },
+      "alessio": "Ha lo sguardo di chi vede il brand prima ancora del logo. Mette in fila idee, immagini e parole finché trovano la loro voce. Cresciuto tra tipografia e fotografia, impasta luce, caratteri e ritmo, costruendo sistemi visivi che non cedono al tempo. Guida il team senza alzare la voce: prova, sbaglia, ricompone, finché tutto “suona”. Con lui la creatività ha una direzione—quello che vedi è bello perché funziona.",
+      "giorgia": "Dove gli altri vedono file, lei vede ritmo. Tra griglie e livelli, esadecimali e profili colore, atterra i concept nel mondo reale. Impagina, adatta, ottimizza: dal post al packaging, dal web alla stampa—con pixel allineati, neri che sono neri e loghi che non mollano mai. Precisione gentile, velocità disarmante. Se qualcosa sembra semplice, è perché Giorgia ci ha lavorato.",
+      "alt": {
+        "marco": "Foto Marco",
+        "alessio": "Foto Alessio",
+        "giorgia": "Foto Giorgia"
+      }
+    },
+    "images": {
+      "alt1": "Fotografia d’archivio di un giovane stampatore nella tipografia di famiglia",
+      "alt2": "Ricostruzione visiva del lavoro in tipografia con strumenti artigianali e inchiostri",
+      "alt3": "Scena di stampa tradizionale con macchinari tipografici d’epoca",
+      "alt4": "Dettaglio delle mani che dispongono caratteri tipografici su un banco da lavoro",
+      "alt5": "Operaio che trasporta fogli stampati in una tipografia storica",
+      "alt6": "Primo piano su un macchinario tipografico durante la fase di preparazione alla stampa"
+    }
+  },
+  "allRightsReserved": "Tutti i diritti riservati"
 }
