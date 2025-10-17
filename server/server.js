@@ -464,6 +464,79 @@ function hardNormalizeFont(q, lang) {
   return ensureLanguage(q, lang);
 }
 
+// ===== SERVICE POLICY (no domande fuori contesto, no open) =====
+function isBrandingServiceName(svc = "") {
+  return /(^|\b)(logo|brand)(\b|$)/i.test(svc);
+}
+
+function violatesPolicy(q, service, lang) {
+  if (!q || typeof q !== "object") return "empty";
+  const isBrand = isBrandingServiceName(service);
+
+  // lingua
+  if (lang === "it" && isEnglish(q.question || "")) return "lang";
+  if (lang === "en" && isItalian(q.question || "")) return "lang";
+
+  // branding fuori contesto
+  if (!isBrand) {
+    if (/logo|font|tipograf|marchio/i.test(q.question || "")) return "branding";
+    if (q.type === "font_selection") return "branding";
+  }
+
+  // schema per servizi non-branding: niente open, 4 opzioni
+  if (!isBrand) {
+    if (q.requiresInput === true) return "open";
+    if (
+      q.requiresInput === false &&
+      q.type !== "font_selection" &&
+      (!Array.isArray(q.options) || q.options.length !== 4)
+    ) {
+      return "options";
+    }
+  }
+
+  return null; // ok
+}
+
+async function regenerateWithPolicy({
+  promptBase,
+  askedSanitized,
+  language,
+  service,
+  baseUrl,
+  extraExclude = [],
+  extraAskCount = 6,
+  maxTries = 3,
+}) {
+  let lastCandidate = null;
+  for (let t = 0; t < maxTries; t++) {
+    const retry = await rlGenerateQuestions(
+      `${promptBase}
+- NON fare domande su logo, font e identità visiva quando il servizio non è di branding.
+- Se il servizio NON è branding, la domanda deve essere a scelta multipla con **esattamente 4 opzioni** (nessuna risposta aperta).
+- Non usare "font_selection" se il servizio non è branding.
+${
+  extraExclude.length
+    ? "- Evita anche queste formulazioni: " + extraExclude.join(" | ")
+    : ""
+}`,
+      { askedQuestions: askedSanitized, n: extraAskCount, language },
+      { base: baseUrl }
+    );
+    const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
+    const candidate =
+      reNorm.find((qq) => !violatesPolicy(qq, service, language)) ||
+      reNorm[0] ||
+      null;
+    if (candidate) {
+      lastCandidate = ensureLanguage(candidate, language);
+      if (!violatesPolicy(lastCandidate, service, language))
+        return lastCandidate;
+    }
+  }
+  return lastCandidate; // può ancora violare: il chiamante decide se accettare o alzare errore
+}
+
 app.post("/api/sendEmails", async (req, res) => {
   try {
     const { contactInfo, sessionId } = req.body || {};
@@ -932,6 +1005,7 @@ const generateQuestionForService = async (
   const projectType = formData.projectType || "non specificato";
   const businessField = formData.businessField || "non specificato";
   const language = (formData && formData.lang) === "en" ? "en" : "it";
+  const isBranding = /logo|brand/i.test(service);
 
   const askedSanitized = (askedQuestions || [])
     .map((q) => (typeof q === "string" ? q : q?.question || ""))
@@ -1008,7 +1082,9 @@ Per ogni domanda:
 
       if (pick?.question) {
         pick.__provider = "RL";
-        let ensured = hardNormalizeFont(pick, language);
+        let ensured = isBranding
+          ? hardNormalizeFont(pick, language)
+          : ensureLanguage(pick, language);
 
         // se lingua sbagliata, rigenera fino a 2 volte
         for (let i = 0; i < 2 && ensured; i++) {
@@ -1032,8 +1108,46 @@ Per ogni domanda:
                   : !isItalian(q.question))
             ) || reNorm[0];
 
-          ensured = hardNormalizeFont(pick, language);
+          ensured = isBranding
+            ? hardNormalizeFont(pick, language)
+            : ensureLanguage(pick, language);
         }
+        // ---------- VALIDAZIONE UNICA BASATA SU POLICY ----------
+        let reason = violatesPolicy(ensured, service, language);
+
+        if (reason) {
+          const repaired = await regenerateWithPolicy({
+            promptBase,
+            askedSanitized: askedSanitized.concat([
+              sanitizeKey(ensured.question || "__bad__"),
+            ]),
+            language,
+            service,
+            baseUrl: process.env.RL_API_BASE,
+            extraExclude: [
+              "Which typographic style do you prefer for the logo",
+              "Quale stile tipografico preferisci per il logo",
+              "What typographic style do you prefer for the logo",
+            ],
+          });
+
+          if (repaired && !violatesPolicy(repaired, service, language)) {
+            ensured = repaired;
+          } else {
+            // ultimo tentativo: scegli dalla prima lista qualcosa che non violi la policy
+            const fallbackFromBatch = (normalized || []).find(
+              (qq) => !violatesPolicy(qq, service, language)
+            );
+            if (fallbackFromBatch)
+              ensured = ensureLanguage(fallbackFromBatch, language);
+          }
+        }
+
+        // se ancora viola, solleva errore per farci rigenerare dal chiamante
+        if (violatesPolicy(ensured, service, language)) {
+          throw new Error("RL policy violation for service: " + service);
+        }
+
         return ensured;
       }
     }
@@ -1307,45 +1421,54 @@ app.post("/api/nextQuestion", async (req, res) => {
       );
     }
 
-    // --- 2D: evita doppia domanda sui font ---
-    const isFontQuestion = (q) =>
-      q &&
-      (q.type === "font_selection" || /font|typograf/i.test(q.question || ""));
-
-    if (hasFontQuestion && isFontQuestion(aiQuestion)) {
-      // 1) chiedo al generatore una domanda diversa escludendo esplicitamente i "font"
-      const excludeFontQs = [
-        "Which typographic style do you prefer for the logo",
-        "Quale stile tipografico preferisci per il logo",
-        "What typographic style do you prefer for the logo",
-      ];
-
-      aiQuestion = await generateQuestionForService(
-        nextService,
-        logEntry.formData,
-        Object.fromEntries(logEntry.answers),
-        askedQuestionsForNextService.concat(excludeFontQs)
-      );
-
-      // 2) paracadute: se nonostante tutto è ancora una domanda "font", forzo una domanda neutra non-font
-      if (isFontQuestion(aiQuestion)) {
-        const isEn = logEntry.formData?.lang === "en";
-        aiQuestion = {
-          question: isEn
-            ? "Do you prefer a symbol-only logo or text + symbol?"
-            : "Preferisci un logo solo simbolo o testo + simbolo?",
-          options: isEn
-            ? ["Symbol only", "Text + symbol", "Text only", "Not sure"]
-            : [
-                "Solo simbolo",
-                "Testo + simbolo",
-                "Solo testo",
-                "Non sono sicuro/a",
-              ],
-          type: "multiple",
-          requiresInput: false,
-          __provider: "rule",
-        };
+    // --- 2D: last gate policy senza fallback hard-coded ---
+    let lastReason = violatesPolicy(
+      aiQuestion,
+      nextService,
+      logEntry.formData?.lang === "en" ? "en" : "it"
+    );
+    if (lastReason) {
+      const askedQuestionsForNextServiceSan =
+        askedQuestionsForNextService.concat([
+          sanitizeKey(aiQuestion.question || "__invalid__"),
+        ]);
+      try {
+        const regenerated = await regenerateWithPolicy({
+          promptBase: `Sei un assistente che aiuta a raccogliere dettagli per un progetto.`,
+          askedSanitized: askedQuestionsForNextServiceSan,
+          language: logEntry.formData?.lang === "en" ? "en" : "it",
+          service: nextService,
+          baseUrl: process.env.RL_API_BASE,
+          extraExclude: [
+            "Which typographic style do you prefer for the logo",
+            "Quale stile tipografico preferisci per il logo",
+            "What typographic style do you prefer for the logo",
+          ],
+          extraAskCount: 8,
+          maxTries: 3,
+        });
+        if (
+          regenerated &&
+          !violatesPolicy(
+            regenerated,
+            nextService,
+            logEntry.formData?.lang === "en" ? "en" : "it"
+          )
+        ) {
+          aiQuestion = regenerated;
+        } else {
+          throw new Error(
+            "Unable to get a valid question for service " + nextService
+          );
+        }
+      } catch (e) {
+        // Propaga errore: il client riproverà /nextQuestion (niente domande fasulle)
+        return res
+          .status(502)
+          .json({
+            error: "GENERATION_FAILED",
+            details: e?.message || "Rigenerazione fallita",
+          });
       }
     }
 

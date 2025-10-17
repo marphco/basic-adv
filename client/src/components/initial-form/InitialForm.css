@@ -1,366 +1,562 @@
 .initial-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    color: var(--primary-text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--primary-text-color);
 }
 
 /* Colore di default per il tema light */
 :root {
-    --error-color: #1976d2; /* Blu scuro per tema light */
+  --error-color: #1976d2; /* Blu scuro per tema light */
 }
 
 /* Colore per il tema dark */
 .dark-theme {
-    --error-color: #ffc107; /* Giallo medio per tema dark */
+  --error-color: #ffc107; /* Giallo medio per tema dark */
 }
 
 .category-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
 }
 
 .category-box {
-    background: transparent;
-    border: 1px solid #d1d1d1;
-    color: grey;
-    border-radius: 4px;
-    padding: 1rem;
-    align-self: start;
-    cursor: pointer;
-    transition: all 0.5s ease;
-    min-width: 260px;
-    box-sizing: border-box;
+  background: transparent;
+  border: 1px solid #d1d1d1;
+  color: grey;
+  border-radius: 4px;
+  padding: 1rem;
+  align-self: start;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  min-width: 260px;
+  box-sizing: border-box;
 }
 
 .category-box:hover {
-    border-color: var(--foreground-color);
-    color: var(--primary-text-color);
+  border-color: var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 .category-box:hover .category-label span {
-    color: var(--primary-text-color);
+  color: var(--primary-text-color);
 }
 
 .category-box.selected {
-    border: 1px solid var(--foreground-color);
-    color: var(--primary-text-color);
+  border: 1px solid var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 .category-box.selected .category-label span {
-    color: var(--primary-text-color);
+  color: var(--primary-text-color);
 }
 
 /* Animazione per i microservizi */
 .form-services-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-    padding-left: 1.5rem;
-    font-weight: 200;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-left: 1.5rem;
+  font-weight: 200;
+  position: relative;
 }
 
 .services-enter {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-    max-height: 0;
-    overflow: hidden;
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  max-height: 0;
+  overflow: hidden;
 }
 
 .services-enter-active {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    max-height: 500px;
-    transition: opacity 600ms ease-out, transform 600ms ease-out,
-        max-height 600ms ease-out;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  max-height: 500px;
+  transition: opacity 600ms ease-out, transform 600ms ease-out,
+    max-height 600ms ease-out;
 }
 
 .services-exit {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    max-height: 500px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  max-height: 500px;
 }
 
 .services-exit-active {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-    max-height: 0;
-    transition: opacity 600ms ease-out, transform 600ms ease-out,
-        max-height 600ms ease-out;
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+  max-height: 0;
+  transition: opacity 600ms ease-out, transform 600ms ease-out,
+    max-height 600ms ease-out;
 }
 
 /* Animazione per il form section */
 .form-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding-top: 3vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 3vh;
 }
 
 /* Stile minimale per i campi */
 .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    position: relative; /* Contenitore relativo per la freccia */
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative; /* Contenitore relativo per la freccia */
 }
 
 .form-group input,
 .form-group select {
-    padding: 0.75rem 0.5rem 0.75rem 0.5rem;
-    border: none;
-    border-bottom: 1px solid #d1d1d1;
-    border-radius: 0;
-    font-size: 1rem;
-    font-weight: 300;
-    color: var(--primary-text-color);
-    background: transparent;
-    outline: none;
-    transition: all 0.5s ease;
-    text-align: left;
-    box-sizing: border-box;
+  padding: 0.75rem 0.5rem 0.75rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid #d1d1d1;
+  border-radius: 0;
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  background: transparent;
+  outline: none;
+  transition: all 0.5s ease;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 /* Uniforma i placeholder */
 .form-group input::placeholder,
 .form-group select:invalid {
-    color: #999;
-    font-weight: 300;
-    text-align: left;
+  color: #999;
+  font-weight: 300;
+  text-align: left;
 }
 
 /* Normalizza il comportamento del select */
 .form-group select {
-    appearance: none; /* Rimuove lo stile nativo del browser */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 1.5rem; /* Spazio per la freccia */
+  appearance: none; /* Rimuove lo stile nativo del browser */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 1.5rem; /* Spazio per la freccia */
 }
 
 /* Hover su input e select */
 .form-group input:hover,
 .form-group select:hover {
-    border-bottom-color: var(--foreground-color);
-    color: var(--primary-text-color);
+  border-bottom-color: var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 /* Focus su input e select */
 .form-group input:focus,
 .form-group select:focus {
-    border-bottom-color: var(--foreground-color);
-    color: var(--primary-text-color);
+  border-bottom-color: var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 /* Aggiunta della freccia personalizzata */
 .form-group:has(select)::after {
-    content: "▾"; /* Triangolino verso il basso */
-    position: absolute;
-    right: 0.5rem;
-    top: 0.75rem; /* Allineato al padding superiore del select (0.75rem) */
-    font-size: 0.8rem;
-    color: #999;
-    pointer-events: none;
-    transition: color 0.3s ease;
+  content: "▾"; /* Triangolino verso il basso */
+  position: absolute;
+  right: 0.5rem;
+  top: 0.75rem; /* Allineato al padding superiore del select (0.75rem) */
+  font-size: 0.8rem;
+  color: #999;
+  pointer-events: none;
+  transition: color 0.3s ease;
 }
 
 /* Hover e focus sul select */
 .form-group:hover:has(select)::after,
 .form-group select:focus::after {
-    color: var(--foreground-color);
+  color: var(--foreground-color);
 }
 
 /* Wrapper per allineare il pulsante di upload */
 .file-upload-wrapper {
-    display: flex;
-    align-items: center;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .file-upload-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0.5rem;
-    border: none;
-    border-bottom: 1px solid #d1d1d1;
-    background: transparent;
-    font-size: 1rem;
-    font-weight: 300;
-    color: #999;
-    cursor: pointer;
-    transition: border-color 0.3s ease, color 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid #d1d1d1;
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 300;
+  color: #999;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
 }
 
 .file-upload-btn.uploaded {
-    color: var(--primary-text-color);
-    border-bottom-color: var(--foreground-color);
+  color: var(--primary-text-color);
+  border-bottom-color: var(--foreground-color);
 }
 
 .file-upload-btn:hover,
 .file-upload-btn:focus {
-    border-bottom-color: var(--foreground-color);
-    color: var(--primary-text-color);
+  border-bottom-color: var(--foreground-color);
+  color: var(--primary-text-color);
 }
 
 .file-icon-left {
-    font-size: 1.2rem;
-    color: #999;
-    margin-right: 0.5rem;
-    transition: color 0.3s ease;
+  font-size: 1.2rem;
+  color: #999;
+  margin-right: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .file-upload-btn:hover .file-icon-left,
 .file-upload-btn:focus .file-icon-left {
-    color: var(--foreground-color);
+  color: var(--foreground-color);
 }
 
 /* Contenitore per nome ed estensione */
 .file-name-wrapper {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    max-width: 200px; /* Limite massimo per mobile e desktop */
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  max-width: 200px; /* Limite massimo per mobile e desktop */
 }
 
 /* Troncamento del nome del file */
 .file-name-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Estensione sempre visibile */
 .file-extension {
-    flex-shrink: 0; /* Impedisce il restringimento */
-    white-space: nowrap;
+  flex-shrink: 0; /* Impedisce il restringimento */
+  white-space: nowrap;
 }
 
 .file-icon-right {
-    font-size: 1.2rem;
-    color: #999;
-    transition: color 0.3s ease;
-    padding-left: 0.5rem;
+  font-size: 1.2rem;
+  color: #999;
+  transition: color 0.3s ease;
+  padding-left: 0.5rem;
 }
 
 .file-upload-btn:hover .file-icon-right,
 .file-upload-btn:focus .file-icon-right {
-    color: var(--foreground-color);
+  color: var(--foreground-color);
 }
 
 /* Stile per i messaggi di errore */
 .error-message {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    font-weight: 300;
-    color: var(--error-color);
-    margin-top: 0.25rem;
-    text-align: left;
-    transition: color 0.5s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--error-color);
+  margin-top: 0.25rem;
+  text-align: left;
+  transition: color 0.5s ease;
 }
 
 .error-message .error-icon {
-    font-size: 0.9rem;
-    color: var(--error-color);
-    transition: color 0.5s ease;
+  font-size: 0.9rem;
+  color: var(--error-color);
+  transition: color 0.5s ease;
 }
 
 .category-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .category-label span {
-    font-size: 1.2rem;
-    font-weight: 300;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: grey;
-    transition: color 0.5s ease;
+  font-size: 1.2rem;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: grey;
+  transition: color 0.5s ease;
 }
 
 .service-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--primary-text-color);
-    transition: all 0.5s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--primary-text-color);
+  transition: all 0.5s ease;
 }
 
 .category-box.selected .service-item {
-    color: var(--primary-text-color);
+  color: var(--primary-text-color);
 }
 
 .service-item input[type="checkbox"] {
-    appearance: none;
-    width: 1rem;
-    height: 1rem;
-    border: 1px solid grey;
-    border-radius: 2px;
-    cursor: pointer;
-    background-color: transparent;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid grey;
+  border-radius: 2px;
+  cursor: pointer;
+  background-color: transparent;
 }
 
 .service-item input[type="checkbox"]:checked {
-    background-color: var(--foreground-color);
-    border: 1px solid var(--foreground-color);
+  background-color: var(--foreground-color);
+  border: 1px solid var(--foreground-color);
 }
 
 .service-item input[type="checkbox"]:focus {
-    outline: none;
+  outline: none;
+}
+
+.links-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.link-pill {
+  --bd: rgba(209, 209, 209, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--bd);
+  border-radius: 999px;
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.link-pill.open {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--foreground-color);
+}
+
+.link-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  font-weight: 300;
+}
+
+.link-trigger svg {
+  opacity: 0.85;
+}
+
+.link-input {
+  width: 260px;
+  max-width: 50vw;
+  border: none;
+  border-bottom: 1px solid var(--foreground-color);
+  background: transparent;
+  color: var(--primary-text-color);
+  outline: none;
+  padding: 0.35rem 0.2rem;
+  transition: width 0.2s ease;
+}
+
+/* ------ Chips (reference URLs) ------ */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 220px;
+  border: 1px solid rgba(209, 209, 209, 0.4);
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--primary-text-color);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.chip-input {
+  min-width: 160px;
+  max-width: 50vw;
+  border: none;
+  border-bottom: 1px dashed rgba(209, 209, 209, 0.6);
+  background: transparent;
+  outline: none;
+  padding: 0.25rem 0.2rem;
+  color: var(--primary-text-color);
+}
+
+.chip-input::placeholder {
+  color: #999;
+}
+
+.chip[aria-pressed="true"] {
+  background: rgba(var(--foreground-color-rgb), 0.08);
+  border-color: var(--foreground-color);
+}
+
+/* Legenda sopra a LinkDock */
+.dock-legend,
+.chips-legend {
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  opacity: 0.9;
+  margin: 0.25rem 0 0.35rem 0;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+/* Le chips esistono già: qui solo un piccolo hover per evidenza */
+.chip:hover {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.06);
+}
+
+/* Mobile: pillole a tutta riga quando aperte */
+@media (max-width: 768px) {
+  .link-pill.open .link-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.platforms-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem; /* <— “più vicini” */
+  padding: 0.25rem 0;
+}
+
+/* Card piattaforma compatta */
+.platform-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 76px; /* box più piccolo */
+  height: 76px;
+  border: 1px solid rgba(209, 209, 209, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: border-color 0.5s ease, background 0.2s ease, transform 0.06s ease,
+    color 0.5s ease;
+}
+
+.platform-card:hover,
+.platform-card:focus-visible {
+  outline: none;
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.06);
+}
+
+.platform-card.is-on {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.1);
+  color: var(--foreground-color);
+  transition: color 0.5s ease;
+}
+
+.platform-card .picon {
+  font-size: 16px;
+  line-height: 1;
+} /* icona ~40px */
+.platform-card .plab {
+  font-size: 0.8rem;
+  font-weight: 300;
+}
+
+/* Mobile: ancora un filo più compatte */
+@media (max-width: 768px) {
+  .platform-card {
+    width: 76px;
+    height: 76px;
+  }
+}
+
+.err-platform {
+  margin: 0 auto;
 }
 
 @media (max-width: 768px) {
-    .category-grid {
-        grid-template-columns: repeat(2, 1fr);
-        padding: 0 1rem;
-    }
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 1rem;
+  }
 }
 
 @media (max-width: 480px) {
-    .category-grid {
-        grid-template-columns: 1fr;
-    }
-    .form-services-list {
-        padding-left: 1rem;
-    }
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-services-list {
+    padding-left: 1rem;
+  }
 }
 
 /* Media query basata sull’altezza per laptop (solo desktop) */
 @media (max-height: 900px) and (min-width: 769px) {
-    .initial-form {
-        gap: 0.5rem;
-    }
-    /* .category-grid {
+  .initial-form {
+    gap: 0.5rem;
+  }
+  /* .category-grid {
         gap: 0.3rem;
     } */
-    .category-box {
-        padding: 0.5rem;
-    }
-    .form-services-list {
-        gap: 0.15rem;
-        margin-top: 0.3rem;
-        padding-left: 0.75rem;
-    }
-    .form-section {
-        gap: 0.3rem;
-        padding-top: 1vh;
-    }
-    .form-group {
-        gap: 0.1rem;
-    }
-    .form-group input,
-    .form-group select {
-        padding: 0.3rem 0.2rem;
-    }
+  .category-box {
+    padding: 0.5rem;
+  }
+  .form-services-list {
+    gap: 0.15rem;
+    margin-top: 0.3rem;
+    padding-left: 0.75rem;
+  }
+  .form-section {
+    gap: 0.3rem;
+    padding-top: 1vh;
+  }
+  .form-group {
+    gap: 0.1rem;
+  }
+  .form-group input,
+  .form-group select {
+    padding: 0.3rem 0.2rem;
+  }
 }

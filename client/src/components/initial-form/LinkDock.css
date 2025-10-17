@@ -1,0 +1,299 @@
+/* Contenitore */
+.ld-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* CHIPS: coerenti col sito (radius 4, bordo 1) */
+.ld-chip-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+.ld-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  font-weight: 300;
+  transition: border-color 0.5s ease, background 0.2s ease;
+}
+.ld-chip:hover,
+.ld-chip:focus {
+  outline: none;
+  border-color: var(--foreground-color);
+}
+.ld-chip.is-active {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.06);
+}
+
+.ld-chip.has-error {
+  border-color: #d33;
+}
+.ld-chip.has-error .ld-chip-ico::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d33;
+  margin-left: 4px;
+}
+.links-row {
+  margin-top: 0.25rem;
+}
+.ld-chip-row {
+  margin-top: 0.25rem;
+}
+.ld-shared.open {
+  margin-top: 0.2rem;
+}
+
+.ld-chip-ico {
+  opacity: 0.9;
+  display: flex;
+}
+.ld-chip-lab {
+  letter-spacing: 0.2px;
+}
+
+/* SHARED ROW: stessa larghezza dei campi form (underline only) */
+.ld-shared {
+  position: relative;
+  min-height: 2.2rem; /* spazio riservato per evitare salto layout */
+}
+.ld-shared.open {
+  min-height: auto;
+}
+
+/* icona: usa currentColor, poi sovrascrivo quando attivo */
+.ld-chip-ico {
+  color: currentColor;
+  opacity: 0.9;
+  transition: color .5s ease;
+}
+
+/* chip attivo: bordo + bg coerenti, icona in foreground */
+.ld-chip.is-active {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.06);
+  color: var(--primary-text-color);
+}
+.ld-chip.is-active .ld-chip-ico {
+  color: var(--foreground-color);
+  opacity: 1;
+  transition: color .5s ease;
+}
+
+.ld-input-shared {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #d1d1d1;
+  background: transparent;
+  color: var(--primary-text-color);
+  padding: 0.55rem 2rem 0.45rem 0; /* spazio per pulsanti a destra */
+  font-size: 1rem;
+  font-weight: 300;
+  outline: none;
+}
+.ld-input-shared:focus {
+  border-bottom-color: var(--foreground-color);
+}
+
+/* close/clear a destra della riga */
+.ld-clear {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #9a9a9a;
+  cursor: pointer;
+}
+.ld-clear:hover {
+  color: var(--foreground-color);
+}
+/* error & help */
+.ld-error {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--error-color);
+}
+.ld-help {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: #9a9a9a;
+}
+
+/* references: token list + input inline */
+.ld-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+.ld-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.82rem;
+}
+.ld-x {
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  display: flex;
+}
+.ld-x:hover {
+  color: var(--foreground-color);
+}
+
+/* placeholder per mantenere altezza quando chiuso */
+.ld-placeholder {
+  height: 1px;
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.08);
+}
+
+.links-row {
+  margin-top: 0.25rem;
+}
+.ld-chip-row {
+  margin-top: 0.25rem;
+}
+.ld-shared.open {
+  margin-top: 0.2rem;
+}
+
+.ld-badges {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.ld-badge {
+  border: 1px solid rgba(209, 209, 209, 0.4);
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--primary-text-color);
+}
+
+.ld-badge.on {
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.08);
+}
+.ld-badge.off {
+  opacity: 0.6;
+}
+
+/* Contenitore chip piattaforme con griglia reattiva */
+.chips.platforms {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(80px, 1fr)); /* 3 colonne stabili */
+  gap: 0.6rem 0.8rem;
+  padding: 0.25rem 0;
+}
+
+/* Chip piattaforma: icona sopra, testo sotto (più grande) */
+.platform-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.8rem 0.9rem; /* area click più ampia */
+  min-height: 86px; /* >44px guideline */
+  border-radius: 12px;
+  text-align: center;
+  transition: color 0.5s ease !important;
+}
+
+/* Stato focus/hover ben visibile e coerente */
+.platform-chip:hover,
+.platform-chip:focus-visible {
+  outline: none;
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.06);
+}
+
+.platform-chip.is-on,
+.platform-chip[aria-pressed="true"] {
+  color: var(--foreground-color);
+  border-color: var(--foreground-color);
+  background: rgba(var(--foreground-color-rgb), 0.1);
+}
+
+.platform-chip.is-on {
+  transition: color 0.5s ease !important;
+}
+
+.platform-chip:hover {
+  transition: border-color 0.5s ease !important;
+}
+
+.platform-chip .picon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.platform-chip .plab {
+  font-size: 0.95rem;
+  line-height: 1.1;
+  font-weight: 300;
+  white-space: nowrap; /* niente a capo */
+}
+
+.ld-help {
+  padding: 0 1rem;
+}
+
+/* Mobile: passa a auto-fit senza rompere i label */
+@media (max-width: 768px) {
+  .chips.platforms {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+  .platform-chip {
+    min-height: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ld-chip-row {
+    display: flex; /* torniamo a flex */
+    flex-wrap: wrap;
+    justify-content: center; /* ogni riga centrata */
+    gap: 0.6rem 0.5rem; /* row-gap, column-gap */
+  }
+  .ld-chip {
+    flex: 0 0 auto; /* nessun allargamento, resta “a misura” */
+    justify-content: center;
+  }
+  .ld-shared.open {
+    padding: 0 1rem;
+  }
+}

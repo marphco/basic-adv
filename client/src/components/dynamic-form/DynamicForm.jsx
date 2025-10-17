@@ -21,6 +21,46 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 import { useTranslation } from "react-i18next";
 
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
+const isValidUrl = (v) => {
+  if (!v) return true; // opzionale -> vuoto ok
+  try {
+    const u = new URL(v.trim());
+    return !!u.protocol && !!u.host;
+  } catch {
+    return false;
+  }
+};
+
+// Sentinelle stabili per i placeholder (valori non visibili all’utente)
+const PT_PH = "__pick_project_type__";
+const BF_PH = "__pick_business_field__";
+
+// Valori business field “canonici” (non localizzati)
+const BUSINESS_FIELDS = [
+  "Tech",
+  "Food",
+  "Shop",
+  "Events",
+  "Services",
+  "Production",
+  "Other",
+];
+
+// Regole upload logo (riusabili)
+const ALLOWED_LOGO_TYPES = Object.freeze([
+  "image/jpeg",
+  "image/png",
+  "image/tiff",
+  "image/svg+xml",
+  "application/pdf",
+  "image/heic",
+  "image/heif",
+]);
+const MAX_LOGO_BYTES = 5 * 1024 * 1024; // 5 MB
+
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
@@ -43,12 +83,25 @@ const guessLang = () =>
   (navigator.language || "").toLowerCase().startsWith("it") ? "it" : "en";
 
 api.interceptors.request.use((config) => {
-  // const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
-  // config.headers = {
-  //   ...(config.headers || {}),
-  //   "X-Lang": lang,
-  //   "Accept-Language": lang,
-  // };
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const bodyLang =
+      stored?.formData?.lang || localStorage.getItem("lang") || guessLang();
+    const lang = (bodyLang || "en").toLowerCase();
+    config.headers = {
+      ...(config.headers || {}),
+      "X-Lang": lang,
+      "Accept-Language": lang,
+    };
+  } catch {
+    // fallback minimale
+    const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
+    config.headers = {
+      ...(config.headers || {}),
+      "X-Lang": lang,
+      "Accept-Language": lang,
+    };
+  }
   return config;
 });
 
@@ -65,13 +118,24 @@ const STORAGE_KEY = "ba_form_state_v1";
 
 const defaultFormData = {
   brandName: "",
-  projectType: "Tipo di progetto",
-  businessField: "Ambito",
+  projectType: PT_PH,
+  businessField: BF_PH,
   otherBusinessField: "",
   projectObjectives: "",
   contactInfo: { name: "", email: "", phone: "" },
   budget: "",
   lang: localStorage.getItem("lang") || guessLang(),
+  websiteUrl: "",
+  instagramUrl: "",
+  facebookUrl: "",
+  assetsLink: "", // link a Drive/Dropbox per materiali
+  referenceUrls: "", // uno o più URL separati da virgola
+  iosUrl: "",
+  androidUrl: "",
+  webappUrl: "",
+  repoUrl: "",
+  designLink: "",
+  appPlatforms: [], // ["ios","android","webapp"]
 };
 
 const DynamicForm = () => {
@@ -92,6 +156,33 @@ const DynamicForm = () => {
   );
 
   const [errors, setErrors] = useState({});
+
+  const normalizePlaceholders = (fd) => {
+    const out = { ...fd };
+
+    // Project type
+    if (
+      out.projectType === "Tipo di progetto" ||
+      out.projectType === "Project type" ||
+      out.projectType === "Seleziona il tipo di progetto" ||
+      out.projectType === "Select project type"
+    ) {
+      out.projectType = PT_PH;
+    }
+
+    // Business field
+    if (
+      out.businessField === "Ambito" ||
+      out.businessField === "Business field" ||
+      out.businessField === "Seleziona l’ambito" ||
+      out.businessField === "Seleziona l'ambito" || // apostrofi diversi
+      out.businessField === "Select business field"
+    ) {
+      out.businessField = BF_PH;
+    }
+
+    return out;
+  };
 
   // Versione localizzata di errors usata SOLO a render time / passaggio ai figli
   const i18nErrors = useMemo(
@@ -116,26 +207,11 @@ const DynamicForm = () => {
   const [showThankYou, setShowThankYou] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
+  const [startLocked, setStartLocked] = useState(false);
 
   const [answers, setAnswers] = useState({});
-  // eslint-disable-next-line no-unused-vars
-  const [isLogoSelected, setIsLogoSelected] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [isFontQuestionAsked, setIsFontQuestionAsked] = useState(false);
 
-  // eslint-disable-next-line no-unused-vars
-  const questionRef = useRef(null);
-
-  const businessFields = [
-    "Ambito",
-    "Tech",
-    "Food",
-    "Shop",
-    "Eventi",
-    "Servizi",
-    "Produzione",
-    "Altro",
-  ];
+  const businessFields = BUSINESS_FIELDS;
 
   const refsByKey = useRef(new Map());
   const getRefForKey = (key) => {
@@ -145,13 +221,14 @@ const DynamicForm = () => {
     return refsByKey.current.get(key);
   };
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const railEl = railRef.current;
     const txt = railEl?.querySelector(".form-rail-text");
     if (!txt) return;
 
     const ctx = gsap.context(() => {
       if (isMobile) {
+        // ✅ Mobile: scorri orizzontale da destra a sinistra
         gsap.set(txt, { x: "90vw" });
         gsap.to(txt, {
           x: -200,
@@ -165,12 +242,12 @@ const DynamicForm = () => {
           },
         });
       } else {
-        const railEl = railRef.current;
+        // ✅ Desktop: leggero parallax verticale
         gsap.to(txt, {
           yPercent: 30,
           ease: "none",
           scrollTrigger: {
-            trigger: railEl, // la sezione, come in Portfolio
+            trigger: railEl,
             start: "center top",
             end: "bottom top",
             scrub: 2,
@@ -197,9 +274,10 @@ const DynamicForm = () => {
       setShowThankYou(!!saved.showThankYou);
       setFormData(
         saved.formData
-          ? { ...defaultFormData, ...saved.formData }
+          ? { ...defaultFormData, ...normalizePlaceholders(saved.formData) }
           : defaultFormData
       );
+
       setAnswers(saved.answers || {});
       // eslint-disable-next-line no-empty
     } catch {}
@@ -266,7 +344,8 @@ const DynamicForm = () => {
     []
   );
 
-  const categoriesRequiringBrand = ["Branding", "Web", "App"];
+  // Branding è l'unica categoria che richiede info di brand/logo
+  const requiresBrand = selectedCategories.includes("Branding");
 
   const handleRestart = () => {
     setSessionId(uuidv4());
@@ -279,17 +358,16 @@ const DynamicForm = () => {
     setLoading(false);
     setFormData({
       brandName: "",
-      projectType: "Tipo di progetto",
-      businessField: "Ambito",
+      projectType: PT_PH,
+      businessField: BF_PH,
       otherBusinessField: "",
       projectObjectives: "",
       contactInfo: { name: "", email: "", phone: "" },
       budget: "",
       lang: localStorage.getItem("lang") || guessLang(),
     });
+
     setAnswers({});
-    setIsLogoSelected(false);
-    setIsFontQuestionAsked(false);
     setErrors({});
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -298,21 +376,32 @@ const DynamicForm = () => {
     (category) => {
       setSelectedCategories((prev) => {
         const wasSelected = prev.includes(category);
-        const newCategories = wasSelected
+        const next = wasSelected
           ? prev.filter((c) => c !== category)
           : [...prev, category];
-        return newCategories;
+
+        // se sto togliendo Branding, pulisco i campi collegati
+        if (category === "Branding" && wasSelected) {
+          setFormData((fd) => ({
+            ...fd,
+            brandName: "",
+            projectType: PT_PH,
+            currentLogo: "",
+          }));
+        }
+        return next;
       });
+
       setSelectedServices((prev) => {
         const allServices = services[category];
         const wasSelected = prev.some((service) =>
           allServices.includes(service)
         );
-        if (wasSelected) {
-          return prev.filter((s) => !allServices.includes(s));
-        }
-        return prev;
+        return wasSelected
+          ? prev.filter((s) => !allServices.includes(s))
+          : prev;
       });
+
       setErrors({});
     },
     [services]
@@ -332,46 +421,62 @@ const DynamicForm = () => {
       }
       return newServices;
     });
-    if (service === "Logo") {
-      setIsLogoSelected((prev) => !prev);
-    }
   }, []);
 
+  // const touchPlatform = (setFn, plat, hasValue) => {
+  //   setFn((prev) => {
+  //     const set = new Set(prev.appPlatforms || []);
+  //     hasValue ? set.add(plat) : set.delete(plat);
+  //     return { ...prev, appPlatforms: Array.from(set) };
+  //   });
+  // };
+
   const handleFormInputChange = useCallback((e) => {
-    if (e.target) {
-      const { name, value, type } = e.target;
-      if (type === "file") {
-        const file = e.target.files && e.target.files[0];
-        if (file) {
-          setFormData((prev) => ({ ...prev, [name]: file }));
-        }
-      } else {
-        setFormData((prev) => {
-          const updatedFormData = { ...prev, [name]: value };
-          if (name === "businessField" && value !== "Altro") {
-            updatedFormData.otherBusinessField = "";
-          }
-          return updatedFormData;
-        });
+    // Supporta sia eventi nativi che oggetti {name, value}
+    const isEvt = !!e?.target;
+    const name = isEvt ? e.target.name : e.name;
+    const value = isEvt
+      ? e.target.type === "file"
+        ? (e.target.files && e.target.files[0]) || ""
+        : e.target.value
+      : e.value;
+
+    setFormData((prev) => {
+      // Copia base
+      const next = { ...prev, [name]: value };
+
+      // Reset "other" se cambio ambito
+      if (name === "businessField" && value !== "Other") {
+        next.otherBusinessField = "";
       }
-      setErrors((prev) => {
-        const updatedErrors = { ...prev, [name]: "" };
-        if (Object.values(updatedErrors).every((err) => !err)) {
-          return {};
-        }
-        return updatedErrors;
-      });
-    } else {
-      const { name, value } = e;
-      setFormData((prev) => ({ ...prev, [name]: value }));
-      setErrors((prev) => {
-        const updatedErrors = { ...prev, [name]: "" };
-        if (Object.values(updatedErrors).every((err) => !err)) {
-          return {};
-        }
-        return updatedErrors;
-      });
-    }
+
+      // Aggiorna appPlatforms in modo atomico nella stessa setState
+      if (["iosUrl", "androidUrl", "webappUrl"].includes(name)) {
+        const plat =
+          name === "iosUrl"
+            ? "ios"
+            : name === "androidUrl"
+            ? "android"
+            : "webapp";
+        const set = new Set(prev.appPlatforms || []);
+        if (value) set.add(plat);
+        else set.delete(plat);
+        next.appPlatforms = Array.from(set);
+      }
+
+      // Se sto “svuotando” il file logo via pulsante, porta a stringa vuota
+      if (name === "currentLogo" && value === "") {
+        next.currentLogo = "";
+      }
+
+      return next;
+    });
+
+    // pulizia errori sul campo toccato
+    setErrors((prev) => {
+      const updated = { ...prev, [name]: "" };
+      return Object.values(updated).every((v) => !v) ? {} : updated;
+    });
   }, []);
 
   const handleAnswerChange = (e) => {
@@ -423,56 +528,86 @@ const DynamicForm = () => {
       debounce(async () => {
         let newErrors = {};
 
+        // ✅ normalizza una sola volta
+        const fd = normalizePlaceholders(formData);
+
+        // --- VALIDAZIONE (usa fd, NON formData) ---
         if (selectedServices.length === 0) {
           newErrors.services = "form.errors.services";
         }
-        if (formData.businessField === "Ambito") {
+
+        if (fd.businessField === BF_PH) {
           newErrors.businessField = "form.errors.businessField";
         }
-        if (
-          formData.businessField === "Altro" &&
-          !formData.otherBusinessField.trim()
-        ) {
+
+        if (fd.businessField === "Other" && !fd.otherBusinessField?.trim()) {
           newErrors.otherBusinessField = "form.errors.otherBusinessField";
         }
-        // Validazione di projectType solo se almeno una categoria richiede il brand
-        const requiresBrand = selectedCategories.some((cat) =>
-          categoriesRequiringBrand.includes(cat)
-        );
-        if (requiresBrand && formData.projectType === "Tipo di progetto") {
+
+        if (requiresBrand && fd.projectType === PT_PH) {
           newErrors.projectType = "form.errors.projectType";
         }
+
         if (
           requiresBrand &&
-          formData.projectType === "restyling" &&
-          !formData.currentLogo
+          fd.projectType === "restyling" &&
+          !fd.currentLogo
         ) {
           newErrors.currentLogo = "form.errors.currentLogo.type";
         } else if (
           requiresBrand &&
-          formData.projectType === "restyling" &&
-          formData.currentLogo
+          fd.projectType === "restyling" &&
+          fd.currentLogo
         ) {
-          const file = formData.currentLogo;
-          const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/tiff",
-            "image/svg+xml",
-            "application/pdf",
-            "image/heic",
-            "image/heif",
-          ];
-          const maxSize = 5 * 1024 * 1024;
-          if (!allowedTypes.includes(file.type)) {
+          const file = fd.currentLogo;
+          if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
             newErrors.currentLogo = "form.errors.currentLogo.type";
-          } else if (file.size > maxSize) {
+          } else if (file.size > MAX_LOGO_BYTES) {
             newErrors.currentLogo = "form.errors.currentLogo.size";
           }
         }
-        if (!formData.budget) {
+
+        if (selectedCategories.includes("App")) {
+          if (!Array.isArray(fd.appPlatforms) || fd.appPlatforms.length === 0) {
+            newErrors.appPlatforms = "form.errors.appPlatforms";
+          }
+          if (fd.iosUrl && !isValidUrl(fd.iosUrl))
+            newErrors.iosUrl = "form.errors.url";
+          if (fd.androidUrl && !isValidUrl(fd.androidUrl))
+            newErrors.androidUrl = "form.errors.url";
+          if (fd.webappUrl && !isValidUrl(fd.webappUrl))
+            newErrors.webappUrl = "form.errors.url";
+          if (fd.repoUrl && !isValidUrl(fd.repoUrl))
+            newErrors.repoUrl = "form.errors.url";
+          if (fd.designLink && !isValidUrl(fd.designLink))
+            newErrors.designLink = "form.errors.url";
+        }
+
+        if (!fd.budget) {
           newErrors.budget = "form.errors.budget";
         }
+        // URL opzionali ma, se presenti, devono essere validi
+        if (fd.websiteUrl && !isValidUrl(fd.websiteUrl)) {
+          newErrors.websiteUrl = "form.errors.url";
+        }
+        if (fd.instagramUrl && !isValidUrl(fd.instagramUrl)) {
+          newErrors.instagramUrl = "form.errors.url";
+        }
+        if (fd.facebookUrl && !isValidUrl(fd.facebookUrl)) {
+          newErrors.facebookUrl = "form.errors.url";
+        }
+        if (fd.assetsLink && !isValidUrl(fd.assetsLink)) {
+          newErrors.assetsLink = "form.errors.url";
+        }
+        if (fd.referenceUrls) {
+          const bad = fd.referenceUrls
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+            .some((u) => !isValidUrl(u));
+          if (bad) newErrors.referenceUrls = "form.errors.urlList";
+        }
+        // --- FINE VALIDAZIONE ---
 
         if (Object.keys(newErrors).length > 0) {
           setErrors(newErrors);
@@ -481,6 +616,7 @@ const DynamicForm = () => {
 
         setLoading(true);
         try {
+          // ⛔️ Lascia QUI tutto com'è: usa ancora formData per invio
           const formDataToSend = new FormData();
           formDataToSend.append(
             "servicesSelected",
@@ -488,42 +624,29 @@ const DynamicForm = () => {
           );
           formDataToSend.append("sessionId", sessionId);
           for (const key in formData) {
-            if (Object.prototype.hasOwnProperty.call(formData, key)) {
-              if (key === "currentLogo" && formData[key]) {
-                formDataToSend.append(key, formData[key]);
-              } else if (key === "contactInfo") {
-                formDataToSend.append(key, JSON.stringify(formData[key]));
-              } else {
-                formDataToSend.append(key, formData[key]);
-              }
+            if (!Object.prototype.hasOwnProperty.call(formData, key)) continue;
+            const val = formData[key];
+
+            if (key === "currentLogo" && val) {
+              formDataToSend.append(key, val); // File
+            } else if (key === "contactInfo") {
+              formDataToSend.append(key, JSON.stringify(val));
+            } else if (Array.isArray(val)) {
+              formDataToSend.append(key, JSON.stringify(val)); // ← importante per appPlatforms
+            } else {
+              formDataToSend.append(key, val ?? "");
             }
           }
 
           const response = await api.post("/generate", formDataToSend, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+            headers: { "Content-Type": "multipart/form-data" },
           });
 
-          // 👇 prende { sessionId, question } dal server
           const { sessionId: sid, question } = response.data || {};
+          if (sid && sid !== sessionId) setSessionId(sid);
 
-          // 👇 se il backend decide il sessionId (o lo conferma), mettilo nello stato
-          if (sid && sid !== sessionId) {
-            setSessionId(sid);
-          }
-
-          if (question && question.type === "font_selection") {
-            setIsFontQuestionAsked(true);
-          }
           setCurrentQuestion(question);
           setQuestionNumber(1);
-
-          // console.log(
-          //   "[Provider prima domanda]",
-          //   question?.__provider || "unknown"
-          // );
-
           setErrors({});
         } catch (error) {
           console.error(
@@ -536,14 +659,28 @@ const DynamicForm = () => {
         }
       }, 300),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      selectedServices,
-      selectedCategories,
-      formData,
-      sessionId,
-      categoriesRequiringBrand,
-      t,
-    ]
+    [selectedServices, selectedCategories, formData, sessionId, t]
+  );
+
+  const handleStart = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // se è già in corso o già “armato”, ignora
+      if (loading || startLocked) return;
+
+      // blocca subito, prima che scatti il debounce interno
+      setStartLocked(true);
+
+      // avvia la catena
+      generateFirstQuestion();
+
+      // piccola finestra di lock: si sblocca quando loading cambia
+      // come rete di sicurezza, lo sblocchiamo comunque dopo ~1s
+      setTimeout(() => setStartLocked(false), 1000);
+    },
+    [loading, startLocked, generateFirstQuestion]
   );
 
   const fetchNextQuestion = async () => {
@@ -573,9 +710,6 @@ const DynamicForm = () => {
         setIsCompleted(true);
         setCurrentQuestion(null);
       } else {
-        if (nextQuestion.type === "font_selection") {
-          setIsFontQuestionAsked(true);
-        }
         setCurrentQuestion(nextQuestion);
         setQuestionNumber((prev) => prev + 1);
       }
@@ -764,8 +898,9 @@ const DynamicForm = () => {
                 selectedServices={selectedServices}
                 toggleService={toggleService}
                 services={services}
-                categoriesRequiringBrand={categoriesRequiringBrand}
                 errors={i18nErrors}
+                PT_PH={PT_PH}
+                BF_PH={BF_PH}
               />
               {selectedCategories.length > 0 && (
                 <div className="budget-and-submit">
@@ -796,7 +931,7 @@ const DynamicForm = () => {
                       ))}
                     </div>
                     {i18nErrors.budget && (
-                      <span className="error-message budget-error">
+                      <span className="error-message budget-error" role="error">
                         <FaExclamationCircle className="error-icon" />
                         {i18nErrors.budget}
                       </span>
@@ -804,13 +939,10 @@ const DynamicForm = () => {
                   </div>
                   <div className="form-actions">
                     <button
+                      type="button"
                       className="submit-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        generateFirstQuestion();
-                      }}
-                      disabled={loading}
+                      onClick={handleStart}
+                      disabled={loading || startLocked}
                     >
                       {loading ? (
                         <FaSpinner className="spinner" />
@@ -819,7 +951,7 @@ const DynamicForm = () => {
                       )}
                     </button>
                     {i18nErrors.general && (
-                      <span className="error-message">
+                      <span className="error-message" role="error">
                         <FaExclamationCircle className="error-icon" />
                         <span
                           dangerouslySetInnerHTML={{
@@ -830,7 +962,7 @@ const DynamicForm = () => {
                     )}
                     {Object.keys(i18nErrors).length > 0 &&
                       !i18nErrors.general && (
-                        <span className="error-message">
+                        <span className="error-message" role="error">
                           <FaExclamationCircle className="error-icon" />
                           {t("form.errors.general")}
                         </span>

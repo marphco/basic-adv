@@ -16,15 +16,32 @@ import {
   faTag,
   faMinus,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  FaGlobe,
+  FaInstagram,
+  FaFacebook,
+  FaFolderOpen,
+  FaGithub,
+  FaApple,
+  FaAndroid,
+  FaLaptopCode,
+  FaLink as FaLinkIcon,
+} from "react-icons/fa";
+import { SiFigma } from "react-icons/si";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 
-const RequestDetails = ({ request, setSelectedRequest, API_URL, onRatingsPatch }) => {
+const RequestDetails = ({
+  request,
+  setSelectedRequest,
+  API_URL,
+  onRatingsPatch,
+}) => {
   const [activeTab, setActiveTab] = useState("info");
 
   const [localRatings, setLocalRatings] = useState({});
 
-   // patcha anche il selectedRequest nel parent, così rimane “in memoria”
+  // patcha anche il selectedRequest nel parent, così rimane “in memoria”
   const patchParentRatings = (key, field, value) => {
     setSelectedRequest((prev) => {
       if (!prev) return prev;
@@ -40,16 +57,24 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL, onRatingsPatch }
       return { ...prev, ratings: nextRatings };
     });
     if (onRatingsPatch) {
-    onRatingsPatch(request.sessionId, key, field, value);
-  }
+      onRatingsPatch(request.sessionId, key, field, value);
+    }
   };
 
   // Normalizza "projectType" per la UI
   const getProjectTypeDisplay = (projectType) => {
-    if (!projectType) return "Non specificato";
+    if (!projectType || projectType === "__pick_project_type__") {
+      return "Non specificato";
+    }
     const typeLower = projectType.toLowerCase();
-    if (typeLower.includes("new") || typeLower.includes("nuovo"))
+    if (
+      typeLower.includes("new") ||
+      typeLower.includes("nuovo") ||
+      typeLower.includes("ex novo") ||
+      typeLower.includes("exnovo")
+    ) {
       return "Ex Novo";
+    }
     if (typeLower.includes("restyling")) return "Restyling";
     return projectType;
   };
@@ -151,6 +176,12 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL, onRatingsPatch }
             Servizi
           </li>
           <li
+            className={activeTab === "links" ? "active" : ""}
+            onClick={() => setActiveTab("links")}
+          >
+            Link & Piattaforme
+          </li>
+          <li
             className={activeTab === "questions" ? "active" : ""}
             onClick={() => setActiveTab("questions")}
           >
@@ -246,6 +277,201 @@ const RequestDetails = ({ request, setSelectedRequest, API_URL, onRatingsPatch }
             </div>
           </div>
         )}
+
+        {activeTab === "links" && (
+  <div className="info-section">
+    <h2>Link & Piattaforme</h2>
+
+    {(() => {
+  const fd = request.formData || {};
+
+  const midTrunc = (s, n = 40) => {
+    if (!s) return "";
+    if (s.length <= n) return s;
+    const half = Math.floor((n - 1) / 2);
+    return s.slice(0, half) + "…" + s.slice(-half);
+  };
+
+  const safeUrl = (u) => {
+    if (!u) return null;
+    try {
+      const url = new URL(u);
+      return {
+        href: u,
+        label: url.hostname.replace(/^www\./, "") || midTrunc(u, 40),
+        full: u,
+      };
+    } catch {
+      return { href: u, label: midTrunc(u, 40), full: u };
+    }
+  };
+
+  const linkItems = [
+    { key: "websiteUrl", label: "Sito web", Icon: FaGlobe },
+    { key: "instagramUrl", label: "Instagram", Icon: FaInstagram },
+    { key: "facebookUrl", label: "Facebook", Icon: FaFacebook },
+    { key: "assetsLink", label: "Assets", Icon: FaFolderOpen },
+    { key: "designLink", label: "Design (Figma)", Icon: SiFigma },
+    { key: "repoUrl", label: "Repository", Icon: FaGithub },
+  ];
+
+  const platformDefs = [
+    { k: "ios", label: "iOS", Icon: FaApple },
+    { k: "android", label: "Android", Icon: FaAndroid },
+    { k: "webapp", label: "Web App", Icon: FaLaptopCode },
+  ];
+
+  // <- robustifica appPlatforms: array puro, stringa JSON, oppure array con stringa JSON
+  const normalizePlatforms = (v) => {
+    if (!v) return [];
+    if (Array.isArray(v)) {
+      if (v.length === 1 && typeof v[0] === "string" && v[0].trim().startsWith("[")) {
+        try { return JSON.parse(v[0]); } catch { return []; }
+      }
+      return v;
+    }
+    if (typeof v === "string") {
+      try { return JSON.parse(v); } catch { return v.split(/[,\s]+/).map(s=>s.trim()).filter(Boolean); }
+    }
+    return [];
+  };
+  const platforms = normalizePlatforms(fd.appPlatforms);
+
+  const refs =
+    (fd.referenceUrls || "")
+      .split(/[,\s\n]+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const appLinks = [
+    { label: "iOS", key: "iosUrl", Icon: FaApple },
+    { label: "Android", key: "androidUrl", Icon: FaAndroid },
+    { label: "Web App", key: "webappUrl", Icon: FaLaptopCode },
+  ];
+
+  return (
+    <>
+      {/* LINK */}
+      <h3 className="mt-8">Link</h3>
+      <div className="info-grid">
+        {linkItems.map(({ key, label, Icon }) => {
+          const su = safeUrl(fd[key]);
+          return (
+            <div className="irow" key={key}>
+              <div className="ilabel">
+                <Icon className="iicon" aria-hidden />
+                <span>{label}</span>
+              </div>
+              <div className="ival">
+                {su ? (
+                  <>
+                    <a
+                      href={su.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pill pill--link"
+                      title={su.full}
+                    >
+                      <FaLinkIcon className="pill-ico" aria-hidden />
+                      <span className="pill-text">{su.label}</span>
+                    </a>
+                   
+                  </>
+                ) : (
+                  <span>—</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Riferimenti multipli */}
+        <div className="irow">
+          <div className="ilabel">
+            <FaLinkIcon className="iicon" aria-hidden />
+            <span>Riferimenti</span>
+          </div>
+          <div className="ival">
+            {refs.length ? (
+              <div className="pill-wrap">
+                {refs.map((u) => {
+                  const su = safeUrl(u);
+                  return (
+                    <span key={u} className="pill-group">
+                      <a
+                        href={su.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="pill pill--link"
+                        title={su.full}
+                      >
+                        <FaLinkIcon className="pill-ico" aria-hidden />
+                        <span className="pill-text">{su.label}</span>
+                      </a>
+                      
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <span>—</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* PIATTAFORME */}
+      <h3 className="mt-24">Piattaforme</h3>
+      <div className="pill-wrap">
+        {platformDefs.map(({ k, label, Icon }) => {
+          const on = platforms.includes(k);
+          return (
+            <span key={k} className={`pill ${on ? "pill--on" : "pill--off"}`}>
+              <Icon className="pill-ico" aria-hidden />
+              <span>{label}</span>
+            </span>
+          );
+        })}
+      </div>
+
+      {/* URL specifici delle piattaforme */}
+      <div className="info-grid mt-12">
+        {appLinks.map(({ label, key, Icon }) => {
+          const su = safeUrl(fd[key]);
+          return (
+            <div className="irow" key={key}>
+              <div className="ilabel">
+                <Icon className="iicon" aria-hidden />
+                <span>{`URL ${label}`}</span>
+              </div>
+              <div className="ival">
+                {su ? (
+                  <>
+                    <a
+                      href={su.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pill pill--link"
+                      title={su.full}
+                    >
+                      <FaLinkIcon className="pill-ico" aria-hidden />
+                      <span className="pill-text">{su.label}</span>
+                    </a>
+                    
+                  </>
+                ) : (
+                  <span>—</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+})()}
+  </div>
+)}
 
         {activeTab === "questions" && (
           <div className="info-section">
