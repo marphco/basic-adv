@@ -236,44 +236,110 @@
     }
   },
   "form": {
-    "railText": "you’ve scrolled enough: pick and let’s start.",
-    "hero": {
-      "title": "Ready to get serious?",
-      "subtitlePrefix": "Pick category and services.",
-      "subtitleSuffix": "We’ll take care of the rest."
+    "placeholders": {
+      "websiteUrl": "Website (optional)",
+      "instagramUrl": "Instagram (optional)",
+      "facebookUrl": "Facebook (optional)",
+      "assetsLink": "Assets link (Drive/Dropbox, optional)",
+      "referenceUrls": "Reference URLs separated by commas",
+      "referenceOne": "Add a reference URL",
+      "iosUrl": "App Store link (optional)",
+      "androidUrl": "Google Play link (optional)",
+      "webappUrl": "Web app URL (optional)",
+      "repoUrl": "Repository (GitHub/GitLab, optional)",
+      "designLink": "Design link (Figma, optional)"
     },
-    "submit": "LET’S START!",
+    "help": {
+      "platforms": "Select one or more platforms.",
+      "referenceUrls": "Tip: separate multiple URLs with commas."
+    },
+    "hero": {
+      "title": "Tell us about your project",
+      "subtitlePrefix": "We'll guide you with a few questions",
+      "subtitleSuffix": "to understand what you really need."
+    },
+    "initial": {
+        "brandName": {
+            "placeholder": "Brand name"
+        },
+      "projectType": {
+        "placeholder": "Project type",
+        "new": "New project",
+        "restyling": "Restyling"
+      },
+      "businessField": {
+        "placeholder": "Business field",
+        "options": {
+          "Tech": "Tech",
+          "Food": "Food",
+          "Shop": "Shop",
+          "Events": "Events",
+          "Services": "Services",
+          "Production": "Production",
+          "Other": "Other"
+        },
+        "otherPlaceholder": "Specify the field"
+      },
+      "uploadLogo": "Upload your current logo"
+    },
     "budget": {
-      "title": "What’s your budget?",
-      "unknown": "I don’t know",
+      "title": "What’s your indicative budget?",
+      "unknown": "Not sure",
       "r1": "0–1,000 €",
       "r2": "1–5,000 €",
       "r3": "5–10,000 €",
       "r4": "10,000+ €"
     },
+    "submit": "START!",
     "errors": {
-      "services": "Select at least one service.",
-      "projectType": "Select a project type.",
-      "businessField": "Select a business field.",
-      "otherBusinessField": "Specify the business field.",
+      "general": "Please check the highlighted fields",
+      "services": "Select at least one service",
+      "businessField": "Select a business field",
+      "otherBusinessField": "Specify the business field",
+      "projectType": "Select a project type",
       "currentLogo": {
-        "type": "Unsupported file format. Use JPG, PNG, TIFF, SVG, PDF, HEIC or HEIF.",
-        "size": "The file exceeds 5MB."
+        "type": "Unsupported file format",
+        "size": "File too large (max 5 MB)"
       },
-      "budget": "Select a budget.",
-      "general": "Form error. Please check the fields above.",
-      "fontOrName": "Select a font or type its name.",
-      "inputRequired": "Please enter an answer.",
-      "answerOrComment": "Select at least one option or enter a comment.",
-      "contact": {
-        "nameRequired": "Name is required.",
-        "emailRequired": "Email is required."
-      },
+      "budget": "Select a budget",
       "backend": {
-        "generate": "Error creating the first question. Please try again later.",
-        "nextQuestion": "Error loading the next question. Please try again later.",
-        "contact": "Error submitting contact info or sending emails. Please try again later."
-      }
-    }
+        "generate": "We had trouble generating the first question. Try again.",
+        "nextQuestion": "We had trouble continuing. Try again.",
+        "contact": "Error while sending. Try again."
+      },
+      "fontOrName": "Pick at least one font or type a name",
+      "inputRequired": "Please enter a response",
+      "answerOrComment": "Pick at least one option or add a comment",
+      "url": "Please enter a valid URL (e.g., https://…)",
+      "urlList": "One or more URLs are invalid.",
+      "appPlatforms": "Pick at least one platform"
+    },
+    "labels": {
+      "optionalLinks": "Optional links",
+      "referencesShort": "References",
+      "platforms": "Platforms"
+    },
+    "actions": {
+      "clear": "Clear",
+      "close": "Close"
+    },
+    "platforms": {
+      "ios": "iOS",
+      "android": "Android",
+      "webapp": "Web App"
+    },
+    "links": {
+      "website": "Website",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "assets": "Assets",
+      "referencesShort": "References",
+      "iosUrl": "App Store link",
+      "androidUrl": "Play Store link",
+      "webappUrl": "Web App URL",
+      "repoUrl": "Repository",
+      "designLink": "Design link"
+    },
+    "railText": "Tell us what you need: we’ll handle the rest."
   }
 }

@@ -1,5 +1,26 @@
 const mongoose = require("mongoose");
 
+const RestylingMetaSchema = new mongoose.Schema(
+  {
+    branding: {
+      currentLogoPath: { type: String }, // se vorrai salvare qui il logo (in aggiunta o al posto di formData.currentLogo)
+    },
+    web: {
+      siteUrl: { type: String },
+      cms: { type: String }, // "WordPress", "Shopify", "Joomla", "Custom", "Non lo so", ecc.
+      repoUrl: { type: String }, // opzionale
+    },
+    app: {
+      platforms: { type: [String] }, // ["ios","android","webapp"]
+      iosUrl: { type: String },
+      androidUrl: { type: String },
+      designLink: { type: String },
+      repoUrl: { type: String },
+    },
+  },
+  { _id: false }
+);
+
 // Schema per il modello ProjectLog
 const ProjectLogSchema = new mongoose.Schema({
   // ID univoco della sessione
@@ -68,6 +89,21 @@ const ProjectLogSchema = new mongoose.Schema({
       required: true,
       default: "",
     },
+    restylingMeta: {
+      type: RestylingMetaSchema,
+      default: undefined,
+    },
+    iosUrl: { type: String, default: "" },
+    androidUrl: { type: String, default: "" },
+    webappUrl: { type: String, default: "" },
+    repoUrl: { type: String, default: "" },
+    designLink: { type: String, default: "" },
+    appPlatforms: { type: [String], default: [] }, // ["ios","android","webapp"]
+    websiteUrl:   { type: String, default: "" },
+    instagramUrl: { type: String, default: "" },
+    facebookUrl:  { type: String, default: "" },
+    assetsLink:   { type: String, default: "" },
+    referenceUrls:{ type: String, default: "" },
   },
 
   // Array di domande generate per il progetto

@@ -244,44 +244,110 @@
     }
   },
   "form": {
-    "railText": "hai scrollato abbastanza: scegli e partiamo.",
-    "hero": {
-      "title": "Pronto a fare sul serio?",
-      "subtitlePrefix": "Scegli categoria e servizi.",
-      "subtitleSuffix": "Al resto pensiamo noi."
+    "placeholders": {
+      "websiteUrl": "Sito web (opzionale)",
+      "instagramUrl": "Instagram (opzionale)",
+      "facebookUrl": "Facebook (opzionale)",
+      "assetsLink": "Link materiali (Drive/Dropbox, opzionale)",
+      "referenceUrls": "URL di riferimento separati da virgole",
+      "referenceOne": "Aggiungi un URL di riferimento",
+      "iosUrl": "Link App Store (opzionale)",
+      "androidUrl": "Link Google Play (opzionale)",
+      "webappUrl": "URL Web App (opzionale)",
+      "repoUrl": "Repository (GitHub/GitLab, opzionale)",
+      "designLink": "Link design (Figma, opzionale)"
     },
-    "submit": "COMINCIAMO!",
+    "help": {
+      "platforms": "Seleziona una o più piattaforme.",
+      "referenceUrls": "Suggerimento: separa più URL con la virgola."
+    },
+    "hero": {
+      "title": "Parlaci del tuo progetto",
+      "subtitlePrefix": "Ti guideremo con poche domande",
+      "subtitleSuffix": "per capire cosa ti serve davvero."
+    },
+    "initial": {
+         "brandName": {
+            "placeholder": "Nome brand"
+        },
+      "projectType": {
+        "placeholder": "Tipo di progetto",
+        "new": "Nuovo progetto",
+        "restyling": "Restyling"
+      },
+      "businessField": {
+        "placeholder": "Ambito",
+        "options": {
+          "Tech": "Tech",
+          "Food": "Food",
+          "Shop": "Shop",
+          "Events": "Eventi",
+          "Services": "Servizi",
+          "Production": "Produzione",
+          "Other": "Altro"
+        },
+        "otherPlaceholder": "Specifica l’ambito"
+      },
+      "uploadLogo": "Carica il tuo logo attuale"
+    },
     "budget": {
-      "title": "Qual è il tuo budget?",
-      "unknown": "Non lo so",
+      "title": "Qual è il tuo budget indicativo?",
+      "unknown": "Non so",
       "r1": "0-1.000 €",
-      "r2": "1-5.000 €",
-      "r3": "5-10.000 €",
+      "r2": "1–5.000 €",
+      "r3": "5–10.000 €",
       "r4": "10.000+ €"
     },
+    "submit": "COMINCIAMO!",
     "errors": {
-      "services": "Seleziona almeno un servizio.",
-      "projectType": "Seleziona un tipo di progetto.",
-      "businessField": "Seleziona un ambito.",
-      "otherBusinessField": "Specifica l’ambito.",
+      "general": "Controlla i campi evidenziati",
+      "services": "Seleziona almeno un servizio",
+      "businessField": "Seleziona l’ambito",
+      "otherBusinessField": "Specifica l’ambito",
+      "projectType": "Seleziona il tipo di progetto",
       "currentLogo": {
-        "type": "Formato non supportato. Usa JPG, PNG, TIFF, SVG, PDF, HEIC o HEIF.",
-        "size": "Il file supera i 5MB."
+        "type": "Formato non supportato",
+        "size": "File troppo pesante (max 5 MB)"
       },
-      "budget": "Seleziona un budget.",
-      "general": "Errore nel form. Controlla i campi sopra.",
-      "fontOrName": "Seleziona un font o inserisci il nome di uno.",
-      "inputRequired": "Inserisci una risposta.",
-      "answerOrComment": "Seleziona almeno una risposta o inserisci un commento.",
-      "contact": {
-        "nameRequired": "Il nome è obbligatorio.",
-        "emailRequired": "L’email è obbligatoria."
-      },
+      "budget": "Seleziona un budget",
       "backend": {
-        "generate": "Errore nella generazione della prima domanda. Riprova più tardi.",
-        "nextQuestion": "Errore nel recupero della prossima domanda. Riprova più tardi.",
-        "contact": "Errore nell'invio dei contatti o delle email. Riprova più tardi."
-      }
-    }
+        "generate": "Si è verificato un problema nella generazione. Riprova.",
+        "nextQuestion": "Si è verificato un problema nel proseguire. Riprova.",
+        "contact": "Errore durante l’invio. Riprova."
+      },
+      "fontOrName": "Seleziona almeno un font o indica un nome",
+      "inputRequired": "Inserisci una risposta",
+      "answerOrComment": "Seleziona almeno un’opzione o aggiungi un commento",
+      "url": "Inserisci un URL valido (es. https://…)",
+      "urlList": "Uno o più URL non sono validi.",
+      "appPlatforms": "Seleziona almeno una piattaforma"
+    },
+    "labels": {
+      "referencesShort": "Riferimenti",
+      "platforms": "Piattaforme",
+      "optionalLinks": "Link opzionali"
+    },
+    "actions": {
+      "clear": "Pulisci",
+      "close": "Chiudi"
+    },
+    "platforms": {
+      "ios": "iOS",
+      "android": "Android",
+      "webapp": "Web App"
+    },
+    "links": {
+      "website": "Sito web",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "assets": "Materiali",
+      "referencesShort": "Riferimenti",
+      "iosUrl": "Link App Store",
+      "androidUrl": "Link Play Store",
+      "webappUrl": "URL Web App",
+      "repoUrl": "Repository",
+      "designLink": "Link design"
+    },
+    "railText": "Raccontaci cosa ti serve: pensiamo noi al resto."
   }
 }
