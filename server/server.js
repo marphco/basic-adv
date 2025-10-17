@@ -74,6 +74,13 @@ app.options("*", cors(corsOpts));
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  const l = pickLang(req.body?.lang, req.headers); // se body manca (multipart), usa gli header
+  req.lang = l;
+  res.locals.lang = l;
+  next();
+});
+
 app.get("/api/geo", (req, res) => {
   const country =
     req.headers["x-vercel-ip-country"] ||
@@ -406,10 +413,16 @@ function ensureLanguage(q, lang) {
 
 // --- 2A: helper lingua + normalizzazione forte ---
 function isEnglish(s = "") {
-  return /\b(which|what|do you|color|typographic|prefer|logo)\b/i.test(s);
+  // niente 'logo'; usa marker più univoci
+  return /\b(which|what|do you|would you|color|colour|typograph\w*|prefer|choose|brand|text|symbol)\b/i.test(
+    s
+  );
 }
 function isItalian(s = "") {
-  return /\b(quale|hai|preferenze|colore|tipografico|logo)\b/i.test(s);
+  // includi forme italiane forti
+  return /\b(quale|cosa|preferisci|vorresti|colore|tipograf\w*|scegli|marchio|testo|simbolo)\b/i.test(
+    s
+  );
 }
 
 // normalizza chiave in modo più robusto per deduplica
@@ -999,9 +1012,9 @@ Per ogni domanda:
 
         // se lingua sbagliata, rigenera fino a 2 volte
         for (let i = 0; i < 2 && ensured; i++) {
-          const badIt = language === "it" && isEnglish(ensured.question);
-          const badEn = language === "en" && isItalian(ensured.question);
-          if (!badIt && !badEn) break;
+          const wrongIt = language === "it" && isEnglish(ensured.question);
+          const wrongEn = language === "en" && isItalian(ensured.question);
+          if (!wrongIt && !wrongEn) break;
 
           const retry = await rlGenerateQuestions(
             promptBase,
@@ -1081,7 +1094,7 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
       if (existing) {
         // 👇 NEW: se la sessione era nata con OpenAI o la lingua è cambiata -> NON fare resume
         const storedLang = existing.formData?.lang;
-        const incomingLang = pickLang(req.body.lang, req.headers);
+        const incomingLang = req.lang;
         const firstProvider = existing.questions?.[0]?.__provider;
 
         const shouldSkipResume =
@@ -1122,14 +1135,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     // --- da qui creazione nuovo log ---
     const formData = { ...req.body };
 
-    formData.lang = pickLang(formData.lang, req.headers);
+    const incomingLang = req.lang;
     const sessionLang = formData.lang;
-    console.log(
-      "[/generate] lang received:",
-      req.body.lang,
-      "-> used:",
-      formData.lang
-    );
+    console.log("[/generate] lang used:", sessionLang);
 
     console.log(
       "[LANG]",
