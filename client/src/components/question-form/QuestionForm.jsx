@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import "./QuestionForm.css";
 import FontSelection from "../font-selection/FontSelection";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 const QuestionForm = ({
   currentQuestion,
@@ -14,11 +15,12 @@ const QuestionForm = ({
   errors = {},
   formData,
 }) => {
-  // console.log("QuestionForm render con:", currentQuestion); // Log di debug
+  const { t } = useTranslation();
 
   return (
     <div className="question-form">
       <h3 className="question-title">{currentQuestion.question}</h3>
+
       <form onSubmit={handleAnswerSubmit} className="question-form-content">
         {currentQuestion.type === "font_selection" ? (
           <FontSelection
@@ -33,7 +35,7 @@ const QuestionForm = ({
           <div className="form-group">
             <textarea
               name="inputAnswer"
-              placeholder="Inserisci la tua risposta qui..."
+              placeholder={t("questionForm.answerPlaceholder")}
               value={answers[currentQuestion.question]?.input || ""}
               onChange={handleInputChange}
               className="form-textarea"
@@ -47,38 +49,38 @@ const QuestionForm = ({
           </div>
         ) : (
           <>
-            {currentQuestion.options &&
-              currentQuestion.options.length > 0 && (
-                <div className="options-group">
-                  {currentQuestion.options.map((option, index) => (
-                    <label key={index} className="service-item">
-                      <input
-                        type="checkbox"
-                        id={`option_${index}`}
-                        name={`answer_${questionNumber}`}
-                        value={option}
-                        checked={
-                          answers[currentQuestion.question]?.options
-                            ? answers[currentQuestion.question].options.includes(option)
-                            : false
-                        }
-                        onChange={handleAnswerChange}
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                  {errors[currentQuestion.question] && (
-                    <span className="error-message">
-                      <FaExclamationCircle className="error-icon" />
-                      {errors[currentQuestion.question]}
-                    </span>
-                  )}
-                </div>
-              )}
+            {currentQuestion.options && currentQuestion.options.length > 0 && (
+              <div className="options-group">
+                {currentQuestion.options.map((option, index) => (
+                  <label key={index} className="service-item">
+                    <input
+                      type="checkbox"
+                      id={`option_${index}`}
+                      name={`answer_${questionNumber}`}
+                      value={option}
+                      checked={
+                        answers[currentQuestion.question]?.options
+                          ? answers[currentQuestion.question].options.includes(option)
+                          : false
+                      }
+                      onChange={handleAnswerChange}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+                {errors[currentQuestion.question] && (
+                  <span className="error-message">
+                    <FaExclamationCircle className="error-icon" />
+                    {errors[currentQuestion.question]}
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="form-group">
               <textarea
                 name="inputAnswer"
-                placeholder="Inserisci ulteriori dettagli qui..."
+                placeholder={t("questionForm.detailsPlaceholder")}
                 value={answers[currentQuestion.question]?.input || ""}
                 onChange={handleInputChange}
                 className="form-textarea"
@@ -86,14 +88,15 @@ const QuestionForm = ({
             </div>
           </>
         )}
+
         <div className="form-actions">
           {loading ? (
-            <button className="question-btn" disabled>
+            <button className="question-btn" disabled aria-label={t("common.loading")}>
               <FaSpinner className="spinner" />
             </button>
           ) : (
             <button className="question-btn" type="submit">
-              Invia
+              {t("common.submit")}
             </button>
           )}
         </div>

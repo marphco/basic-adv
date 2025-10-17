@@ -502,5 +502,40 @@
       "alt6": "Detail of a vintage printing press being prepared for operation"
     }
   },
-  "allRightsReserved": "All rights reserved"
+  "allRightsReserved": "All rights reserved",
+  "common": {
+    "submit": "Submit",
+    "sending": "Sending..."
+  },
+  "contactForm": {
+    "cta": {
+      "title": "We’re almost there! Leave your details and we’ll get back soon —",
+      "sub": "no spam, promise!"
+    },
+    "placeholders": {
+      "name": "Name *",
+      "email": "Email *",
+      "phone": "Phone"
+    },
+    "privacy": {
+      "text": "I agree to the processing of my personal data as per the",
+      "linkLabel": "Privacy Policy"
+    },
+    "errors": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "privacyRequired": "You must accept the Privacy Policy"
+    }
+  },
+  "fontSelection": {
+    "invalidQuestion": "Error: invalid font question",
+    "previewPlaceholder": "Type here to preview",
+    "sampleText": "Sample text",
+    "fontNamePlaceholder": "Or write the font name if you already have one in mind"
+  },
+  "questionForm": {
+    "answerPlaceholder": "Enter your answer here...",
+    "detailsPlaceholder": "Add more details if you like..."
+  }
 }

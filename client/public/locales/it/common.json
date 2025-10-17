@@ -510,5 +510,40 @@
       "alt6": "Primo piano su un macchinario tipografico durante la fase di preparazione alla stampa"
     }
   },
-  "allRightsReserved": "Tutti i diritti riservati"
+  "allRightsReserved": "Tutti i diritti riservati",
+  "common": {
+    "submit": "Invia",
+    "sending": "Invio..."
+  },
+  "contactForm": {
+    "cta": {
+      "title": "Ci siamo! Lascia i tuoi contatti e ci sentiamo presto –",
+      "sub": "niente spam, promesso!"
+    },
+    "placeholders": {
+      "name": "Nome *",
+      "email": "Email *",
+      "phone": "Telefono"
+    },
+    "privacy": {
+      "text": "Accetto il trattamento dei miei dati personali ai sensi della",
+      "linkLabel": "Privacy Policy"
+    },
+    "errors": {
+      "nameRequired": "Il nome è obbligatorio",
+      "emailRequired": "L'email è obbligatoria",
+      "emailInvalid": "Inserisci un'email valida",
+      "privacyRequired": "Devi accettare la Privacy Policy"
+    }
+  },
+  "fontSelection": {
+    "invalidQuestion": "Errore: domanda sui font non valida",
+    "previewPlaceholder": "Scrivi qui per vedere l'anteprima",
+    "sampleText": "Testo di prova",
+    "fontNamePlaceholder": "Oppure scrivi il nome del font se sai già quale vorresti"
+  },
+  "questionForm": {
+    "answerPlaceholder": "Inserisci la tua risposta qui...",
+    "detailsPlaceholder": "Aggiungi altri dettagli, se vuoi..."
+  }
 }

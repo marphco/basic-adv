@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import "./FontSelection.css";
 import { FaExclamationCircle } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const FontSelection = ({
   currentQuestion,
@@ -11,8 +12,10 @@ const FontSelection = ({
   errors = {},
   formData,
 }) => {
+  const { t } = useTranslation();
+
   if (!currentQuestion || !currentQuestion.options) {
-    return <div>Errore: domanda sui font non valida</div>;
+    return <div>{t("fontSelection.invalidQuestion")}</div>;
   }
 
   const questionText = currentQuestion.question;
@@ -21,13 +24,18 @@ const FontSelection = ({
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [customText, setCustomText] = useState(formData.brandName || "");
 
+  // Supporta etichette IT/EN senza rompere i dati esistenti
   const fontStyles = {
     "Serif": { fontFamily: "Times New Roman, serif" },
     "Sans-serif": { fontFamily: "Arial, sans-serif" },
     "Script": { fontFamily: "Brush Script MT, cursive" },
     "Monospaced": { fontFamily: "Courier New, monospace" },
+    "Monospace": { fontFamily: "Courier New, monospace" }, // alias
+    "Monospaziato": { fontFamily: "Courier New, monospace" }, // alias IT
     "Manoscritto": { fontFamily: "Comic Sans MS, cursive" },
+    "Handwritten": { fontFamily: "Comic Sans MS, cursive" }, // traduzione
     "Decorativo": { fontFamily: "Impact, fantasy" },
+    "Decorative": { fontFamily: "Impact, fantasy" } // traduzione
   };
 
   const toggleOption = (option) => {
@@ -57,43 +65,44 @@ const FontSelection = ({
   }, [formData.brandName, customText]);
 
   return (
-    <div className="font-selection fade-in"> {/* Classe per animazione */}
+    <div className="font-selection fade-in">
       <div className="form-group">
         <input
           type="text"
           value={customText}
           onChange={handleCustomTextChange}
-          placeholder="Scrivi qui per vedere l'anteprima"
+          placeholder={t("fontSelection.previewPlaceholder")}
           maxLength={30}
           className="form-input"
         />
       </div>
+
       <div className="font-grid">
         {currentQuestion.options.map((option, index) => (
           <button
             key={index}
-            className={`font-button ${
-              selectedOptions.includes(option) ? "selected" : ""
-            }`}
+            className={`font-button ${selectedOptions.includes(option) ? "selected" : ""}`}
             onClick={() => toggleOption(option)}
             type="button"
           >
             <span className="font-example" style={fontStyles[option] || {}}>
-              {customText || "Testo di prova"}
+              {customText || t("fontSelection.sampleText")}
             </span>
             <span className="font-name">{option}</span>
           </button>
         ))}
       </div>
+
       <div className="form-group">
         <textarea
           name="fontName"
-          placeholder="Oppure scrivi il nome del font se sai già quale vorresti"
+          placeholder={t("fontSelection.fontNamePlaceholder")}
           value={inputAnswer}
           onChange={handleFontNameChange}
           className="form-textarea"
         />
       </div>
+
       {errors[questionText] && (
         <span className="error-message">
           <FaExclamationCircle className="error-icon" />
