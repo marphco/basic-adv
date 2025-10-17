@@ -91,8 +91,14 @@ const ProjectLogSchema = new mongoose.Schema({
     },
     restylingMeta: {
       type: RestylingMetaSchema,
-      default: undefined
+      default: undefined,
     },
+    iosUrl: { type: String, default: "" },
+    androidUrl: { type: String, default: "" },
+    webappUrl: { type: String, default: "" },
+    repoUrl: { type: String, default: "" },
+    designLink: { type: String, default: "" },
+    appPlatforms: { type: [String], default: [] }, // ["ios","android","webapp"]
   },
 
   // Array di domande generate per il progetto
