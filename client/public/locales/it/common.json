@@ -267,9 +267,9 @@
       "subtitleSuffix": "per capire cosa ti serve davvero."
     },
     "initial": {
-         "brandName": {
-            "placeholder": "Nome brand"
-        },
+      "brandName": {
+        "placeholder": "Nome brand"
+      },
       "projectType": {
         "placeholder": "Tipo di progetto",
         "new": "Nuovo progetto",
@@ -349,5 +349,126 @@
       "designLink": "Link design"
     },
     "railText": "Raccontaci cosa ti serve: pensiamo noi al resto."
+  },
+  "legal": {
+    "cookie": {
+      "title": "Cookie Policy",
+      "updated": "Ultimo aggiornamento: {{date}}",
+      "intro": "Basic adv srls (“noi”, “nostro” o “ci”) utilizza cookie e tecnologie simili sul nostro sito per migliorare la tua esperienza di navigazione e analizzare l’uso del sito. Questa Cookie Policy spiega cosa sono i cookie, come li utilizziamo e come puoi gestirli.",
+      "what": {
+        "title": "1. Cosa sono i Cookie?",
+        "body": "I cookie sono piccoli file di testo salvati sul tuo dispositivo (computer, smartphone, tablet) quando visiti un sito web. Possono essere utilizzati per ricordare le tue preferenze, migliorare la navigazione o raccogliere dati analitici."
+      },
+      "types": {
+        "title": "2. Tipi di Cookie che utilizziamo",
+        "intro": "Utilizziamo i seguenti tipi di cookie:",
+        "essential": "<strong>Cookie essenziali:</strong> Necessari per il funzionamento del sito (es. cookie di sessione per mantenere attiva la navigazione). Questi cookie non richiedono il tuo consenso.",
+        "analytics": "<strong>Cookie analitici:</strong> Ci aiutano a capire come gli utenti interagiscono con il sito (es. Google Analytics). Raccolgono dati anonimi come il numero di visitatori e le pagine più visitate. Richiedono il tuo consenso."
+      },
+      "use": {
+        "title": "3. Come utilizziamo i Cookie",
+        "intro": "Utilizziamo i cookie per:",
+        "li1": "Garantire il corretto funzionamento del sito (cookie essenziali).",
+        "li2": "Analizzare il traffico e migliorare i nostri servizi (cookie analitici)."
+      },
+      "duration": {
+        "title": "4. Durata dei Cookie",
+        "intro": "I cookie possono essere:",
+        "session": "<strong>Cookie di sessione:</strong> Vengono cancellati alla chiusura del browser.",
+        "persistent": "<strong>Cookie persistenti:</strong> Restano sul dispositivo per un periodo definito (es. i cookie di Google Analytics fino a 24 mesi)."
+      },
+      "manage": {
+        "title": "5. Gestione dei Cookie",
+        "intro": "Puoi gestire i cookie in vari modi:",
+        "banner": "<strong>Tramite il nostro banner di consenso:</strong> Al primo accesso puoi accettare o rifiutare i cookie non essenziali.",
+        "browser": "<strong>Tramite le impostazioni del browser:</strong> Puoi bloccare o eliminare i cookie. Ad esempio:",
+        "chrome": "Chrome: Impostazioni > Privacy e sicurezza > Cookie e altri dati dei siti.",
+        "firefox": "Firefox: Impostazioni > Privacy e sicurezza > Cookie e dati dei siti.",
+        "safari": "Safari: Preferenze > Privacy > Gestisci dati dei siti web."
+      },
+      "third": {
+        "title": "6. Cookie di terze parti",
+        "intro": "Utilizziamo servizi di terze parti che possono impostare cookie sul tuo dispositivo, ad esempio:",
+        "ga": "Google Analytics: Per analizzare il traffico del sito. Maggiori info nella <0>Privacy Policy di Google</0>."
+      },
+      "contact": {
+        "title": "7. Contatti",
+        "intro": "Per domande sull’uso dei cookie, contattaci:",
+        "block": "Basic adv srls\nP. IVA IT09456771212\nEmail: <0>info@basicadv.com</0>\nSedi: Napoli, Roma, New York"
+      },
+      "footer": "© {{year}} Basic adv srls. Tutti i diritti riservati."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "updated": "Ultimo aggiornamento: {{date}}",
+      "intro": "Basic adv srls (“noi”, “nostro” o “ci”) tutela la tua privacy. Questa Privacy Policy spiega come raccogliamo, utilizziamo, condividiamo e proteggiamo i tuoi dati personali in conformità al GDPR e ad altre normative applicabili.",
+      "data": {
+        "title": "1. Dati personali che raccogliamo",
+        "intro": "Raccogliamo i seguenti dati quando interagisci con il nostro sito:",
+        "direct": "<strong>Dati forniti direttamente:</strong> Nome, email, tipo di progetto, budget e altre informazioni inviate tramite il form di contatto nella sezione “Contacts”.",
+        "auto": "<strong>Dati raccolti automaticamente:</strong> Informazioni sul dispositivo (es. indirizzo IP, tipo di browser, sistema operativo), dati di navigazione (es. pagine visitate, tempo sul sito) e dati raccolti tramite cookie (vedi la nostra <0>Cookie Policy</0> per dettagli)."
+      },
+      "purposes": {
+        "title": "2. Finalità del trattamento",
+        "intro": "Utilizziamo i dati personali per:",
+        "li1": "Rispondere alle richieste inviate tramite il form di contatto.",
+        "li2": "Migliorare il sito e i servizi analizzando il comportamento degli utenti (es. cookie analitici).",
+        "li3": "Adempiere a obblighi legali e regolamentari."
+      },
+      "legal": {
+        "title": "3. Base giuridica del trattamento",
+        "intro": "Trattiamo i dati personali sulla base di:",
+        "consent": "<strong>Consenso:</strong> Per l’uso di cookie non essenziali (es. analitici o marketing).",
+        "contract": "<strong>Esecuzione di un contratto:</strong> Per rispondere alle richieste tramite il form di contatto.",
+        "law": "<strong>Obbligo legale:</strong> Per rispettare normative come il GDPR.",
+        "legit": "<strong>Interesse legittimo:</strong> Per migliorare sito e servizi (es. analisi anonime del traffico)."
+      },
+      "sharing": {
+        "title": "4. Condivisione dei dati",
+        "intro": "Non condividiamo i dati personali con terzi, salvo nei seguenti casi:",
+        "li1": "Fornitori che ci aiutano a gestire il sito (es. hosting, servizi di analytics come Google Analytics).",
+        "li2": "Quando richiesto dalla legge o per tutelare i nostri diritti."
+      },
+      "transfers": {
+        "title": "5. Trasferimenti internazionali",
+        "body": "I dati personali possono essere trasferiti fuori dall’UE (es. uso di servizi di terze parti come Google Analytics). In tali casi adottiamo garanzie adeguate, come le Clausole Contrattuali Standard approvate dalla Commissione Europea."
+      },
+      "rights": {
+        "title": "6. I tuoi diritti",
+        "intro": "Ai sensi del GDPR, hai i seguenti diritti:",
+        "access": "Accesso — ottenere una copia dei dati personali.",
+        "rect": "Rettifica — correggere dati inesatti o incompleti.",
+        "erase": "Cancellazione — richiedere l’eliminazione dei dati.",
+        "restrict": "Limitazione — limitare il trattamento in certe circostanze.",
+        "object": "Opposizione — opporti al trattamento per motivi legati alla tua situazione particolare.",
+        "port": "Portabilità — richiedere il trasferimento dei dati a un altro titolare.",
+        "withdraw": "Revoca del consenso — in qualsiasi momento, senza pregiudicare la liceità del trattamento precedente.",
+        "how": "Per esercitare questi diritti, scrivi a <0>info@basicadv.com</0>."
+      },
+      "retention": {
+        "title": "7. Conservazione dei dati",
+        "intro": "Conserviamo i dati personali per il tempo necessario alle finalità o agli obblighi di legge. Ad esempio:",
+        "li1": "I dati del form di contatto: 2 anni dall’ultima interazione.",
+        "li2": "Dati raccolti tramite cookie: per il periodo indicato nella Cookie Policy."
+      },
+      "security": {
+        "title": "8. Sicurezza dei dati",
+        "body": "Adottiamo misure tecniche e organizzative per proteggere i dati personali da accessi non autorizzati, perdita o uso improprio, come protocolli sicuri (HTTPS) e limitazione degli accessi."
+      },
+      "cookies": {
+        "title": "9. Cookie",
+        "body": "Utilizziamo cookie per migliorare l’esperienza sul sito. Per maggiori informazioni, consulta la nostra <0>Cookie Policy</0>."
+      },
+      "contact": {
+        "title": "10. Contatti",
+        "intro": "Per domande sulla Privacy Policy o sul trattamento dei dati personali:",
+        "block": "Basic adv srls\nP. IVA IT09456771212\nEmail: <0>info@basicadv.com</0>\nSedi: Napoli, Roma, New York"
+      },
+      "complaints": {
+        "title": "11. Reclami",
+        "body": "Se ritieni che il trattamento dei tuoi dati violi il GDPR, puoi presentare reclamo a un’Autorità di controllo, come il Garante per la Protezione dei Dati Personali."
+      },
+      "footer": "© {{year}} Basic adv srls. Tutti i diritti riservati."
+    }
   }
 }

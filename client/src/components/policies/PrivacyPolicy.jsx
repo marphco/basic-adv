@@ -1,8 +1,10 @@
 import "./PrivacyPolicy.css";
 import { useEffect } from "react";
+import { useTranslation, Trans } from "react-i18next";
 
 const PrivacyPolicy = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -15,196 +17,125 @@ const PrivacyPolicy = () => {
   return (
     <div className="policy-page">
       <div className="policy-content">
-        <h1>Privacy Policy</h1>
-        <p>
-          <strong>Ultimo aggiornamento:</strong> 5 marzo 2025
-        </p>
+        <h1>{t("legal.privacy.title")}</h1>
+        <p>{t("legal.privacy.updated", { date: "5 marzo 2025" })}</p>
 
-        <p>
-          Basic adv srls (&quot;noi&quot;, &quot;nostro&quot;, o &quot;ci&quot;)
-          si impegna a proteggere la tua privacy. Questa Privacy Policy spiega
-          come raccogliamo, utilizziamo, condividiamo e proteggiamo i tuoi dati
-          personali in conformità al Regolamento Generale sulla Protezione dei
-          Dati (GDPR) e altre normative applicabili.
-        </p>
+        <p>{t("legal.privacy.intro")}</p>
 
-        <h2>1. Dati Personali che Raccogliamo</h2>
-        <p>
-          Raccogliamo i seguenti dati personali quando interagisci con il nostro
-          sito:
-        </p>
+        <h2>{t("legal.privacy.data.title")}</h2>
+        <p>{t("legal.privacy.data.intro")}</p>
         <ul>
           <li>
-            <strong>Dati forniti direttamente:</strong> Nome, email, tipo di
-            progetto, budget e altre informazioni che ci fornisci tramite il
-            form di contatto nella sezione &quot;Contacts&quot;.
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t("legal.privacy.data.direct"),
+              }}
+            />
           </li>
           <li>
-            <strong>Dati raccolti automaticamente:</strong> Informazioni sul tuo
-            dispositivo (es. indirizzo IP, tipo di browser, sistema operativo),
-            dati di navigazione (es. pagine visitate, tempo trascorso sul sito)
-            e dati raccolti tramite cookie (vedi la nostra{" "}
-            <a href="/cookie-policy">Cookie Policy</a> per dettagli).
+            <Trans i18nKey="legal.privacy.data.auto">
+              <a href="/cookie-policy">Cookie Policy</a>
+            </Trans>
           </li>
         </ul>
 
-        <h2>2. Finalità del Trattamento</h2>
-        <p>Utilizziamo i tuoi dati personali per le seguenti finalità:</p>
+        <h2>{t("legal.privacy.purposes.title")}</h2>
+        <p>{t("legal.privacy.purposes.intro")}</p>
         <ul>
-          <li>
-            Rispondere alle tue richieste inviate tramite il form di contatto.
-          </li>
-          <li>
-            Migliorare il nostro sito e i nostri servizi analizzando il
-            comportamento degli utenti (es. tramite cookie analitici).
-          </li>
-          <li>Adempiere agli obblighi legali e regolamentari.</li>
+          <li>{t("legal.privacy.purposes.li1")}</li>
+          <li>{t("legal.privacy.purposes.li2")}</li>
+          <li>{t("legal.privacy.purposes.li3")}</li>
         </ul>
 
-        <h2>3. Base Legale del Trattamento</h2>
-        <p>
-          Trattiamo i tuoi dati personali in base alle seguenti basi legali:
-        </p>
+        <h2>{t("legal.privacy.legal.title")}</h2>
+        <p>{t("legal.privacy.legal.intro")}</p>
         <ul>
           <li>
-            <strong>Consenso:</strong> Per l’uso di cookie non essenziali (es.
-            cookie analitici o di marketing).
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t("legal.privacy.legal.consent"),
+              }}
+            />
           </li>
           <li>
-            <strong>Esecuzione di un contratto:</strong> Per rispondere alle tue
-            richieste tramite il form di contatto.
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t("legal.privacy.legal.contract"),
+              }}
+            />
           </li>
           <li>
-            <strong>Obbligo legale:</strong> Per rispettare normative come il
-            GDPR.
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t("legal.privacy.legal.law"),
+              }}
+            />
           </li>
           <li>
-            <strong>Interesse legittimo:</strong> Per migliorare il nostro sito
-            e i nostri servizi (es. analisi anonime del traffico).
-          </li>
-        </ul>
-
-        <h2>4. Condivisione dei Dati</h2>
-        <p>
-          Non condividiamo i tuoi dati personali con terze parti, salvo nei
-          seguenti casi:
-        </p>
-        <ul>
-          <li>
-            Fornitori di servizi che ci aiutano a gestire il sito (es. hosting
-            provider, servizi di analytics come Google Analytics).
-          </li>
-          <li>
-            Quando richiesto dalla legge o per proteggere i nostri diritti
-            legali.
+            <span
+              dangerouslySetInnerHTML={{
+                __html: t("legal.privacy.legal.legit"),
+              }}
+            />
           </li>
         </ul>
 
-        <h2>5. Trasferimenti Internazionali</h2>
-        <p>
-          I tuoi dati personali potrebbero essere trasferiti al di fuori
-          dell’Unione Europea (es. se utilizziamo servizi di terze parti come
-          Google Analytics). In tali casi, ci assicuriamo che siano adottate
-          misure di sicurezza adeguate, come clausole contrattuali standard
-          approvate dalla Commissione Europea.
-        </p>
-
-        <h2>6. I Tuoi Diritti</h2>
-        <p>
-          In conformità al GDPR, hai i seguenti diritti sui tuoi dati personali:
-        </p>
+        <h2>{t("legal.privacy.sharing.title")}</h2>
+        <p>{t("legal.privacy.sharing.intro")}</p>
         <ul>
-          <li>
-            <strong>Accesso:</strong> Puoi richiedere una copia dei tuoi dati
-            personali.
-          </li>
-          <li>
-            <strong>Rettifica:</strong> Puoi correggere dati inesatti o
-            incompleti.
-          </li>
-          <li>
-            <strong>Cancellazione:</strong> Puoi richiedere la cancellazione dei
-            tuoi dati.
-          </li>
-          <li>
-            <strong>Limitazione:</strong> Puoi limitare il trattamento dei tuoi
-            dati in determinate circostanze.
-          </li>
-          <li>
-            <strong>Opposizione:</strong> Puoi opporti al trattamento per motivi
-            legati alla tua situazione particolare.
-          </li>
-          <li>
-            <strong>Portabilità:</strong> Puoi richiedere il trasferimento dei
-            tuoi dati a un altro titolare del trattamento.
-          </li>
-          <li>
-            <strong>Revoca del consenso:</strong> Puoi revocare il consenso in
-            qualsiasi momento, senza pregiudicare la liceità del trattamento
-            basato sul consenso prima della revoca.
-          </li>
-        </ul>
-        <p>
-          Per esercitare questi diritti, contattaci all’indirizzo:{" "}
-          <a href="mailto:info@basicadv.com">info@basicadv.com</a>.
-        </p>
-
-        <h2>7. Conservazione dei Dati</h2>
-        <p>
-          Conserviamo i tuoi dati personali solo per il tempo necessario a
-          raggiungere le finalità per cui sono stati raccolti, o per adempiere a
-          obblighi legali. Ad esempio:
-        </p>
-        <ul>
-          <li>
-            I dati del form di contatto saranno conservati per 2 anni
-            dall’ultima interazione.
-          </li>
-          <li>
-            I dati raccolti tramite cookie saranno conservati per il periodo
-            indicato nella nostra Cookie Policy.
-          </li>
+          <li>{t("legal.privacy.sharing.li1")}</li>
+          <li>{t("legal.privacy.sharing.li2")}</li>
         </ul>
 
-        <h2>8. Sicurezza dei Dati</h2>
+        <h2>{t("legal.privacy.transfers.title")}</h2>
+        <p>{t("legal.privacy.transfers.body")}</p>
+
+        <h2>{t("legal.privacy.rights.title")}</h2>
+        <p>{t("legal.privacy.rights.intro")}</p>
+        <ul>
+          <li>{t("legal.privacy.rights.access")}</li>
+          <li>{t("legal.privacy.rights.rect")}</li>
+          <li>{t("legal.privacy.rights.erase")}</li>
+          <li>{t("legal.privacy.rights.restrict")}</li>
+          <li>{t("legal.privacy.rights.object")}</li>
+          <li>{t("legal.privacy.rights.port")}</li>
+          <li>{t("legal.privacy.rights.withdraw")}</li>
+        </ul>
         <p>
-          Adottiamo misure tecniche e organizzative per proteggere i tuoi dati
-          personali da accessi non autorizzati, perdita o uso improprio, come
-          l’uso di protocolli sicuri (HTTPS) e la limitazione dell’accesso ai
-          dati.
+          <Trans i18nKey="legal.privacy.rights.how">
+            <a href="mailto:info@basicadv.com">info@basicadv.com</a>
+          </Trans>
         </p>
 
-        <h2>9. Cookie</h2>
+        <h2>{t("legal.privacy.retention.title")}</h2>
+        <p>{t("legal.privacy.retention.intro")}</p>
+        <ul>
+          <li>{t("legal.privacy.retention.li1")}</li>
+          <li>{t("legal.privacy.retention.li2")}</li>
+        </ul>
+
+        <h2>{t("legal.privacy.security.title")}</h2>
+        <p>{t("legal.privacy.security.body")}</p>
+
+        <h2>{t("legal.privacy.cookies.title")}</h2>
         <p>
-          Utilizziamo cookie per migliorare la tua esperienza sul nostro sito.
-          Per maggiori informazioni, consulta la nostra{" "}
-          <a href="/cookie-policy">Cookie Policy</a>.
+          <Trans i18nKey="legal.privacy.cookies.body">
+            <a href="/cookie-policy">Cookie Policy</a>
+          </Trans>
         </p>
 
-        <h2>10. Contatti</h2>
-        <p>
-          Se hai domande sulla nostra Privacy Policy o sul trattamento dei tuoi
-          dati personali, contattaci:
-        </p>
-        <p>
-          Basic adv srls
-          <br />
-          P. IVA IT09456771212
-          <br />
-          Email: <a href="mailto:info@basicadv.com">info@basicadv.com</a>
-          <br />
-          Sedi: Napoli, Roma, New York
+        <h2>{t("legal.privacy.contact.title")}</h2>
+        <p>{t("legal.privacy.contact.intro")}</p>
+        <p style={{ whiteSpace: "pre-line" }}>
+          <Trans i18nKey="legal.privacy.contact.block">
+            <a href="mailto:info@basicadv.com">info@basicadv.com</a>
+          </Trans>
         </p>
 
-        <h2>11. Reclami</h2>
-        <p>
-          Se ritieni che il trattamento dei tuoi dati personali violi il GDPR,
-          hai il diritto di presentare un reclamo presso un’autorità di
-          controllo, come il Garante per la Protezione dei Dati Personali in
-          Italia.
-        </p>
+        <h2>{t("legal.privacy.complaints.title")}</h2>
+        <p>{t("legal.privacy.complaints.body")}</p>
 
-        <p>© {currentYear} Basic adv srls. Tutti i diritti riservati.</p>
+        <p>{t("legal.privacy.footer", { year: currentYear })}</p>
       </div>
     </div>
   );
