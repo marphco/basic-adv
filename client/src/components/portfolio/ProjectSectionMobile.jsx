@@ -88,8 +88,14 @@ export default function ProjectSectionMobilePage() {
 
   useEffect(() => {
     return () => {
-      // sicurezza extra: rimuovi eventuali trig rimasti
-      gsap.utils.toArray(ScrollTrigger.getAll()).forEach((st) => st.kill());
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const root = containerRef.current; // il tuo wrapper della pagina progetto
+      ScrollTrigger.getAll().forEach((st) => {
+        const trg = st.trigger || st.pin;
+        if (root && trg && root.contains(trg)) {
+          st.kill();
+        }
+      });
     };
   }, []);
 
