@@ -57,16 +57,26 @@ export default function MacMenuBar({
     <div className={`mac-menubar ${className}`}>
       <div className="menubar-left">
         <span className="apple" aria-hidden>
-          
+          <img
+            src="https://cdn.simpleicons.org/apple/FFFFFF"
+            alt=""
+            aria-hidden="true"
+            className="apple-logo"
+            width={16}
+            height={16}
+          />
         </span>
         <span className="menu-item active">
-         {activeAppLabel || t("portfolio.dock.finder")}
-       </span>
-       {menuItems.map((label, i) => (
-         <span key={`${activeAppId||"finder"}-mi-${i}`} className="menu-item">
-           {label}
-         </span>
-       ))}
+          {activeAppLabel || t("portfolio.dock.finder")}
+        </span>
+        {menuItems.map((label, i) => (
+          <span
+            key={`${activeAppId || "finder"}-mi-${i}`}
+            className="menu-item"
+          >
+            {label}
+          </span>
+        ))}
       </div>
       <div className="menubar-right">
         <span className="status" aria-label={t("aria.clock", "Clock")}>
