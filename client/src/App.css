@@ -79,6 +79,7 @@ html,
   width: 100%;
   /* cursor: none !important; */
   overscroll-behavior: none;
+  touch-action: pan-x pan-y;
 }
 
 /* Cursor custom solo desktop con puntatore preciso */

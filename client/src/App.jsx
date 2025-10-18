@@ -30,6 +30,8 @@ import PrivacyPolicy from "./components/policies/PrivacyPolicy";
 import CookiePolicy from "./components/policies/CookiePolicy";
 import CookieNotice from "./components/policies/CookieNotice";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import useInputMode from "../src/hooks/useInputMode"; // se già creato prima
+import useDisableZoom from "../src/hooks/useDisableZoom";
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
@@ -299,6 +301,8 @@ function App() {
   const preference = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const [isDark, setIsDark] = useLocalStorage("isDark", preference);
   const scrollContainerRef = useRef(null);
+  const { isTouch } = useInputMode?.() ?? { isTouch: true }; // se non hai l'hook, metti true
+  useDisableZoom({ enable: isTouch }); // attiva solo su mobile/tablet
 
   return (
     <Router>
