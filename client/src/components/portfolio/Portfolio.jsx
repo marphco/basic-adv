@@ -47,12 +47,12 @@ const Folder = ({ id, left, top, isMobile, onOpenSection, label }) => {
   const style = isMobile
     ? {}
     : {
-        left,
-        top,
         position: "absolute",
-        ...(transform
-          ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-          : {}),
+        left: `${left * 100}%`, // left e top ora sono frazioni [0..1]
+        top: `${top * 100}%`,
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
       };
 
   const handleDoubleClick = (e) => {
@@ -105,14 +105,14 @@ const Portfolio = ({ scrollTween = null }) => {
   const portfolioRef = useRef(null);
 
   const [folders, setFolders] = useState([
-    { id: "Progetto1", left: 300, top: 150 },
-    { id: "Progetto2", left: 500, top: 150 },
-    { id: "Progetto3", left: 300, top: 300 },
-    { id: "Progetto4", left: 500, top: 300 },
-    { id: "Progetto5", left: 300, top: 450 },
-    { id: "Progetto6", left: 500, top: 450 },
-    { id: "Progetto7", left: 300, top: 600 },
-    { id: "Progetto8", left: 500, top: 600 },
+    { id: "Progetto1", x: 0.37, y: 0.08 },
+    { id: "Progetto2", x: 0.57, y: 0.08 },
+    { id: "Progetto3", x: 0.37, y: 0.26 },
+    { id: "Progetto4", x: 0.57, y: 0.26 },
+    { id: "Progetto5", x: 0.37, y: 0.44 },
+    { id: "Progetto6", x: 0.57, y: 0.44 },
+    { id: "Progetto7", x: 0.37, y: 0.62 },
+    { id: "Progetto8", x: 0.57, y: 0.62 },
   ]);
 
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
@@ -153,27 +153,28 @@ const Portfolio = ({ scrollTween = null }) => {
     if (isMobile) return;
     const { active, delta } = event;
     const container = contentRef.current;
+    if (!container) return;
+
+    const W = container.clientWidth;
+    const H = container.clientHeight;
 
     setFolders((prev) =>
       prev.map((folder) => {
         if (folder.id !== active.id) return folder;
 
-        let nextLeft = folder.left + delta.x;
-        let nextTop = folder.top + delta.y;
+        // delta in percentuale
+        let nx = folder.x + delta.x / W;
+        let ny = folder.y + delta.y / H;
 
-        if (container) {
-          const el = container.querySelector(`[data-folder-id="${active.id}"]`);
-          const fw = el?.offsetWidth ?? 80;
-          const fh = el?.offsetHeight ?? 80;
+        // clamp ai bordi tenendo conto della dimensione icona
+        const el = container.querySelector(`[data-folder-id="${active.id}"]`);
+        const fw = (el?.offsetWidth ?? 80) / W;
+        const fh = (el?.offsetHeight ?? 80) / H;
 
-          const maxLeft = Math.max(0, container.clientWidth - fw);
-          const maxTop = Math.max(0, container.clientHeight - fh);
+        nx = Math.min(Math.max(0, nx), 1 - fw);
+        ny = Math.min(Math.max(0, ny), 1 - fh);
 
-          nextLeft = Math.min(Math.max(0, nextLeft), maxLeft);
-          nextTop = Math.min(Math.max(0, nextTop), maxTop);
-        }
-
-        return { ...folder, left: nextLeft, top: nextTop };
+        return { ...folder, x: nx, y: ny };
       })
     );
   }
@@ -196,63 +197,120 @@ const Portfolio = ({ scrollTween = null }) => {
           },
         });
       } else {
-     // 👇 DESKTOP: aggancia al pin orizzontale
-     gsap.set(portfolioText, { willChange: "transform" });
-     gsap.to(portfolioText, {
-       yPercent: 90,                // come in Services; regola a gusto (30–80)
-       ease: "none",
-       scrollTrigger: {
-         trigger: portfolioElem,
-         containerAnimation: scrollTween, // << chiave!
-         start: "left center",            // entra nel vivo quando il blocco entra
-         end: "right center",             // esce quando il blocco esce
-         scrub: 2,
-         invalidateOnRefresh: true,
-         // markers: true,
-       },
-     });
-   
+        // 👇 DESKTOP: aggancia al pin orizzontale
+        gsap.set(portfolioText, { willChange: "transform" });
+        gsap.to(portfolioText, {
+          yPercent: 90, // come in Services; regola a gusto (30–80)
+          ease: "none",
+          scrollTrigger: {
+            trigger: portfolioElem,
+            containerAnimation: scrollTween, // << chiave!
+            start: "left center", // entra nel vivo quando il blocco entra
+            end: "right center", // esce quando il blocco esce
+            scrub: 2,
+            invalidateOnRefresh: true,
+            // markers: true,
+          },
+        });
       }
     }, portfolioRef);
     return () => ctx.revert();
   }, [isMobile, scrollTween]);
 
-// Stato Dock: app aperte e app "in focus"
-  const [dockApps, setDockApps] = useState(() => ([
-    { id: "finder",      label: t("portfolio.dock.finder"),      src: finderIcon,      active: true },
-    { id: "apps",        label: t("portfolio.dock.apps"),        src: appsIcon,        active: false },
-    { id: "whatsapp",    label: t("portfolio.dock.whatsapp"),    src: whatsappIcon,    active: false },
-    { id: "chrome",      label: t("portfolio.dock.chrome"),      src: chromeIcon,      active: false },
-    { id: "figma",       label: t("portfolio.dock.figma"),       src: figmaIcon,       active: false },
-    { id: "vscode",      label: t("portfolio.dock.vscode"),      src: vscodeIcon,      active: false },
-    { id: "illustrator", label: t("portfolio.dock.illustrator"), src: illustratorIcon, active: false },
-    { id: "photoshop",   label: t("portfolio.dock.photoshop"),   src: photoshopIcon,   active: false },
+  // Stato Dock: app aperte e app "in focus"
+  const [dockApps, setDockApps] = useState(() => [
+    {
+      id: "finder",
+      label: t("portfolio.dock.finder"),
+      src: finderIcon,
+      active: true,
+    },
+    {
+      id: "apps",
+      label: t("portfolio.dock.apps"),
+      src: appsIcon,
+      active: false,
+    },
+    {
+      id: "whatsapp",
+      label: t("portfolio.dock.whatsapp"),
+      src: whatsappIcon,
+      active: false,
+    },
+    {
+      id: "chrome",
+      label: t("portfolio.dock.chrome"),
+      src: chromeIcon,
+      active: false,
+    },
+    {
+      id: "figma",
+      label: t("portfolio.dock.figma"),
+      src: figmaIcon,
+      active: false,
+    },
+    {
+      id: "vscode",
+      label: t("portfolio.dock.vscode"),
+      src: vscodeIcon,
+      active: false,
+    },
+    {
+      id: "illustrator",
+      label: t("portfolio.dock.illustrator"),
+      src: illustratorIcon,
+      active: false,
+    },
+    {
+      id: "photoshop",
+      label: t("portfolio.dock.photoshop"),
+      src: photoshopIcon,
+      active: false,
+    },
     { type: "separator" },
-    { id: "mail",        label: t("portfolio.dock.mail"),        src: mailIcon,        active: false },
-    { id: "trash",       label: t("portfolio.dock.trash"),       src: trashIcon,       active: false },
-  ]));
+    {
+      id: "mail",
+      label: t("portfolio.dock.mail"),
+      src: mailIcon,
+      active: false,
+    },
+    {
+      id: "trash",
+      label: t("portfolio.dock.trash"),
+      src: trashIcon,
+      active: false,
+    },
+  ]);
   const [focusedId, setFocusedId] = useState("finder");
 
   // Se cambi lingua, rigenera le label mantenendo stato open/focus
   useEffect(() => {
-    setDockApps(prev => prev.map(it =>
-      it.type === "separator" ? it : {
-        ...it,
-        label: t(`portfolio.dock.${it.id}`),
-      }
-    ));
+    setDockApps((prev) =>
+      prev.map((it) =>
+        it.type === "separator"
+          ? it
+          : {
+              ...it,
+              label: t(`portfolio.dock.${it.id}`),
+            }
+      )
+    );
   }, [t]);
 
   const handleToggleApp = (id) => {
-    setDockApps(prev => {
+    setDockApps((prev) => {
       // Finder non si chiude mai: resta attivo e prende focus
       if (id === "finder") {
         setFocusedId("finder");
-        return prev.map(it => it.id === "finder" ? { ...it, active: true } : it);
+        return prev.map((it) =>
+          it.id === "finder" ? { ...it, active: true } : it
+        );
       }
 
-      const next = prev.map(it => it.id === id ? { ...it, active: !it.active } : it);
-      const clicked = next.find(it => it.id === id);
+      const next = prev.map((it) =>
+        it.id === id ? { ...it, active: !it.active } : it
+      );
+      const clicked = next.find((it) => it.id === id);
 
       if (clicked?.active) {
         // attivata => prende focus
@@ -260,16 +318,16 @@ const Portfolio = ({ scrollTween = null }) => {
       } else {
         // disattivata: se era in focus, scegli nuovo focus
         if (focusedId === id) {
-          const finderActive = next.find(it => it.id === "finder")?.active;
-          const another = next.find(it => it.active && it.id !== "finder");
-          setFocusedId(finderActive ? "finder" : (another?.id || "finder"));
+          const finderActive = next.find((it) => it.id === "finder")?.active;
+          const another = next.find((it) => it.active && it.id !== "finder");
+          setFocusedId(finderActive ? "finder" : another?.id || "finder");
         }
       }
       return next;
     });
   };
 
-  const activeAppLabel = dockApps.find(a => a.id === focusedId)?.label;
+  const activeAppLabel = dockApps.find((a) => a.id === focusedId)?.label;
 
   return (
     <div className="portfolio-section" ref={portfolioRef}>
@@ -319,8 +377,8 @@ const Portfolio = ({ scrollTween = null }) => {
               <Folder
                 key={folder.id}
                 id={folder.id}
-                left={folder.left}
-                top={folder.top}
+                left={folder.x}
+                top={folder.y}
                 isMobile={isMobile}
                 onOpenSection={openSection}
                 label={t(`portfolio.folders.${folder.id}`, folder.id)} // 👈 label tradotta

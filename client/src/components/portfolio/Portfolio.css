@@ -110,6 +110,7 @@
 .folder.mobile {
   position: static;
   margin-bottom: 0;
+  transform: none;
 }
 .folder-icon {
   width: 50px;
