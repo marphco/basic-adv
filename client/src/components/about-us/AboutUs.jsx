@@ -33,12 +33,19 @@ export default function AboutUs() {
     return () => document.head.removeChild(link);
   }, []);
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isTouchLike = () => {
+    const byClass = document.body.classList.contains("is-mobile");
+    const byPointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const byUA = /iPad|Android|Tablet/i.test(navigator.userAgent);
+    return byClass || byPointer || byUA || window.innerWidth <= 768;
+  };
+
+  const [isMobile, setIsMobile] = useState(isTouchLike());
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const onResize = () => setIsMobile(isTouchLike());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -50,18 +57,40 @@ export default function AboutUs() {
     const windowContent = windowSectionRef.current;
 
     gsap.set(aboutSection, { clearProps: "all", x: 0, y: 0 });
-    if (imagesContainer) gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
+    if (imagesContainer)
+      gsap.set(imagesContainer, { clearProps: "all", x: 0, y: 0 });
     if (wallContent) gsap.set(wallContent, { clearProps: "all" });
     if (windowContent) gsap.set(windowContent, { clearProps: "all" });
 
     const totalWidth = aboutSection.scrollWidth - window.innerWidth;
     const mobileTl = gsap.timeline({
-      scrollTrigger: { trigger: aboutSection, start: "top top", end: "bottom top", scrub: true, markers: false },
+      scrollTrigger: {
+        trigger: aboutSection,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+        markers: false,
+      },
     });
 
-    if (imagesContainer) mobileTl.to(imagesContainer, { x: -totalWidth, ease: "none", duration: 1 }, 0);
-    if (wallContent) mobileTl.to(wallContent, { backgroundPosition: "10% 70%", ease: "none", duration: 1 }, 0);
-    if (windowContent) mobileTl.to(windowContent, { backgroundPosition: "90% 10%", ease: "none", duration: 1 }, 0);
+    if (imagesContainer)
+      mobileTl.to(
+        imagesContainer,
+        { x: -totalWidth, ease: "none", duration: 1 },
+        0
+      );
+    if (wallContent)
+      mobileTl.to(
+        wallContent,
+        { backgroundPosition: "10% 70%", ease: "none", duration: 1 },
+        0
+      );
+    if (windowContent)
+      mobileTl.to(
+        windowContent,
+        { backgroundPosition: "90% 10%", ease: "none", duration: 1 },
+        0
+      );
 
     return () => {
       if (mobileTl.scrollTrigger) mobileTl.scrollTrigger.kill();
@@ -76,9 +105,18 @@ export default function AboutUs() {
   const giorgiaPanelRef = useRef(null);
 
   useEffect(() => {
-    if (marcoPanelRef.current) gsap.set(marcoPanelRef.current, { xPercent: activeAccordion === "marco" ? 0 : 100 });
-    if (alessioPanelRef.current) gsap.set(alessioPanelRef.current, { xPercent: activeAccordion === "alessio" ? 0 : 100 });
-    if (giorgiaPanelRef.current) gsap.set(giorgiaPanelRef.current, { xPercent: activeAccordion === "giorgia" ? 0 : 100 });
+    if (marcoPanelRef.current)
+      gsap.set(marcoPanelRef.current, {
+        xPercent: activeAccordion === "marco" ? 0 : 100,
+      });
+    if (alessioPanelRef.current)
+      gsap.set(alessioPanelRef.current, {
+        xPercent: activeAccordion === "alessio" ? 0 : 100,
+      });
+    if (giorgiaPanelRef.current)
+      gsap.set(giorgiaPanelRef.current, {
+        xPercent: activeAccordion === "giorgia" ? 0 : 100,
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -87,7 +125,8 @@ export default function AboutUs() {
     if (name === "marco") panel = marcoPanelRef.current;
     else if (name === "alessio") panel = alessioPanelRef.current;
     else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    if (panel) gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
+    if (panel)
+      gsap.to(panel, { xPercent: 0, duration: 0.5, ease: "power2.out" });
   };
 
   const closePanel = (name) => {
@@ -95,7 +134,8 @@ export default function AboutUs() {
     if (name === "marco") panel = marcoPanelRef.current;
     else if (name === "alessio") panel = alessioPanelRef.current;
     else if (name === "giorgia") panel = giorgiaPanelRef.current;
-    if (panel) gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
+    if (panel)
+      gsap.to(panel, { xPercent: 100, duration: 0.5, ease: "power2.in" });
   };
 
   const toggleAccordion = (name) => {
@@ -139,7 +179,11 @@ export default function AboutUs() {
             <div className="wall-content" ref={wallRef} />
           </div>
 
-          <div className={`storia-moderna ${window.innerWidth <= 768 ? "mobile-hidden" : ""}`}>
+          <div
+            className={`storia-moderna ${
+              window.innerWidth <= 768 ? "mobile-hidden" : ""
+            }`}
+          >
             <div className="storia-moderna-text">
               <p>{t("about.modern.paragraph1")}</p>
             </div>
@@ -155,9 +199,24 @@ export default function AboutUs() {
 
         <div className="accordion-container">
           <div className="accordion-buttons">
-            <button className={`accordion-button ${activeAccordion === "marco" ? "active" : ""}`} onClick={() => toggleAccordion("marco")}></button>
-            <button className={`accordion-button ${activeAccordion === "alessio" ? "active" : ""}`} onClick={() => toggleAccordion("alessio")}></button>
-            <button className={`accordion-button ${activeAccordion === "giorgia" ? "active" : ""}`} onClick={() => toggleAccordion("giorgia")}></button>
+            <button
+              className={`accordion-button ${
+                activeAccordion === "marco" ? "active" : ""
+              }`}
+              onClick={() => toggleAccordion("marco")}
+            ></button>
+            <button
+              className={`accordion-button ${
+                activeAccordion === "alessio" ? "active" : ""
+              }`}
+              onClick={() => toggleAccordion("alessio")}
+            ></button>
+            <button
+              className={`accordion-button ${
+                activeAccordion === "giorgia" ? "active" : ""
+              }`}
+              onClick={() => toggleAccordion("giorgia")}
+            ></button>
           </div>
 
           <div className="accordion-panels">
@@ -167,7 +226,9 @@ export default function AboutUs() {
                   <div className="team-text">
                     <p>{t("about.team.marco.mobile")}</p>
                   </div>
-                  <div className="team-title"><h2>MARCO</h2></div>
+                  <div className="team-title">
+                    <h2>MARCO</h2>
+                  </div>
                 </div>
                 <div className="team-right">{/* optional image */}</div>
               </div>
@@ -179,7 +240,9 @@ export default function AboutUs() {
                   <div className="team-text">
                     <p>{t("about.team.alessio")}</p>
                   </div>
-                  <div className="team-title"><h2>ALESSIO</h2></div>
+                  <div className="team-title">
+                    <h2>ALESSIO</h2>
+                  </div>
                 </div>
                 <div className="team-right">{/* optional image */}</div>
               </div>
@@ -191,7 +254,9 @@ export default function AboutUs() {
                   <div className="team-text">
                     <p>{t("about.team.giorgia")}</p>
                   </div>
-                  <div className="team-title"><h2>GIORGIA</h2></div>
+                  <div className="team-title">
+                    <h2>GIORGIA</h2>
+                  </div>
                 </div>
                 <div className="team-right">{/* optional image */}</div>
               </div>

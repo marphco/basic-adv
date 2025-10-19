@@ -185,3 +185,84 @@
       transition: color 0.5s ease;
     }
   }
+
+
+  /* ===== FORCE MOBILE ON iPAD / TOUCH-LIKE ===== */
+/* Quando l'App ha la classe is-mobile (impostata dalla logica touch-like in App.jsx),
+   forza il layout mobile anche oltre 768px */
+.App.is-mobile .section-footer {
+  width: 100vw;
+  height: 25vh;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.App.is-mobile .footer {
+  height: 100%;
+  border-left: 0;
+  border-top: solid 1px var(--foreground-color);
+}
+
+.App.is-mobile .footer-trigger {
+  display: none;
+}
+
+.App.is-mobile .footer-overlay {
+  position: static;
+  background: transparent;
+  opacity: 1;
+  height: auto;
+  pointer-events: auto;
+  width: 100%;
+  border-left: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.App.is-mobile .footer-content {
+  font-size: 0.7rem;
+  margin: 0;
+  padding: 10px;
+  gap: 8px;
+  rotate: 0deg;
+  height: auto;
+  align-items: center;
+  text-align: center;
+  width: auto;
+}
+
+.App.is-mobile .footer-cities {
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.App.is-mobile .footer-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  height: auto;
+  line-height: normal;
+}
+
+.App.is-mobile .footer-links .separator {
+  display: inline;
+  padding: 0 5px;
+  color: var(--primary-text-color);
+}
+
+/* opzionale: quando .is-inline è presente sull’overlay, rendilo sempre visibile anche su desktop */
+.footer-overlay.is-inline {
+  position: static;
+  background: transparent;
+  opacity: 1;
+  height: auto;
+  pointer-events: auto;
+  width: 100%;
+  border-left: none;
+}

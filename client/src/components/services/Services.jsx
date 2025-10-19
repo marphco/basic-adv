@@ -113,7 +113,7 @@ const Services = ({
         } else {
           // Animazione su desktop
           gsap.to(servicesText, {
-            yPercent: 460,
+            yPercent: 400,
             ease: "none",
             scrollTrigger: {
               trigger: servicesElem,

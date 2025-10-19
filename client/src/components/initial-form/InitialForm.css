@@ -560,3 +560,62 @@
     padding: 0.3rem 0.2rem;
   }
 }
+
+
+.initial-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;               /* un filo più compatto */
+  color: var(--primary-text-color);
+  max-width: 920px;           /* contenitore ordinato */
+  margin: 0 auto;             /* centrato */
+}
+
+/* 2 colonne di default (desktop & tablet) */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 0.9rem 1rem;           /* row/col gap */
+}
+
+/* sui telefoni larghi manteniamo 2 colonne */
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 1rem;
+  }
+}
+
+/* telefoni piccoli → 1 colonna */
+@media (max-width: 480px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* box a larghezza piena della colonna */
+.category-box {
+  background: transparent;
+  border: 1px solid #d1d1d1;
+  color: grey;
+  border-radius: 4px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all .5s ease;
+  width: 100%;
+  min-width: 0;               /* evita overflow */
+  box-sizing: border-box;
+}
+
+.form-section {
+  gap: .8rem;
+  padding-top: 2vh;
+}
+
+.form-services-list {
+  gap: .4rem;
+  margin-top: .6rem;
+  padding-left: 1rem;
+}
+
+.service-item span { line-height: 1.1; }

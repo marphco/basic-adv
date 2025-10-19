@@ -273,3 +273,22 @@ body[data-theme="dark"] .services-list-section {
 body[data-theme="light"] .services-section {
   background-color: var(--background-color);
 }
+
+
+/* ===== FORCE MOBILE ON iPAD ===== */
+.App.is-mobile .services-section { height: auto; overflow: visible; flex-direction: column; }
+.App.is-mobile .services-content { width: 100%; height: 18vh; display: block; margin-bottom: 8vh; }
+.App.is-mobile .chi-siamo { width: 100%; height: auto; flex-direction: row; }
+.App.is-mobile .services-text { transform: rotate(0deg); font-size: 2em; margin: 20px 0 24px 0; }
+.App.is-mobile .intro { position: static; padding: 20px; font-size: 1.2em; }
+.App.is-mobile .intro p { font-size: 1em; font-weight: 200; width: 80vw; line-height: 1.1; top: 7vh; }
+.App.is-mobile .horizontal-line {
+  position: absolute; top: 0; left: 20px; width: 1px; height: 100%;
+  background-color: var(--foreground-color); transform: scaleY(0); transform-origin: top center;
+}
+.App.is-mobile .macro-areas { flex-direction: column; padding-left: 0; }
+.App.is-mobile .macroarea { width: 100%; margin: 0 0 50px 40px; align-items: left; }
+.App.is-mobile .macroarea h2 { font-size: 16vw; text-align: left; padding-bottom: 0; }
+.App.is-mobile .services-list { position: static; transform: none; margin-top: 6px; }
+.App.is-mobile .services-list li { opacity: 0; transform: translateX(-50px); font-size: 0.8em; line-height: 0.4rem; }
+.App.is-mobile .services-list-section { height: auto; }

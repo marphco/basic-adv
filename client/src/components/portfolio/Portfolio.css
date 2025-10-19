@@ -591,3 +591,26 @@ Sfondo “desktop” Sonoma .mac-desktop {
     justify-items: center;
   }
 }
+
+
+/* ===== FORCE MOBILE ON iPAD ===== */
+.App.is-mobile .portfolio-section { display: block; height: auto; overflow: visible; }
+.App.is-mobile .desktop-pane { height: auto; min-height: 100vh; overflow: visible; display: flow-root; }
+.App.is-mobile .portfolio { width: 100%; height: auto; flex-direction: row; }
+.App.is-mobile .portfolio-text { transform: rotate(0deg); font-size: 2em; margin: 20px 0; }
+.App.is-mobile .mac-menubar { display: none; }
+.App.is-mobile .intro-portfolio { display: none; }
+.App.is-mobile .intro-mobile {
+  display: block !important; padding: 40px; font-size: 1.2rem; font-weight: 200; line-height: 1.1;
+  color: var(--primary-text-color) !important; position: static; margin: 20px;
+}
+.App.is-mobile .portfolio-content { width: 100%; height: auto; margin-top: 0; padding: 24px 20px 80px; }
+.App.is-mobile .portfolio-content { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: clamp(16px, 4vw, 28px) 24px; align-items: start; justify-items: center; }
+.App.is-mobile .folder.mobile { position: static; margin: 0; cursor: pointer; }
+.App.is-mobile .folder-icon { width: clamp(92px, 24vw, 140px); height: clamp(92px, 24vw, 140px); }
+.App.is-mobile .folder-name { margin-top: 8px; font-size: clamp(12px, 2.6vw, 16px); text-align: center; }
+.App.is-mobile .dock-strip, .App.is-mobile .dock { display: none; }
+
+.App.is-mobile .intro-mobile {
+  text-align: center;
+}

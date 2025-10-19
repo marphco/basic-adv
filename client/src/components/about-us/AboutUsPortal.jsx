@@ -10,16 +10,23 @@ import { useTranslation } from "react-i18next";
 gsap.registerPlugin(ScrollTrigger);
 
 export function AboutUsPortal({ isOpen, onClose }) {
+  const isTouchLike = () => {
+    const byClass = document.body.classList.contains("is-mobile");
+    const byPointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const byUA = /iPad|Android|Tablet/i.test(navigator.userAgent);
+    return byClass || byPointer || byUA || window.innerWidth <= 768;
+  };
+
   const portalRef = useRef(null);
   const overlayRef = useRef(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(isTouchLike());
   const scrollYRef = useRef(0);
   const { t } = useTranslation(["common"]);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const onResize = () => setIsMobile(isTouchLike());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -79,7 +86,7 @@ export function AboutUsPortal({ isOpen, onClose }) {
     }
 
     return () => window.removeEventListener("keydown", handleEsc);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isMobile]);
 
   const handleClose = () => {

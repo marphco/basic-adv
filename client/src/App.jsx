@@ -9,7 +9,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import useLocalStorage from "use-local-storage";
 import PropTypes from "prop-types";
-// import "./App.css";
+import "./App.css";
 import { Cursor } from "./components/cursor/Cursor";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";
@@ -32,6 +32,8 @@ import CookieNotice from "./components/policies/CookieNotice";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import useInputMode from "../src/hooks/useInputMode"; // se già creato prima
 import useDisableZoom from "../src/hooks/useDisableZoom";
+import useTouchLike from "./hooks/useTouchLike";
+
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
@@ -39,7 +41,10 @@ ScrollTrigger.normalizeScroll(true);
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const touchLike = useTouchLike();            // 👈 nuovo hook
+  const [isMobile, setIsMobile] = useState(
+  document.body.classList.contains("mobile-like")
+);
   const isDashboard = location.pathname === "/dashboard";
   const isPolicyPage =
     location.pathname === "/privacy-policy" ||
@@ -56,18 +61,22 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
 
   useLayoutEffect(() => {
     const handleResize = () => {
-      const isMobileNow = window.innerWidth <= 768;
-      if (isMobile !== isMobileNow) setIsMobile(isMobileNow);
-      if (window.innerWidth !== windowWidth || windowHeight !== windowHeight) {
-        setWindowWidth(window.innerWidth);
-        setWindowHeight(window.innerHeight);
-        ScrollTrigger.refresh();
-        window.location.reload();
-      }
+     // isMobile segue 'touchLike', non la larghezza
+      setWindowWidth(window.innerWidth);
+      setWindowHeight(window.innerHeight);
+      ScrollTrigger.refresh();
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isMobile, windowWidth, windowHeight]);
+  }, [windowWidth, windowHeight]);
+
+  // reazione ai cambi di touchLike (iPad ↔️ desktop)
+  useEffect(() => { setIsMobile(touchLike); }, [touchLike]);
+
+  // espone una classe al CSS fin dal primo render
+  useEffect(() => {
+    document.body.classList.toggle("mobile-like", isMobile);
+  }, [isMobile]);
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
@@ -83,7 +92,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           scrollTrigger: {
             trigger: container,
             start: "top top",
-            end: () => "+=" + (totalWidth * 1.5),
+            end: () => "+=" + Math.max(0, totalWidth), // bounds corretti
             scrub: 2,
             pin: true,
             anticipatePin: 1,
@@ -99,6 +108,10 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           scrollTween.kill();
           setScrollTween(null);
         }
+        // kill eventuali trigger agganciati al container
+        ScrollTrigger.getAll().forEach(st => {
+          if (st.trigger === scrollContainerRef.current) st.kill();
+        });
       }
       ScrollTrigger.refresh();
     }, scrollContainerRef);
@@ -211,7 +224,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
 
   return (
     <>
-      <Cursor isDark={isDark} />
+      {window.matchMedia?.("(pointer: fine)").matches && <Cursor isDark={isDark} />}
       <Navbar
         isDark={isDark}
         setIsDark={setIsDark}
@@ -222,18 +235,18 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         isSidebarOpen={isSidebarOpen}
       />
       <div
-        className={`App ${isHomePage ? "home-layout" : ""} ${
-          isDashboard ? "dashboard-layout" : ""
-        } ${isPolicyPage ? "policy-layout" : ""}`}
-        ref={scrollContainerRef}
-      >
+   className={`App ${isHomePage ? "home-layout" : ""} ${
+     isDashboard ? "dashboard-layout" : ""
+   } ${isPolicyPage ? "policy-layout" : ""} ${isMobile ? "is-mobile" : "is-desktop"}`}
+   ref={scrollContainerRef}
+ >
         <Routes>
           <Route
             path="/"
             element={
               <>
                 <div className="section">
-                  <Home />
+                  <Home isMobile={isMobile} />
                 </div>
 
                 <div className="section" id="services">
@@ -247,15 +260,15 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
 
                 <div className="section" id="portfolio">
                   <DndProvider backend={HTML5Backend}>
-                    <Portfolio scrollTween={scrollTween} />
+                    <Portfolio scrollTween={scrollTween} isMobile={isMobile} />
                   </DndProvider>
                 </div>
 
                 <div className="section" id="contacts">
-                  <Contacts scrollTween={scrollTween} />
+                  <Contacts scrollTween={scrollTween} isMobile={isMobile} />
                 </div>
                 <div className="section-footer">
-                  <Footer />
+                  <Footer isMobile={isMobile} />
                 </div>
                 {!isMobile && (
                   <AboutUsPortal isOpen={isAboutUsOpen} onClose={closeAboutUs}>
@@ -265,7 +278,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
               </>
             }
           />
-          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/about-us" element={<AboutUs isMobile={isMobile}/>} />
           {isMobile && (
             <Route path="/project/:id" element={<ProjectSectionMobile />} />
           )}

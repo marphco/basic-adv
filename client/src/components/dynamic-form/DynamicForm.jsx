@@ -22,8 +22,8 @@ gsap.registerPlugin(ScrollTrigger);
 import { useTranslation } from "react-i18next";
 import PropTypes from "prop-types";
 
-const useIsomorphicLayoutEffect =
-  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+// const useIsomorphicLayoutEffect =
+//   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 const isValidUrl = (v) => {
   if (!v) return true; // opzionale -> vuoto ok
@@ -62,15 +62,15 @@ const ALLOWED_LOGO_TYPES = Object.freeze([
 ]);
 const MAX_LOGO_BYTES = 5 * 1024 * 1024; // 5 MB
 
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  return isMobile;
-};
+// const useIsMobile = () => {
+//   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+//   useEffect(() => {
+//     const onResize = () => setIsMobile(window.innerWidth < 768);
+//     window.addEventListener("resize", onResize);
+//     return () => window.removeEventListener("resize", onResize);
+//   }, []);
+//   return isMobile;
+// };
 
 const API_BASE = (
   import.meta.env.VITE_API_URL || "http://localhost:8080"
@@ -139,8 +139,8 @@ const defaultFormData = {
   appPlatforms: [], // ["ios","android","webapp"]
 };
 
-const DynamicForm = ({ scrollTween }) => {
-  const isMobile = useIsMobile();
+const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
+  // const isMobile = useIsMobile();
   const railRef = useRef(null);
   const { t } = useTranslation(["common"]);
   // Converte gli errori: se è una chiave i18n ("form.*") la traduce, altrimenti la lascia com'è.
@@ -222,48 +222,49 @@ const DynamicForm = ({ scrollTween }) => {
     return refsByKey.current.get(key);
   };
 
-  useIsomorphicLayoutEffect(() => {
-    const railEl = railRef.current;
-    const txt = railEl?.querySelector(".form-rail-text");
-    if (!txt) return;
+  useLayoutEffect(() => {
+   const sectionEl = railRef.current;                   // == portfolioElem
+   const banner = sectionEl?.querySelector(".form-rail-text"); // == portfolio-text
+   if (!sectionEl || !banner) return;
 
-    const ctx = gsap.context(() => {
-      if (isMobile) {
-        // ✅ Mobile: scorri orizzontale da destra a sinistra
-        gsap.set(txt, { x: "90vw" });
-        gsap.to(txt, {
-          x: -200,
-          ease: "none",
-          scrollTrigger: {
-            trigger: txt,
-            start: "top 100%",
-            end: "top 20%",
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        });
-      } else {
-      // Desktop: aggancia al pin orizzontale della home
-      gsap.set(txt, { willChange: "transform" });
-      gsap.to(txt, {
-        // come hai fatto in Portfolio: regola il valore a gusto
-        yPercent: 70,
-        ease: "none",
-        scrollTrigger: {
-          trigger: railEl,
-          containerAnimation: scrollTween, // 👈 magia
-          start: "left center",
-          end: "right center",
-          scrub: 2,
-          invalidateOnRefresh: true,
-          // markers: true,
-        },
-      });
-    }
-    }, railRef);
+   const ctx = gsap.context(() => {
+     if (isMobile) {
+       gsap.set(banner, { x: "90vw" });
+       gsap.to(banner, {
+         x: -200,
+         ease: "none",
+         scrollTrigger: {
+           trigger: banner,
+           start: "top 100%",
+           end: "top 20%",
+           scrub: true,
+           invalidateOnRefresh: true,
+         },
+       });
+     } else {
+       gsap.set(banner, { willChange: "transform" });
+       gsap.to(banner, {
+         yPercent: 75,
+         ease: "none",
+         scrollTrigger: {
+           trigger: sectionEl,
+           containerAnimation: scrollTween, // CHIAVE identica a Portfolio
+           start: "left center",
+           end: "right center",
+           scrub: 2,
+           invalidateOnRefresh: true,
+           // markers: true,
+         },
+       });
+     }
+   }, railRef);
+   return () => ctx.revert();
+ }, [isMobile, scrollTween]);
 
-    return () => ctx.revert();
-  }, [isMobile, scrollTween]);
+  useEffect(() => {
+  // assicura il calcolo corretto dopo mount/resize
+  ScrollTrigger.refresh();
+}, [isMobile, scrollTween]);
 
   // Hydration: ricostruisce lo stato se il sito si ricarica/ridimensiona
   useEffect(() => {
@@ -987,4 +988,5 @@ export default DynamicForm;
 
 DynamicForm.propTypes = {
   scrollTween: PropTypes.object,
+  isMobile: PropTypes.bool.isRequired,
 };

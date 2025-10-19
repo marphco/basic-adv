@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect } from "react";
+import { useRef, useEffect, useLayoutEffect, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Home.css";
@@ -12,6 +12,23 @@ gsap.registerPlugin(ScrollTrigger);
 const Home = () => {
   const homeRef = useRef(null);
   const { t } = useTranslation(["common"]);
+
+  // 👇 stato tema, letto da body[data-theme]
+  const [isDarkTheme, setIsDarkTheme] = useState(
+    () => document.body.getAttribute("data-theme") === "dark"
+  );
+
+  useEffect(() => {
+    // osserva cambi di data-theme sul body
+    const obs = new MutationObserver(() => {
+      setIsDarkTheme(document.body.getAttribute("data-theme") === "dark");
+    });
+    obs.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+    return () => obs.disconnect();
+  }, []);
 
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
@@ -43,7 +60,7 @@ const Home = () => {
           },
         });
 
-        tlHome.to(stripesContainer, { opacity: 1, duration: .99 });
+        tlHome.to(stripesContainer, { opacity: 1, duration: 0.99 });
         tlHome.to(
           stripes,
           {
@@ -62,24 +79,33 @@ const Home = () => {
 
   return (
     <div className="home-container" ref={homeRef}>
-      <div className="stripes-container"></div>
+      <div className="stripes-container" />
 
       <div className="home-text">
         <p>
-          <Trans i18nKey="home.hero" ns="common" components={{
-            1: <br />,                          // <1/> nei testi = <br/>
-            2: <span className="tagline" />     // <2>...</2> = <span class="tagline">...</span>
-          }}/>
+          <Trans
+            i18nKey="home.hero"
+            ns="common"
+            components={{
+              1: <br />,
+              2: <span className="tagline" />,
+            }}
+          />
         </p>
       </div>
 
       <div className="bottom-section">
         <div className="home-logo-container">
-          <img src={logoLight} alt="Logo Light" className="home-logo light-logo" />
-          <img src={logoDark}  alt="Logo Dark"  className="home-logo dark-logo" />
+          {/* 👇 RENDER UN SOLO IMG: niente doppioni, niente conflitti CSS */}
+          {isDarkTheme ? (
+            <img src={logoDark} alt="Logo Dark" className="home-logo" />
+          ) : (
+            <img src={logoLight} alt="Logo Light" className="home-logo" />
+          )}
         </div>
         <div className="scroll-hint">
-          {t("home.cta")}<span className="scroll-arrow">↓</span>
+          {t("home.cta")}
+          <span className="scroll-arrow">↓</span>
         </div>
       </div>
     </div>

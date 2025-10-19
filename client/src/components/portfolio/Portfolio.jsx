@@ -28,15 +28,15 @@ import Dock from "./Dock";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const useIsMobile = () => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-  return isMobile;
-};
+// const useIsMobile = () => {
+//   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+//   useEffect(() => {
+//     const onResize = () => setIsMobile(window.innerWidth < 768);
+//     window.addEventListener("resize", onResize);
+//     return () => window.removeEventListener("resize", onResize);
+//   }, []);
+//   return isMobile;
+// };
 
 const Folder = ({ id, left, top, isMobile, onOpenSection, label }) => {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -96,8 +96,8 @@ Folder.propTypes = {
   label: PropTypes.string,
 };
 
-const Portfolio = ({ scrollTween = null }) => {
-  const isMobile = useIsMobile();
+const Portfolio = ({ scrollTween = null, isMobile = false }) => {
+  // const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t } = useTranslation(["common"]);
 
@@ -200,7 +200,7 @@ const Portfolio = ({ scrollTween = null }) => {
         // 👇 DESKTOP: aggancia al pin orizzontale
         gsap.set(portfolioText, { willChange: "transform" });
         gsap.to(portfolioText, {
-          yPercent: 90, // come in Services; regola a gusto (30–80)
+          yPercent: 75, // come in Services; regola a gusto (30–80)
           ease: "none",
           scrollTrigger: {
             trigger: portfolioElem,
@@ -404,6 +404,7 @@ const Portfolio = ({ scrollTween = null }) => {
 
 Portfolio.propTypes = {
   scrollTween: PropTypes.object,
+  isMobile: PropTypes.bool.isRequired,
 };
 
 export default Portfolio;

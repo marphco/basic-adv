@@ -316,7 +316,7 @@ input:-webkit-autofill:active {
 
 .submit-btn:disabled {
   background-color: var(--foreground-color);
-  opacity: .35;
+  opacity: 0.35;
   cursor: not-allowed;
   border-color: var(--foreground-color);
   color: white;
@@ -420,4 +420,40 @@ input:-webkit-autofill:active {
     /* transform: scale(0.67); */
     /* transform-origin: top left; */ /* Per evitare spostamenti */
   }
+}
+
+/* ===== FORCE MOBILE ON iPAD ===== */
+.App.is-mobile .form-rail-section {
+  display: block;
+  min-height: 0;
+}
+.App.is-mobile .form-rail {
+  width: 100%;
+  height: auto;
+}
+.App.is-mobile .form-rail-text {
+  transform: rotate(0deg);
+  font-size: 2em;
+  margin: 20px 0;
+}
+.App.is-mobile .dynamic-form {
+  min-height: auto !important; /* <-- sblocca l'altezza */
+  height: auto !important;
+  justify-content: flex-start; /* niente centratura verticale fissa */
+  padding-top: 50px; /* come su mobile */
+  padding-bottom: 50px; /* un minimo respiro sotto */
+  overflow: visible; /* evita tagli di elementi espansi */
+}
+
+.App.is-mobile .form-rail { width: 100%; height: auto; position: static; }
+.App.is-mobile .form-rail-text { transform: rotate(0); font-size: 2em; margin: 20px 0; }
+
+
+.App.is-mobile .section .contacts-container {
+  height: auto !important;
+}
+
+.App.is-mobile .contacts-container {
+  height: auto !important;
+  align-items: flex-start;
 }

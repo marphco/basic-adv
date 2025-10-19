@@ -109,7 +109,7 @@ body {
   min-height: 100vh;
 }
 
-.App.home-layout {         /* SOLO Home: scroller orizzontale + GPU hack */
+body:not(.mobile-like) .App.home-layout {       /* SOLO Home: scroller orizzontale + GPU hack */
 display: flex;
 flex-direction: row;
 width: 1100vw;
@@ -135,7 +135,7 @@ transform: translateZ(0);
   z-index: 10;
 }
 
-.App.dashboard-layout, .App.App.policy-layout {
+ .App.dashboard-layout, .App.policy-layout {
   display: block;
   width: 100vw;
   height: auto;
@@ -220,4 +220,50 @@ html, body, #root, .app-wrapper {
     backface-visibility: initial;
     will-change: auto;
   }
+}
+
+
+/* Qualsiasi device marcato come mobile-like (iPad/touch) -> layout verticale */
+body.mobile-like .App.home-layout {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  will-change: auto !important;
+  backface-visibility: initial !important;
+}
+body.mobile-like .section {
+  min-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* ====== FORZA MOBILE QUANDO L’APP DICE is-mobile ====== */
+.App.is-mobile.home-layout {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  transform: none !important;
+  will-change: auto !important;
+  backface-visibility: initial !important;
+}
+
+.App.is-mobile .section {
+  min-width: 100% !important;
+  width: 100% !important;
+  height: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* (opzionale ma utile) disattiva subito la riga orizzontale su Services/Portfolio */
+.App.is-mobile .services-section,
+.App.is-mobile .services-list-section {
+  width: 100vw !important;
+  height: auto !important;
+  overflow: visible !important;
 }
