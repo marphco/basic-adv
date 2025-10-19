@@ -83,7 +83,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           scrollTrigger: {
             trigger: container,
             start: "top top",
-            end: "bottom top",
+            end: () => "+=" + (totalWidth * 1.5),
             scrub: 2,
             pin: true,
             anticipatePin: 1,
@@ -252,7 +252,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
                 </div>
 
                 <div className="section" id="contacts">
-                  <Contacts />
+                  <Contacts scrollTween={scrollTween} />
                 </div>
                 <div className="section-footer">
                   <Footer />

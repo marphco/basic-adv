@@ -317,7 +317,7 @@
     "labels": {
       "optionalLinks": "If you’d like, share any useful links.",
       "referencesShort": "References",
-      "platforms": "Tell us where you’d like to launch your app."
+      "platforms": "Choose where your app takes off."
     },
     "actions": {
       "clear": "Clear",
@@ -340,7 +340,7 @@
       "repoUrl": "Repository",
       "designLink": "Design link"
     },
-    "railText": "Tell us what you need: we’ll handle the rest."
+    "railText": "give us your mess; we’ll make it minimal."
   },
   "legal": {
     "cookie": {

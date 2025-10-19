@@ -69,9 +69,13 @@
   bottom: 20vh;
   left: 0;
   height: 1px;
-  width: 0;
+  width: 100%;
   background-color: var(--foreground-color);
-  transition: width 0.2s ease-in-out;
+  transform: scaleX(0); /* GSAP animerà questo */
+  transform-origin: left center;
+  will-change: transform; /* performance */
+  pointer-events: none; /* sicurezza: non cattura click */
+  transition: none;
 }
 
 /* Sezione principale */
@@ -102,7 +106,7 @@
   align-items: flex-start;
 }
 
-.macroarea:nth-child(n+2) {
+.macroarea:nth-child(n + 2) {
   margin-left: 15vw;
 }
 
@@ -187,17 +191,20 @@ body[data-theme="dark"] .services-list-section {
     font-weight: 200;
     width: 80vw;
     line-height: 1.1;
-    top:7vh;
+    top: 7vh;
   }
 
   .horizontal-line {
     position: absolute;
     top: 0;
     left: 20px;
-    width: 1px;  /* La linea diventa verticale */
-    height: 0;   /* Altezza iniziale zero */
+    width: 1px; /* verticale stretta */
+    height: 100%; /* occupa in altezza il contenitore */
     background-color: var(--foreground-color);
-    transition: height 0.3s ease-in-out; /* Anima l'altezza */
+    transform: scaleY(0); /* GSAP animerà questo */
+    transform-origin: top center;
+    will-change: transform;
+    transition: none;
   }
 
   .macro-areas {
@@ -212,7 +219,7 @@ body[data-theme="dark"] .services-list-section {
     align-items: left;
   }
 
-  .macroarea:nth-child(n+2) {
+  .macroarea:nth-child(n + 2) {
     margin-left: 40px;
   }
 
@@ -227,7 +234,6 @@ body[data-theme="dark"] .services-list-section {
     transform: none;
     margin-top: 6px;
     align-items: right !important;
-  
   }
 
   .services-list li {
@@ -243,15 +249,15 @@ body[data-theme="dark"] .services-list-section {
 }
 
 @media (max-height: 900px) and (min-width: 769px) {
-.macroarea h2 {
-  padding-bottom: 10vh;
-}
-.horizontal-line {
-  bottom: 25vh;
-}
-.intro p {
-  bottom: 0;
-}
+  .macroarea h2 {
+    padding-bottom: 10vh;
+  }
+  .horizontal-line {
+    bottom: 25vh;
+  }
+  .intro p {
+    bottom: 0;
+  }
 }
 
 /* ⚑ forza compositing anche sui blocchi pieni */

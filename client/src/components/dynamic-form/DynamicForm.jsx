@@ -20,6 +20,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 import { useTranslation } from "react-i18next";
+import PropTypes from "prop-types";
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -138,7 +139,7 @@ const defaultFormData = {
   appPlatforms: [], // ["ios","android","webapp"]
 };
 
-const DynamicForm = () => {
+const DynamicForm = ({ scrollTween }) => {
   const isMobile = useIsMobile();
   const railRef = useRef(null);
   const { t } = useTranslation(["common"]);
@@ -242,23 +243,27 @@ const DynamicForm = () => {
           },
         });
       } else {
-        // ✅ Desktop: leggero parallax verticale
-        gsap.to(txt, {
-          yPercent: 30,
-          ease: "none",
-          scrollTrigger: {
-            trigger: railEl,
-            start: "center top",
-            end: "bottom top",
-            scrub: 2,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
+      // Desktop: aggancia al pin orizzontale della home
+      gsap.set(txt, { willChange: "transform" });
+      gsap.to(txt, {
+        // come hai fatto in Portfolio: regola il valore a gusto
+        yPercent: 70,
+        ease: "none",
+        scrollTrigger: {
+          trigger: railEl,
+          containerAnimation: scrollTween, // 👈 magia
+          start: "left center",
+          end: "right center",
+          scrub: 2,
+          invalidateOnRefresh: true,
+          // markers: true,
+        },
+      });
+    }
     }, railRef);
 
     return () => ctx.revert();
-  }, [isMobile]);
+  }, [isMobile, scrollTween]);
 
   // Hydration: ricostruisce lo stato se il sito si ricarica/ridimensiona
   useEffect(() => {
@@ -979,3 +984,7 @@ const DynamicForm = () => {
 };
 
 export default DynamicForm;
+
+DynamicForm.propTypes = {
+  scrollTween: PropTypes.object,
+};

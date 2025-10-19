@@ -293,6 +293,8 @@ input:-webkit-autofill:active {
   transform: rotate(-90deg);
   white-space: nowrap;
   z-index: 1000;
+  will-change: transform;
+  transition: none;
 }
 
 /* Pannello del form (90vw) centrato verticalmente */

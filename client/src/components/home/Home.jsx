@@ -36,13 +36,14 @@ const Home = () => {
         const tlHome = gsap.timeline({
           scrollTrigger: {
             trigger: homeElem,
-            start: "top top",
-            end: "bottom 80%",
+            start: "5% top",
+            end: "bottom 0%",
             scrub: true,
+            // markers: true,
           },
         });
 
-        tlHome.to(stripesContainer, { opacity: 1, duration: 0.5 });
+        tlHome.to(stripesContainer, { opacity: 1, duration: .99 });
         tlHome.to(
           stripes,
           {

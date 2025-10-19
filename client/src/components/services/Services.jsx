@@ -9,7 +9,12 @@ import { Trans, useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) => {
+const Services = ({
+  scrollTween = null,
+  isMobile,
+  windowWidth,
+  windowHeight,
+}) => {
   const servicesRef = useRef(null);
   const lineRef = useRef(null);
   const { t } = useTranslation(["common"]);
@@ -38,42 +43,49 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
 
     // Creazione di un nuovo contesto per gestire le animazioni
     let ctx = gsap.context(() => {
+      // reset dimensioni “reali” e usa scale per l’animazione
+      if (isMobile) {
+        gsap.set(lineElem, {
+          clearProps: "width",
+          height: "100%",
+          scaleY: 0,
+          transformOrigin: "top center",
+        });
+      } else {
+        gsap.set(lineElem, {
+          clearProps: "height",
+          width: "100%",
+          scaleX: 0,
+          transformOrigin: "left center",
+        });
+      }
+
       // Animazione della linea
       if (isMobile) {
-        // Animazione su mobile: altezza della linea
-        const lineStartY = lineElem.getBoundingClientRect().top + window.scrollY;
-        const servicesEndY = servicesElem.getBoundingClientRect().bottom + window.scrollY;
-        const lineHeight = servicesEndY - lineStartY;
-
-
-        gsap.fromTo(
-          lineElem,
-          { height: 0 },
-          {
-            height: lineHeight,
-            ease: "none",
-            scrollTrigger: {
-              trigger: servicesElem,
-              start: "top bottom",
-              end: "bottom bottom",
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          }
-        );
-      } else {
-        // Animazione su desktop: larghezza della linea
-        const servicesWidth = servicesElem.scrollWidth;
-
         gsap.to(lineElem, {
-          width: `${servicesWidth}px`,
-          ease: "power2.out",
+          scaleY: 12,
+          ease: "none",
           scrollTrigger: {
             trigger: servicesElem,
-            start: "top top",
+            start: "top bottom",
             end: "bottom top",
-            scrub: 5,
+            scrub: true,
             invalidateOnRefresh: true,
+            // markers: true,
+          },
+        });
+      } else {
+        gsap.to(lineElem, {
+          scaleX: 22,
+          ease: "none",
+          scrollTrigger: {
+            trigger: servicesElem,
+            containerAnimation: scrollTween, // 👈 agganciato al pin orizzontale
+            start: "left right", // entra quando il bordo sinistro arriva sul bordo destro viewport
+            end: "right left", // termina quando esce a sinistra
+            scrub: true,
+            invalidateOnRefresh: true,
+            // markers: true,
           },
         });
       }
@@ -84,30 +96,33 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
       if (servicesText) {
         if (isMobile) {
           // Animazione su mobile
-          gsap.set(servicesText, { x: '50vw' });
+          gsap.set(servicesText, { x: "50vw" });
 
           gsap.to(servicesText, {
             x: -250,
-            ease: 'none',
+            ease: "none",
             scrollTrigger: {
               trigger: servicesText,
-              start: 'top 100%',
-              end: 'top 20%',
+              start: "top 100%",
+              end: "top 20%",
               scrub: true,
               invalidateOnRefresh: true,
+              // markers: true,
             },
           });
         } else {
           // Animazione su desktop
           gsap.to(servicesText, {
-            yPercent: 380,
+            yPercent: 460,
             ease: "none",
             scrollTrigger: {
               trigger: servicesElem,
-              start: "top top",
-              end: "bottom top",
+              containerAnimation: scrollTween, // 👈 anche il ribbon segue l’orizzontale
+              start: "left right",
+              end: "right center",
               scrub: 2,
               invalidateOnRefresh: true,
+              // markers: true,
             },
           });
         }
@@ -115,7 +130,7 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
     }, servicesRef);
 
     return () => ctx.revert();
-  }, [isMobile, windowWidth, windowHeight]);
+  }, [isMobile, windowWidth, windowHeight, scrollTween]);
 
   // Animazioni per i servizi
   useLayoutEffect(() => {
@@ -126,12 +141,24 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
 
       // Animazioni per ciascuna macroarea e servizi associati
       const macroAreas = [
-        { ref: brandingRef, listRef: brandingListRef, className: ".branding-list li" },
-        { ref: socialRef, listRef: socialListRef, className: ".social-list li" },
+        {
+          ref: brandingRef,
+          listRef: brandingListRef,
+          className: ".branding-list li",
+        },
+        {
+          ref: socialRef,
+          listRef: socialListRef,
+          className: ".social-list li",
+        },
         { ref: photoRef, listRef: photoListRef, className: ".photo-list li" },
         { ref: videoRef, listRef: videoListRef, className: ".video-list li" },
         { ref: webRef, listRef: webListRef, className: ".web-list li" },
-        { ref: applicationRef, listRef: applicationListRef, className: ".application-list li" },
+        {
+          ref: applicationRef,
+          listRef: applicationListRef,
+          className: ".application-list li",
+        },
       ];
 
       if (isMobile) {
@@ -166,7 +193,7 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
               start: "left center",
               toggleActions: "play none none reverse",
               invalidateOnRefresh: true,
-              markers: false
+              markers: false,
             },
           });
 
@@ -193,18 +220,20 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
   return (
     <div className="services-section" ref={servicesRef}>
       <div className="chi-siamo">
-        <div className="services-text">
-          {t("services.ribbon")}
-        </div>
+        <div className="services-text">{t("services.ribbon")}</div>
       </div>
 
       <div className="services-content">
         <div className="intro">
           <p>
-            <Trans i18nKey="services.intro" ns="common" components={{
-              1: <br />,
-              2: <span />
-            }}/>
+            <Trans
+              i18nKey="services.intro"
+              ns="common"
+              components={{
+                1: <br />,
+                2: <span />,
+              }}
+            />
           </p>
         </div>
         <div className="horizontal-line" ref={lineRef}></div>
@@ -212,14 +241,19 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
 
       {/* Sezione Servizi */}
       <section className="services-list-section">
-        <div className="macro-areas" ref={mergeRefs([macroAreasRef, servicesSectionRef])}>
+        <div
+          className="macro-areas"
+          ref={mergeRefs([macroAreasRef, servicesSectionRef])}
+        >
           {/* BRANDING */}
           <div className="branding macroarea" ref={brandingRef}>
             <h2>{t("services.groups.branding.title")}</h2>
             <ul className="branding-list services-list" ref={brandingListRef}>
-              {t("services.groups.branding.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+              {t("services.groups.branding.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
 
@@ -227,9 +261,11 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
           <div className="social macroarea" ref={socialRef}>
             <h2>{t("services.groups.social.title")}</h2>
             <ul className="social-list services-list" ref={socialListRef}>
-              {t("services.groups.social.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+              {t("services.groups.social.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
 
@@ -237,9 +273,11 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
           <div className="photo macroarea" ref={photoRef}>
             <h2>{t("services.groups.photo.title")}</h2>
             <ul className="photo-list services-list" ref={photoListRef}>
-              {t("services.groups.photo.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+              {t("services.groups.photo.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
 
@@ -247,9 +285,11 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
           <div className="video macroarea" ref={videoRef}>
             <h2>{t("services.groups.video.title")}</h2>
             <ul className="video-list services-list" ref={videoListRef}>
-              {t("services.groups.video.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+              {t("services.groups.video.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
 
@@ -257,19 +297,26 @@ const Services = ({ scrollTween = null, isMobile, windowWidth, windowHeight }) =
           <div className="web macroarea" ref={webRef}>
             <h2>{t("services.groups.web.title")}</h2>
             <ul className="web-list services-list" ref={webListRef}>
-              {t("services.groups.web.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+              {t("services.groups.web.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
 
           {/* APP */}
           <div className="application macroarea" ref={applicationRef}>
             <h2>{t("services.groups.app.title")}</h2>
-            <ul className="application-list services-list" ref={applicationListRef}>
-              {t("services.groups.app.items", { returnObjects: true }).map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
+            <ul
+              className="application-list services-list"
+              ref={applicationListRef}
+            >
+              {t("services.groups.app.items", { returnObjects: true }).map(
+                (s, i) => (
+                  <li key={i}>{s}</li>
+                )
+              )}
             </ul>
           </div>
         </div>

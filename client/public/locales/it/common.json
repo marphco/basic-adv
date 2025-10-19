@@ -324,7 +324,7 @@
     },
     "labels": {
       "referencesShort": "Riferimenti",
-      "platforms": "Dicci dove vorresti lanciare la tua app.",
+      "platforms": "Scegli dove far decollare la tua app.",
       "optionalLinks": "Se vuoi, condividi qualche link utile."
     },
     "actions": {
@@ -348,7 +348,7 @@
       "repoUrl": "Repository",
       "designLink": "Link design"
     },
-    "railText": "Raccontaci cosa ti serve: pensiamo noi al resto."
+    "railText": "dacci il disordine, ti restituiamo il design."
   },
   "legal": {
     "cookie": {

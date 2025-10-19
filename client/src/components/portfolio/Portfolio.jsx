@@ -196,21 +196,26 @@ const Portfolio = ({ scrollTween = null }) => {
           },
         });
       } else {
-        gsap.to(portfolioText, {
-          yPercent: 30,
-          ease: "none",
-          scrollTrigger: {
-            trigger: portfolioElem,
-            start: "center top",
-            end: "bottom top",
-            scrub: 2,
-            invalidateOnRefresh: true,
-          },
-        });
+     // 👇 DESKTOP: aggancia al pin orizzontale
+     gsap.set(portfolioText, { willChange: "transform" });
+     gsap.to(portfolioText, {
+       yPercent: 90,                // come in Services; regola a gusto (30–80)
+       ease: "none",
+       scrollTrigger: {
+         trigger: portfolioElem,
+         containerAnimation: scrollTween, // << chiave!
+         start: "left center",            // entra nel vivo quando il blocco entra
+         end: "right center",             // esce quando il blocco esce
+         scrub: 2,
+         invalidateOnRefresh: true,
+         // markers: true,
+       },
+     });
+   
       }
     }, portfolioRef);
     return () => ctx.revert();
-  }, [isMobile]);
+  }, [isMobile, scrollTween]);
 
 // Stato Dock: app aperte e app "in focus"
   const [dockApps, setDockApps] = useState(() => ([
