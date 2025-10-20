@@ -41,15 +41,16 @@ const Navbar = ({
 
   // helper locale
   const setLang = (lng) => {
-  i18n.changeLanguage(lng);
-  localStorage.setItem("lang", lng);
-  document.documentElement.setAttribute("lang", lng);
-  window.dispatchEvent(new CustomEvent("basic:lang", { detail: lng }));
-  // suggerisci al form di riavviare se una sessione è in corso
-  window.dispatchEvent(new CustomEvent("basic:lang:maybe-restart", { detail: lng }));
-  setIsMenuOpen(false);
-};
-
+    i18n.changeLanguage(lng);
+    localStorage.setItem("lang", lng);
+    document.documentElement.setAttribute("lang", lng);
+    window.dispatchEvent(new CustomEvent("basic:lang", { detail: lng }));
+    // suggerisci al form di riavviare se una sessione è in corso
+    window.dispatchEvent(
+      new CustomEvent("basic:lang:maybe-restart", { detail: lng })
+    );
+    setIsMenuOpen(false);
+  };
 
   const toggleMenu = () => {
     if (isDashboardPage && isMobile) {
@@ -70,9 +71,11 @@ const Navbar = ({
   }, [isSidebarOpen, isDashboardPage, isMobile]);
 
   useEffect(() => {
-  const lng = localStorage.getItem("lang") || (i18n.language?.startsWith("it") ? "it" : "en");
-  document.documentElement.setAttribute("lang", lng);
-}, [i18n.language]);
+    const lng =
+      localStorage.getItem("lang") ||
+      (i18n.language?.startsWith("it") ? "it" : "en");
+    document.documentElement.setAttribute("lang", lng);
+  }, [i18n.language]);
 
   const handleLinkClick = () => setIsMenuOpen(false);
   const handleClose = () => navigate(-1);
@@ -157,14 +160,16 @@ const Navbar = ({
           )}
 
           {!isMobile && isDashboardPage && (
-            <Link
-              to="/"
-              onClick={handleLinkClick}
-              className="navbar-logo"
-              aria-label="BASIC. — home"
-            >
-              <LogoStack />
-            </Link>
+            <li className="li-logo-desktop">
+              <Link
+                to="/"
+                onClick={handleLinkClick}
+                className="navbar-logo"
+                aria-label={t("aria.home")}
+              >
+                <LogoStack />
+              </Link>
+            </li>
           )}
 
           {(inAboutRoute || inProjectRoute) && (
@@ -234,18 +239,11 @@ const Navbar = ({
               id="primary-nav"
               className={classNames("navbar-menu", { open: isMenuOpen })}
             >
-              {!isMobile && (
-                <li className="li-logo-desktop">
-                  <Link
-                    to="/"
-                    onClick={handleLinkClick}
-                    className="navbar-logo"
-                    aria-label={t("aria.home")}
-                  >
-                    <LogoStack />
-                  </Link>
-                </li>
-              )}
+              <li className="li-logo-desktop">
+  <Link to="/" onClick={handleLinkClick} className="navbar-logo" aria-label={t("aria.home")}>
+    <LogoStack />
+  </Link>
+</li>
               <li>
                 {isMobile ? (
                   <Link to="/about-us" onClick={handleLinkClick}>

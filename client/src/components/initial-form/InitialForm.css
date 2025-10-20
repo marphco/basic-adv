@@ -30,7 +30,7 @@
   align-self: start;
   cursor: pointer;
   transition: all 0.5s ease;
-  min-width: 260px;
+  min-width: 70vw !important;
   box-sizing: border-box;
 }
 

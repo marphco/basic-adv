@@ -252,7 +252,7 @@ body[data-theme="dark"]
     transition: color .5s ease;
   }
   .li-logo-desktop {
-    display: none;
+    display: none !important;
   }
 
   .nav-center {
