@@ -30,7 +30,7 @@
   align-self: start;
   cursor: pointer;
   transition: all 0.5s ease;
-  min-width: 70vw !important;
+  min-width: 30vw !important;
   box-sizing: border-box;
 }
 
@@ -521,6 +521,10 @@
     grid-template-columns: repeat(2, 1fr);
     padding: 0 1rem;
   }
+
+  .category-box {
+    min-width: 68vw !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -542,6 +546,7 @@
     } */
   .category-box {
     padding: 0.5rem;
+    min-width: 70vw;
   }
   .form-services-list {
     gap: 0.15rem;
