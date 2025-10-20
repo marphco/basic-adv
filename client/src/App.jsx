@@ -37,6 +37,7 @@ import useTouchLike from "./hooks/useTouchLike";
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 ScrollTrigger.config({
   ignoreMobileResize: true,   // ✅ evita refresh e micro-jank su iOS quando cambia la UI bar

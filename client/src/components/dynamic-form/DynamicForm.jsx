@@ -15,7 +15,7 @@ import QuestionForm from "../question-form/QuestionForm";
 import ContactForm from "../contact-form/ContactForm";
 import ThankYouMessage from "../thank-you-message/ThankYouMessage";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
+// import { FaExclamationCircle, FaSpinner } from "react-icons/fa";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
@@ -907,75 +907,11 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
                 errors={i18nErrors}
                 PT_PH={PT_PH}
                 BF_PH={BF_PH}
+                onStart={handleStart}          // NEW
+  loading={loading}              // NEW
+  startLocked={startLocked} 
               />
-              {selectedCategories.length > 0 && (
-                <div className="budget-and-submit">
-                  <div className="form-group budget-group">
-                    <h3 className="budget-title">{t("form.budget.title")}</h3>
-                    <div className="budget-circles">
-                      {[
-                        { label: t("form.budget.unknown"), value: "unknown" },
-                        { label: t("form.budget.r1"), value: "0-1000" },
-                        { label: t("form.budget.r2"), value: "1000-5000" },
-                        { label: t("form.budget.r3"), value: "5000-10000" },
-                        { label: t("form.budget.r4"), value: "10000+" },
-                      ].map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          className={`budget-circle ${
-                            formData.budget === option.value ? "selected" : ""
-                          }`}
-                          onClick={() =>
-                            handleFormInputChange({
-                              target: { name: "budget", value: option.value },
-                            })
-                          }
-                        >
-                          <span className="budget-label">{option.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {i18nErrors.budget && (
-                      <span className="error-message budget-error" role="error">
-                        <FaExclamationCircle className="error-icon" />
-                        {i18nErrors.budget}
-                      </span>
-                    )}
-                  </div>
-                  <div className="form-actions">
-                    <button
-                      type="button"
-                      className="submit-btn"
-                      onClick={handleStart}
-                      disabled={loading || startLocked}
-                    >
-                      {loading ? (
-                        <FaSpinner className="spinner" />
-                      ) : (
-                        t("form.submit")
-                      )}
-                    </button>
-                    {i18nErrors.general && (
-                      <span className="error-message" role="error">
-                        <FaExclamationCircle className="error-icon" />
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: i18nErrors.general,
-                          }}
-                        />
-                      </span>
-                    )}
-                    {Object.keys(i18nErrors).length > 0 &&
-                      !i18nErrors.general && (
-                        <span className="error-message" role="error">
-                          <FaExclamationCircle className="error-icon" />
-                          {t("form.errors.general")}
-                        </span>
-                      )}
-                  </div>
-                </div>
-              )}
+              
             </div>
           )
         )}

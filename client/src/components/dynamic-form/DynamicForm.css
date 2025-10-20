@@ -16,7 +16,7 @@
 .dynamic-form p {
   font-size: 1.2rem;
   font-weight: 200;
-  padding-bottom: 3vh;
+  /* padding-bottom: 3vh; */
   text-align: center;
   color: var(--primary-text-color);
   transition: all 0.5s ease;
@@ -190,7 +190,7 @@ input:-webkit-autofill:active {
 
 .budget-and-submit {
   width: 100%;
-  padding-top: 2vh;
+  /* padding-top: 2vh; */
 }
 
 /* Stili per il budget */
@@ -311,7 +311,7 @@ input:-webkit-autofill:active {
 /* per sicurezza: il blocco headline sopra il form */
 .dynamic-form-hero {
   text-align: center;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
 }
 
 .submit-btn:disabled {
@@ -327,6 +327,7 @@ input:-webkit-autofill:active {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    flex-direction: column;
   }
   .budget-title {
     text-align: left;
@@ -390,6 +391,9 @@ input:-webkit-autofill:active {
   .dynamic-form {
     padding-top: 0; /* niente gap extra sotto la banda */
   }
+  .budget-and-submit {
+  padding-top: 2vh;
+}
 }
 
 @media (max-height: 900px) and (min-width: 769px) {
