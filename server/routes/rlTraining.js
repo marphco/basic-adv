@@ -7,7 +7,7 @@ const router = express.Router();
 const sanitizeKey = (key) => key.replace(/\./g, "_").replace(/\?$/, "");
 
 // PUT /api/rl/rate
-router.put("/rl/rate", async (req, res) => {
+router.put("/rate", async (req, res) => {
   try {
     const clamp = (v) => Math.max(-1, Math.min(1, Number.isFinite(v) ? v : 0));
 
