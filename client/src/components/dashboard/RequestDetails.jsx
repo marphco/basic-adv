@@ -104,6 +104,7 @@ const RequestDetails = ({
       industry: request.formData?.businessField || "Altro",
       brandNameKnown: !!request.formData?.brandName,
       isRestyling: /restyling/i.test(request.formData?.projectType || ""),
+      language: request.formData?.lang === "en" ? "en" : "it",
     };
   };
 
@@ -233,6 +234,25 @@ const RequestDetails = ({
               </span>
             </div>
             <div className="info-item">
+              <FaGlobe className="info-icon" aria-hidden />
+              <span>
+                Lingua:{" "}
+                <span
+                  className={`lang-flag ${
+                    request.formData?.lang === "en" ? "en" : "it"
+                  }`}
+                  title={
+                    request.formData?.lang === "en" ? "English" : "Italiano"
+                  }
+                  aria-label={
+                    request.formData?.lang === "en" ? "English" : "Italiano"
+                  }
+                >
+                  {request.formData?.lang === "en" ? "🇺🇸" : "🇮🇹"}
+                </span>
+              </span>
+            </div>
+            <div className="info-item">
               <FontAwesomeIcon icon={faChartLine} className="info-icon" />
               <span>{request.projectPlan ? "Completa" : "Incompleta"}</span>
             </div>
@@ -279,199 +299,225 @@ const RequestDetails = ({
         )}
 
         {activeTab === "links" && (
-  <div className="info-section">
-    <h2>Link & Piattaforme</h2>
+          <div className="info-section">
+            <h2>Link & Piattaforme</h2>
 
-    {(() => {
-  const fd = request.formData || {};
+            {(() => {
+              const fd = request.formData || {};
 
-  const midTrunc = (s, n = 40) => {
-    if (!s) return "";
-    if (s.length <= n) return s;
-    const half = Math.floor((n - 1) / 2);
-    return s.slice(0, half) + "…" + s.slice(-half);
-  };
+              const midTrunc = (s, n = 40) => {
+                if (!s) return "";
+                if (s.length <= n) return s;
+                const half = Math.floor((n - 1) / 2);
+                return s.slice(0, half) + "…" + s.slice(-half);
+              };
 
-  const safeUrl = (u) => {
-    if (!u) return null;
-    try {
-      const url = new URL(u);
-      return {
-        href: u,
-        label: url.hostname.replace(/^www\./, "") || midTrunc(u, 40),
-        full: u,
-      };
-    } catch {
-      return { href: u, label: midTrunc(u, 40), full: u };
-    }
-  };
+              const safeUrl = (u) => {
+                if (!u) return null;
+                try {
+                  const url = new URL(u);
+                  return {
+                    href: u,
+                    label:
+                      url.hostname.replace(/^www\./, "") || midTrunc(u, 40),
+                    full: u,
+                  };
+                } catch {
+                  return { href: u, label: midTrunc(u, 40), full: u };
+                }
+              };
 
-  const linkItems = [
-    { key: "websiteUrl", label: "Sito web", Icon: FaGlobe },
-    { key: "instagramUrl", label: "Instagram", Icon: FaInstagram },
-    { key: "facebookUrl", label: "Facebook", Icon: FaFacebook },
-    { key: "assetsLink", label: "Assets", Icon: FaFolderOpen },
-    { key: "designLink", label: "Design (Figma)", Icon: SiFigma },
-    { key: "repoUrl", label: "Repository", Icon: FaGithub },
-  ];
+              const linkItems = [
+                { key: "websiteUrl", label: "Sito web", Icon: FaGlobe },
+                { key: "instagramUrl", label: "Instagram", Icon: FaInstagram },
+                { key: "facebookUrl", label: "Facebook", Icon: FaFacebook },
+                { key: "assetsLink", label: "Assets", Icon: FaFolderOpen },
+                { key: "designLink", label: "Design (Figma)", Icon: SiFigma },
+                { key: "repoUrl", label: "Repository", Icon: FaGithub },
+              ];
 
-  const platformDefs = [
-    { k: "ios", label: "iOS", Icon: FaApple },
-    { k: "android", label: "Android", Icon: FaAndroid },
-    { k: "webapp", label: "Web App", Icon: FaLaptopCode },
-  ];
+              const platformDefs = [
+                { k: "ios", label: "iOS", Icon: FaApple },
+                { k: "android", label: "Android", Icon: FaAndroid },
+                { k: "webapp", label: "Web App", Icon: FaLaptopCode },
+              ];
 
-  // <- robustifica appPlatforms: array puro, stringa JSON, oppure array con stringa JSON
-  const normalizePlatforms = (v) => {
-    if (!v) return [];
-    if (Array.isArray(v)) {
-      if (v.length === 1 && typeof v[0] === "string" && v[0].trim().startsWith("[")) {
-        try { return JSON.parse(v[0]); } catch { return []; }
-      }
-      return v;
-    }
-    if (typeof v === "string") {
-      try { return JSON.parse(v); } catch { return v.split(/[,\s]+/).map(s=>s.trim()).filter(Boolean); }
-    }
-    return [];
-  };
-  const platforms = normalizePlatforms(fd.appPlatforms);
+              // <- robustifica appPlatforms: array puro, stringa JSON, oppure array con stringa JSON
+              const normalizePlatforms = (v) => {
+                if (!v) return [];
+                if (Array.isArray(v)) {
+                  if (
+                    v.length === 1 &&
+                    typeof v[0] === "string" &&
+                    v[0].trim().startsWith("[")
+                  ) {
+                    try {
+                      return JSON.parse(v[0]);
+                    } catch {
+                      return [];
+                    }
+                  }
+                  return v;
+                }
+                if (typeof v === "string") {
+                  try {
+                    return JSON.parse(v);
+                  } catch {
+                    return v
+                      .split(/[,\s]+/)
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                  }
+                }
+                return [];
+              };
+              const platforms = normalizePlatforms(fd.appPlatforms);
 
-  const refs =
-    (fd.referenceUrls || "")
-      .split(/[,\s\n]+/)
-      .map((s) => s.trim())
-      .filter(Boolean);
+              const refs = (fd.referenceUrls || "")
+                .split(/[,\s\n]+/)
+                .map((s) => s.trim())
+                .filter(Boolean);
 
-  const appLinks = [
-    { label: "iOS", key: "iosUrl", Icon: FaApple },
-    { label: "Android", key: "androidUrl", Icon: FaAndroid },
-    { label: "Web App", key: "webappUrl", Icon: FaLaptopCode },
-  ];
+              const appLinks = [
+                { label: "iOS", key: "iosUrl", Icon: FaApple },
+                { label: "Android", key: "androidUrl", Icon: FaAndroid },
+                { label: "Web App", key: "webappUrl", Icon: FaLaptopCode },
+              ];
 
-  return (
-    <>
-      {/* LINK */}
-      <h3 className="mt-8">Link</h3>
-      <div className="info-grid">
-        {linkItems.map(({ key, label, Icon }) => {
-          const su = safeUrl(fd[key]);
-          return (
-            <div className="irow" key={key}>
-              <div className="ilabel">
-                <Icon className="iicon" aria-hidden />
-                <span>{label}</span>
-              </div>
-              <div className="ival">
-                {su ? (
-                  <>
-                    <a
-                      href={su.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="pill pill--link"
-                      title={su.full}
-                    >
-                      <FaLinkIcon className="pill-ico" aria-hidden />
-                      <span className="pill-text">{su.label}</span>
-                    </a>
-                   
-                  </>
-                ) : (
-                  <span>—</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <>
+                  {/* LINK */}
+                  <h3 className="mt-8">Link</h3>
+                  <div className="info-grid">
+                    {linkItems.map(({ key, label, Icon }) => {
+                      const su = safeUrl(fd[key]);
+                      return (
+                        <div className="irow" key={key}>
+                          <div className="ilabel">
+                            <Icon className="iicon" aria-hidden />
+                            <span>{label}</span>
+                          </div>
+                          <div className="ival">
+                            {su ? (
+                              <>
+                                <a
+                                  href={su.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="pill pill--link"
+                                  title={su.full}
+                                >
+                                  <FaLinkIcon
+                                    className="pill-ico"
+                                    aria-hidden
+                                  />
+                                  <span className="pill-text">{su.label}</span>
+                                </a>
+                              </>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
 
-        {/* Riferimenti multipli */}
-        <div className="irow">
-          <div className="ilabel">
-            <FaLinkIcon className="iicon" aria-hidden />
-            <span>Riferimenti</span>
+                    {/* Riferimenti multipli */}
+                    <div className="irow">
+                      <div className="ilabel">
+                        <FaLinkIcon className="iicon" aria-hidden />
+                        <span>Riferimenti</span>
+                      </div>
+                      <div className="ival">
+                        {refs.length ? (
+                          <div className="pill-wrap">
+                            {refs.map((u) => {
+                              const su = safeUrl(u);
+                              return (
+                                <span key={u} className="pill-group">
+                                  <a
+                                    href={su.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="pill pill--link"
+                                    title={su.full}
+                                  >
+                                    <FaLinkIcon
+                                      className="pill-ico"
+                                      aria-hidden
+                                    />
+                                    <span className="pill-text">
+                                      {su.label}
+                                    </span>
+                                  </a>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span>—</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PIATTAFORME */}
+                  <h3 className="mt-24">Piattaforme</h3>
+                  <div className="pill-wrap">
+                    {platformDefs.map(({ k, label, Icon }) => {
+                      const on = platforms.includes(k);
+                      return (
+                        <span
+                          key={k}
+                          className={`pill ${on ? "pill--on" : "pill--off"}`}
+                        >
+                          <Icon className="pill-ico" aria-hidden />
+                          <span>{label}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  {/* URL specifici delle piattaforme */}
+                  <div className="info-grid mt-12">
+                    {appLinks.map(({ label, key, Icon }) => {
+                      const su = safeUrl(fd[key]);
+                      return (
+                        <div className="irow" key={key}>
+                          <div className="ilabel">
+                            <Icon className="iicon" aria-hidden />
+                            <span>{`URL ${label}`}</span>
+                          </div>
+                          <div className="ival">
+                            {su ? (
+                              <>
+                                <a
+                                  href={su.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="pill pill--link"
+                                  title={su.full}
+                                >
+                                  <FaLinkIcon
+                                    className="pill-ico"
+                                    aria-hidden
+                                  />
+                                  <span className="pill-text">{su.label}</span>
+                                </a>
+                              </>
+                            ) : (
+                              <span>—</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
-          <div className="ival">
-            {refs.length ? (
-              <div className="pill-wrap">
-                {refs.map((u) => {
-                  const su = safeUrl(u);
-                  return (
-                    <span key={u} className="pill-group">
-                      <a
-                        href={su.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="pill pill--link"
-                        title={su.full}
-                      >
-                        <FaLinkIcon className="pill-ico" aria-hidden />
-                        <span className="pill-text">{su.label}</span>
-                      </a>
-                      
-                    </span>
-                  );
-                })}
-              </div>
-            ) : (
-              <span>—</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* PIATTAFORME */}
-      <h3 className="mt-24">Piattaforme</h3>
-      <div className="pill-wrap">
-        {platformDefs.map(({ k, label, Icon }) => {
-          const on = platforms.includes(k);
-          return (
-            <span key={k} className={`pill ${on ? "pill--on" : "pill--off"}`}>
-              <Icon className="pill-ico" aria-hidden />
-              <span>{label}</span>
-            </span>
-          );
-        })}
-      </div>
-
-      {/* URL specifici delle piattaforme */}
-      <div className="info-grid mt-12">
-        {appLinks.map(({ label, key, Icon }) => {
-          const su = safeUrl(fd[key]);
-          return (
-            <div className="irow" key={key}>
-              <div className="ilabel">
-                <Icon className="iicon" aria-hidden />
-                <span>{`URL ${label}`}</span>
-              </div>
-              <div className="ival">
-                {su ? (
-                  <>
-                    <a
-                      href={su.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="pill pill--link"
-                      title={su.full}
-                    >
-                      <FaLinkIcon className="pill-ico" aria-hidden />
-                      <span className="pill-text">{su.label}</span>
-                    </a>
-                    
-                  </>
-                ) : (
-                  <span>—</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
-})()}
-  </div>
-)}
+        )}
 
         {activeTab === "questions" && (
           <div className="info-section">

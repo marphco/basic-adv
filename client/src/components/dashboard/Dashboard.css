@@ -1471,3 +1471,17 @@ td.centered .feedback-btn {
     word-break: break-word;
   }
 }
+
+/* Bandierina lingua super sleek */
+
+.desktop-table .lang-flag{ margin-right: 0; }
+
+.lang-flag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:20px; height:20px;
+  font-size:16px;
+  border-radius:6px;
+  line-height:1;
+}
