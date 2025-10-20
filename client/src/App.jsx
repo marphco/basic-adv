@@ -38,6 +38,10 @@ import useTouchLike from "./hooks/useTouchLike";
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.normalizeScroll(true);
 
+ScrollTrigger.config({
+  ignoreMobileResize: true,   // ✅ evita refresh e micro-jank su iOS quando cambia la UI bar
+});
+
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
@@ -221,6 +225,36 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
       window.history.scrollRestoration = "manual";
     }
   }, []);
+
+  // Ripristina la Y salvata quando torni su "/" da un project MOBILE + refresh
+useEffect(() => {
+  if (!isMobile) return;
+  if (location.pathname !== "/") return;
+
+  const saved = sessionStorage.getItem("basic:returnY");
+  const doRefresh = () => {
+    // ricalcola TUTTI i trigger con il layout reale post-ripristino
+    requestAnimationFrame(() => ScrollTrigger.refresh(true));
+  };
+
+  if (!saved) {
+    // nessuna Y salvata: fai comunque un refresh leggero
+    requestAnimationFrame(doRefresh);
+    return;
+  }
+
+  sessionStorage.removeItem("basic:returnY");
+  const y = Math.max(0, parseInt(saved, 10) || 0);
+
+  // 2 RAF per vincere eventuali scrollTo-top/router
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, y);
+      // importantissimo: REFRESH SOLO DOPO che lo scroll è stato applicato
+      requestAnimationFrame(doRefresh);
+    });
+  });
+}, [location.pathname, isMobile]);
 
   return (
     <>

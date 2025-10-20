@@ -184,32 +184,33 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
     const portfolioText = portfolioElem?.querySelector(".portfolio-text");
     let ctx = gsap.context(() => {
       if (isMobile) {
-        gsap.set(portfolioText, { x: "90vw" });
+        gsap.set(portfolioText, { x: "90vw", willChange: "transform" });
         gsap.to(portfolioText, {
           x: -200,
           ease: "none",
+          force3D: true, // ✅ compositing
           scrollTrigger: {
             trigger: portfolioText,
             start: "top 100%",
             end: "top 20%",
             scrub: true,
             invalidateOnRefresh: true,
+            refreshPriority: 1, // ✅ calcola dopo Services
           },
         });
       } else {
-        // 👇 DESKTOP: aggancia al pin orizzontale
+        // (ramo desktop INVARIATO)
         gsap.set(portfolioText, { willChange: "transform" });
         gsap.to(portfolioText, {
-          yPercent: 75, // come in Services; regola a gusto (30–80)
+          yPercent: 75,
           ease: "none",
           scrollTrigger: {
             trigger: portfolioElem,
-            containerAnimation: scrollTween, // << chiave!
-            start: "left center", // entra nel vivo quando il blocco entra
-            end: "right center", // esce quando il blocco esce
+            containerAnimation: scrollTween,
+            start: "left center",
+            end: "right center",
             scrub: 2,
             invalidateOnRefresh: true,
-            // markers: true,
           },
         });
       }

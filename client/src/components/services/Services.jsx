@@ -9,11 +9,14 @@ import { Trans, useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
+
 const Services = ({
   scrollTween = null,
   isMobile,
   windowWidth,
-  windowHeight,
+  // windowHeight,
 }) => {
   const servicesRef = useRef(null);
   const lineRef = useRef(null);
@@ -39,6 +42,8 @@ const Services = ({
     const servicesElem = servicesRef.current;
     const lineElem = lineRef.current;
 
+    gsap.set(lineElem, { willChange: "transform" });
+
     if (!servicesElem || !lineElem) return;
 
     // Creazione di un nuovo contesto per gestire le animazioni
@@ -60,77 +65,91 @@ const Services = ({
         });
       }
 
-      // Animazione della linea
       if (isMobile) {
-        gsap.to(lineElem, {
-          scaleY: 12,
-          ease: "none",
-          scrollTrigger: {
-            trigger: servicesElem,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-            invalidateOnRefresh: true,
-            // markers: true,
-          },
-        });
-      } else {
-        gsap.to(lineElem, {
-          scaleX: 22,
-          ease: "none",
-          scrollTrigger: {
-            trigger: servicesElem,
-            containerAnimation: scrollTween, // 👈 agganciato al pin orizzontale
-            start: "left right", // entra quando il bordo sinistro arriva sul bordo destro viewport
-            end: "right left", // termina quando esce a sinistra
-            scrub: true,
-            invalidateOnRefresh: true,
-            // markers: true,
-          },
-        });
-      }
+  // evita duplicati se l'effetto rientra
+  ScrollTrigger.getById("services-line-mobile")?.kill();
+
+  gsap.to(lineElem, {
+    id: "services-line-mobile",          // <— assegna SEMPRE un id
+    scaleY: 12,
+    ease: "none",
+    force3D: true,
+    scrollTrigger: {
+      id: "services-line-mobile",        // <— stesso id sul trigger
+      trigger: servicesElem,
+      start: "top bottom",
+      end: "bottom top",
+      scrub: true,
+      invalidateOnRefresh: true,
+      refreshPriority: 2,
+    },
+  });
+} else {
+  // --- DESKTOP: LINEA ---
+  ScrollTrigger.getById("services-line-desktop")?.kill();
+
+  gsap.to(lineElem, {
+    id: "services-line-desktop",
+    scaleX: 22,
+    ease: "none",
+    scrollTrigger: {
+      id: "services-line-desktop",
+      trigger: servicesElem,
+      containerAnimation: scrollTween,
+      start: "left right",
+      end: "right left",
+      scrub: true,
+      invalidateOnRefresh: true,
+    },
+  });
+}
 
       // Animazione per 'services-text'
       const servicesText = servicesElem.querySelector(".services-text");
+if (servicesText) {
+  if (isMobile) {
+    ScrollTrigger.getById("services-text-mobile")?.kill();
 
-      if (servicesText) {
-        if (isMobile) {
-          // Animazione su mobile
-          gsap.set(servicesText, { x: "50vw" });
+    gsap.set(servicesText, { x: "50vw", willChange: "transform" });
+    gsap.to(servicesText, {
+      id: "services-text-mobile",
+      x: -250,
+      ease: "none",
+      force3D: true,
+      scrollTrigger: {
+        id: "services-text-mobile",
+        trigger: servicesText,
+        start: "top 100%",
+        end: "top 20%",
+        scrub: true,
+        invalidateOnRefresh: true,
+        refreshPriority: 2,
+      },
+    });
+  } else {
+    ScrollTrigger.getById("services-text-desktop")?.kill();
 
-          gsap.to(servicesText, {
-            x: -250,
-            ease: "none",
-            scrollTrigger: {
-              trigger: servicesText,
-              start: "top 100%",
-              end: "top 20%",
-              scrub: true,
-              invalidateOnRefresh: true,
-              // markers: true,
-            },
-          });
-        } else {
-          // Animazione su desktop
-          gsap.to(servicesText, {
-            yPercent: 400,
-            ease: "none",
-            scrollTrigger: {
-              trigger: servicesElem,
-              containerAnimation: scrollTween, // 👈 anche il ribbon segue l’orizzontale
-              start: "left right",
-              end: "right center",
-              scrub: 2,
-              invalidateOnRefresh: true,
-              // markers: true,
-            },
-          });
-        }
-      }
+    gsap.to(servicesText, {
+      id: "services-text-desktop",
+      yPercent: 400,
+      ease: "none",
+      scrollTrigger: {
+        id: "services-text-desktop",
+        trigger: servicesElem,
+        containerAnimation: scrollTween,
+        start: "left right",
+        end: "right center",
+        scrub: 2,
+        invalidateOnRefresh: true,
+      },
+    });
+  }
+}
+
     }, servicesRef);
 
     return () => ctx.revert();
-  }, [isMobile, windowWidth, windowHeight, scrollTween]);
+}, [isMobile, windowWidth, scrollTween]);
 
   // Animazioni per i servizi
   useLayoutEffect(() => {
