@@ -131,7 +131,7 @@ if (servicesText) {
 
     gsap.to(servicesText, {
       id: "services-text-desktop",
-      yPercent: 400,
+      yPercent: 500,
       ease: "none",
       scrollTrigger: {
         id: "services-text-desktop",

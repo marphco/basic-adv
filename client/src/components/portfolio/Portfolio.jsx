@@ -202,7 +202,7 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
         // (ramo desktop INVARIATO)
         gsap.set(portfolioText, { willChange: "transform" });
         gsap.to(portfolioText, {
-          yPercent: 75,
+          yPercent: 90,
           ease: "none",
           scrollTrigger: {
             trigger: portfolioElem,

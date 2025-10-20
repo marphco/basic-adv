@@ -244,7 +244,7 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
      } else {
        gsap.set(banner, { willChange: "transform" });
        gsap.to(banner, {
-         yPercent: 75,
+         yPercent: 90,
          ease: "none",
          scrollTrigger: {
            trigger: sectionEl,
