@@ -15,12 +15,12 @@
   "cookie": { "usage": "We use cookies.", "acceptance": "ACCEPT" },
 
   "home": {
-    "hero": "If there’s something to communicate, we’re in.<1/>We turn ideas into stories, projects into experiences.<1/>Your audience won’t wait:<1/><2>let’s make them fall in love.</2>",
+    "hero": "We don’t sell stories.<1/><2>We make people<1/>feel something.</2>",
     "cta": "SHALL WE START?"
   },
   "services": {
-    "ribbon": "we get it done faster than we can explain it.",
-    "intro": "The bigger the ambition,<1/>the more we love it. Bold challenges are our routine.<1/>Got a vision?<1/><2>Let’s begin.</2>",
+    "ribbon": "strategy, but make it quick.",
+    "intro": "Vision? Check.<1/><2>Now let’s make it real.</2>",
     "groups": {
       "branding": {
         "title": "BRANDING",
@@ -85,8 +85,8 @@
     }
   },
   "portfolio": {
-    "banner": "we cleaned up the desktop just for you.",
-    "introDesktop": "You can drag folders around. Does it help? Not really. <hl>But then check what's inside.</hl>",
+    "banner": "yes, we actually cleaned the desktop.",
+    "introDesktop": "Drag-and-drop.<hl>The magic’s inside.</hl>",
     "introMobile": {
       "pre": "No excuses. ",
       "cta": "Open a folder."
@@ -254,9 +254,7 @@
       "referenceUrls": "Tip: separate multiple URLs with commas."
     },
     "hero": {
-      "title": "Tell us about your project",
-      "subtitlePrefix": "We'll guide you with a few questions",
-      "subtitleSuffix": "to understand what you really need."
+      "title": "Tell us about your project"
     },
     "initial": {
       "brandName": {
@@ -340,7 +338,7 @@
       "repoUrl": "Repository",
       "designLink": "Design link"
     },
-    "railText": "give us your mess; we’ll make it minimal."
+    "railText": "you spill ideas, we clean them up."
   },
   "legal": {
     "cookie": {

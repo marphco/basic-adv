@@ -845,10 +845,10 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
         {!currentQuestion && !isCompleted && !showThankYou && (
           <div className="dynamic-form-hero">
             <h2>{t("form.hero.title")}</h2>
-            <p>
+            {/* <p>
               <span>{t("form.hero.subtitlePrefix")}</span>{" "}
               {t("form.hero.subtitleSuffix")}
-            </p>
+            </p> */}
           </div>
         )}
 

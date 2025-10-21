@@ -262,9 +262,7 @@
       "referenceUrls": "Suggerimento: separa più URL con la virgola."
     },
     "hero": {
-      "title": "Parlaci del tuo progetto",
-      "subtitlePrefix": "Ti guideremo con poche domande",
-      "subtitleSuffix": "per capire cosa ti serve davvero."
+      "title": "Parlaci del tuo progetto"
     },
     "initial": {
       "brandName": {
