@@ -179,7 +179,7 @@ body.freeze-scroll {
   --blockW: min(60ch, 72vw); /* larghezza leggibile */
   width: var(--blockW);
   left: calc(50% - var(--blockW) / 2); /* centrato nella desktop-pane */
-  text-align: left;
+  text-align: center;
   font-size: 2rem;
   font-weight: 100;
   line-height: 1.1;
