@@ -451,6 +451,7 @@ td.centered .feedback-btn {
   border-radius: 4px;
   font-size: 0.8rem;
   font-weight: 400;
+  text-align: center;
   /* text-transform: uppercase; */
 }
 
