@@ -4,8 +4,6 @@
     { "src": "/portfolio/(.*)", "status": 410 },
     { "src": "/login", "headers": { "X-Robots-Tag": "noindex" } },
     { "src": "/dashboard", "headers": { "X-Robots-Tag": "noindex" } },
-    { "src": "/cookie-policy", "headers": { "X-Robots-Tag": "noindex" } },
-    { "src": "/privacy-policy", "headers": { "X-Robots-Tag": "noindex" } },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
