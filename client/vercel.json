@@ -6,39 +6,27 @@
     },
     {
       "src": "/login",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
+      "headers": {
+        "X-Robots-Tag": "noindex"
+      }
     },
     {
       "src": "/dashboard",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
+      "headers": {
+        "X-Robots-Tag": "noindex"
+      }
     },
     {
       "src": "/cookie-policy",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
+      "headers": {
+        "X-Robots-Tag": "noindex"
+      }
     },
     {
       "src": "/privacy-policy",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
-        }
-      ]
+      "headers": {
+        "X-Robots-Tag": "noindex"
+      }
     },
     {
       "src": "/(.*)",
