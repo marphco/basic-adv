@@ -1,7 +1,19 @@
 {
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/portfolio/(.*)", "status": 410 },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/index\\.php(.*)",
+      "status": 410
+    },
+    {
+      "src": "/portfolio/(.*)",
+      "status": 410
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
