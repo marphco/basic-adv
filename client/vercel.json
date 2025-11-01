@@ -2,8 +2,6 @@
   "routes": [
     { "handle": "filesystem" },
     { "src": "/portfolio/(.*)", "status": 410 },
-    { "src": "/login", "headers": { "X-Robots-Tag": "noindex" } },
-    { "src": "/dashboard", "headers": { "X-Robots-Tag": "noindex" } },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
