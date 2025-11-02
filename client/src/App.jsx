@@ -33,6 +33,7 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import useInputMode from "../src/hooks/useInputMode"; // se già creato prima
 import useDisableZoom from "../src/hooks/useDisableZoom";
 import useTouchLike from "./hooks/useTouchLike";
+import usePageView from './analytics/usePageView';
 
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
@@ -44,6 +45,7 @@ ScrollTrigger.config({
 });
 
 function AppContent({ isDark, setIsDark, scrollContainerRef }) {
+  usePageView();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const touchLike = useTouchLike();            // 👈 nuovo hook
