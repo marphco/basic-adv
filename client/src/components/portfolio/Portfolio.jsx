@@ -106,10 +106,10 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
 
   // Definiamo una griglia fissa di slot per il desktop
   const GRID_SLOTS = [
-    { x: 0.37, y: 0.08 }, { x: 0.57, y: 0.08 },
-    { x: 0.37, y: 0.26 }, { x: 0.57, y: 0.26 },
-    { x: 0.37, y: 0.44 }, { x: 0.57, y: 0.44 },
-    { x: 0.37, y: 0.62 }, { x: 0.57, y: 0.62 },
+    { x: 0.40, y: 0.08 }, { x: 0.60, y: 0.08 },
+    { x: 0.40, y: 0.26 }, { x: 0.60, y: 0.26 },
+    { x: 0.40, y: 0.44 }, { x: 0.60, y: 0.44 },
+    { x: 0.40, y: 0.62 }, { x: 0.60, y: 0.62 },
   ];
 
   const [folders, setFolders] = useState(() => 
