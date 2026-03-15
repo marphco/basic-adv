@@ -104,16 +104,20 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
   const contentRef = useRef(null);
   const portfolioRef = useRef(null);
 
-  const [folders, setFolders] = useState([
-    { id: "Progetto1", x: 0.37, y: 0.08 },
-    { id: "Progetto2", x: 0.57, y: 0.08 },
-    { id: "Progetto3", x: 0.37, y: 0.26 },
-    { id: "Progetto4", x: 0.57, y: 0.26 },
-    { id: "Progetto5", x: 0.37, y: 0.44 },
-    { id: "Progetto6", x: 0.57, y: 0.44 },
-    { id: "Progetto7", x: 0.37, y: 0.62 },
-    { id: "Progetto8", x: 0.57, y: 0.62 },
-  ]);
+  // Definiamo una griglia fissa di slot per il desktop
+  const GRID_SLOTS = [
+    { x: 0.37, y: 0.08 }, { x: 0.57, y: 0.08 },
+    { x: 0.37, y: 0.26 }, { x: 0.57, y: 0.26 },
+    { x: 0.37, y: 0.44 }, { x: 0.57, y: 0.44 },
+    { x: 0.37, y: 0.62 }, { x: 0.57, y: 0.62 },
+  ];
+
+  const [folders, setFolders] = useState(() => 
+    projectData.map((p, index) => {
+      const slot = GRID_SLOTS[index % GRID_SLOTS.length];
+      return { id: p.id, x: slot.x, y: slot.y };
+    })
+  );
 
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);

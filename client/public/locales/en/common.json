@@ -92,14 +92,14 @@
       "cta": "Open a folder."
     },
     "folders": {
-      "Progetto1": "Project 1",
-      "Progetto2": "Project 2",
-      "Progetto3": "Project 3",
-      "Progetto4": "Project 4",
-      "Progetto5": "Project 5",
-      "Progetto6": "Project 6",
-      "Progetto7": "Project 7",
-      "Progetto8": "Project 8"
+      "via-sole-mio": "Via Sole Mio",
+      "progetto-2": "Project 2",
+      "progetto-3": "Project 3",
+      "progetto-4": "Project 4",
+      "progetto-5": "Project 5",
+      "progetto-6": "Project 6",
+      "progetto-7": "Project 7",
+      "progetto-8": "Project 8"
     },
     "menubar": {
       "finder": "Finder",
@@ -201,35 +201,35 @@
     "notFound": "Project not found",
     "noDescription": "No description available",
     "projects": {
-      "Progetto1": {
-        "title": "Project 1",
-        "description": "Project 1 description..."
+      "via-sole-mio": {
+        "title": "Via Sole Mio",
+        "description": "Light, salt, Naples. For Via Sole Mio, we shaped a visual identity that breathes the Mediterranean. From city streets to digital: photography, film, and web experience in a sun-drenched balance of elegance."
       },
-      "Progetto2": {
+      "progetto-2": {
         "title": "Project 2",
         "description": "Project 2 description..."
       },
-      "Progetto3": {
+      "progetto-3": {
         "title": "Project 3",
         "description": "Project 3 description..."
       },
-      "Progetto4": {
+      "progetto-4": {
         "title": "Project 4",
         "description": "Project 4 description..."
       },
-      "Progetto5": {
+      "progetto-5": {
         "title": "Project 5",
         "description": "Project 5 description..."
       },
-      "Progetto6": {
+      "progetto-6": {
         "title": "Project 6",
         "description": "Project 6 description..."
       },
-      "Progetto7": {
+      "progetto-7": {
         "title": "Project 7",
         "description": "Project 7 description..."
       },
-      "Progetto8": {
+      "progetto-8": {
         "title": "Project 8",
         "description": "Project 8 description..."
       }

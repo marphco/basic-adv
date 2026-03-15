@@ -5,40 +5,61 @@ import mockup3 from "../../assets/mockup3.jpg";
 import mockup4 from "../../assets/mockup4.jpg";
 import mockup5 from "../../assets/mockup5.jpg";
 import mockup6 from "../../assets/mockup6.jpg";
+import via10 from "../../assets/viasolemio10.jpg"
+import via2 from "../../assets/viasolemio2.jpg"
+import via3 from "../../assets/viasolemio3.jpg"
+import via4 from "../../assets/viasolemio4.jpg"
+import via5 from "../../assets/viasolemio5.jpg"
+import via6 from "../../assets/viasolemio6.jpg"
+import via7 from "../../assets/viasolemio7.jpg"
+import via8 from "../../assets/viasolemio8.jpg"
+import via9 from "../../assets/viasolemio9.jpg"
+import viaReel from "../../assets/via-reel.mp4"
 
-const projectData = {
-  Progetto1: {
+
+
+const projectData = [
+  {
+    id: "via-sole-mio",
+    images: [via10, via2, via3, via4, via5, via6, via7, via8, via9],
+    video: viaReel,
+    link: "https://viasolemio.com",
+  },
+  {
+    id: "progetto-2",
+    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
+    link: null,
+  },
+  {
+    id: "progetto-3",
+    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
+    link: null,
+  },
+  {
+    id: "progetto-4",
+    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
+    link: null,
+  },
+  {
+    id: "progetto-5",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: "https://example.com/progetto1",
   },
-  Progetto2: {
+  {
+    id: "progetto-6",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
-  Progetto3: {
+  {
+    id: "progetto-7",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
-  Progetto4: {
+  {
+    id: "progetto-8",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
-  Progetto5: {
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: "https://example.com/progetto1",
-  },
-  Progetto6: {
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-  Progetto7: {
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-  Progetto8: {
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-};
+];
 
 export default projectData;

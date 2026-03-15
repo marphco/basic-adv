@@ -7,10 +7,15 @@ import projectData from "./projectData"; // Importa i dati centralizzati
 import { useTranslation } from "react-i18next";
 import "./Portfolio.css";
 
+const SPEAKER_ON_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+const SPEAKER_OFF_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+
 function ProjectSectionDesktop({ onClose, project }) {
   const overlayRef = useRef(null);
   const sectionRef = useRef(null);
   const leftColumnRef = useRef(null);
+  const videoRefs = useRef([]);
+  const isMutedRef = useRef(true);
   const { t } = useTranslation(["common"]);
 
   // Blocca lo scroll del sito usando una classe CSS
@@ -59,7 +64,7 @@ function ProjectSectionDesktop({ onClose, project }) {
     });
   };
 
-  const base = projectData[project] || { images: [], link: null };
+  const base = projectData.find(p => p.id === project) || { images: [], link: null };
   const title = t(
     `portfolio.projects.${project}.title`,
     t("portfolio.notFound")
@@ -70,8 +75,13 @@ function ProjectSectionDesktop({ onClose, project }) {
   );
   const content = { ...base, title, description };
 
-  // Duplica le immagini per ottenere il looping infinito
-  const duplicatedImages = content.images.concat(content.images);
+  // Unisce video e immagini in un unico array di media
+  const mediaItems = content.video 
+    ? [{ type: "video", src: content.video }, ...content.images.map(img => ({ type: "image", src: img }))]
+    : content.images.map(img => ({ type: "image", src: img }));
+
+  // Duplica i media per ottenere il looping infinito
+  const duplicatedMedia = mediaItems.concat(mediaItems);
 
   // Funzione che attende il caricamento di tutte le immagini e imposta il looping
   // Funzione che attende il caricamento di tutte le immagini e imposta il looping
@@ -79,14 +89,22 @@ function ProjectSectionDesktop({ onClose, project }) {
     const leftCol = leftColumnRef.current;
     if (!leftCol) return;
 
-    const imgs = leftCol.querySelectorAll("img");
-    const waitForImages = Array.from(imgs).map(
-      (img) =>
+    const mediaElements = leftCol.querySelectorAll("img, video");
+    const waitForMedia = Array.from(mediaElements).map(
+      (el) =>
         new Promise((resolve) => {
-          if (img.complete) resolve();
-          else {
-            img.addEventListener("load", resolve, { once: true });
-            img.addEventListener("error", resolve, { once: true });
+          if (el.tagName === "IMG") {
+            if (el.complete) resolve();
+            else {
+              el.addEventListener("load", resolve, { once: true });
+              el.addEventListener("error", resolve, { once: true });
+            }
+          } else if (el.tagName === "VIDEO") {
+            if (el.readyState >= 1) resolve(); // Have metadata
+            else {
+              el.addEventListener("loadedmetadata", resolve, { once: true });
+              el.addEventListener("error", resolve, { once: true });
+            }
           }
         })
     );
@@ -94,30 +112,56 @@ function ProjectSectionDesktop({ onClose, project }) {
     const TOLERANCE = 1;
     let handleScroll;
 
-    Promise.all(waitForImages).then(() => {
-      // ricalcola sempre la metà (se cambiano dimensioni)
-      const singleContentHeight = () => leftCol.scrollHeight / 2;
-
+    Promise.all(waitForMedia).then(() => {
+      // Usiamo una misura deterministica basata sul viewport per evitare errori di arrotondamento
+      const getSingleContentHeight = () => mediaItems.length * window.innerHeight;
+      
       if (leftCol.scrollTop === 0) leftCol.scrollTop = 1;
 
       handleScroll = () => {
-        const half = singleContentHeight();
-        if (leftCol.scrollTop < TOLERANCE) {
-          leftCol.scrollTop = leftCol.scrollTop + half - TOLERANCE;
-        } else if (leftCol.scrollTop > half - TOLERANCE) {
-          leftCol.scrollTop = leftCol.scrollTop - half + TOLERANCE;
+        const half = getSingleContentHeight();
+        const currentScroll = leftCol.scrollTop;
+
+        if (currentScroll < TOLERANCE) {
+          leftCol.scrollTop = currentScroll + half;
+        } else if (currentScroll > half + TOLERANCE) {
+          leftCol.scrollTop = currentScroll - half;
         }
       };
 
       leftCol.addEventListener("scroll", handleScroll);
     });
 
+    // Sincronizzazione continua tramite requestAnimationFrame per zero scatti
+    let rafId;
+    const syncVideos = () => {
+      const videos = Array.from(leftCol.querySelectorAll("video"));
+      if (videos.length > 1) {
+        const master = videos[0];
+        videos.forEach((v, idx) => {
+          // Forza il play continuo
+          if (v.paused) v.play().catch(() => {});
+          
+          // Sincronizza il tempo solo se c'è un drift percettibile (> 0.1s)
+          if (idx > 0) {
+            const diff = Math.abs(v.currentTime - master.currentTime);
+            if (diff > 0.1) {
+              v.currentTime = master.currentTime;
+            }
+          }
+        });
+      }
+      rafId = requestAnimationFrame(syncVideos);
+    };
+    rafId = requestAnimationFrame(syncVideos);
+
     return () => {
       if (handleScroll && leftCol) {
         leftCol.removeEventListener("scroll", handleScroll);
       }
+      cancelAnimationFrame(rafId);
     };
-  }, [content.images.length]);
+  }, [mediaItems.length]);
 
   useEffect(() => {
     const container = overlayRef.current;
@@ -173,14 +217,44 @@ function ProjectSectionDesktop({ onClose, project }) {
         >
           {/* Colonna sinistra: immagini con scroll infinito */}
           <div className="project-left" ref={leftColumnRef}>
-            {duplicatedImages.map((img, index) => (
-              <img
-                key={index}
-                src={img}
-                alt={`${content.title} - ${
-                  (index % content.images.length) + 1
-                }`}
-              />
+            {duplicatedMedia.map((item, index) => (
+              <div key={index} className="project-media-item">
+                {item.type === "video" ? (
+                  <div className="project-video-container">
+                    <video
+                      ref={(el) => (videoRefs.current[index] = el)}
+                      src={item.src}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                    />
+                    <button
+                      type="button"
+                      className="audio-toggle-v2 visible"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newMuted = !isMutedRef.current;
+                        isMutedRef.current = newMuted;
+                        // Sincronizza tutti i video duplicati
+                        videoRefs.current.forEach(v => {
+                          if (v) v.muted = newMuted;
+                        });
+                        // Aggiorna l'icona (approccio DOM diretto per performance in scroll infinito)
+                        document.querySelectorAll('.audio-toggle-v2').forEach(btn => {
+                          btn.innerHTML = newMuted ? SPEAKER_OFF_SVG : SPEAKER_ON_SVG;
+                        });
+                      }}
+                      dangerouslySetInnerHTML={{ __html: SPEAKER_OFF_SVG }}
+                    />
+                  </div>
+                ) : (
+                  <img
+                    src={item.src}
+                    alt={`${content.title} - ${index + 1}`}
+                  />
+                )}
+              </div>
             ))}
           </div>
           {/* Colonna destra: testo e pulsante */}

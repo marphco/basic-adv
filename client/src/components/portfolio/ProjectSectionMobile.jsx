@@ -8,17 +8,20 @@ import { useTranslation } from "react-i18next";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const SPEAKER_ON_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+const SPEAKER_OFF_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+
 export default function ProjectSectionMobilePage() {
   const { id } = useParams();
   const containerRef = useRef(null);
   const imagesRowRef = useRef(null);
   const topSectionRef = useRef(null);
+  const videoRef = useRef(null);
+  const isMutedRef = useRef(true);
   const { t } = useTranslation(["common"]);
 
-  const normalizedId = id.charAt(0).toUpperCase() + id.slice(1);
-
   // dati non tradotti (immagini/link)
-  const base = projectData[normalizedId] || { images: [], link: null };
+  const base = projectData.find(p => p.id === id) || { images: [], link: null };
 
   // testi tradotti con fallback
   const title = t(
@@ -119,6 +122,33 @@ export default function ProjectSectionMobilePage() {
         </div>
       </div>
       <div ref={imagesRowRef} className="project-section-mobile-bottom">
+        {content.video && (
+          <div className="project-video-container">
+            <video
+              ref={videoRef}
+              src={content.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+            <button
+              type="button"
+              className="audio-toggle-v2 visible"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (videoRef.current) {
+                  const newMuted = !isMutedRef.current;
+                  isMutedRef.current = newMuted;
+                  videoRef.current.muted = newMuted;
+                  // Update icon via DOM for consistency
+                  e.currentTarget.innerHTML = newMuted ? SPEAKER_OFF_SVG : SPEAKER_ON_SVG;
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: SPEAKER_OFF_SVG }}
+            />
+          </div>
+        )}
         {content.images.map((img, index) => (
           <img key={index} src={img} alt={`${content.title} - ${index + 1}`} />
         ))}

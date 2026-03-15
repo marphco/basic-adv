@@ -92,14 +92,14 @@
       "cta": "Apri una cartella."
     },
     "folders": {
-      "Progetto1": "Progetto 1",
-      "Progetto2": "Progetto 2",
-      "Progetto3": "Progetto 3",
-      "Progetto4": "Progetto 4",
-      "Progetto5": "Progetto 5",
-      "Progetto6": "Progetto 6",
-      "Progetto7": "Progetto 7",
-      "Progetto8": "Progetto 8"
+      "via-sole-mio": "Via Sole Mio",
+      "progetto-2": "Progetto 2",
+      "progetto-3": "Progetto 3",
+      "progetto-4": "Progetto 4",
+      "progetto-5": "Progetto 5",
+      "progetto-6": "Progetto 6",
+      "progetto-7": "Progetto 7",
+      "progetto-8": "Progetto 8"
     },
     "menubar": {
       "finder": "Finder",
@@ -209,35 +209,35 @@
     "notFound": "Progetto non trovato",
     "noDescription": "Nessuna descrizione disponibile",
     "projects": {
-      "Progetto1": {
-        "title": "Progetto 1",
-        "description": "Descrizione italiana del progetto 1..."
+      "via-sole-mio": {
+        "title": "Via Sole Mio",
+        "description": "Luce, sale, Napoli. Per Via Sole Mio abbiamo plasmato un'identità visiva che respira il Mediterraneo. Dalle strade della città al digitale: shooting, video e web experience in un equilibrio di eleganza solare."
       },
-      "Progetto2": {
+      "progetto-2": {
         "title": "Progetto 2",
         "description": "Descrizione italiana del progetto 2..."
       },
-      "Progetto3": {
+      "progetto-3": {
         "title": "Progetto 3",
         "description": "Descrizione italiana del progetto 3..."
       },
-      "Progetto4": {
+      "progetto-4": {
         "title": "Progetto 4",
         "description": "Descrizione italiana del progetto 4..."
       },
-      "Progetto5": {
+      "progetto-5": {
         "title": "Progetto 5",
         "description": "Descrizione italiana del progetto 5..."
       },
-      "Progetto6": {
+      "progetto-6": {
         "title": "Progetto 6",
         "description": "Descrizione italiana del progetto 6..."
       },
-      "Progetto7": {
+      "progetto-7": {
         "title": "Progetto 7",
         "description": "Descrizione italiana del progetto 7..."
       },
-      "Progetto8": {
+      "progetto-8": {
         "title": "Progetto 8",
         "description": "Descrizione italiana del progetto 8..."
       }
