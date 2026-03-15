@@ -51,8 +51,8 @@ const Folder = ({ id, left, top, isMobile, onOpenSection, label }) => {
         left: `${left * 100}%`, // left e top ora sono frazioni [0..1]
         top: `${top * 100}%`,
         transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-          : undefined,
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0) translate(-50%, 0)`
+          : "translate(-50%, 0)",
       };
 
   const handleDoubleClick = (e) => {
