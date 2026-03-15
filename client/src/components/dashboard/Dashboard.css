@@ -1,10 +1,10 @@
 * {
-  cursor: inherit !important; /* Reset per evitare cursori nascosti */
+
 }
 
 html,
 body {
-  cursor: auto !important;
+
 }
 
 .custom-cursor-dot,
@@ -218,7 +218,7 @@ td.centered .feedback-btn {
 
 /* Rendi la riga cliccabile */
 .request-row {
-  cursor: pointer;
+
 }
 
 /* Stili per Allegati */
@@ -252,7 +252,7 @@ td.centered .feedback-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
   transition: all 0.5s ease;
 }
 
@@ -278,7 +278,7 @@ td.centered .feedback-btn {
 .delete-btn {
   border: none;
   background: none; /* Rimuove lo sfondo */
-  cursor: pointer;
+
   padding: 0; /* Rimuove il padding */
   color: var(--error-color); /* Colore dell'icona */
   transition: all 0.5s ease;
@@ -333,7 +333,7 @@ td.centered .feedback-btn {
 
 .details-sidebar li {
   padding: 10px;
-  cursor: pointer;
+
   color: var(--primary-text-color);
   background: transparent;
   border: 1px solid #d1d1d1;
@@ -396,7 +396,7 @@ td.centered .feedback-btn {
   color: white;
   border: solid 1px var(--error-color) !important;
   border-radius: 4px;
-  cursor: pointer;
+
   font-weight: 300;
   transition: all 0.5s ease;
 }
@@ -419,7 +419,7 @@ td.centered .feedback-btn {
   border: 1px solid #d1d1d1;
   flex: 1;
   text-align: center;
-  cursor: pointer;
+
   transition: all 0.5s ease;
 }
 
@@ -770,7 +770,7 @@ td.centered .feedback-btn {
   text-decoration: none;
   box-sizing: border-box;
   transition: all 0.5s ease;
-  cursor: pointer;
+
 }
 
 .file-list-section .download-btn {
@@ -838,7 +838,7 @@ td.centered .feedback-btn {
   font-weight: 300;
   transition: all 0.5s ease;
   text-decoration: none;
-  cursor: pointer;
+
 }
 
 .link-btn:hover {
@@ -887,7 +887,7 @@ td.centered .feedback-btn {
   border-radius: 4px;
   font-weight: 300;
   font-size: 0.9rem;
-  cursor: pointer;
+
   transition: all 0.5s ease;
   gap: 8px; /* Spazio tra icona, testo e badge */
 }
@@ -922,7 +922,7 @@ td.centered .feedback-btn {
   background: none;
   border: none;
   padding: 0;
-  cursor: pointer;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -976,7 +976,7 @@ td.centered .feedback-btn {
   height: 1rem;
   border: 1px solid grey;
   border-radius: 2px;
-  cursor: pointer;
+
   background-color: transparent;
   transition: all 0.5s ease;
   margin-right: 12px;
@@ -1014,7 +1014,7 @@ td.centered .feedback-btn {
   padding: 15px;
   margin-bottom: 15px;
   transition: all 0.5s ease;
-  cursor: pointer; /* Permette di cliccare sulla card per aprire i dettagli */
+
 }
 
 /* Contenuto della card */
@@ -1096,7 +1096,7 @@ td.centered .feedback-btn {
   justify-content: center;
   color: var(--primary-text-color);
   font-size: 0.9rem;
-  cursor: pointer;
+
   transition: all 0.2s ease;
 }
 .chip.active {

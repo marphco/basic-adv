@@ -66,7 +66,7 @@ body[data-theme="dark"] .navbar-block::before {
   color: inherit;
   font-size: 0.8rem;
   line-height: 1;
-  cursor: pointer;
+
   padding: 4px 6px;
   transition: color 0.5s ease;
 }
@@ -103,7 +103,7 @@ body[data-theme="dark"] .navbar-block::before {
 .hamburger-menu {
   display: none;
   flex-direction: column;
-  cursor: pointer;
+
   margin-right: 12px;
 }
 .hamburger {
@@ -211,7 +211,7 @@ body[data-theme="dark"]
   padding: 2px 0;             /* zero “box” */
   color: inherit;             /* usa currentColor -> si adatta al tema */
   opacity: 0.5;               /* stato "muted" di base */
-  cursor: pointer;
+
   transition: opacity .2s ease, color .2s ease, text-decoration-color .2s ease;
   text-underline-offset: 3px;
   transition: color .5s ease;

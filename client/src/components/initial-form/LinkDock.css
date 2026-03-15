@@ -22,7 +22,7 @@
   border-radius: 4px;
   background: transparent;
   color: var(--primary-text-color);
-  cursor: pointer;
+
   font-weight: 300;
   transition: border-color 0.5s ease, background 0.2s ease;
 }
@@ -121,7 +121,7 @@
   border: 0;
   background: transparent;
   color: #9a9a9a;
-  cursor: pointer;
+
 }
 .ld-clear:hover {
   color: var(--foreground-color);
@@ -160,7 +160,7 @@
   border: 0;
   background: transparent;
   color: #aaa;
-  cursor: pointer;
+
   display: flex;
 }
 .ld-x:hover {

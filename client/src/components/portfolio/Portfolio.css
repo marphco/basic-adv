@@ -96,7 +96,7 @@
   flex-direction: column;
 }
 .folder {
-  cursor: move;
+
   padding: 10px;
   border: none;
   border-radius: 5px;
@@ -160,7 +160,7 @@
   top: 76px !important;
   right: 72px !important;
   font-size: 0.8rem !important;
-  cursor: pointer;
+
   background: none;
   border: none;
   color: var(--primary-text-color);
@@ -290,7 +290,7 @@ body[data-theme="dark"] .folder-name,
   background: none;
   border: none;
   font-size: 1rem;
-  cursor: pointer;
+
 } /* Stili per il contenitore del contenuto */
 .project-content {
   display: flex;
@@ -445,7 +445,7 @@ Sfondo “desktop” Sonoma .mac-desktop {
 
 .dock-item {
   -webkit-appearance: none; appearance: none;
-  background: transparent; border: 0; cursor: pointer; padding: 0; margin: 0;
+  background: transparent; border: 0;  padding: 0; margin: 0;
   width: 56px; height: 56px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   --ty: 0%; --sx: 1; --sy: 1;
@@ -540,7 +540,7 @@ Sfondo “desktop” Sonoma .mac-desktop {
     position: static;
     width: auto;
     margin: 0;
-    cursor: pointer;
+
   }
   .folder-icon {
     width: clamp(92px, 24vw, 140px);
@@ -610,7 +610,7 @@ Sfondo “desktop” Sonoma .mac-desktop {
 }
 .App.is-mobile .portfolio-content { width: 100%; height: auto; margin-top: 0; padding: 24px 20px 80px; }
 .App.is-mobile .portfolio-content { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: clamp(16px, 4vw, 28px) 24px; align-items: start; justify-items: center; }
-.App.is-mobile .folder.mobile { position: static; margin: 0; cursor: pointer; }
+.App.is-mobile .folder.mobile { position: static; margin: 0;  }
 .App.is-mobile .folder-icon { width: clamp(92px, 24vw, 140px); height: clamp(92px, 24vw, 140px); }
 .App.is-mobile .folder-name { margin-top: 8px; font-size: clamp(12px, 2.6vw, 16px); text-align: center; }
 .App.is-mobile .dock-strip, .App.is-mobile .dock { display: none; }
@@ -662,7 +662,7 @@ Sfondo “desktop” Sonoma .mac-desktop {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
   z-index: 100;
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);

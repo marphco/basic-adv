@@ -83,7 +83,7 @@
   .font-button {
     background: transparent;
     border: none;
-    cursor: pointer;
+
     transition: all 0.5s ease;
     width: 100%;
     box-sizing: border-box;

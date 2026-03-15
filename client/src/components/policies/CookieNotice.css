@@ -30,7 +30,7 @@
     padding: 0;
     font-size: 0.7rem;
     font-weight: 400 !important;
-    cursor: pointer;
+
     opacity: 1;
     transition: opacity .5s ease;
   }

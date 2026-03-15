@@ -10,26 +10,24 @@ body {
     "Helvetica Neue", Arial, sans-serif;
 }
 
-#root.no-cursor, #root.no-cursor * { cursor: none !important; }
-#root.no-cursor input, #root.no-cursor textarea, #root.no-cursor select { cursor: text !important; }
-#root.no-cursor a, #root.no-cursor button, #root.no-cursor [role="button"] { cursor: pointer !important; }
+/* NUCLEAR CURSOR HIDE: nasconde globalmente il cursore di default su desktop */
+html.no-default-cursor,
+html.no-default-cursor *,
+body.no-default-cursor,
+body.no-default-cursor *,
+body.no-default-cursor a,
+body.no-default-cursor button,
+body.no-default-cursor [role="button"] {
+  cursor: none !important;
+}
 
-/* Mostra il cursore testo per gli input di testo e select */
+/* Mostra il cursore testo SOLO per gli input di testo reali */
 body.no-default-cursor input[type="text"],
 body.no-default-cursor input[type="email"],
 body.no-default-cursor input[type="password"],
+body.no-default-cursor input[type="tel"],
 body.no-default-cursor textarea {
   cursor: text !important;
-}
-
-/* Mostra il cursore pointer per i pulsanti e altri elementi interattivi */
-body.no-default-cursor button,
-body.no-default-cursor [type="button"],
-body.no-default-cursor [type="submit"],
-body.no-default-cursor [role="button"],
-body.no-default-cursor .btn,
-body.no-default-cursor a {
-  cursor: none !important;
 }
 
 :root {

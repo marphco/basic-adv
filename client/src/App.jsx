@@ -131,8 +131,12 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   }, [isDark]);
 
   useEffect(() => {
+    document.documentElement.classList.add("no-default-cursor");
     document.body.classList.add("no-default-cursor");
-    return () => document.body.classList.remove("no-default-cursor");
+    return () => {
+      document.documentElement.classList.remove("no-default-cursor");
+      document.body.classList.remove("no-default-cursor");
+    };
   }, []);
 
   // Anchor #hash -> scroll corretto (già presente)

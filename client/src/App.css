@@ -58,7 +58,6 @@ body,
   background: none;
   border: none;
   z-index: 1000; /* Assicurati che sia sopra il contenuto */
-  cursor: pointer !important;
   color: var(--primary-text-color);
   transition: color 0.5s ease-in-out;
   pointer-events: auto !important; /* Assicurati che i clic vengano ricevuti */
@@ -77,15 +76,10 @@ html,
   padding: 0;
   height: 100%;
   width: 100%;
-  /* cursor: none !important; */
   overscroll-behavior: none;
   touch-action: pan-x pan-y;
 }
 
-/* Cursor custom solo desktop con puntatore preciso */
-@media (pointer: fine) and (hover: hover) {
-  #root.custom-cursor { cursor: none; }
-}
 /* Sempre mostrare il cursore durante focus via tastiera */
 :focus-visible { outline: 2px solid var(--foreground-color); outline-offset: 2px; }
 
@@ -162,11 +156,6 @@ transform: translateZ(0);
     flex-shrink: 0;
   }
 
-  body,
-  html,
-  #root {
-    cursor: default !important; /* Usa il cursore di default su mobile */
-  }
 
   .navbar {
     padding: 10px 20px;

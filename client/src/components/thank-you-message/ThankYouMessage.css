@@ -27,7 +27,7 @@
     border: none;
     border-radius: 4px;
     font-weight: 200;
-    cursor: pointer;
+
     border: solid 1px var(--foreground-color);
     transition: background-color 0.5s ease;
     font-size: 1.2rem; /* Uniforme con submit-btn */

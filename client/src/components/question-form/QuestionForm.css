@@ -90,7 +90,7 @@
     height: 1rem;
     border: 1px solid grey;
     border-radius: 2px;
-    cursor: pointer;
+
     background-color: transparent;
     transition: all 0.5s ease;
   }
@@ -121,7 +121,7 @@
     margin: 0 auto;
     border-radius: 4px;
     font-weight: 200;
-    cursor: pointer;
+
     border: solid 1px var(--foreground-color);
     transition: background-color 0.5s ease;
     font-size: 1.2rem;
@@ -135,7 +135,7 @@
   
   .question-btn:disabled {
     background-color: var(--foreground-color);
-    cursor: not-allowed;
+
   }
   
   .loading-text {

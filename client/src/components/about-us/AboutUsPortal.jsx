@@ -142,7 +142,6 @@ export function AboutUsPortal({ isOpen, onClose }) {
               fontSize: "16px",
               background: "none",
               border: "none",
-              cursor: "pointer",
               color: "#161616",
             }}
           >

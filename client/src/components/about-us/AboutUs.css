@@ -343,7 +343,7 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
   background-color: var(--foreground-color);
   transition: background-color 0.3s ease;
   z-index: 9999;
@@ -738,7 +738,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+
     /* background-color: var(--foreground-color); */
     transition: width 0.5s ease, height 0.5s ease; /* Transizione fluida per larghezza e altezza */
     z-index: 9999;
@@ -912,7 +912,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
   transition: width 0.5s ease, height 0.5s ease;
   z-index: 9999;
 }

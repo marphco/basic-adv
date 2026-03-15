@@ -73,7 +73,7 @@ input:-webkit-autofill:active {
   background-color: #f0f0f0;
   border: 2px solid #ccc;
   border-radius: 5px;
-  cursor: pointer;
+
   transition: background-color 0.5s, border-color 0.5s;
 }
 
@@ -94,7 +94,7 @@ input:-webkit-autofill:active {
   border: none;
   border-radius: 4px;
   font-weight: 200;
-  cursor: pointer;
+
   border: solid 1px var(--foreground-color);
   transition: background-color 0.5s ease;
   font-size: 1.5rem !important;
@@ -108,7 +108,7 @@ input:-webkit-autofill:active {
 
 .submit-btn:disabled {
   background-color: #ccc;
-  cursor: not-allowed;
+
 }
 
 .form-actions {
@@ -156,7 +156,7 @@ input:-webkit-autofill:active {
 
 .submit-btn:disabled {
   background-color: var(--foreground-color) !important;
-  cursor: not-allowed;
+
   opacity: 0.7;
 }
 
@@ -224,7 +224,7 @@ input:-webkit-autofill:active {
   border-radius: 50%;
   border: 1px solid #d1d1d1;
   background: transparent;
-  cursor: pointer;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -317,7 +317,7 @@ input:-webkit-autofill:active {
 .submit-btn:disabled {
   background-color: var(--foreground-color);
   opacity: 0.35;
-  cursor: not-allowed;
+
   border-color: var(--foreground-color);
   color: white;
 }
