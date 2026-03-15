@@ -34,11 +34,6 @@ const projectData = [
     link: "https://frapackaging.com",
   },
   {
-    id: "progetto-2",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-  {
     id: "progetto-3",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
