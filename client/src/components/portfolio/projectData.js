@@ -15,6 +15,9 @@ import via7 from "../../assets/viasolemio7.jpg"
 import via8 from "../../assets/viasolemio8.jpg"
 import via9 from "../../assets/viasolemio9.jpg"
 import viaReel from "../../assets/via-reel.mp4"
+import fp1 from "../../assets/fp1.jpg"
+import fp2 from "../../assets/fp2.jpg"
+import fp3 from "../../assets/fp3.jpg"
 
 
 
@@ -24,6 +27,11 @@ const projectData = [
     images: [via10, via2, via3, via4, via5, via6, via7, via8, via9],
     video: viaReel,
     link: "https://viasolemio.com",
+  },
+  {
+    id: "fra-packaging",
+    images: [fp1, fp2, fp3],
+    link: "https://frapackaging.com",
   },
   {
     id: "progetto-2",

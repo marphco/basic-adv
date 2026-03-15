@@ -93,6 +93,7 @@
     },
     "folders": {
       "via-sole-mio": "Via Sole Mio",
+      "fra-packaging": "FraPackaging",
       "progetto-2": "Progetto 2",
       "progetto-3": "Progetto 3",
       "progetto-4": "Progetto 4",
@@ -212,6 +213,10 @@
       "via-sole-mio": {
         "title": "Via Sole Mio",
         "description": "Luce, sale, Napoli. Per Via Sole Mio abbiamo plasmato un'identità visiva che respira il Mediterraneo. Dalle strade della città al digitale: shooting, video e web experience in un equilibrio di eleganza solare."
+      },
+      "fra-packaging": {
+        "title": "FraPackaging",
+        "description": "Esperienza tecnica e spirito pratico. Per FraPackaging abbiamo tradotto trent'anni di leadership nella trasformazione delle materie plastiche in un'identità digitale solida e all'avanguardia. Un rebrand completo e un nuovo sito web che comunicano precisione, innovazione e l'impegno costante verso la sostenibilità industriale."
       },
       "progetto-2": {
         "title": "Progetto 2",

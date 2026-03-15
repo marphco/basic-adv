@@ -93,6 +93,7 @@
     },
     "folders": {
       "via-sole-mio": "Via Sole Mio",
+      "fra-packaging": "FraPackaging",
       "progetto-2": "Project 2",
       "progetto-3": "Project 3",
       "progetto-4": "Project 4",
@@ -204,6 +205,10 @@
       "via-sole-mio": {
         "title": "Via Sole Mio",
         "description": "Light, salt, Naples. For Via Sole Mio, we shaped a visual identity that breathes the Mediterranean. From city streets to digital: photography, film, and web experience in a sun-drenched balance of elegance."
+      },
+      "fra-packaging": {
+        "title": "FraPackaging",
+        "description": "Technical expertise and practical spirit. For FraPackaging, we translated thirty years of leadership in plastic transformation into a solid, cutting-edge digital identity. A complete rebranding and a new website that communicate precision, innovation, and a steady commitment to industrial sustainability."
       },
       "progetto-2": {
         "title": "Project 2",
