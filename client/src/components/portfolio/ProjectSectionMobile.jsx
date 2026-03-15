@@ -102,13 +102,9 @@ export default function ProjectSectionMobilePage() {
     };
   }, []);
 
-  console.log("MOBILE PROJECT PAGE RENDER:", { id, found: !!base, imagesCount: base.images?.length });
 
   return (
-    <div ref={containerRef} className="project-section-mobile-page" style={{ background: '#fff' }}>
-      <div style={{ position: 'fixed', top: 10, left: 10, zIndex: 9999, color: '#000', background: 'yellow' }}>
-        DEBUG: {id} - {base.images?.length} imgs
-      </div>
+    <div ref={containerRef} className="project-section-mobile-page">
       <div ref={topSectionRef} className="project-section-mobile-top">
         <div className="project-text-container">
           <div className="project-text">
