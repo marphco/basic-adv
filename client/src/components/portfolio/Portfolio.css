@@ -696,3 +696,13 @@ Sfondo “desktop” Sonoma .mac-desktop {
     height: 16px;
   }
 }
+
+/* Fix per laptop 13" e schermi con altezza ridotta */
+@media screen and (min-width: 992px) and (max-height: 850px) {
+  .portfolio-content {
+    margin-top: 4vh !important;
+  }
+  .intro-portfolio {
+    bottom: 18% !important;
+  }
+}
