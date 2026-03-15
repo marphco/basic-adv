@@ -316,9 +316,7 @@ useEffect(() => {
             }
           />
           <Route path="/about-us" element={<AboutUs isMobile={isMobile}/>} />
-          {isMobile && (
-            <Route path="/project/:id" element={<ProjectSectionMobile />} />
-          )}
+          <Route path="/project/:id" element={<ProjectSectionMobile />} />
           <Route path="/login" element={<Login isDark={isDark} />} />
           <Route
             path="/dashboard"
