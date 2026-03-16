@@ -12,6 +12,15 @@ import IconOrange from "../../assets/icon-orange.svg";
 import IconBlack from "../../assets/icon-black.svg";
 import IconWhite from "../../assets/icon-white.svg";
 
+// LogoStack hoisted outside to prevent unmounting/flicker during theme switches
+const LogoStack = () => (
+  <span className="logo-stack" aria-hidden="true">
+    <img src={IconOrange} className="logo-img logo-icon--orange" alt="" />
+    <img src={IconBlack} className="logo-img logo-icon--hover-light" alt="" />
+    <img src={IconWhite} className="logo-img logo-icon--hover-dark" alt="" />
+  </span>
+);
+
 const Navbar = ({
   isDark,
   setIsDark,
@@ -127,13 +136,6 @@ const Navbar = ({
     handleLinkClick();
   };
 
-  const LogoStack = () => (
-    <span className="logo-stack" aria-hidden="true">
-      <img src={IconOrange} className="logo-img logo-icon--orange" alt="" />
-      <img src={IconBlack} className="logo-img logo-icon--hover-light" alt="" />
-      <img src={IconWhite} className="logo-img logo-icon--hover-dark" alt="" />
-    </span>
-  );
 
   const shouldRenderMenu =
     !isLoginOrPolicy &&

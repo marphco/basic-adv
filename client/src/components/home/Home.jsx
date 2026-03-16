@@ -96,12 +96,18 @@ const Home = () => {
 
       <div className="bottom-section">
         <div className="home-logo-container">
-          {/* 👇 RENDER UN SOLO IMG: niente doppioni, niente conflitti CSS */}
-          {isDarkTheme ? (
-            <img src={logoDark} alt="Logo Dark" className="home-logo" />
-          ) : (
-            <img src={logoLight} alt="Logo Light" className="home-logo" />
-          )}
+          <img 
+            src={logoDark} 
+            alt="Logo Dark" 
+            className="home-logo dark-logo" 
+            style={{ opacity: isDarkTheme ? 1 : 0 }}
+          />
+          <img 
+            src={logoLight} 
+            alt="Logo Light" 
+            className="home-logo light-logo" 
+            style={{ opacity: isDarkTheme ? 0 : 1 }}
+          />
         </div>
         <div className="scroll-hint">
           {t("home.cta")}

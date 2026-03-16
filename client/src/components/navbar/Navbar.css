@@ -140,6 +140,8 @@ body[data-theme="dark"] .navbar-block::before {
   display: block;
   transition: opacity 0.5s ease;
   image-rendering: -webkit-optimize-contrast;
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: opacity;
 }
 .logo-icon--orange {
   opacity: 1;
