@@ -896,6 +896,7 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
           !currentQuestion && (
             <div>
               <InitialForm
+                isMobile={isMobile}
                 formData={formData}
                 handleFormInputChange={handleFormInputChange}
                 businessFields={businessFields}

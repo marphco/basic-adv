@@ -28,6 +28,7 @@ const InitialForm = ({
   onStart,      // start CTA
   loading,
   startLocked,
+  isMobile,
 }) => {
   const {
     brandName,
@@ -60,15 +61,15 @@ const InitialForm = ({
 
   const { t } = useTranslation(["common"]);
 
-  // Focus al primo campo quando la colonna destra compare
+  // Focus al primo campo quando la colonna destra compare (SOLO DESKTOP)
   useEffect(() => {
-    if (selectedCategories.length > 0) {
+    if (!isMobile && selectedCategories.length > 0) {
       const el = formSectionRef.current?.querySelector(
         "input, select, textarea, button"
       );
       el?.focus();
     }
-  }, [selectedCategories.length]);
+  }, [selectedCategories.length, isMobile]);
 
   const handleFileButtonClick = () => {
     if (currentLogo && typeof currentLogo === "object") {
@@ -497,6 +498,7 @@ InitialForm.propTypes = {
   onStart: PropTypes.func,
   loading: PropTypes.bool,
   startLocked: PropTypes.bool,
+  isMobile: PropTypes.bool,
 };
 
 export default InitialForm;
