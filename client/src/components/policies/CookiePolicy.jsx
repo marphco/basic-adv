@@ -4,7 +4,10 @@ import { useTranslation, Trans } from "react-i18next";
 
 const CookiePolicy = () => {
   const currentYear = new Date().getFullYear();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const localizedDate =
+    i18n.language === "it" ? "5 marzo 2025" : "March 5, 2025";
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -18,7 +21,7 @@ const CookiePolicy = () => {
     <div className="policy-page">
       <div className="policy-content">
         <h1>{t("legal.cookie.title")}</h1>
-        <p>{t("legal.cookie.updated", { date: "5 marzo 2025" })}</p>
+        <p>{t("legal.cookie.updated", { date: localizedDate })}</p>
 
         <p>{t("legal.cookie.intro")}</p>
 
