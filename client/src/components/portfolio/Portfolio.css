@@ -324,7 +324,6 @@ body[data-theme="dark"] .folder-name,
   overflow-x: hidden;
   position: relative;
   background-color: var(--background-color);
-  transition: all 0.5s ease;
 } /* Stili per la sezione superiore mobile */
 .project-section-mobile-top {
   position: fixed;
@@ -332,10 +331,10 @@ body[data-theme="dark"] .folder-name,
   left: 0;
   width: 100vw;
   height: 50vh;
-  padding: 10vh 5vh;
+  padding: 12vh 5vh; /* Aumentato un po' il top padding */
   box-sizing: border-box;
   z-index: 10;
-  overflow-y: auto;
+  /* overflow-y: auto; -- rimosso overflow interno che confligge con ScrollTrigger */
 } /* Stili per la sezione inferiore mobile (immagini) */
 .project-section-mobile-bottom {
   margin-top: 60vh;

@@ -62,10 +62,29 @@ export default function ProjectSectionMobilePage() {
     }
   }, []);
 
+  // ✅ FIX: Reset scroll to top and refresh ScrollTrigger on mount
+  // Use useLayoutEffect to catch the render before paint
+  useEffect(() => {
+    // Clear GSAP scroll memory to prevent stale calculations
+    ScrollTrigger.clearScrollMemory();
+    window.scrollTo(0, 0);
+    
+    // Create a small delay to ensure DOM and other components (Navbar) have settled
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+      ScrollTrigger.refresh(true);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [id]);
+
   useEffect(() => {
     const imagesRow = imagesRowRef.current;
     const topSection = topSectionRef.current;
     if (!imagesRow || !topSection) return;
+
+    // Reset initial state explicitly
+    gsap.set(topSection, { x: 0, opacity: 1 });
 
     const anim = gsap.to(topSection, {
       x: "-100vw",
