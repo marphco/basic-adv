@@ -54,7 +54,7 @@ const projectData = [
   },
   {
     id: "d-autore",
-    images: [dad, da1, da2, da3, da4],
+    images: [da1, da2, da3, da4],
     link: "https://dautore.org",
   },
   {
