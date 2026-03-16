@@ -15,6 +15,7 @@
   width: 10vw;
   height: 100vh;
   font-weight: 100;
+  pointer-events: none; /* Previene blocchi alla dock se ci sono overflow */
 }
 .desktop-pane {
   grid-column: 2;
@@ -24,6 +25,7 @@
   overflow: hidden;
   background-color: var(--background-color);
   transition: background-color .5s ease;
+  z-index: 10; /* Stesso livello base di portfolio sidebar */
   transform: translateZ(0); /* Hardware acceleration */
   will-change: transform;
 }
@@ -83,6 +85,7 @@
   transform: rotate(-90deg);
   white-space: nowrap;
   z-index: 1000;
+  pointer-events: none; /* Impedisce al testo ruotato di coprire la dock */
 }
 .portfolio-content {
   position: relative;
