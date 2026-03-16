@@ -52,9 +52,7 @@ export default function AboutUs() {
   }, []);
 
   const isTouchLike = () => {
-    const byClass =
-      document.body.classList.contains("is-mobile") ||
-      document.body.classList.contains("mobile-like");
+    const byClass = document.body.classList.contains("is-mobile");
     const byPointer = window.matchMedia?.("(pointer: coarse)")?.matches;
     const byUA = /iPad|Android|Tablet/i.test(navigator.userAgent);
     return byClass || byPointer || byUA || window.innerWidth <= 768;
@@ -241,12 +239,7 @@ export default function AboutUs() {
           </div>
 
           <div className="accordion-panels">
-            <div
-              className={`accordion-panel ${
-                activeAccordion === "marco" ? "active" : ""
-              }`}
-              ref={marcoPanelRef}
-            >
+            <div className="accordion-panel" ref={marcoPanelRef}>
               <div className="content-inner">
                 <div className="team-left">
                   <div className="team-text">
@@ -260,12 +253,7 @@ export default function AboutUs() {
               </div>
             </div>
 
-            <div
-              className={`accordion-panel ${
-                activeAccordion === "alessio" ? "active" : ""
-              }`}
-              ref={alessioPanelRef}
-            >
+            <div className="accordion-panel" ref={alessioPanelRef}>
               <div className="content-inner">
                 <div className="team-left">
                   <div className="team-text">
@@ -279,12 +267,7 @@ export default function AboutUs() {
               </div>
             </div>
 
-            <div
-              className={`accordion-panel ${
-                activeAccordion === "giorgia" ? "active" : ""
-              }`}
-              ref={giorgiaPanelRef}
-            >
+            <div className="accordion-panel" ref={giorgiaPanelRef}>
               <div className="content-inner">
                 <div className="team-left">
                   <div className="team-text">

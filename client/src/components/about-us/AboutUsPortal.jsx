@@ -11,9 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function AboutUsPortal({ isOpen, onClose }) {
   const isTouchLike = () => {
-    const byClass =
-      document.body.classList.contains("is-mobile") ||
-      document.body.classList.contains("mobile-like");
+    const byClass = document.body.classList.contains("is-mobile");
     const byPointer = window.matchMedia?.("(pointer: coarse)")?.matches;
     const byUA = /iPad|Android|Tablet/i.test(navigator.userAgent);
     return byClass || byPointer || byUA || window.innerWidth <= 768;

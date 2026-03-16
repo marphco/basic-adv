@@ -1,7 +1,11 @@
+/* * {
+
+}
+
 html,
 body {
 
-}
+} */
 
 .custom-cursor-dot,
 .custom-cursor-circle {
@@ -211,6 +215,11 @@ td.centered .feedback-btn {
   display: block; /* Rende il pulsante un elemento block */
   margin: 0 auto; /* Centra orizzontalmente il pulsante */
 }
+
+/* Rendi la riga cliccabile */
+/* .request-row {
+
+} */
 
 /* Stili per Allegati */
 .attachment-icon {
@@ -578,30 +587,6 @@ td.centered .feedback-btn {
   margin-right: 12px;
   color: var(--foreground-color);
   font-size: 1rem;
-}
-
-/* Su mobile permettiamo l'altezza auto ma con posizionamento pulito */
-.is-mobile .accordion-panel,
-.mobile-like .accordion-panel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Quando è attivo lo mostriamo in block flow per spingere il parent */
-.is-mobile .accordion-panel.active,
-.mobile-like .accordion-panel.active {
-  position: relative;
-  height: auto;
-  visibility: visible;
-  opacity: 1;
-  overflow: visible;
 }
 
 /* Stile per il titolo */
