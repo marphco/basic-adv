@@ -10,9 +10,14 @@ import storica3 from "../../assets/storica3.jpg";
 import storica4 from "../../assets/storica4.jpg";
 import storica5 from "../../assets/storica5.jpg";
 import storica6 from "../../assets/storica6.jpg";
-// import marcoImage from "../../assets/marco.jpg";
-// import alessioImage from "../../assets/alessio.jpg";
-// import giorgiaImage from "../../assets/giorgia.jpg";
+import wall from "../../assets/wall.jpg";
+import windowImg from "../../assets/window.jpg";
+import marcoButton from "../../assets/marco-button.jpg";
+import alessioButton from "../../assets/alessio-button.jpg";
+import giorgiaButton from "../../assets/giorgia-button.jpg";
+import marcoImage from "../../assets/marco.jpg";
+import alessioImage from "../../assets/alessio.jpg";
+import giorgiaImage from "../../assets/giorgia.jpg";
 import "./AboutUs.css";
 import MobileSlider from "./MobileSlider";
 
@@ -24,6 +29,19 @@ export default function AboutUs() {
   const imagesRef = useRef(null);
   const wallRef = useRef(null);
   const windowSectionRef = useRef(null);
+
+  useEffect(() => {
+    const imagesToPredecode = [
+      storica1, storica2, storica3, storica4, storica5, storica6,
+      wall, windowImg, marcoButton, alessioButton, giorgiaButton,
+      marcoImage, alessioImage, giorgiaImage
+    ];
+    imagesToPredecode.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.decode?.().catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -103,6 +121,7 @@ export default function AboutUs() {
   const marcoPanelRef = useRef(null);
   const alessioPanelRef = useRef(null);
   const giorgiaPanelRef = useRef(null);
+
 
   useEffect(() => {
     if (marcoPanelRef.current)

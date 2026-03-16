@@ -13,6 +13,11 @@ import storica6 from "../../assets/storica6.jpg";
 import marcoImage from "../../assets/marco.jpg";
 import alessioImage from "../../assets/alessio.jpg";
 import giorgiaImage from "../../assets/giorgia.jpg";
+import wall from "../../assets/wall.jpg";
+import windowImg from "../../assets/window.jpg";
+import marcoButton from "../../assets/marco-button.jpg";
+import alessioButton from "../../assets/alessio-button.jpg";
+import giorgiaButton from "../../assets/giorgia-button.jpg";
 import "./AboutUs.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -26,6 +31,19 @@ export default function AboutUsDesktop({ overlayRef, isOpen }) {
   const marcoPanelRef = useRef(null);
   const alessioPanelRef = useRef(null);
   const giorgiaPanelRef = useRef(null);
+
+  useEffect(() => {
+    const imagesToPredecode = [
+      storica1, storica2, storica3, storica4, storica5, storica6,
+      marcoImage, alessioImage, giorgiaImage,
+      wall, windowImg, marcoButton, alessioButton, giorgiaButton
+    ];
+    imagesToPredecode.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.decode?.().catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     if (!isOpen || !overlayRef.current) return;

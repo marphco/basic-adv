@@ -121,6 +121,8 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   display: block;
   border-radius: 20px;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .aboutus-title-container {
@@ -232,6 +234,8 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .storia-moderna {
@@ -285,6 +289,8 @@
   background-repeat: no-repeat;
   /* transition: background-position 0.5s ease; */
   z-index: 99;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Rimuovere eventuali padding/margin indesiderati */
@@ -347,6 +353,8 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   background-color: var(--foreground-color);
   transition: background-color 0.3s ease;
   z-index: 9999;
+  will-change: filter, transform;
+  transform: translateZ(0);
 }
 
 .accordion-button.active {
@@ -441,6 +449,8 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   width: 70vw;
   height: 100vh;
   overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* I pannelli stessi: partono da fuori a destra (xPercent: 100) */
@@ -452,6 +462,8 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   height: 100%;
   background-color: var(--background-color);
   z-index: 9999;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 button {
