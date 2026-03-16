@@ -84,7 +84,6 @@
   max-height: 45vh; /* Mantieni proporzioni */
   width: auto;
   object-fit: cover;
-  object-position: top;
   margin-bottom: 0; /* Allineamento preciso */
   border-radius: 1vw;
 }
@@ -118,7 +117,6 @@
   width: 40vh;
   height: auto;
   object-fit: cover;
-  object-position: top;
   flex-shrink: 0;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   display: block;
@@ -572,7 +570,6 @@ button {
     max-height: 45vh;
     border-radius: 20px;
     object-fit: cover;
-    object-position: top;
   }
 
   .slick-slider {
