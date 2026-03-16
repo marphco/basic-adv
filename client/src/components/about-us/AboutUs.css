@@ -299,7 +299,6 @@
 .wall,
 .wall-content {
   padding: 0;
-  margin: 0;
 }
 
 body[data-theme="dark"] .aboutus-section {
@@ -466,6 +465,23 @@ body[data-theme="dark"] .intro-portfolio .intro-mobile {
   transform: translateZ(0);
 }
 
+/* Su mobile permettiamo l'altezza auto ma con posizionamento pulito */
+.is-mobile .accordion-panel,
+.mobile-like .accordion-panel {
+  position: relative;
+  height: auto;
+  min-height: 50vh;
+  display: none; /* Mostrato solo se attivo via JS o sovrapposizione controllata */
+}
+
+/* Quando è attivo lo mostriamo in block flow */
+.is-mobile .accordion-panel[style*="xPercent: 0"],
+.mobile-like .accordion-panel[style*="xPercent: 0"],
+.is-mobile .accordion-panel[style*="transform: translate(0%"],
+.mobile-like .accordion-panel[style*="transform: translate(0%"] {
+  display: block !important;
+}
+
 button {
   border: 0;
 }
@@ -552,26 +568,29 @@ button {
     height: 101vh;
     display: flex;
     justify-content: space-evenly;
+    padding-top: 60px; /* Spazio per la navbar/chiudi */
   }
 
   .slick-list {
-    max-height: 40vh;
+    max-height: 50vh; /* Aumentato */
     /* margin-top: 20vh; */
-    padding: 0 50px;
+    padding: 20px 50px; /* Padding verticale per evitare clip */
   }
 
   .slick-track {
-    max-height: 20vh !important;
+    max-height: none !important; /* Rimosso l'ostacolo */
   }
 
   .slick-track img {
-    padding: 2vw;
-    max-height: 40vh;
+    padding: 10px; /* Più respiro */
+    max-height: 45vh;
     border-radius: 20px;
+    object-fit: cover;
   }
 
   .slick-slider {
-    max-height: 30vh !important;
+    max-height: none !important; /* Rimosso l'ostacolo */
+    margin-bottom: 20px;
   }
 
   .aboutus-section {
@@ -683,13 +702,15 @@ button {
 
   .accordion-container {
     width: 100vw;
-    height: 70vh;
+    height: auto; /* Da 70vh a auto */
+    min-height: 70vh;
   }
 
   .accordion-buttons {
     width: 100vw;
-    height: 20vh;
+    height: 31vh; /* Altezza fissa pari al pulsante attivo per evitare gap */
     flex-direction: row; /* Assicura la disposizione orizzontale */
+    background-color: var(--background-color);
   }
 
   .accordion-button {
@@ -699,9 +720,10 @@ button {
 
   .accordion-panels {
     left: 0;
-    height: 80vh;
+    height: auto; /* Da 80vh a auto */
     width: 100vw;
     margin-top: 31vh;
+    min-height: 60vh;
   }
 
   .content-inner {
@@ -713,7 +735,7 @@ button {
     justify-content: flex-end;
     flex-direction: column-reverse;
     margin: 0 auto;
-    max-height: 35vh;
+    max-height: none; /* Rimosso limite */
     background-color: none !important;
   }
 
@@ -730,12 +752,12 @@ button {
   .team-right {
     justify-content: center;
     align-items: baseline;
-    max-height: 35vh;
+    max-height: none; /* Rimosso limite */
     padding: 4vh 0;
   }
 
   .foto-team img {
-    max-height: 35vh;
+    max-height: 50vh; /* Respiro extra */
   }
 
   .accordion-container {
@@ -909,14 +931,16 @@ button {
 
 .App.is-mobile .accordion-container {
   width: 100vw;
-  height: 70vh;
+  height: auto;
+  min-height: 70vh;
   background-color: var(--background-color) !important;
   transition: background-color 0.5s ease !important;
 }
 .App.is-mobile .accordion-buttons {
   width: 100vw;
-  height: 20vh;
+  height: 31vh;
   flex-direction: row;
+  background-color: var(--background-color);
 }
 .App.is-mobile .accordion-button {
   width: 33.33vw;
@@ -944,9 +968,11 @@ button {
 }
 .App.is-mobile .accordion-panels {
   left: 0;
-  height: 80vh;
+  height: auto;
   width: 100vw;
-  margin-top: 31vh;
+  margin-top: 31vh; /* Ripristinato per evitare sovrapposizione con i volti */
+  display: block; /* Torniamo a block per semplicità e stabilità */
+  min-height: 50vh;
 }
 
 .App.is-mobile .content-inner {
@@ -957,7 +983,7 @@ button {
   justify-content: flex-end;
   flex-direction: column-reverse;
   margin: 0 auto;
-  max-height: 35vh;
+  max-height: none;
   background-color: none !important;
 }
 .App.is-mobile .team-title h2 {
@@ -971,7 +997,7 @@ button {
 .App.is-mobile .team-right {
   justify-content: center;
   align-items: baseline;
-  max-height: 35vh;
+  max-height: none;
   padding: 4vh 0;
 }
 .App.is-mobile .foto-team img {

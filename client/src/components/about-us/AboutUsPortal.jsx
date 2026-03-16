@@ -11,7 +11,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function AboutUsPortal({ isOpen, onClose }) {
   const isTouchLike = () => {
-    const byClass = document.body.classList.contains("is-mobile");
+    const byClass =
+      document.body.classList.contains("is-mobile") ||
+      document.body.classList.contains("mobile-like");
     const byPointer = window.matchMedia?.("(pointer: coarse)")?.matches;
     const byUA = /iPad|Android|Tablet/i.test(navigator.userAgent);
     return byClass || byPointer || byUA || window.innerWidth <= 768;
@@ -121,7 +123,8 @@ export function AboutUsPortal({ isOpen, onClose }) {
           left: 0,
           width: "100%",
           height: "100%",
-          backgroundColor: "#fff",
+          backgroundColor: "var(--background-color)",
+          color: "var(--primary-text-color)",
           overflowY: "auto",
           WebkitOverflowScrolling: "touch",
           zIndex: 9999999,
@@ -132,8 +135,9 @@ export function AboutUsPortal({ isOpen, onClose }) {
           style={{
             position: "sticky",
             top: 0,
-            backgroundColor: "#fff",
-            padding: "10px",
+            backgroundColor: "var(--background-color)",
+            padding: "20px",
+            zIndex: 10,
           }}
         >
           <button
@@ -142,7 +146,8 @@ export function AboutUsPortal({ isOpen, onClose }) {
               fontSize: "16px",
               background: "none",
               border: "none",
-              color: "#161616",
+              color: "var(--primary-text-color)",
+              cursor: "pointer",
             }}
           >
             [{t("navbar.close")}]
