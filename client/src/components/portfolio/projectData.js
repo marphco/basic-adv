@@ -18,6 +18,20 @@ import viaReel from "../../assets/via-reel.mp4"
 import fp1 from "../../assets/fp1.jpg"
 import fp2 from "../../assets/fp2.jpg"
 import fp3 from "../../assets/fp3.jpg"
+import fp4 from "../../assets/fp4.png"
+
+// Maison Rulo
+import mr1 from "../../assets/mr1.jpg"
+import mr2 from "../../assets/mr2.jpg"
+import mr3 from "../../assets/mr3.jpg"
+import mr4 from "../../assets/mr4.jpg"
+
+// D'Autore
+import da1 from "../../assets/da1.jpg"
+import da2 from "../../assets/da2.jpg"
+import da3 from "../../assets/da3.jpg"
+import da4 from "../../assets/da4.jpg"
+import dad from "../../assets/dad.jpg"
 
 
 
@@ -30,18 +44,18 @@ const projectData = [
   },
   {
     id: "fra-packaging",
-    images: [fp1, fp2, fp3],
+    images: [fp1, fp2, fp3, fp4],
     link: "https://frapackaging.com",
   },
   {
-    id: "progetto-3",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
+    id: "maison-rulo",
+    images: [mr1, mr2, mr3, mr4],
     link: null,
   },
   {
-    id: "progetto-4",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
+    id: "d-autore",
+    images: [dad, da1, da2, da3, da4],
+    link: "https://dautore.org",
   },
   {
     id: "progetto-5",
