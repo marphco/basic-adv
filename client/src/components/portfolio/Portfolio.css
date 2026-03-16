@@ -22,8 +22,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-   background-color: var(--background-color);
+  background-color: var(--background-color);
   transition: background-color .5s ease;
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: transform;
 }
 .desktop-wallpaper {
   position: absolute;
@@ -32,6 +34,9 @@
   background-position: center;
   background-repeat: no-repeat;
   z-index: 0;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  transition: opacity 0.5s ease-in-out;
 }
 
 .mac-menubar {
@@ -48,9 +53,7 @@
   font-size: 13px;
   line-height: 1;
   z-index: 4; /* sopra folders e testo */
-  background: rgba(22, 22, 22, 0.32);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
-  backdrop-filter: blur(10px) saturate(160%);
+  background: rgba(22, 22, 22, 0.45);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .menubar-left,
@@ -360,14 +363,12 @@ body[data-theme="dark"] .folder-name,
   font-weight: 200;
   padding-bottom: 2vh;
 }
-Sfondo “desktop” Sonoma .mac-desktop {
-  /* lo sfondo vero e proprio */
-  background-image: var(--bg-url);
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed; /* piccolo extra: effetto “vivo” */
-} /* banda di lettura in basso (sfuma verso l’alto) */
+/* Sfondo desktop Sonoma gestito via React img tag per performance */
+.mac-desktop {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 .mac-desktop::after {
   content: "";
   position: absolute;
@@ -420,10 +421,8 @@ Sfondo “desktop” Sonoma .mac-desktop {
   gap: 10px;
   padding: 10px 12px;
   border-radius: 24px;
-  background: rgba(25,25,25,0.32);
-  -webkit-backdrop-filter: saturate(160%) blur(18px);
-  backdrop-filter: saturate(160%) blur(18px);
-  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(25, 25, 25, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 8px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
 
   /* variabili di default */
@@ -653,9 +652,7 @@ Sfondo “desktop” Sonoma .mac-desktop {
   right: 40px;
   width: 44px;
   height: 44px;
-  background: rgba(0, 0, 0, 0.4);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;

@@ -16,8 +16,6 @@ import Home from "./components/home/Home";
 import Services from "./components/services/Services";
 import Portfolio from "./components/portfolio/Portfolio";
 import Contacts from "./components/contacts/Contacts";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { AboutUsPortal } from "./components/about-us/AboutUsPortal";
 import AboutUsDesktop from "./components/about-us/AboutUsDesktop";
 import AboutUs from "./components/about-us/AboutUs";
@@ -37,7 +35,10 @@ import usePageView from './analytics/usePageView';
 
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-ScrollTrigger.normalizeScroll(true);
+// ✅ Attiviamo normalizeScroll SOLO su dispositivi touch per evitare "scatti" su desktop Chrome
+if (window.matchMedia("(pointer: coarse)").matches) {
+  ScrollTrigger.normalizeScroll(true);
+}
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 ScrollTrigger.config({
@@ -66,16 +67,23 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
   const closeAboutUs = () => setIsAboutUsOpen(false);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
+  let timeoutId; // Declare timeoutId here
+
   useLayoutEffect(() => {
     const handleResize = () => {
-     // isMobile segue 'touchLike', non la larghezza
-      setWindowWidth(window.innerWidth);
-      setWindowHeight(window.innerHeight);
-      ScrollTrigger.refresh();
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setWindowWidth(window.innerWidth);
+        setWindowHeight(window.innerHeight);
+        ScrollTrigger.refresh();
+      }, 200);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [windowWidth, windowHeight]);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   // reazione ai cambi di touchLike (iPad ↔️ desktop)
   useEffect(() => { setIsMobile(touchLike); }, [touchLike]);
@@ -95,14 +103,13 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
         const tween = gsap.to(container, {
           x: -totalWidth,
           ease: "none",
-          force3D: true, // ⚑ aggiunto
+          force3D: "auto",
           scrollTrigger: {
             trigger: container,
             start: "top top",
             end: () => "+=" + Math.max(0, totalWidth), // bounds corretti
-            scrub: 2,
+            scrub: 0.8,
             pin: true,
-            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
@@ -120,7 +127,7 @@ function AppContent({ isDark, setIsDark, scrollContainerRef }) {
           if (st.trigger === scrollContainerRef.current) st.kill();
         });
       }
-      ScrollTrigger.refresh();
+      setTimeout(() => ScrollTrigger.refresh(), 100);
     }, scrollContainerRef);
     return () => ctx.revert();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -300,9 +307,11 @@ useEffect(() => {
                 </div>
 
                 <div className="section" id="portfolio">
-                  <DndProvider backend={HTML5Backend}>
-                    <Portfolio scrollTween={scrollTween} isMobile={isMobile} />
-                  </DndProvider>
+                  <Portfolio 
+                    scrollTween={scrollTween} 
+                    isMobile={isMobile} 
+                    isDark={isDark}
+                  />
                 </div>
 
                 <div className="section" id="contacts">

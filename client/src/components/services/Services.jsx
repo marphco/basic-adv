@@ -139,7 +139,7 @@ if (servicesText) {
         containerAnimation: scrollTween,
         start: "left right",
         end: "right center",
-        scrub: 2,
+        scrub: 0.8,
         invalidateOnRefresh: true,
       },
     });

@@ -18,7 +18,8 @@ import PropTypes from "prop-types";
 import ProjectSectionDesktop from "./ProjectSectionDesktop";
 import { useNavigate } from "react-router-dom";
 import projectData from "./projectData";
-import sonomaBg from "../../assets/sonoma3.png";
+import sonomaBgDark from "../../assets/sonoma3.png";
+import sonomaBgLight from "../../assets/sonoma3.jpg";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { useTranslation, Trans } from "react-i18next";
 
@@ -96,7 +97,7 @@ Folder.propTypes = {
   label: PropTypes.string,
 };
 
-const Portfolio = ({ scrollTween = null, isMobile = false }) => {
+const Portfolio = ({ scrollTween = null, isMobile = false, isDark = true }) => {
   // const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { t } = useTranslation(["common"]);
@@ -288,6 +289,25 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
   ]);
   const [focusedId, setFocusedId] = useState("finder");
 
+  useEffect(() => {
+    // 🚀 Pre-decodifica per eliminare lo scatto al "primo ingresso"
+    const darkImg = new Image();
+    darkImg.src = sonomaBgDark;
+    darkImg.decode().catch(() => {});
+
+    const lightImg = new Image();
+    lightImg.src = sonomaBgLight;
+    lightImg.decode().catch(() => {});
+
+    // Pre-decodifica icone Dock
+    dockApps.forEach(icon => {
+      if (icon.type === 'separator') return;
+      const i = new Image();
+      i.src = icon.src;
+      i.decode().catch(() => {});
+    });
+  }, [dockApps]);
+
   // Se cambi lingua, rigenera le label mantenendo stato open/focus
   useEffect(() => {
     setDockApps((prev) =>
@@ -343,10 +363,42 @@ const Portfolio = ({ scrollTween = null, isMobile = false }) => {
 
       {/* Pannello "desktop" a destra (90vw) */}
       <div className="desktop-pane">
-        <div
-          className="desktop-wallpaper"
-          style={{ backgroundImage: `url(${sonomaBg})` }}
-          aria-hidden
+        {/* Sfondi con cross-fade (Dual-buffer) */}
+        <img 
+          src={sonomaBgDark} 
+          className="desktop-wallpaper" 
+          alt="" 
+          decoding="async"
+          loading="eager"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: isDark ? 1 : 0,
+            zIndex: 0,
+            pointerEvents: 'none',
+            transform: 'translateZ(0)'
+          }}
+        />
+        <img 
+          src={sonomaBgLight} 
+          className="desktop-wallpaper" 
+          alt="" 
+          decoding="async"
+          loading="eager"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: isDark ? 0 : 1,
+            zIndex: 0,
+            pointerEvents: 'none',
+            transform: 'translateZ(0)'
+          }}
         />
 
         <MacMenuBar activeAppId={focusedId} activeAppLabel={activeAppLabel} />
