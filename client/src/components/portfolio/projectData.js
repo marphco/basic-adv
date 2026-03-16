@@ -14,6 +14,8 @@ import via6 from "../../assets/viasolemio6.jpg"
 import via7 from "../../assets/viasolemio7.jpg"
 import via8 from "../../assets/viasolemio8.jpg"
 import via9 from "../../assets/viasolemio9.jpg"
+import via11 from "../../assets/viasolemio11.jpg"
+import via12 from "../../assets/viasolemio12.jpg"
 import viaReel from "../../assets/via-reel.mp4"
 import fp1 from "../../assets/fp1.jpg"
 import fp2 from "../../assets/fp2.jpg"
@@ -38,7 +40,7 @@ import dad from "../../assets/dad.jpg"
 const projectData = [
   {
     id: "via-sole-mio",
-    images: [via10, via2, via3, via4, via5, via6, via7, via8, via9],
+    images: [via3, via2, via10, via11, via12, via4, via5, via6, via7, via8, via9],
     video: viaReel,
     link: "https://viasolemio.com",
   },
