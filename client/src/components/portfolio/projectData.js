@@ -41,6 +41,7 @@ import enav2 from "../../assets/enav2.jpg"
 import enav3 from "../../assets/enav3.jpg"
 import enav4 from "../../assets/enav4.jpg"
 import enav5 from "../../assets/enav5.jpg"
+import enavVideo from "../../assets/enav6.mp4"
 
 
 
@@ -69,6 +70,7 @@ const projectData = [
   {
     id: "enav",
     images: [enav1, enav2, enav3, enav4, enav5],
+    video: enavVideo,
     link: null,
   },
   {
