@@ -264,9 +264,8 @@ input:-webkit-autofill:active {
   display: grid;
   grid-template-columns: 10vw 90vw;
   width: 100vw;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: visible;
+  height: 100vh;
+  overflow: hidden;
   align-items: start;
 }
 
@@ -300,12 +299,14 @@ input:-webkit-autofill:active {
 /* Pannello del form (90vw) centrato verticalmente */
 .dynamic-form {
   grid-column: 2;
-  min-height: 100vh;
+  height: 100vh;
   padding: 0 clamp(16px, 6vw, 80px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center; /* centratura verticale iniziale */
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* per sicurezza: il blocco headline sopra il form */

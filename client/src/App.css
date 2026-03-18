@@ -106,17 +106,23 @@ body {
 body:not(.mobile-like) .App.home-layout {       /* SOLO Home: scroller orizzontale */
 display: flex;
 flex-direction: row;
-width: 1100vw;
-height: 100vh;
-overflow: hidden;
-/* GPU logic moved to .section to avoid titanically wide layers */
+flex-wrap: nowrap;
+width: 1100vw !important; /* 100 (Home) + 800 (Services) + 100 (Portfolio) + 100 (Contacts) */
+height: 100vh !important;
+overflow: hidden !important;
 }
 
 .section {
   min-width: 100vw;
-  height: 100vh;
+  height: 100vh !important;
   box-sizing: border-box;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#services.section {
+  width: 800vw !important;
 }
 
 .navbar {

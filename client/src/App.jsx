@@ -316,8 +316,6 @@ useEffect(() => {
 
                 <div className="section" id="contacts">
                   <Contacts scrollTween={scrollTween} isMobile={isMobile} />
-                </div>
-                <div className="section-footer">
                   <Footer isMobile={isMobile} />
                 </div>
                 {!isMobile && (

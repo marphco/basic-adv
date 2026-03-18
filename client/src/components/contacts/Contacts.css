@@ -2,11 +2,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Altezza fissa per desktop */
-  width: 100vw;
+  height: 100vh !important;
+  width: 100vw !important;
   background-color: var(--background-color);
   box-sizing: border-box;
-  /* padding: 20px; Padding opzionale per desktop */
+  overflow: hidden;
   transition: all .5s ease;
 }
 
