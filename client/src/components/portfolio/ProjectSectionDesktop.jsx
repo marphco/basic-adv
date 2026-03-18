@@ -1,5 +1,5 @@
 // ProjectSectionDesktop.jsx
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { gsap } from "gsap";
 import PropTypes from "prop-types";
@@ -17,6 +17,7 @@ function ProjectSectionDesktop({ onClose, project }) {
   const videoRefs = useRef([]);
   const isMutedRef = useRef(true);
   const { t } = useTranslation(["common"]);
+  const [focusedAsset, setFocusedAsset] = useState(null); // { type, src }
 
   // Blocca lo scroll del sito usando una classe CSS
   useEffect(() => {
@@ -183,6 +184,14 @@ function ProjectSectionDesktop({ onClose, project }) {
   const openExternal = (url) =>
     window.open(url, "_blank", "noopener,noreferrer");
 
+  const handleAssetClick = (item) => {
+    setFocusedAsset(item);
+  };
+
+  const closeFocus = () => {
+    setFocusedAsset(null);
+  };
+
   const modalJSX = (
     <div
       ref={overlayRef}
@@ -218,7 +227,12 @@ function ProjectSectionDesktop({ onClose, project }) {
           {/* Colonna sinistra: immagini con scroll infinito */}
           <div className="project-left" ref={leftColumnRef}>
             {duplicatedMedia.map((item, index) => (
-              <div key={index} className="project-media-item">
+              <div 
+                key={index} 
+                className="project-media-item"
+                data-cursor="view"
+                onClick={() => handleAssetClick(item)}
+              >
                 {item.type === "video" ? (
                   <div className="project-video-container">
                     <video
@@ -272,6 +286,28 @@ function ProjectSectionDesktop({ onClose, project }) {
             )}
           </div>
         </div>
+        
+        {/* Focus Mode Overlay */}
+        {focusedAsset && (
+          <div className="focus-mode-overlay" onClick={closeFocus}>
+            <button className="focus-close" onClick={closeFocus}>
+              [ {t("navbar.close")} ]
+            </button>
+            <div className="focus-content" onClick={(e) => e.stopPropagation()}>
+              {focusedAsset.type === "video" ? (
+                <video 
+                  src={focusedAsset.src} 
+                  autoPlay 
+                  controls 
+                  playsInline
+                  className="focused-video"
+                />
+              ) : (
+                <img src={focusedAsset.src} alt="Focused View" className="focused-image" />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

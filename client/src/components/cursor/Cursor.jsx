@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import './Cursor.css';
 
@@ -9,6 +9,7 @@ export const Cursor = ({ isDark }) => {
   const mouseY = useRef(0);
   const circleX = useRef(0);
   const circleY = useRef(0);
+  const [viewMode, setViewMode] = useState(false);
 
   const initializeCursor = () => {
     const dot = dotRef.current;
@@ -68,6 +69,12 @@ export const Cursor = ({ isDark }) => {
             circle.classList.add('hidden');
           } else {
             addHoverClass();
+            const isTouch = window.matchMedia("(pointer: coarse)").matches;
+            if (!isTouch && target.hasAttribute('data-cursor')) {
+              if (target.getAttribute('data-cursor') === 'view') {
+                setViewMode(true);
+              }
+            }
           }
         }
       }
@@ -76,9 +83,10 @@ export const Cursor = ({ isDark }) => {
     const handlePointerLeave = (e) => {
       if (e.target && typeof e.target.closest === 'function') {
         const target = e.target.closest(
-          'a, button, label, [role="button"], [onClick], input, textarea, select'
+          'a, button, label, [role="button"], [onClick], input, textarea, select, [data-cursor]'
         );
         if (target) {
+          setViewMode(false);
           if (target.tagName === 'INPUT') {
             const inputType = target.getAttribute('type');
             if (
@@ -134,7 +142,7 @@ export const Cursor = ({ isDark }) => {
   };
 
   useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
+    const isMobile = window.innerWidth <= 768 || window.matchMedia("(pointer: coarse)").matches;
     if (isMobile) return;
 
     const cleanup = initializeCursor();
@@ -174,7 +182,12 @@ export const Cursor = ({ isDark }) => {
   return (
     <>
       <div ref={dotRef} className="custom-cursor-dot"></div>
-      <div ref={circleRef} className="custom-cursor-circle"></div>
+      <div 
+        ref={circleRef} 
+        className={`custom-cursor-circle ${viewMode ? 'view-mode' : ''}`}
+      >
+        {viewMode && <span className="view-text">VIEW</span>}
+      </div>
     </>
   );
 };

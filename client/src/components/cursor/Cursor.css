@@ -48,6 +48,33 @@
   animation: rotateInfinite 2s linear infinite; /* Keeps rotating */
 }
 
+/* VIEW mode */
+.custom-cursor-circle.view-mode {
+  width: 5em;
+  height: 5em;
+  border-radius: 50%;
+  border-width: 1px;
+  background-color: rgba(255, 64, 3, 0.1); /* Subtle theme color pulse could also work */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: none; /* No rotation for view mode to keep text readable */
+  border-color: var(--foreground-color) !important;
+}
+
+.view-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary-text-color);
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+body[data-theme="dark"] .view-text {
+  color: #fff;
+}
+
 /* Cursor styling for input fields */
 .custom-cursor-circle.text-input {
   width: 1em;
