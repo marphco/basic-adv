@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import './Cursor.css';
 
 export const Cursor = ({ isDark }) => {
@@ -10,6 +11,7 @@ export const Cursor = ({ isDark }) => {
   const circleX = useRef(0);
   const circleY = useRef(0);
   const [viewMode, setViewMode] = useState(false);
+  const { t } = useTranslation(['common']);
 
   const initializeCursor = () => {
     const dot = dotRef.current;
@@ -48,7 +50,7 @@ export const Cursor = ({ isDark }) => {
     const handlePointerEnter = (e) => {
       if (e.target && typeof e.target.closest === 'function') {
         const target = e.target.closest(
-          'a, button, label, [role="button"], [onClick], input, textarea, select'
+          'a, button, label, [role="button"], [onClick], input, textarea, select, [data-cursor]'
         );
         if (target) {
           if (target.tagName === 'INPUT') {
@@ -181,12 +183,12 @@ export const Cursor = ({ isDark }) => {
 
   return (
     <>
-      <div ref={dotRef} className="custom-cursor-dot"></div>
+      <div ref={dotRef} className={`custom-cursor-dot ${viewMode ? 'hidden' : ''}`}></div>
       <div 
         ref={circleRef} 
         className={`custom-cursor-circle ${viewMode ? 'view-mode' : ''}`}
       >
-        {viewMode && <span className="view-text">VIEW</span>}
+        {viewMode && <span className="view-text">{t("portfolio.view")}</span>}
       </div>
     </>
   );

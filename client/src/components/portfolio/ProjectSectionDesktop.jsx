@@ -45,7 +45,12 @@ function ProjectSectionDesktop({ onClose, project }) {
   // Chiusura con ESC
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === "Escape") handleClose();
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (focusedAsset) closeFocus();
+        else handleClose();
+      }
     };
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
@@ -206,13 +211,15 @@ function ProjectSectionDesktop({ onClose, project }) {
         aria-modal="true"
         aria-label={content.title}
       >
-        <button
-          type="button"
-          className="project-section-close"
-          onClick={handleClose}
-        >
-          [{t("navbar.close")}]
-        </button>
+        {!focusedAsset && (
+          <button
+            type="button"
+            className="project-section-close"
+            onClick={handleClose}
+          >
+            [{t("navbar.close")}]
+          </button>
+        )}
         <div
           className="project-content"
           onWheel={(e) => {
@@ -291,9 +298,9 @@ function ProjectSectionDesktop({ onClose, project }) {
         {focusedAsset && (
           <div className="focus-mode-overlay" onClick={closeFocus}>
             <button className="focus-close" onClick={closeFocus}>
-              [ {t("navbar.close")} ]
+              [{t("navbar.close")}]
             </button>
-            <div className="focus-content" onClick={(e) => e.stopPropagation()}>
+            <div className="focus-content">
               {focusedAsset.type === "video" ? (
                 <video 
                   src={focusedAsset.src} 
@@ -301,9 +308,15 @@ function ProjectSectionDesktop({ onClose, project }) {
                   controls 
                   playsInline
                   className="focused-video"
+                  onClick={(e) => e.stopPropagation()}
                 />
               ) : (
-                <img src={focusedAsset.src} alt="Focused View" className="focused-image" />
+                <img 
+                  src={focusedAsset.src} 
+                  alt="Focused View" 
+                  className="focused-image" 
+                  onClick={(e) => e.stopPropagation()}
+                />
               )}
             </div>
           </div>
