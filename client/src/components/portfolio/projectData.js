@@ -34,6 +34,13 @@ import da2 from "../../assets/da2.jpg"
 import da3 from "../../assets/da3.jpg"
 import da4 from "../../assets/da4.jpg"
 import dad from "../../assets/dad.jpg"
+ 
+// ENAV
+import enav1 from "../../assets/enav1.jpg"
+import enav2 from "../../assets/enav2.jpg"
+import enav3 from "../../assets/enav3.jpg"
+import enav4 from "../../assets/enav4.jpg"
+import enav5 from "../../assets/enav5.jpg"
 
 
 
@@ -60,9 +67,9 @@ const projectData = [
     link: "https://dautore.org",
   },
   {
-    id: "progetto-5",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: "https://example.com/progetto1",
+    id: "enav",
+    images: [enav1, enav2, enav3, enav4, enav5],
+    link: null,
   },
   {
     id: "progetto-6",
