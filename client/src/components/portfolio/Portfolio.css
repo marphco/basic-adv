@@ -356,12 +356,10 @@ body[data-theme="dark"] .folder-name,
 .project-text .project-title {
   font-size: 2rem;
   color: var(--primary-text-color);
-  transition: all 0.5s ease;
   padding-bottom: 1vh;
 }
 .project-text .project-description {
   color: var(--primary-text-color);
-  transition: all 0.5s ease;
   font-weight: 200;
   padding-bottom: 2vh;
 }

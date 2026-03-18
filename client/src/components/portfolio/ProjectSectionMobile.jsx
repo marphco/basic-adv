@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useLayoutEffect } from "react";
 import { useParams } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -64,16 +64,15 @@ export default function ProjectSectionMobilePage() {
 
   // ✅ FIX: Reset scroll to top and refresh ScrollTrigger on mount
   // Use useLayoutEffect to catch the render before paint
-  useEffect(() => {
-    // Clear GSAP scroll memory to prevent stale calculations
+  useLayoutEffect(() => {
+    // Force immediate scroll reset
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     ScrollTrigger.clearScrollMemory();
-    window.scrollTo(0, 0);
     
-    // Create a small delay to ensure DOM and other components (Navbar) have settled
     const timer = setTimeout(() => {
       window.scrollTo(0, 0);
       ScrollTrigger.refresh(true);
-    }, 50);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [id]);
@@ -83,25 +82,29 @@ export default function ProjectSectionMobilePage() {
     const topSection = topSectionRef.current;
     if (!imagesRow || !topSection) return;
 
-    // Reset initial state explicitly
-    gsap.set(topSection, { x: 0, opacity: 1 });
-
-    const anim = gsap.to(topSection, {
-      x: "-100vw",
-      opacity: 0,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: imagesRow,
-        start: "top center",
-        end: "+=500",
-        scrub: 1,
-        markers: false,
-      },
-    });
+    // Force explicit start state to prevent offset
+    const anim = gsap.fromTo(topSection, 
+      { x: 0, opacity: 1 },
+      {
+        x: "-100vw",
+        opacity: 0,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: imagesRow,
+          start: "top center",
+          end: "+=500",
+          scrub: 1,
+          markers: false,
+          invalidateOnRefresh: true,
+        },
+      }
+    );
 
     return () => {
-      anim.scrollTrigger && anim.scrollTrigger.kill();
+      if (anim.scrollTrigger) anim.scrollTrigger.kill();
       anim.kill();
+      // Reset precisely on exit
+      gsap.set(topSection, { clearProps: "all" });
     };
   }, [id]);
 
