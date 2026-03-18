@@ -1,19 +1,16 @@
-/* Cursor black */
-.cursor-black.custom-cursor-dot {
-  background-color: black;
+/* Theme Sync based on data-is-dark attribute */
+.custom-cursor-wrapper[data-is-dark="true"] .custom-cursor-dot {
+  background-color: white !important;
+}
+.custom-cursor-wrapper[data-is-dark="true"] .custom-cursor-circle {
+  border-color: white !important;
 }
 
-.cursor-black.custom-cursor-circle {
-  border-color: black;
+.custom-cursor-wrapper[data-is-dark="false"] .custom-cursor-dot {
+  background-color: black !important;
 }
-
-/* Cursor white */
-.cursor-white.custom-cursor-dot {
-  background-color: white;
-}
-
-.cursor-white.custom-cursor-circle {
-  border-color: white;
+.custom-cursor-wrapper[data-is-dark="false"] .custom-cursor-circle {
+  border-color: black !important;
 }
 
 /* Stili comuni */
@@ -48,44 +45,37 @@
   animation: rotateInfinite 2s linear infinite; /* Keeps rotating */
 }
 
-/* VIEW mode */
-.custom-cursor-circle.view-mode {
+/* VIEW mode - Specificity boost to beat theme sync */
+.custom-cursor-wrapper .custom-cursor-circle.view-mode {
   width: 5em;
   height: 5em;
   border-radius: 50%;
-  border-width: 1px;
-  background-color: rgba(255, 64, 3, 0.1); /* Subtle theme color pulse could also work */
+  border: 1.5px solid #ff4003 !important; /* Force orange */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Discreet shadow requested */
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: none; /* No rotation for view mode to keep text readable */
-  border-color: var(--foreground-color) !important;
+  animation: none;
+  background-color: transparent !important;
 }
 
 .view-text {
   font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--primary-text-color);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: white !important;
+  text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.8), 0px 0px 4px rgba(0, 0, 0, 1) !important;
+  mix-blend-mode: normal !important;
   pointer-events: none;
   text-transform: uppercase;
+  z-index: 10;
 }
 
-body[data-theme="dark"] .view-text {
-  color: #fff;
-}
-
-/* Cursor styling for input fields */
-.custom-cursor-circle.text-input {
-  width: 1em;
-  height: 1em;
-  border-radius: 50%;
-}
-
-/* Nasconde il cursore personalizzato */
+/* Ensure hidden actually works */
 .custom-cursor-dot.hidden,
 .custom-cursor-circle.hidden {
-  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* Quando il dot viene cliccato */

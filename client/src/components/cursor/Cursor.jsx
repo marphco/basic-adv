@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import './Cursor.css';
@@ -12,6 +12,8 @@ export const Cursor = ({ isDark }) => {
   const circleY = useRef(0);
   const [viewMode, setViewMode] = useState(false);
   const { t } = useTranslation(['common']);
+
+  // Theme sync is now handled via the data-is-dark attribute and CSS for maximum reliability
 
   const initializeCursor = () => {
     const dot = dotRef.current;
@@ -53,63 +55,31 @@ export const Cursor = ({ isDark }) => {
           'a, button, label, [role="button"], [onClick], input, textarea, select, [data-cursor]'
         );
         if (target) {
-          if (target.tagName === 'INPUT') {
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
             const inputType = target.getAttribute('type');
             if (
-              inputType === 'text' ||
-              inputType === 'email' ||
-              inputType === 'tel' ||
-              inputType === 'password'
+              target.tagName === 'TEXTAREA' ||
+              ['text', 'email', 'tel', 'password', 'number', 'search'].includes(inputType)
             ) {
               dot.classList.add('hidden');
               circle.classList.add('hidden');
-            } else if (inputType === 'checkbox' || inputType === 'radio') {
-              addHoverClass();
+              return;
             }
-          } else if (target.tagName === 'TEXTAREA') {
-            dot.classList.add('hidden');
-            circle.classList.add('hidden');
-          } else {
-            addHoverClass();
-            const isTouch = window.matchMedia("(pointer: coarse)").matches;
-            if (!isTouch && target.hasAttribute('data-cursor')) {
-              if (target.getAttribute('data-cursor') === 'view') {
-                setViewMode(true);
-              }
-            }
+          }
+          
+          addHoverClass();
+          if (target.hasAttribute('data-cursor') && target.getAttribute('data-cursor') === 'view') {
+            setViewMode(true);
           }
         }
       }
     };
 
     const handlePointerLeave = (e) => {
-      if (e.target && typeof e.target.closest === 'function') {
-        const target = e.target.closest(
-          'a, button, label, [role="button"], [onClick], input, textarea, select, [data-cursor]'
-        );
-        if (target) {
-          setViewMode(false);
-          if (target.tagName === 'INPUT') {
-            const inputType = target.getAttribute('type');
-            if (
-              inputType === 'text' ||
-              inputType === 'email' ||
-              inputType === 'tel' ||
-              inputType === 'password'
-            ) {
-              dot.classList.remove('hidden');
-              circle.classList.remove('hidden');
-            } else if (inputType === 'checkbox' || inputType === 'radio') {
-              removeHoverClass();
-            }
-          } else if (target.tagName === 'TEXTAREA') {
-            dot.classList.remove('hidden');
-            circle.classList.remove('hidden');
-          } else {
-            removeHoverClass();
-          }
-        }
-      }
+      setViewMode(false);
+      dot.classList.remove('hidden');
+      circle.classList.remove('hidden');
+      removeHoverClass();
     };
 
     const handleMouseDown = () => {
@@ -164,33 +134,27 @@ export const Cursor = ({ isDark }) => {
     };
   }, []);
 
-  useEffect(() => {
-    const dot = dotRef.current;
-    const circle = circleRef.current;
-
-    if (isDark) {
-      dot?.classList.add('cursor-white');
-      dot?.classList.remove('cursor-black');
-      circle?.classList.add('cursor-white');
-      circle?.classList.remove('cursor-black');
-    } else {
-      dot?.classList.add('cursor-black');
-      dot?.classList.remove('cursor-white');
-      circle?.classList.add('cursor-black');
-      circle?.classList.remove('cursor-white');
-    }
+  useLayoutEffect(() => {
+    // Theme sync handled by data-is-dark
   }, [isDark]);
 
   return (
-    <>
-      <div ref={dotRef} className={`custom-cursor-dot ${viewMode ? 'hidden' : ''}`}></div>
+    <div className="custom-cursor-wrapper" data-is-dark={isDark}>
+      <div 
+        ref={dotRef} 
+        className="custom-cursor-dot"
+      />
       <div 
         ref={circleRef} 
         className={`custom-cursor-circle ${viewMode ? 'view-mode' : ''}`}
       >
-        {viewMode && <span className="view-text">{t("portfolio.view")}</span>}
+        {viewMode && (
+          <span className="view-text">
+            {t('view')}
+          </span>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

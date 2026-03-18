@@ -174,10 +174,17 @@ overflow: hidden;
     z-index: 99999999;
   }
 
-  .aboutus-overlay::-webkit-scrollbar {
-    display: none !important;
-  }
+  .aboutus-overlay::input, textarea, select, button, a {
+  cursor: auto !important;
+}
 
+.no-default-cursor, .no-default-cursor * {
+  cursor: none;
+}
+
+input, textarea, select, button, a, [role="button"] {
+  cursor: auto !important;
+}
   .aboutus-overlay-close {
     top: 55px;
     right: 34px;

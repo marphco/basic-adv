@@ -18,6 +18,8 @@ function ProjectSectionDesktop({ onClose, project }) {
   const isMutedRef = useRef(true);
   const { t } = useTranslation(["common"]);
   const [focusedAsset, setFocusedAsset] = useState(null); // { type, src }
+  const focusOverlayRef = useRef(null);
+  const focusContentRef = useRef(null);
 
   // Blocca lo scroll del sito usando una classe CSS
   useEffect(() => {
@@ -46,16 +48,19 @@ function ProjectSectionDesktop({ onClose, project }) {
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        if (focusedAsset) closeFocus();
-        else handleClose();
+        if (focusedAsset) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          closeFocus();
+        } else {
+          handleClose();
+        }
       }
     };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    window.addEventListener("keydown", handleEsc, true);
+    return () => window.removeEventListener("keydown", handleEsc, true);
+  }, [focusedAsset]);
 
   const handleClose = () => {
     if (!sectionRef.current) {
@@ -194,7 +199,28 @@ function ProjectSectionDesktop({ onClose, project }) {
   };
 
   const closeFocus = () => {
-    setFocusedAsset(null);
+    if (!focusOverlayRef.current) {
+      setFocusedAsset(null);
+      return;
+    }
+    
+    gsap.to(focusOverlayRef.current, {
+      opacity: 0,
+      duration: 0.4,
+      ease: "power2.inOut",
+      onComplete: () => {
+        setFocusedAsset(null);
+      }
+    });
+
+    if (focusContentRef.current) {
+      gsap.to(focusContentRef.current, {
+        scale: 0.9,
+        opacity: 0,
+        duration: 0.4,
+        ease: "power2.inOut"
+      });
+    }
   };
 
   const modalJSX = (
@@ -211,15 +237,13 @@ function ProjectSectionDesktop({ onClose, project }) {
         aria-modal="true"
         aria-label={content.title}
       >
-        {!focusedAsset && (
-          <button
-            type="button"
-            className="project-section-close"
-            onClick={handleClose}
-          >
-            [{t("navbar.close")}]
-          </button>
-        )}
+        <button
+          type="button"
+          className="project-section-close"
+          onClick={handleClose}
+        >
+          [{t("navbar.close")}]
+        </button>
         <div
           className="project-content"
           onWheel={(e) => {
@@ -296,11 +320,22 @@ function ProjectSectionDesktop({ onClose, project }) {
         
         {/* Focus Mode Overlay */}
         {focusedAsset && (
-          <div className="focus-mode-overlay" onClick={closeFocus}>
-            <button className="focus-close" onClick={closeFocus}>
+          <div 
+            ref={focusOverlayRef}
+            className="focus-mode-overlay" 
+            onClick={closeFocus}
+          >
+            <button 
+              type="button"
+              className="project-section-close focus-close" 
+              onClick={(e) => {
+                e.stopPropagation();
+                closeFocus();
+              }}
+            >
               [{t("navbar.close")}]
             </button>
-            <div className="focus-content">
+            <div className="focus-content" ref={focusContentRef}>
               {focusedAsset.type === "video" ? (
                 <video 
                   src={focusedAsset.src} 
