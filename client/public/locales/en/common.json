@@ -97,10 +97,7 @@
       "maison-rulo": "Maison Rulo",
       "d-autore": "D'Autore",
       "enav": "Enav",
-      "progetto-5": "Project 5",
-      "progetto-6": "Project 6",
-      "progetto-7": "Project 7",
-      "progetto-8": "Project 8"
+      "progetto-6": "Project 6"
     },
     "menubar": {
       "finder": "Finder",
@@ -223,21 +220,9 @@
         "title": "Enav",
         "description": "Managed social and digital communication for the Italian air navigation service provider. We conducted professional photography shoots at Rome Fiumicino Airport and the Perugia control tower, while also managing the corporate newsletter and developing enav live—an interactive application designed for real-time engagement between speakers and the audience during institutional conferences."
       },
-      "progetto-5": {
-        "title": "Project 5",
-        "description": "Project 5 description..."
-      },
       "progetto-6": {
         "title": "Project 6",
         "description": "Project 6 description..."
-      },
-      "progetto-7": {
-        "title": "Project 7",
-        "description": "Project 7 description..."
-      },
-      "progetto-8": {
-        "title": "Project 8",
-        "description": "Project 8 description..."
       }
     }
   },

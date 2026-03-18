@@ -78,16 +78,6 @@ const projectData = [
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
   },
-  {
-    id: "progetto-7",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
-  {
-    id: "progetto-8",
-    images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
-    link: null,
-  },
 ];
 
 export default projectData;

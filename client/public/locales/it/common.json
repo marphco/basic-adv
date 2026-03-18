@@ -97,10 +97,7 @@
       "maison-rulo": "Maison Rulo",
       "d-autore": "D'Autore",
       "enav": "Enav",
-      "progetto-5": "Progetto 5",
-      "progetto-6": "Progetto 6",
-      "progetto-7": "Progetto 7",
-      "progetto-8": "Progetto 8"
+      "progetto-6": "Progetto 6"
     },
     "menubar": {
       "finder": "Finder",
@@ -231,21 +228,9 @@
         "title": "Enav",
         "description": "Gestione della comunicazione social e digital per l'ente nazionale per l'assistenza al volo. Abbiamo realizzato shooting fotografici professionali presso l'aeroporto di Roma Fiumicino e la torre di controllo di Perugia, curando inoltre la newsletter aziendale e lo sviluppo di enav live, un'applicazione interattiva dedicata al coinvolgimento in tempo reale tra relatori e pubblico durante i convegni istituzionali."
       },
-      "progetto-5": {
-        "title": "Progetto 5",
-        "description": "Descrizione italiana del progetto 5..."
-      },
       "progetto-6": {
         "title": "Progetto 6",
         "description": "Descrizione italiana del progetto 6..."
-      },
-      "progetto-7": {
-        "title": "Progetto 7",
-        "description": "Descrizione italiana del progetto 7..."
-      },
-      "progetto-8": {
-        "title": "Progetto 8",
-        "description": "Descrizione italiana del progetto 8..."
       }
     }
   },
