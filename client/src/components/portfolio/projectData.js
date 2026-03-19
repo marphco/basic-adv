@@ -20,7 +20,7 @@ import viaReel from "../../assets/via-reel.mp4"
 import fp1 from "../../assets/fp1.jpg"
 import fp2 from "../../assets/fp2.jpg"
 import fp3 from "../../assets/fp3.jpg"
-import fp4 from "../../assets/fp4.png"
+import fp4 from "../../assets/fp4.jpg"
 
 // Maison Rulo
 import mr1 from "../../assets/mr1.jpg"
