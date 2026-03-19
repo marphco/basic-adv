@@ -45,6 +45,11 @@ import enav7 from "../../assets/enav7.jpg"
 import enav8 from "../../assets/enav8.jpg"
 import enavVideo from "../../assets/enav6.mp4"
 
+// Cimasa
+import cimasa1 from "../../assets/cimasa1.jpg"
+import cimasa2 from "../../assets/cimasa2.jpg"
+import cimasa3 from "../../assets/cimasa3.jpg"
+
 
 
 const projectData = [
@@ -79,6 +84,11 @@ const projectData = [
     id: "progetto-6",
     images: [mockup1, mockup2, mockup3, mockup4, mockup5, mockup6],
     link: null,
+  },
+  {
+    id: "cimasa",
+    images: [cimasa1, cimasa2, cimasa3],
+    link: "https://cimasa-app.it",
   },
 ];
 
