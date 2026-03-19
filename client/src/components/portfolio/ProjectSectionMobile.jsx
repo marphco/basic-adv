@@ -145,7 +145,7 @@ export default function ProjectSectionMobilePage() {
         </div>
       </div>
       <div ref={imagesRowRef} className="project-section-mobile-bottom">
-        {content.video && (
+        {content.video && !content.videoAtEnd && (
           <div className="project-video-container">
             <video
               ref={videoRef}
@@ -164,7 +164,6 @@ export default function ProjectSectionMobilePage() {
                   const newMuted = !isMutedRef.current;
                   isMutedRef.current = newMuted;
                   videoRef.current.muted = newMuted;
-                  // Update icon via DOM for consistency
                   e.currentTarget.innerHTML = newMuted ? SPEAKER_OFF_SVG : SPEAKER_ON_SVG;
                 }
               }}
@@ -175,6 +174,32 @@ export default function ProjectSectionMobilePage() {
         {(content.images || []).map((img, index) => (
           <img key={index} src={img} alt={`${content.title || ''} - ${index + 1}`} />
         ))}
+        {content.video && content.videoAtEnd && (
+          <div className="project-video-container">
+            <video
+              ref={videoRef}
+              src={content.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+            <button
+              type="button"
+              className="audio-toggle-v2 visible"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (videoRef.current) {
+                  const newMuted = !isMutedRef.current;
+                  isMutedRef.current = newMuted;
+                  videoRef.current.muted = newMuted;
+                  e.currentTarget.innerHTML = newMuted ? SPEAKER_OFF_SVG : SPEAKER_ON_SVG;
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: SPEAKER_OFF_SVG }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

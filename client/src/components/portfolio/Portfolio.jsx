@@ -119,6 +119,14 @@ const Portfolio = ({ scrollTween = null, isMobile = false, isDark = true }) => {
     })
   );
 
+  // Forza il riordinamento delle cartelle se projectData cambia (es. HMR o cambio lingua)
+  useEffect(() => {
+    setFolders(projectData.map((p, index) => {
+      const slot = GRID_SLOTS[index % GRID_SLOTS.length];
+      return { id: p.id, x: slot.x, y: slot.y };
+    }));
+  }, [projectData]);
+
   const [sectionIsOpen, setSectionIsOpen] = useState(false);
   const [currentProject, setCurrentProject] = useState(null);
   const savedProgressRef = useRef(0);

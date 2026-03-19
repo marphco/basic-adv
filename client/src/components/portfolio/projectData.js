@@ -60,13 +60,10 @@ const projectData = [
     link: "https://viasolemio.com",
   },
   {
-    id: "fra-packaging",
-    images: [fp1, fp2, fp3, fp4],
-    link: "https://frapackaging.com",
-  },
-  {
-    id: "maison-rulo",
-    images: [mr1, mr2, mr3, mr4],
+    id: "enav",
+    images: [enav1, enav3, enav2, enav5, enav4, enav8, enav5, enav7],
+    video: enavVideo,
+    videoAtEnd: true,
     link: null,
   },
   {
@@ -75,15 +72,19 @@ const projectData = [
     link: null,
   },
   {
-    id: "enav",
-    images: [enav7, enav1, enav2, enav8, enav3, enav4, enav5],
-    video: enavVideo,
-    link: null,
-  },
-  {
     id: "cimasa",
     images: [cimasa1, cimasa2, cimasa3],
     link: "https://cimasa-app.it",
+  },
+  {
+    id: "maison-rulo",
+    images: [mr1, mr2, mr3, mr4],
+    link: null,
+  },
+  {
+    id: "fra-packaging",
+    images: [fp1, fp2, fp3, fp4],
+    link: "https://frapackaging.com",
   },
 ];
 

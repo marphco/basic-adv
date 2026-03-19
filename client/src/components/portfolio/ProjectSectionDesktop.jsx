@@ -86,9 +86,12 @@ function ProjectSectionDesktop({ onClose, project }) {
   );
   const content = { ...base, title, description };
 
-  // Unisce video e immagini in un unico array di media
+  // Unisce video e immagini in un unico array di media rispettando il riposizionamento
   const mediaItems = content.video 
-    ? [{ type: "video", src: content.video }, ...content.images.map(img => ({ type: "image", src: img }))]
+    ? (content.videoAtEnd 
+        ? [...content.images.map(img => ({ type: "image", src: img })), { type: "video", src: content.video }]
+        : [{ type: "video", src: content.video }, ...content.images.map(img => ({ type: "image", src: img }))]
+      )
     : content.images.map(img => ({ type: "image", src: img }));
 
   // Duplica i media per ottenere il looping infinito
