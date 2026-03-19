@@ -220,9 +220,9 @@
         "title": "Enav",
         "description": "Managed social and digital communication for the Italian air navigation service provider. We conducted professional photography shoots at Rome Fiumicino Airport and the Perugia control tower, while also managing the corporate newsletter and developing enav live—an interactive application designed for real-time engagement between speakers and the audience during institutional conferences."
       },
-      "progetto-6": {
-        "title": "Project 6",
-        "description": "Project 6 description..."
+      "cimasa": {
+        "title": "Cimasa",
+        "description": "A digital ecosystem for urban asset management. For Cimasa, we developed an innovative application dedicated to the real-time cataloging and census of urban advertising spaces. An integrated system that allows authorities to map, verify, and manage every installation via QR Code, transforming bureaucratic management into a fluid and immediate digital experience."
       }
     }
   },
