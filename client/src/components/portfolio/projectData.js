@@ -61,9 +61,8 @@ const projectData = [
   },
   {
     id: "enav",
-    images: [enav1, enav3, enav2, enav5, enav4, enav8, enav5, enav7],
+    images: [enav7, enav1, enav2, enav8, enav3, enav4, enav5],
     video: enavVideo,
-    videoAtEnd: true,
     link: null,
   },
   {
@@ -72,14 +71,14 @@ const projectData = [
     link: null,
   },
   {
-    id: "cimasa",
-    images: [cimasa1, cimasa2, cimasa3],
-    link: "https://cimasa-app.it",
-  },
-  {
     id: "maison-rulo",
     images: [mr1, mr2, mr3, mr4],
     link: null,
+  },
+  {
+    id: "cimasa",
+    images: [cimasa1, cimasa2, cimasa3],
+    link: "https://cimasa-app.it",
   },
   {
     id: "fra-packaging",
