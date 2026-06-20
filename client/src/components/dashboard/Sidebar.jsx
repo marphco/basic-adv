@@ -8,6 +8,7 @@ import {
   faTimes,
   faFolder,
   faSignOutAlt,
+  faCalendarDays,
 } from "@fortawesome/free-solid-svg-icons";
 import LogoIcon from "../../assets/icon-white.svg";
 
@@ -19,6 +20,7 @@ const Sidebar = ({
   handleSectionChange,
   handleLogout,
   activeKey,
+  isAdmin,
 }) => {
   return (
     <div className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
@@ -28,81 +30,108 @@ const Sidebar = ({
             <img src={LogoIcon} alt="Home Logo" className="logo-icon" />
           </Link>
         </li>
+
+        {/* Sezioni riservate all'admin */}
+        {isAdmin && (
+          <li
+            key={`dashboard-home-${activeKey}`}
+            className={selectedSection === "home" ? "active" : ""}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleSectionChange("home");
+            }}
+          >
+            <span className="active-before"></span>
+            <span className="active-after"></span>
+            <div className="icon">
+              <FontAwesomeIcon icon={faHome} />
+            </div>
+            <div className="text">Home</div>
+          </li>
+        )}
+
+        {/* Piani Editoriali: visibile a tutti (admin + operatori) */}
         <li
-          key={`dashboard-home-${activeKey}`}
-          className={selectedSection === "home" ? "active" : ""}
+          key={`editorial-${activeKey}`}
+          className={selectedSection === "editorial" ? "active" : ""}
           onClick={(event) => {
             event.stopPropagation();
-            handleSectionChange("home");
+            handleSectionChange("editorial");
           }}
         >
           <span className="active-before"></span>
           <span className="active-after"></span>
           <div className="icon">
-            <FontAwesomeIcon icon={faHome} />
+            <FontAwesomeIcon icon={faCalendarDays} />
           </div>
-          <div className="text">Home</div>
+          <div className="text">Piani Editoriali</div>
         </li>
-        <li
-          key={`all-${activeKey}`}
-          className={selectedSection === "all" ? "active" : ""}
-          onClick={(event) => {
-            event.stopPropagation();
-            handleSectionChange("all");
-          }}
-        >
-          <span className="active-before"></span>
-          <span className="active-after"></span>
-          <div className="icon">
-            <FontAwesomeIcon icon={faList} />
-          </div>
-          <div className="text">Tutte le Richieste</div>
-        </li>
-        <li
-          key={`completed-${activeKey}`}
-          className={selectedSection === "completed" ? "active" : ""}
-          onClick={(event) => {
-            event.stopPropagation();
-            handleSectionChange("completed");
-          }}
-        >
-          <span className="active-before"></span>
-          <span className="active-after"></span>
-          <div className="icon">
-            <FontAwesomeIcon icon={faCheck} />
-          </div>
-          <div className="text">Completate</div>
-        </li>
-        <li
-          key={`abandoned-${activeKey}`}
-          className={selectedSection === "abandoned" ? "active" : ""}
-          onClick={(event) => {
-            event.stopPropagation();
-            handleSectionChange("abandoned");
-          }}
-        >
-          <span className="active-before"></span>
-          <span className="active-after"></span>
-          <div className="icon">
-            <FontAwesomeIcon icon={faTimes} />
-          </div>
-          <div className="text">Abbandonate</div>
-        </li>
-        <li
-          key={`fileList-${activeKey}`}
-          className={selectedSection === "fileList" ? "active" : ""}
-          onClick={(event) => {
-            event.stopPropagation();
-            handleSectionChange("fileList");
-          }}
-        >
-          <span className="active-before"></span>
-          <span className="active-after"></span>
-          <div className="icon">
-            <FontAwesomeIcon icon={faFolder} />
-          </div>
-          <div className="text">Lista Allegati</div>
-        </li>
+
+        {isAdmin && (
+          <>
+            <li
+              key={`all-${activeKey}`}
+              className={selectedSection === "all" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("all");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faList} />
+              </div>
+              <div className="text">Tutte le Richieste</div>
+            </li>
+            <li
+              key={`completed-${activeKey}`}
+              className={selectedSection === "completed" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("completed");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faCheck} />
+              </div>
+              <div className="text">Completate</div>
+            </li>
+            <li
+              key={`abandoned-${activeKey}`}
+              className={selectedSection === "abandoned" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("abandoned");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faTimes} />
+              </div>
+              <div className="text">Abbandonate</div>
+            </li>
+            <li
+              key={`fileList-${activeKey}`}
+              className={selectedSection === "fileList" ? "active" : ""}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleSectionChange("fileList");
+              }}
+            >
+              <span className="active-before"></span>
+              <span className="active-after"></span>
+              <div className="icon">
+                <FontAwesomeIcon icon={faFolder} />
+              </div>
+              <div className="text">Lista Allegati</div>
+            </li>
+          </>
+        )}
+
         <li key={`logout-${activeKey}`} onClick={handleLogout}>
           <div className="icon">
             <FontAwesomeIcon icon={faSignOutAlt} />
@@ -121,6 +150,7 @@ Sidebar.propTypes = {
   handleSectionChange: PropTypes.func.isRequired,
   handleLogout: PropTypes.func.isRequired,
   activeKey: PropTypes.number.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
 };
 
 export default Sidebar;

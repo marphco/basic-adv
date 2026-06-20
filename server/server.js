@@ -15,6 +15,9 @@ const crypto = require("crypto");
 const mime = require("mime-types");
 const { rlGenerateQuestions } = require("./services/rlClient");
 const normalizeLang = require("./middleware/lang");
+const bcrypt = require("bcryptjs");
+const User = require("./models/User");
+const { authenticateToken, requireAdminToken } = require("./middleware/auth");
 
 dotenv.config();
 
@@ -75,6 +78,18 @@ app.options("*", cors(corsOpts));
 
 app.use(express.json());
 
+// L'API è privata: nessuna risposta va indicizzata dai motori di ricerca
+// (vale per /uploads e per tutti gli endpoint, inclusi i piani editoriali).
+app.use((req, res, next) => {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  next();
+});
+
+// robots.txt del dominio API: vietata l'intera indicizzazione.
+app.get("/robots.txt", (req, res) => {
+  res.type("text/plain").send("User-agent: *\nDisallow: /\n");
+});
+
 app.use((req, res, next) => {
   const l = pickLang(req.body?.lang, req.headers); // se body manca (multipart), usa gli header
   req.lang = l;
@@ -117,6 +132,12 @@ const isDbReady = () => mongoose.connection.readyState === 1;
 const rlTrainingRouter = require("./routes/rlTraining");
 // Solo se ti serve davvero in locale:
 app.use("/api/rl", rlTrainingRouter); // ✅ NON collide con /api/generate
+
+// Piani editoriali (clienti + post + ruoli)
+app.use("/api/editorial", require("./routes/editorial"));
+
+// Gestione utenti (solo admin)
+app.use("/api/users", require("./routes/users"));
 // oppure commentalo del tutto in produzione.
 
 // api.interceptors.request.use((config) => {
@@ -158,17 +179,7 @@ function pickLang(reqBodyLang, headers = {}) {
 }
 
 // ---- JWT middleware ----
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Accesso negato" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: "Token non valido" });
-    req.user = user;
-    next();
-  });
-}
+// authenticateToken è ora in ./middleware/auth (condiviso con le rotte editorial)
 
 // SendGrid setup (primario)
 if (process.env.SENDGRID_API_KEY) {
@@ -644,25 +655,64 @@ app.post("/api/sendEmails", async (req, res) => {
   }
 });
 
-// Endpoint login
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
+// Endpoint login (utenti su DB + bcrypt)
+app.post("/api/login", async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password)
+      return res.status(400).json({ error: "Credenziali mancanti" });
 
-  if (
-    username !== process.env.ADMIN_USERNAME ||
-    password !== process.env.ADMIN_PASSWORD
-  ) {
-    return res.status(401).json({ error: "Credenziali non valide" });
+    // Accedi con username O email, insensibile a maiuscole/spazi
+    // (evita falsi "credenziali non valide" per differenze di maiuscole/spazi
+    // o se l'utente digita l'email al posto dell'username).
+    const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const ident = new RegExp(`^${escapeRe(String(username).trim())}$`, "i");
+    const user = await User.findOne({
+      $or: [{ username: ident }, { email: ident }],
+    });
+    if (!user)
+      return res.status(401).json({ error: "Credenziali non valide" });
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return res.status(401).json({ error: "Credenziali non valide" });
+
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
+    res.json({
+      token,
+      user: { username: user.username, role: user.role, name: user.name },
+    });
+  } catch (err) {
+    console.error("Errore login:", err);
+    res.status(500).json({ error: "Errore durante il login" });
   }
-
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, {
-    expiresIn: "1h",
-  });
-  res.json({ token });
 });
 
+// Crea l'admin iniziale (Marco) da env se non esiste ancora alcun admin.
+// Migra il vecchio login basato su variabili d'ambiente verso il DB.
+async function seedAdmin() {
+  try {
+    const exists = await User.findOne({ role: "admin" });
+    if (exists) return;
+    const username = process.env.ADMIN_USERNAME;
+    const password = process.env.ADMIN_PASSWORD;
+    if (!username || !password) {
+      console.warn("Seed admin saltato: ADMIN_USERNAME/PASSWORD mancanti");
+      return;
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    await User.create({ username, passwordHash, role: "admin", name: "Marco" });
+    console.log("✅ Admin creato nel DB da variabili d'ambiente");
+  } catch (e) {
+    console.error("Seed admin fallito:", e);
+  }
+}
+
 // Endpoint dashboard
-app.get("/api/getRequests", authenticateToken, async (req, res) => {
+app.get("/api/getRequests", authenticateToken, requireAdminToken, async (req, res) => {
   try {
     const logs = await ProjectLog.find()
       .select(
@@ -713,7 +763,7 @@ app.get("/api/download/:filename", (req, res) => {
 });
 
 // Endpoint per elencare i file
-app.get("/api/uploads/list", authenticateToken, async (req, res) => {
+app.get("/api/uploads/list", authenticateToken, requireAdminToken, async (req, res) => {
   try {
     const files = (await fs.promises.readdir(UPLOAD_DIR)).filter(
       (f) => f !== "lost+found"
@@ -805,6 +855,7 @@ app.get("/api/uploads/list", authenticateToken, async (req, res) => {
 app.delete(
   "/api/uploads/delete/:filename",
   authenticateToken,
+  requireAdminToken,
   async (req, res) => {
     try {
       const filename = req.params.filename;
@@ -829,6 +880,7 @@ app.delete(
 app.put(
   "/api/requests/:sessionId/feedback",
   authenticateToken,
+  requireAdminToken,
   async (req, res) => {
     try {
       const { sessionId } = req.params;
@@ -883,7 +935,7 @@ app.put(
 );
 
 // Endpoint per eliminare una richiesta
-app.delete("/api/requests/:sessionId", authenticateToken, async (req, res) => {
+app.delete("/api/requests/:sessionId", authenticateToken, requireAdminToken, async (req, res) => {
   try {
     const { sessionId } = req.params;
 
@@ -949,7 +1001,10 @@ if (!global.serverRunning) {
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connesso al database MongoDB"))
+  .then(() => {
+    console.log("Connesso al database MongoDB");
+    seedAdmin();
+  })
   .catch((err) => console.error("Errore di connessione al database:", err));
 
 const sanitizeKey = (key) => key.replace(/\./g, "_").replace(/\?$/, "");

@@ -1,0 +1,1711 @@
+/* ============================================================
+   Piani Editoriali — prototipo calendario
+   Prefisso .ep- per non collidere con la dashboard esistente.
+   Variabili tema-aware (light di default, override su [data-theme="dark"]).
+   ============================================================ */
+
+.editorial-plans {
+  --ep-border: rgba(22, 22, 22, 0.12);
+  --ep-surface: #ffffff;
+  --ep-surface-2: #f4f4f4;
+  --ep-muted: rgba(22, 22, 22, 0.55);
+  --ep-note: #f5a623;
+  --ep-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+  color: var(--primary-text-color);
+  padding-bottom: 40px;
+  /* permette al contenuto di restringersi dentro .main-area (flex:1)
+     così la matrice scrolla invece di sfondare il layout */
+  min-width: 0;
+  /* nessun elemento (toolbar/calendario) deve sfondare in orizzontale la
+     pagina su mobile: i contenitori interni (calendario/matrice) hanno il
+     proprio scroll-x, quindi qui possiamo ritagliare in sicurezza. */
+  overflow-x: clip;
+}
+
+[data-theme="dark"] .editorial-plans {
+  --ep-border: rgba(255, 255, 255, 0.14);
+  --ep-surface: #1e1e1e;
+  --ep-surface-2: #262626;
+  --ep-muted: rgba(246, 246, 246, 0.55);
+  --ep-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Cambio tema light/dark fluido (0.5s ease) come nel resto del sito:
+   ogni elemento che cambia colore al toggle del tema viene animato.
+   Le regole specifiche più sotto includono questa transizione insieme
+   alle loro animazioni di interazione (transform, opacity, ecc.). */
+.editorial-plans,
+.editorial-plans *,
+.editorial-plans *::before,
+.editorial-plans *::after {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+
+/* ---------- Header ---------- */
+.ep-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ep-client-select {
+  appearance: none;
+  background: var(--ep-surface);
+  color: var(--primary-text-color);
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 12px 40px 12px 16px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 280px;
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23ff4003" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.ep-client-select:hover,
+.ep-client-select:focus {
+  border-color: var(--foreground-color);
+  outline: none;
+}
+
+/* ---------- Tab pagine ---------- */
+.ep-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.ep-page-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-page-tab:hover {
+  border-color: var(--foreground-color);
+}
+.ep-page-tab.active {
+  background: var(--foreground-color);
+  border-color: var(--foreground-color);
+  color: #fff;
+  font-weight: 400;
+}
+.ep-platform-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ---------- Sub-bar: navigazione mese + legenda ---------- */
+.ep-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ep-month-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ep-month-title {
+  font-size: 1.35rem;
+  font-weight: 300;
+  margin: 0;
+  min-width: 190px;
+  text-align: center;
+}
+.ep-today-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-today-btn:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+
+.ep-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.78rem;
+  color: var(--ep-muted);
+}
+.ep-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ep-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.ep-legend-swatch.sponsored {
+  background: var(--foreground-color);
+}
+.ep-legend-swatch.note {
+  background: var(--ep-note);
+}
+.ep-legend-count {
+  color: var(--ep-note);
+  font-weight: 500;
+}
+
+/* ---------- Calendario ---------- */
+.ep-calendar {
+  border: 1px solid var(--ep-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ep-surface);
+}
+.ep-weekrow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.ep-weekdays {
+  background: var(--ep-surface-2);
+  border-bottom: 1px solid var(--ep-border);
+}
+.ep-weekday {
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ep-muted);
+}
+
+.ep-day {
+  min-height: 138px;
+  border-right: 1px solid var(--ep-border);
+  border-bottom: 1px solid var(--ep-border);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ep-weekrow .ep-day:nth-child(7n) {
+  border-right: none;
+}
+.ep-day--empty {
+  background: var(--ep-surface-2);
+  opacity: 0.5;
+}
+.ep-day--today {
+  background: rgba(255, 64, 3, 0.05);
+}
+.ep-day--today .ep-day-num {
+  background: var(--foreground-color);
+  color: #fff;
+}
+
+.ep-day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ep-day-num {
+  font-size: 0.8rem;
+  font-weight: 500;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.ep-day-head-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ep-day-note-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--ep-note);
+  color: #3a2a00;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.ep-day-add {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--ep-border);
+  background: transparent;
+  color: var(--ep-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background-color 0.5s ease, color 0.5s ease,
+    border-color 0.5s ease;
+}
+.ep-day:hover .ep-day-add {
+  opacity: 1;
+}
+.ep-day-add:hover {
+  background: var(--foreground-color);
+  border-color: var(--foreground-color);
+  color: #fff;
+}
+
+.ep-day-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ---------- Card post ---------- */
+.ep-post {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  text-align: left;
+  width: 100%;
+  color: var(--primary-text-color);
+  background: var(--ep-surface);
+  border: 1px solid var(--ep-border);
+  /* bordo sinistro colorato per categoria (impostato inline via --cat-color),
+     grigio se il post non ha rubrica */
+  border-left: 3px solid var(--cat-color, var(--ep-border));
+  border-radius: 7px;
+  padding: 5px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+.ep-post:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ep-shadow);
+}
+.ep-post--sponsored {
+  border-left-color: var(--foreground-color);
+  background: rgba(255, 64, 3, 0.06);
+}
+.ep-post--note {
+  border-left-color: var(--ep-note);
+}
+.ep-post--sponsored.ep-post--note {
+  /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
+  border-left-color: var(--foreground-color);
+}
+.ep-post--draft {
+  opacity: 0.7;
+}
+
+.ep-post-thumb {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--ep-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ep-muted);
+  font-size: 0.9rem;
+}
+.ep-post-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ep-post-platform {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 1px 3px;
+  border-radius: 4px 0 4px 0;
+  line-height: 1;
+}
+
+/* Overlay ▶ sui post video nel calendario */
+.ep-thumb-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.ep-thumb-play::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+}
+.ep-thumb-play svg {
+  position: relative;
+  font-size: 0.5rem;
+}
+
+.ep-post-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.ep-post-caption {
+  font-size: 0.72rem;
+  font-weight: 300;
+  line-height: 1.3;
+  /* testo SEMPRE completo nel calendario (niente troncamento): la cella cresce */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ep-post-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.ep-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.ep-badge--sponsored {
+  background: var(--foreground-color);
+  color: #fff;
+}
+.ep-badge--note {
+  background: var(--ep-note);
+  color: #3a2a00;
+}
+.ep-badge--carousel {
+  background: var(--ep-surface-2);
+  color: var(--primary-text-color);
+  border: 1px solid var(--ep-border);
+}
+.ep-badge--draft {
+  background: var(--ep-surface-2);
+  color: var(--ep-muted);
+  border: 1px solid var(--ep-border);
+}
+.ep-badge--review {
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.5);
+}
+
+/* ============================================================
+   Modali (post + condivisione)
+   ============================================================ */
+.ep-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Il cursore personalizzato del sito usa z-index 999999999999, che il browser
+     satura al massimo intero a 32 bit (2147483647). Restiamo sotto quel tetto
+     così il cursore resta sempre sopra il modale (ma sopra sidebar/contenuti). */
+  z-index: 2147483000;
+  padding: 20px;
+}
+.ep-modal {
+  background: var(--background-color);
+  border: 1px solid var(--ep-border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--ep-shadow);
+}
+.ep-modal--share {
+  max-width: 560px;
+}
+.ep-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ep-border);
+}
+.ep-modal-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+.ep-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ep-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--ep-border);
+}
+.ep-foot-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* Media manager (foto singola, carosello, video) */
+.ep-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ep-media-type {
+  font-size: 0.75rem;
+  color: var(--ep-muted);
+}
+.ep-media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ep-media-tile {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ep-surface-2);
+  border: 1px solid var(--ep-border);
+  flex-shrink: 0;
+}
+.ep-media-tile img,
+.ep-media-tile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ep-media-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.ep-media-play::before {
+  content: "";
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+}
+.ep-media-play svg {
+  position: relative;
+  font-size: 0.7rem;
+}
+.ep-media-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ep-media-add {
+  width: 74px;
+  height: 74px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1.5px dashed var(--ep-border);
+  background: transparent;
+  color: var(--ep-muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.7rem;
+}
+.ep-media-add:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+.ep-media-add svg {
+  font-size: 1rem;
+}
+/* media del post cliccabile per ingrandire/scaricare */
+.ep-media-open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+/* "Copia caption" */
+.ep-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.72rem;
+  color: var(--ep-muted);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-copy-btn:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+
+/* Campi */
+.ep-field-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ep-muted);
+  margin-bottom: -4px;
+}
+.ep-textarea,
+.ep-select {
+  width: 100%;
+  background: var(--ep-surface);
+  color: var(--primary-text-color);
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 300;
+  font-family: inherit;
+  resize: vertical;
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+.ep-textarea:focus,
+.ep-select:focus {
+  border-color: var(--foreground-color);
+  outline: none;
+}
+.ep-field-row {
+  display: flex;
+  gap: 12px;
+}
+.ep-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Toggle sponsorizzato */
+.ep-sponsor-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ep-surface);
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--primary-text-color);
+  font-size: 0.9rem;
+  font-weight: 300;
+  transition: all 0.5s ease;
+}
+.ep-sponsor-toggle svg {
+  color: var(--ep-muted);
+}
+.ep-sponsor-toggle.on {
+  border-color: var(--foreground-color);
+  background: rgba(255, 64, 3, 0.08);
+}
+.ep-sponsor-toggle.on svg {
+  color: var(--foreground-color);
+}
+.ep-switch {
+  margin-left: auto;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--ep-border);
+  position: relative;
+  transition: background-color 0.5s ease;
+  flex-shrink: 0;
+}
+.ep-switch.on {
+  background: var(--foreground-color);
+}
+.ep-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s ease;
+}
+.ep-switch.on .ep-switch-knob {
+  transform: translateX(18px);
+}
+
+/* Box note cliente */
+.ep-notes-box {
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.4);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.ep-notes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ep-note);
+  margin-bottom: 10px;
+}
+.ep-note-item {
+  padding: 8px 0;
+  border-top: 1px solid rgba(245, 166, 35, 0.25);
+}
+.ep-note-item:first-of-type {
+  border-top: none;
+}
+.ep-note-item p {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.4;
+}
+.ep-note-meta {
+  font-size: 0.72rem;
+  color: var(--ep-muted);
+}
+
+/* Share */
+.ep-share-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.5;
+}
+.ep-share-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ep-surface);
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 6px 6px 6px 12px;
+}
+.ep-share-link-icon {
+  color: var(--ep-muted);
+  flex-shrink: 0;
+}
+.ep-share-link input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--primary-text-color);
+  font-size: 0.85rem;
+  font-weight: 300;
+  outline: none;
+  min-width: 0;
+}
+.ep-share-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ep-muted);
+  font-style: italic;
+}
+
+/* ---------- Bottoni generici ---------- */
+.ep-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 400;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.5s ease;
+  white-space: nowrap;
+}
+.ep-btn--primary {
+  background: var(--foreground-color);
+  color: #fff;
+  border-color: var(--foreground-color);
+}
+.ep-btn--primary:hover {
+  background: transparent;
+  color: var(--foreground-color);
+}
+.ep-btn--ghost {
+  background: transparent;
+  color: var(--primary-text-color);
+  border-color: var(--ep-border);
+}
+.ep-btn--ghost:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+.ep-btn--danger {
+  background: transparent;
+  color: #e23b3b;
+  border-color: #e23b3b;
+}
+.ep-btn--danger:hover {
+  background: #e23b3b;
+  color: #fff;
+}
+
+.ep-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--ep-border);
+  background: transparent;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+}
+.ep-icon-btn:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .ep-day {
+    min-height: 110px;
+  }
+  .ep-legend {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .ep-calendar {
+    overflow-x: auto;
+  }
+  .ep-weekrow {
+    min-width: 720px;
+  }
+  .ep-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ep-client-select {
+    min-width: 0;
+    width: 100%;
+  }
+  .ep-month-title {
+    font-size: 1.1rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .ep-field-row {
+    flex-direction: column;
+  }
+  /* Toolbar: tutto a piena larghezza e a capo, niente sfondamento */
+  .ep-header-left {
+    width: 100%;
+  }
+  .ep-header .ep-btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+  .ep-subbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ep-month-nav {
+    width: 100%;
+  }
+  .ep-today-btn,
+  .ep-dup-btn {
+    margin-left: 0;
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+  /* i due "Duplica…" dividono la riga */
+  .ep-dup-btn {
+    flex: 1 1 45%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   Rubriche, chip compatta, canali, input
+   ============================================================ */
+.ep-cat-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  /* color impostato inline da categoryColor() */
+}
+
+.ep-tab-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.ep-badge--video {
+  background: var(--ep-surface-2);
+  color: var(--primary-text-color);
+  border: 1px solid var(--ep-border);
+}
+
+/* Chip compatta (testuale) per la vista a matrice */
+.ep-post--compact {
+  padding: 5px 7px;
+  border-left-width: 3px;
+}
+.ep-post--compact .ep-post-caption {
+  font-size: 0.7rem;
+}
+
+/* Input modale (rubrica) */
+.ep-input {
+  width: 100%;
+  background: var(--ep-surface);
+  color: var(--primary-text-color);
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 300;
+  font-family: inherit;
+  transition: border-color 0.5s ease, background-color 0.5s ease, color 0.5s ease;
+}
+.ep-input:focus {
+  border-color: var(--foreground-color);
+  outline: none;
+}
+
+/* ============================================================
+   Vista MATRICE: righe = pagine, colonne = giorni (come il PED a griglia)
+   ============================================================ */
+.ep-matrix {
+  border: 1px solid var(--ep-border);
+  border-radius: 12px;
+  overflow: hidden;
+  overflow-x: auto;
+  max-width: 100%;
+  background: var(--ep-surface);
+  scrollbar-width: thin; /* Firefox */
+}
+/* scrollbar orizzontale sempre visibile → si capisce che si può scorrere */
+.ep-matrix::-webkit-scrollbar {
+  height: 10px;
+}
+.ep-matrix::-webkit-scrollbar-thumb {
+  background: var(--ep-border);
+  border-radius: 6px;
+}
+.ep-matrix::-webkit-scrollbar-track {
+  background: transparent;
+}
+.ep-matrix-week {
+  border-bottom: 3px solid var(--ep-border);
+}
+.ep-matrix-week:last-child {
+  border-bottom: none;
+}
+.ep-matrix-row {
+  display: grid;
+  grid-template-columns: 130px repeat(7, minmax(104px, 1fr));
+  min-width: 858px;
+  border-top: 1px solid var(--ep-border);
+}
+.ep-matrix-headrow {
+  background: var(--ep-surface-2);
+  border-top: none;
+}
+.ep-matrix-corner {
+  border-right: 1px solid var(--ep-border);
+  position: sticky;
+  left: 0;
+  background: var(--ep-surface-2);
+  z-index: 1;
+}
+.ep-matrix-dayhead {
+  padding: 7px 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--ep-muted);
+  border-right: 1px solid var(--ep-border);
+  position: relative;
+}
+.ep-matrix-dayhead:last-child {
+  border-right: none;
+}
+.ep-matrix-dayhead.is-today {
+  background: rgba(255, 64, 3, 0.06);
+}
+.ep-mh-wd {
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+}
+.ep-mh-day {
+  font-weight: 600;
+  color: var(--primary-text-color);
+}
+.ep-matrix-dayhead.is-today .ep-mh-day {
+  color: var(--foreground-color);
+}
+.ep-mh-note {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ep-note);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+.ep-matrix-pagelabel {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-right: 1px solid var(--ep-border);
+  background: var(--ep-surface-2);
+  font-size: 0.8rem;
+  font-weight: 500;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+}
+.ep-mp-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ep-matrix-cell {
+  padding: 5px;
+  border-right: 1px solid var(--ep-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 66px;
+}
+.ep-matrix-cell:last-child {
+  border-right: none;
+}
+.ep-matrix-cell.is-empty {
+  background: var(--ep-surface-2);
+  opacity: 0.5;
+}
+.ep-cell-add {
+  opacity: 0;
+  align-self: flex-start;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--ep-border);
+  background: transparent;
+  color: var(--ep-muted);
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background-color 0.5s ease, color 0.5s ease,
+    border-color 0.5s ease;
+}
+.ep-matrix-cell:hover .ep-cell-add {
+  opacity: 1;
+}
+.ep-cell-add:hover {
+  background: var(--foreground-color);
+  border-color: var(--foreground-color);
+  color: #fff;
+}
+
+/* ============================================================
+   Loghi canali, header nuovo-cliente, modale cliente, note avanzate
+   ============================================================ */
+.ep-ch-icon {
+  font-size: 0.85rem;
+}
+
+.ep-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Modale "Nuovo cliente" */
+.ep-page-row {
+  border: 1px solid var(--ep-border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ep-page-row-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ep-icon-btn--sm {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+.ep-chan-toggles {
+  display: flex;
+  gap: 6px;
+}
+.ep-chan-toggle {
+  width: 40px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--ep-border);
+  background: transparent;
+  color: var(--ep-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+}
+.ep-chan-toggle.on {
+  border-color: var(--foreground-color);
+  background: rgba(255, 64, 3, 0.08);
+}
+.ep-chan-toggle .ep-ch-icon {
+  font-size: 1rem;
+}
+.ep-add-page-btn {
+  align-self: flex-start;
+  background: none;
+  border: 1px dashed var(--ep-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--ep-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  transition: all 0.5s ease;
+}
+.ep-add-page-btn:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+
+/* Note cliente: allegati + stato "risolta" */
+.ep-note-media {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0;
+  flex-wrap: wrap;
+}
+.ep-note-thumb {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ep-surface-2);
+  display: block;
+}
+.ep-note-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ep-note-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ep-note-resolve {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  color: var(--ep-muted);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-note-resolve:hover {
+  border-color: #2e9e5b;
+  color: #2e9e5b;
+}
+.ep-note-resolve.on {
+  background: #2e9e5b;
+  border-color: #2e9e5b;
+  color: #fff;
+}
+.ep-note-item.resolved p {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Miniatura allegato cliccabile + lightbox */
+.ep-note-thumb {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.ep-btn {
+  text-decoration: none;
+}
+.ep-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  /* sopra il modale (z 2147483000), sotto il cursore (2147483647) */
+  z-index: 2147483200;
+}
+.ep-lightbox-inner {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.ep-lightbox-inner img,
+.ep-lightbox-inner video {
+  max-width: 90vw;
+  max-height: 75vh;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #000;
+}
+.ep-lightbox-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ep-lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: #161616;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================================
+   Duplicati dal mese precedente — flag molto visibile (viola)
+   ============================================================ */
+.ep-post--dup {
+  border-color: #7c3aed;
+  border-left-color: #7c3aed;
+  border-style: dashed;
+  background: rgba(124, 58, 237, 0.1);
+}
+.ep-dup-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.ep-dup-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-dup-btn:hover {
+  border-color: #7c3aed;
+  color: #7c3aed;
+}
+.ep-dup-banner,
+.ep-share-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid #7c3aed;
+  color: #7c3aed;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.ep-dup-banner {
+  margin-bottom: 14px;
+}
+
+/* ============================================================
+   Gestione utenti
+   ============================================================ */
+.ep-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ep-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--ep-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.ep-user-ava {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--ep-surface-2);
+  color: var(--ep-muted);
+}
+.ep-user-ava.admin {
+  background: rgba(255, 64, 3, 0.15);
+  color: var(--foreground-color);
+}
+.ep-user-info {
+  flex: 1;
+  min-width: 0;
+}
+.ep-user-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.ep-user-handle {
+  color: var(--ep-muted);
+  font-weight: 300;
+  font-size: 0.8rem;
+}
+.ep-user-email {
+  font-size: 0.78rem;
+  color: var(--ep-muted);
+  margin-top: 2px;
+}
+.ep-role-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ep-surface-2);
+  color: var(--ep-muted);
+  border: 1px solid var(--ep-border);
+}
+.ep-role-badge.admin {
+  background: var(--foreground-color);
+  color: #fff;
+  border-color: var(--foreground-color);
+}
+.ep-user-clients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.ep-client-chip {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ep-surface-2);
+  border: 1px solid var(--ep-border);
+  color: var(--primary-text-color);
+}
+.ep-user-noclients {
+  font-size: 0.72rem;
+  color: var(--ep-muted);
+  font-style: italic;
+}
+/* Chip pagina nella lista clienti: icone canale + nome allineati */
+.ep-client-page-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Conferma invio del piano + barra azioni nel modale condivisione */
+.ep-share-actions {
+  margin: 14px 0 4px;
+}
+.ep-share-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: var(--primary-text-color);
+}
+
+/* ============================================================
+   Drag & drop dei post tra i giorni (e tra pagine nella matrice)
+   ============================================================ */
+.ep-post--draggable {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ep-post--draggable:active {
+  cursor: grabbing;
+}
+.ep-day.ep-drop-over,
+.ep-matrix-cell.ep-drop-over {
+  outline: 2px dashed var(--foreground-color);
+  outline-offset: -2px;
+  background: rgba(255, 64, 3, 0.07);
+}
+/* Ghost che segue il puntatore durante il trascinamento */
+.ep-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translate(-9999px, -9999px);
+  z-index: 2147482000;
+  pointer-events: none;
+  max-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--ep-surface-2);
+  border: 1px solid var(--foreground-color);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  opacity: 0.96;
+}
+.ep-drag-ghost-cat {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--foreground-color);
+}
+.ep-drag-ghost-cap {
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--primary-text-color);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Vista agenda (mobile): giorni in elenco verticale
+   ============================================================ */
+.ep-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ep-agenda-day {
+  border: 1px solid var(--ep-border);
+  border-radius: 10px;
+  background: var(--ep-surface);
+  padding: 8px 10px;
+}
+.ep-agenda-day.is-empty {
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.55;
+}
+.ep-agenda-day.is-today {
+  border-color: var(--foreground-color);
+}
+.ep-agenda-day.ep-drop-over {
+  outline: 2px dashed var(--foreground-color);
+  outline-offset: -2px;
+  background: rgba(255, 64, 3, 0.07);
+}
+.ep-agenda-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ep-agenda-date {
+  font-size: 0.82rem;
+  color: var(--ep-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.ep-agenda-date b {
+  font-size: 1.1rem;
+  color: var(--primary-text-color);
+  margin-right: 6px;
+}
+.ep-agenda-add {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ep-agenda-add:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+.ep-agenda-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.ep-agenda-page {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ep-muted);
+  margin-bottom: 3px;
+}
+.ep-user-form {
+  border: 1px solid var(--ep-border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ep-assign-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ep-assign-chip {
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.ep-assign-chip.on {
+  background: rgba(255, 64, 3, 0.12);
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+
+/* ============================================================
+   Import Excel
+   ============================================================ */
+.ep-modal--wide {
+  max-width: 720px;
+}
+.ep-import-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  border: 1.5px dashed var(--ep-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--primary-text-color);
+  padding: 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 300;
+  transition: all 0.5s ease;
+}
+.ep-import-pick:hover {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+}
+.ep-import-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--ep-muted);
+}
+.ep-format-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: var(--foreground-color);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.ep-import-scroll {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--ep-border);
+  border-radius: 8px;
+}
+.ep-import-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.ep-import-table th,
+.ep-import-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--ep-border);
+  font-weight: 300;
+  vertical-align: top;
+}
+.ep-import-table th {
+  position: sticky;
+  top: 0;
+  background: var(--ep-surface-2);
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--ep-muted);
+}
+.ep-import-table .ep-nowrap {
+  white-space: nowrap;
+}
+.ep-import-table .ep-row-unmatched {
+  background: rgba(124, 58, 237, 0.08);
+}
+
+/* Stati: caricamento / vuoto / errore */
+.ep-loading,
+.ep-empty {
+  padding: 48px 4px;
+  color: var(--ep-muted);
+  font-size: 0.95rem;
+}
+.ep-error-banner {
+  background: rgba(226, 59, 59, 0.1);
+  border-color: #e23b3b;
+  color: #e23b3b;
+}
+
+/* Azioni riga utente (modifica/elimina) + titolo form */
+.ep-user-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ep-user-form-title {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
