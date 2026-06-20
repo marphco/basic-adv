@@ -7,6 +7,7 @@ import {
   faBullhorn,
   faComment,
   faClone,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { categoryColor } from "./mockData";
 
@@ -16,7 +17,10 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   const cover = post.media?.[0];
   const mediaCount = post.media?.length || 0;
   const isVideo = cover?.kind === "video";
-  const hasNotes = (post.notes?.length || 0) > 0;
+  const notes = post.notes || [];
+  const unresolved = notes.filter((n) => !n.resolved).length;
+  const hasUnresolved = unresolved > 0;
+  const allResolved = notes.length > 0 && unresolved === 0;
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
 
@@ -26,7 +30,8 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         "ep-post",
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
-        hasNotes ? "ep-post--note" : "",
+        hasUnresolved ? "ep-post--note" : "",
+        allResolved ? "ep-post--note-done" : "",
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -86,9 +91,14 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
               <FontAwesomeIcon icon={faImages} /> {mediaCount}
             </span>
           )}
-          {hasNotes && (
+          {hasUnresolved && (
             <span className="ep-badge ep-badge--note">
-              <FontAwesomeIcon icon={faComment} /> {post.notes.length}
+              <FontAwesomeIcon icon={faComment} /> {unresolved}
+            </span>
+          )}
+          {allResolved && (
+            <span className="ep-badge ep-badge--note-done">
+              <FontAwesomeIcon icon={faCheck} /> Risolte
             </span>
           )}
         </div>

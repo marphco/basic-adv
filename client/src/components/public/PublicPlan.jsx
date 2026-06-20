@@ -74,6 +74,8 @@ export default function PublicPlan() {
 
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent] = useState(false);
+  const [approval, setApproval] = useState(null); // { by, at } se approvato
+  const [approving, setApproving] = useState(false);
 
   const [isNarrow, setIsNarrow] = useState(
     () =>
@@ -132,6 +134,7 @@ export default function PublicPlan() {
       });
       setData(r.data);
       setPosts(r.data.posts || []);
+      setApproval(r.data.approval || null);
       try {
         sessionStorage.setItem(storeKey, val);
       } catch {
@@ -243,6 +246,20 @@ export default function PublicPlan() {
     }
   };
 
+  const approvePlan = async () => {
+    if (!window.confirm("Sei sicuro di voler approvare il piano editoriale?"))
+      return;
+    setApproving(true);
+    try {
+      const r = await axios.post(`${API_URL}/api/public/plan/approve`, { ...base });
+      setApproval(r.data.approval || { at: new Date().toISOString() });
+    } catch (err) {
+      window.alert(err?.response?.data?.error || "Approvazione non riuscita.");
+    } finally {
+      setApproving(false);
+    }
+  };
+
   const openPost = (p) => {
     setSelected(p);
     setNoteText("");
@@ -260,7 +277,10 @@ export default function PublicPlan() {
   const postsFor = (pageId, day) =>
     posts.filter((p) => p.pageId === pageId && p.day === day);
   const notesOnDay = (day) =>
-    (postsByDay[day] || []).reduce((n, p) => n + (p.notes?.length || 0), 0);
+    (postsByDay[day] || []).reduce(
+      (n, p) => n + (p.notes || []).filter((x) => !x.resolved).length,
+      0
+    );
   const today = new Date();
   const isToday = (day) =>
     !!day &&
@@ -328,6 +348,32 @@ export default function PublicPlan() {
       <div className="pp-intro">
         Ciao {data.client?.contactName || data.client?.name}, ecco i contenuti del
         mese. Clicca un post per leggerlo e lasciare una nota.
+      </div>
+
+      <div className="pp-feedback-bar">
+        {approval ? (
+          <span className="pp-feedback-ok">
+            <FontAwesomeIcon icon={faCheck} /> Piano approvato
+            {approval.at
+              ? ` il ${new Date(approval.at).toLocaleDateString("it-IT")}`
+              : ""}
+            .
+          </span>
+        ) : (
+          <>
+            <span className="pp-feedback-info">
+              Se è tutto a posto, conferma il piano editoriale.
+            </span>
+            <button
+              className="pp-btn"
+              onClick={approvePlan}
+              disabled={approving}
+            >
+              <FontAwesomeIcon icon={faCheck} />{" "}
+              {approving ? "Approvazione…" : "Approva piano editoriale"}
+            </button>
+          </>
+        )}
       </div>
 
       {totalNotes > 0 && (

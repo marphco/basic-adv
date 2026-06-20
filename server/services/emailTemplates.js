@@ -137,6 +137,30 @@ function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl }) {
   };
 }
 
+// → all'AGENZIA: il cliente ha APPROVATO il piano del mese.
+function planApprovedNotification({ clientName, monthLabel, by, planUrl }) {
+  const body =
+    h("Piano approvato dal cliente 🎉") +
+    p(
+      `<strong>${esc(clientName)}</strong> ha <strong>approvato</strong> il piano editoriale di <strong>${esc(
+        monthLabel
+      )}</strong>.`
+    ) +
+    (by ? p(`Approvato da: <strong>${esc(by)}</strong>.`) : "") +
+    button("Apri il piano editoriale", planUrl);
+  return {
+    subject: `${clientName}: piano di ${monthLabel} APPROVATO ✅`,
+    text: `${clientName} ha approvato il piano editoriale di ${monthLabel}.${
+      by ? ` Approvato da: ${by}.` : ""
+    }\nApri il piano: ${planUrl}`,
+    html: wrap({
+      title: "Piano approvato",
+      preheader: `${clientName} ha approvato il piano di ${monthLabel}`,
+      bodyHtml: body,
+    }),
+  };
+}
+
 // → al NUOVO UTENTE: account creato. Per sicurezza NON contiene la password.
 function accountWelcome({ name, username, role, loginUrl }) {
   const roleLabel = role === "admin" ? "Amministratore" : "Operatore";
@@ -176,6 +200,7 @@ module.exports = {
   clientNotesNotification,
   revisionsDoneNotification,
   shareEditorialPlan,
+  planApprovedNotification,
   accountWelcome,
   wrap,
 };

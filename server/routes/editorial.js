@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Client = require("../models/Client");
 const Post = require("../models/Post");
+const PlanApproval = require("../models/PlanApproval");
 const {
   authenticateToken,
   loadUser,
@@ -161,6 +162,25 @@ router.post("/share", async (req, res) => {
     res.json({ sent, failed, planUrl });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'invio del piano" });
+  }
+});
+
+// Stato approvazione del piano (cliente) per un mese — per la dashboard.
+router.get("/approval", async (req, res) => {
+  try {
+    const { clientId, year, month } = req.query;
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    if (!canAccessClient(req.dbUser, clientId))
+      return res.status(403).json({ error: "Accesso negato a questo cliente" });
+    const ap = await PlanApproval.findOne({
+      clientId,
+      year: Number(year),
+      month: Number(month),
+    }).lean();
+    res.json(ap ? { by: ap.name || ap.email, at: ap.createdAt } : null);
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel recupero dell'approvazione" });
   }
 });
 
