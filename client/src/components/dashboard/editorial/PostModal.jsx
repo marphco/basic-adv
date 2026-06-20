@@ -75,6 +75,12 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     setAgencyNoteNeedsReply(false);
   };
 
+  // Elimina una nota (cliente o agenzia). Persistita al salvataggio del post.
+  const deleteNote = (i) => {
+    if (!window.confirm("Eliminare questa nota?")) return;
+    setNotes((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
   const isNew = !draft.id;
   // Giorni del mese in base a mese/anno SELEZIONATI (così cambiando mese si
   // aggiorna il numero di giorni, es. febbraio).
@@ -415,16 +421,27 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                   )}
                   <div className="ep-note-foot">
                     <span className="ep-note-meta">{n.author}</span>
-                    {resolvable && (
+                    <div className="ep-note-actions">
+                      {resolvable && (
+                        <button
+                          type="button"
+                          className={`ep-note-resolve ${n.resolved ? "on" : ""}`}
+                          onClick={() => toggleResolved(i)}
+                        >
+                          <FontAwesomeIcon icon={faCheck} />
+                          {n.resolved ? "Risolta" : "Segna risolta"}
+                        </button>
+                      )}
                       <button
                         type="button"
-                        className={`ep-note-resolve ${n.resolved ? "on" : ""}`}
-                        onClick={() => toggleResolved(i)}
+                        className="ep-note-del"
+                        onClick={() => deleteNote(i)}
+                        title="Elimina nota"
+                        aria-label="Elimina nota"
                       >
-                        <FontAwesomeIcon icon={faCheck} />
-                        {n.resolved ? "Risolta" : "Segna risolta"}
+                        <FontAwesomeIcon icon={faTrash} />
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               );

@@ -1243,6 +1243,26 @@
   gap: 8px;
   margin-top: 4px;
 }
+.ep-note-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.ep-note-del {
+  background: transparent;
+  border: 1px solid var(--ep-border);
+  color: var(--ep-muted);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.ep-note-del:hover {
+  border-color: #e23b3b;
+  color: #e23b3b;
+}
 .ep-note-resolve {
   display: inline-flex;
   align-items: center;
