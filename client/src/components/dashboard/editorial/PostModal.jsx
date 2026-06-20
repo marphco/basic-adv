@@ -13,6 +13,7 @@ import {
   faCopy,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
+import { confirmDialog } from "./uiNotify";
 
 const MONTHS_IT = [
   "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -76,8 +77,14 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   };
 
   // Elimina una nota (cliente o agenzia). Persistita al salvataggio del post.
-  const deleteNote = (i) => {
-    if (!window.confirm("Eliminare questa nota?")) return;
+  const deleteNote = async (i) => {
+    if (
+      !(await confirmDialog("Eliminare questa nota?", {
+        danger: true,
+        confirmLabel: "Elimina",
+      }))
+    )
+      return;
     setNotes((prev) => prev.filter((_, idx) => idx !== i));
   };
 
@@ -128,10 +135,13 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     JSON.stringify(notes) !== initialRef.current.notes;
 
   // Chiusura protetta: se ci sono modifiche non salvate, chiede conferma.
-  const requestClose = () => {
+  const requestClose = async () => {
     if (
       hasChanges() &&
-      !window.confirm("Hai modifiche non salvate. Chiudere senza salvare?")
+      !(await confirmDialog("Hai modifiche non salvate. Chiudere senza salvare?", {
+        danger: true,
+        confirmLabel: "Chiudi",
+      }))
     )
       return;
     onClose();

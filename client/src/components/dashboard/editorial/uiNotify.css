@@ -1,0 +1,104 @@
+/* Toast + modale di conferma (sostituiscono window.alert / window.confirm).
+   Colori fissi: funzionano sia su dashboard (light/dark) sia su pagina pubblica.
+   z-index sotto il cursore custom (int32 max) ma sopra i modali (2147483000). */
+
+.ui-toasts {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: min(92vw, 380px);
+}
+.ui-toast {
+  pointer-events: auto;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: #fff;
+  background: #2a2a2a;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  font-family: inherit;
+  animation: ui-toast-in 0.18s ease;
+}
+.ui-toast--success {
+  background: #1e8e4e;
+}
+.ui-toast--error {
+  background: #c5372f;
+}
+@keyframes ui-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ui-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2147483600;
+}
+.ui-confirm {
+  background: #1e1e1e;
+  color: #f6f6f6;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 22px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.ui-confirm h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+.ui-confirm p {
+  margin: 0 0 18px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #d8d8d8;
+}
+.ui-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ui-btn {
+  border: none;
+  border-radius: 9px;
+  padding: 9px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ui-btn--ghost {
+  background: transparent;
+  color: #f6f6f6;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.ui-btn--primary {
+  background: #ff4003;
+  color: #fff;
+}
+.ui-btn--danger {
+  background: #c5372f;
+  color: #fff;
+}

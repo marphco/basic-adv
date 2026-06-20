@@ -27,6 +27,8 @@ import UserManagementModal from "./UserManagementModal";
 import ImportModal from "./ImportModal";
 import ChannelIcon from "./ChannelIcon";
 import useCalendarDnD from "./useCalendarDnD";
+import { toast, toastErr, confirmDialog } from "./uiNotify";
+import UiHost from "./UiHost";
 import "./EditorialPlans.css";
 
 const MONTHS_IT = [
@@ -250,7 +252,7 @@ const EditorialPlans = () => {
         reloadPosts();
       }
     } catch {
-      window.alert("Errore nel salvataggio del post.");
+      toastErr("Errore nel salvataggio del post.");
     }
   };
 
@@ -260,7 +262,7 @@ const EditorialPlans = () => {
       setModal(null);
       reloadPosts();
     } catch {
-      window.alert("Errore nell'eliminazione del post.");
+      toastErr("Errore nell'eliminazione del post.");
     }
   };
 
@@ -278,7 +280,7 @@ const EditorialPlans = () => {
         isDuplicate: post.isDuplicate, // spostare non è "revisionare": preserva il flag
       });
     } catch {
-      window.alert("Spostamento del post non riuscito.");
+      toastErr("Spostamento del post non riuscito.");
       reloadPosts();
     }
   };
@@ -291,9 +293,9 @@ const EditorialPlans = () => {
   const duplicateFrom = async (fromYear, fromMonth) => {
     if (
       posts.length > 0 &&
-      !window.confirm(
+      !(await confirmDialog(
         `${MONTHS_IT[view.month - 1]} ${view.year} contiene già dei post. Aggiungere comunque i duplicati da ${MONTHS_IT[fromMonth - 1]} ${fromYear}?`
-      )
+      ))
     )
       return;
     try {
@@ -307,10 +309,10 @@ const EditorialPlans = () => {
       reloadPosts();
     } catch (e) {
       if (e?.response?.status === 404)
-        window.alert(
+        toastErr(
           `Nessun post da duplicare in ${MONTHS_IT[fromMonth - 1]} ${fromYear}.`
         );
-      else window.alert("Errore nella duplicazione del mese.");
+      else toastErr("Errore nella duplicazione del mese.");
     }
   };
   const handleDuplicatePrev = () =>
@@ -385,16 +387,17 @@ const EditorialPlans = () => {
     const parts = [`Importati ${ok} post`];
     if (skipped) parts.push(`${skipped} già presenti (saltati)`);
     if (failed.length) parts.push(`${failed.length} non importati (vedi console)`);
-    window.alert(parts.join(" · ") + ".");
+    toast(parts.join(" · ") + ".", failed.length ? "error" : "success");
   };
 
   // Pulizia: rimuove i post duplicati del mese corrente (admin).
   const removeDuplicates = async () => {
     if (!client) return;
     if (
-      !window.confirm(
-        `Rimuovere i post duplicati di ${MONTHS_IT[view.month - 1]} ${view.year}? Resta una copia per ogni post (i post con note non vengono toccati).`
-      )
+      !(await confirmDialog(
+        `Rimuovere i post duplicati di ${MONTHS_IT[view.month - 1]} ${view.year}? Resta una copia per ogni post (i post con note non vengono toccati).`,
+        { danger: true, confirmLabel: "Rimuovi" }
+      ))
     )
       return;
     try {
@@ -403,14 +406,15 @@ const EditorialPlans = () => {
         year: view.year,
         month: view.month,
       });
-      window.alert(
+      toast(
         r.removed
           ? `Rimossi ${r.removed} post duplicati.`
-          : "Nessun duplicato trovato in questo mese."
+          : "Nessun duplicato trovato in questo mese.",
+        r.removed ? "success" : "info"
       );
       reloadPosts();
     } catch {
-      window.alert("Errore nella rimozione dei duplicati.");
+      toastErr("Errore nella rimozione dei duplicati.");
     }
   };
 
@@ -475,7 +479,7 @@ const EditorialPlans = () => {
       const status = e?.response?.status;
       const msg = e?.response?.data?.error;
       console.error("Errore invio piano:", status, e?.response?.data || e?.message);
-      window.alert(
+      toastErr(
         msg
           ? `Invio non riuscito: ${msg}`
           : status === 404
@@ -502,6 +506,7 @@ const EditorialPlans = () => {
 
   return (
     <div className="editorial-plans">
+      <UiHost />
       {error && (
         <div className="ep-dup-banner ep-error-banner">
           <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
@@ -871,7 +876,7 @@ const EditorialPlans = () => {
               setClientId(created.id);
               setPageFilter("all");
             } catch {
-              window.alert("Errore nella creazione del cliente.");
+              toastErr("Errore nella creazione del cliente.");
             }
           }}
           onUpdate={async (id, data) => {
@@ -881,7 +886,7 @@ const EditorialPlans = () => {
               // le pagine potrebbero essere cambiate: riallinea il filtro
               if (id === clientId) setPageFilter("all");
             } catch {
-              window.alert("Errore nell'aggiornamento del cliente.");
+              toastErr("Errore nell'aggiornamento del cliente.");
             }
           }}
           onDelete={async (id) => {
@@ -894,7 +899,7 @@ const EditorialPlans = () => {
                 setPageFilter("all");
               }
             } catch {
-              window.alert("Errore nell'eliminazione del cliente.");
+              toastErr("Errore nell'eliminazione del cliente.");
             }
           }}
         />
@@ -926,7 +931,7 @@ const EditorialPlans = () => {
               await api.createUser(u);
               setUsers(await api.listUsers());
             } catch (e) {
-              window.alert(
+              toastErr(
                 e?.response?.data?.error || "Errore nella creazione dell'utente."
               );
             }
@@ -936,7 +941,7 @@ const EditorialPlans = () => {
               await api.updateUser(id, data);
               setUsers(await api.listUsers());
             } catch (e) {
-              window.alert(
+              toastErr(
                 e?.response?.data?.error ||
                   "Errore nell'aggiornamento dell'utente."
               );
@@ -947,7 +952,7 @@ const EditorialPlans = () => {
               await api.deleteUser(id);
               setUsers(await api.listUsers());
             } catch (e) {
-              window.alert(
+              toastErr(
                 e?.response?.data?.error || "Errore nell'eliminazione dell'utente."
               );
             }
@@ -1035,10 +1040,6 @@ const EditorialPlans = () => {
                   {copied ? "Copiato" : "Copia"}
                 </button>
               </div>
-              <p className="ep-share-hint">
-                Nota: la pagina pubblica di sola lettura (dove il cliente apre il
-                piano e lascia le note) è in fase di finalizzazione.
-              </p>
             </div>
           </div>
         </div>
