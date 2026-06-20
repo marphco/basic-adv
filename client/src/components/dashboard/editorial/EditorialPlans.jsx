@@ -16,6 +16,7 @@ import {
   faFileImport,
   faAddressBook,
   faPaperPlane,
+  faBroom,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import PostChip from "./PostChip";
@@ -312,14 +313,38 @@ const EditorialPlans = () => {
     duplicateFrom(prevMonth.year, prevMonth.month);
 
   const importPosts = async (parsed, onProgress) => {
+    // IDEMPOTENTE: carico i post già esistenti dei mesi coinvolti e salto quelli
+    // identici (stessa pagina/giorno/caption) → reimportare non crea duplicati.
+    const keyOf = (pageId, day, caption) =>
+      `${pageId}|${day}|${String(caption || "").trim()}`;
+    const existing = new Set();
+    const months = [...new Set(parsed.map((p) => `${p.year}-${p.month}`))];
+    for (const ym of months) {
+      const [y, m] = ym.split("-").map(Number);
+      try {
+        const ps = await api.listPosts(clientId, y, m);
+        ps.forEach((p) => existing.add(keyOf(p.pageId, p.day, p.caption)));
+      } catch {
+        /* se non riesco a leggere, proseguo comunque */
+      }
+    }
+
     let ok = 0;
+    let skipped = 0;
     const failed = [];
     for (let i = 0; i < parsed.length; i++) {
       const p = parsed[i];
+      const pageId = p.pageId || client.pages[0]?.id;
+      const key = keyOf(pageId, p.day, p.caption);
+      if (existing.has(key)) {
+        skipped++;
+        onProgress?.(i + 1, parsed.length);
+        continue; // già presente → non duplico
+      }
       try {
         await api.createPost({
           clientId,
-          pageId: p.pageId || client.pages[0]?.id,
+          pageId,
           year: p.year,
           month: p.month,
           day: p.day,
@@ -329,6 +354,7 @@ const EditorialPlans = () => {
           sponsored: !!p.sponsored,
           status: "approved", // importati = post effettivi, non bozze
         });
+        existing.add(key); // evita duplicati anche all'interno dello stesso file
         ok++;
       } catch (e) {
         // non interrompo l'intero import per un singolo post: registro e proseguo
@@ -352,11 +378,36 @@ const EditorialPlans = () => {
     } else {
       reloadPosts();
     }
-    window.alert(
-      failed.length
-        ? `Importati ${ok} post su ${parsed.length}. ${failed.length} non importati (dettagli nella console del browser).`
-        : `Importati ${ok} post.`
-    );
+    const parts = [`Importati ${ok} post`];
+    if (skipped) parts.push(`${skipped} già presenti (saltati)`);
+    if (failed.length) parts.push(`${failed.length} non importati (vedi console)`);
+    window.alert(parts.join(" · ") + ".");
+  };
+
+  // Pulizia: rimuove i post duplicati del mese corrente (admin).
+  const removeDuplicates = async () => {
+    if (!client) return;
+    if (
+      !window.confirm(
+        `Rimuovere i post duplicati di ${MONTHS_IT[view.month - 1]} ${view.year}? Resta una copia per ogni post (i post con note non vengono toccati).`
+      )
+    )
+      return;
+    try {
+      const r = await api.dedupeMonth({
+        clientId,
+        year: view.year,
+        month: view.month,
+      });
+      window.alert(
+        r.removed
+          ? `Rimossi ${r.removed} post duplicati.`
+          : "Nessun duplicato trovato in questo mese."
+      );
+      reloadPosts();
+    } catch {
+      window.alert("Errore nella rimozione dei duplicati.");
+    }
   };
 
   const openNew = (day, pageId) =>
@@ -540,6 +591,11 @@ const EditorialPlans = () => {
               <button className="ep-dup-btn" onClick={() => setDupModalOpen(true)}>
                 <FontAwesomeIcon icon={faClone} /> Duplica da…
               </button>
+              {isAdmin && (
+                <button className="ep-dup-btn" onClick={removeDuplicates}>
+                  <FontAwesomeIcon icon={faBroom} /> Rimuovi duplicati
+                </button>
+              )}
             </div>
             <div className="ep-legend">
               <span className="ep-legend-item">

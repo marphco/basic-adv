@@ -320,4 +320,42 @@ router.post("/duplicate-month", async (req, res) => {
   }
 });
 
+// Rimuove i post DUPLICATI di un mese (stessa pagina/giorno/caption/categoria/
+// sponsor): tiene la copia più vecchia ed elimina le altre. NON tocca i post che
+// hanno note del cliente (protezione). Solo admin.
+router.post("/dedupe-month", requireAdmin, async (req, res) => {
+  try {
+    const { clientId, year, month } = req.body || {};
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    const posts = await Post.find({
+      clientId,
+      year: Number(year),
+      month: Number(month),
+    })
+      .sort({ createdAt: 1, _id: 1 })
+      .lean();
+    const seen = new Set();
+    const toDelete = [];
+    for (const p of posts) {
+      const key = [
+        String(p.pageId),
+        p.day,
+        (p.caption || "").trim(),
+        (p.category || "").trim(),
+        !!p.sponsored,
+      ].join("|");
+      if (seen.has(key)) {
+        if (!(p.clientNotes && p.clientNotes.length)) toDelete.push(p._id);
+      } else {
+        seen.add(key);
+      }
+    }
+    if (toDelete.length) await Post.deleteMany({ _id: { $in: toDelete } });
+    res.json({ removed: toDelete.length });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nella rimozione dei duplicati" });
+  }
+});
+
 module.exports = router;
