@@ -14,6 +14,9 @@ const MediaSchema = new mongoose.Schema({
 const NoteSchema = new mongoose.Schema({
   text: { type: String, required: true },
   author: { type: String, default: "Cliente" },
+  // email di chi ha scritto la nota: serve a far modificare/eliminare al
+  // cliente SOLO le proprie note dalla vista pubblica.
+  authorEmail: { type: String, default: "" },
   media: { type: [MediaSchema], default: [] },
   resolved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

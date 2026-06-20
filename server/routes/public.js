@@ -3,24 +3,31 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Client = require("../models/Client");
 const Post = require("../models/Post");
+const User = require("../models/User");
+const { sendMail } = require("../services/mailer");
+const emailTemplates = require("../services/emailTemplates");
 
 // Vista pubblica del piano editoriale (NESSUN login).
 // Accesso "leggero": il link contiene il clientId (ObjectId, non indovinabile) e
-// il cliente sblocca inserendo una sua email (deve combaciare con quelle del
-// cliente). Sola lettura + possibilità di lasciare note sui post.
-// ⚠️ I dati restituiti sono SANITIZZATI: mai esporre isDuplicate / status /
-// createdBy o altri campi interni dell'operatore.
+// il cliente sblocca con una sua email (deve combaciare con quelle del cliente).
+// Sola lettura + note sui post (create/modifica/elimina solo le PROPRIE).
+// Le email all'agenzia NON partono per ogni nota: il cliente invia il feedback
+// quando vuole con un'unica azione (/plan/notify) → 1 email digest.
+// ⚠️ Dati SANITIZZATI: mai esporre isDuplicate / status / createdBy.
 
-// Rate limit minimale in-memory per IP sul gate (anti brute-force email).
+const MONTHS_IT = [
+  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+];
+
+// Rate limit minimale in-memory per IP.
 const hits = new Map();
 function rateLimit(req, res, next) {
   const ip =
-    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
-    req.ip ||
-    "?";
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip || "?";
   const now = Date.now();
   const recent = (hits.get(ip) || []).filter((t) => now - t < 60000);
-  if (recent.length >= 30)
+  if (recent.length >= 40)
     return res
       .status(429)
       .json({ error: "Troppi tentativi, riprova tra un minuto." });
@@ -33,7 +40,19 @@ const norm = (e) => String(e || "").trim().toLowerCase();
 const recipients = (c) =>
   [...(c.emails || []), c.email].map(norm).filter(Boolean);
 
-function sanitizePost(p, pagesById) {
+// Note sanitizzate: includono id (per modifica/elimina) e `mine` (se la nota è
+// dell'email richiedente), MAI l'email altrui.
+const sanitizeNotes = (notesArr, reqEmail) =>
+  (notesArr || []).map((n) => ({
+    id: String(n._id),
+    text: n.text,
+    author: n.author,
+    resolved: !!n.resolved,
+    createdAt: n.createdAt,
+    mine: norm(n.authorEmail) === norm(reqEmail),
+  }));
+
+function sanitizePost(p, pagesById, reqEmail) {
   return {
     id: String(p._id),
     pageId: String(p.pageId),
@@ -49,13 +68,8 @@ function sanitizePost(p, pagesById) {
       thumbUrl: m.thumbUrl || "",
     })),
     sponsored: !!p.sponsored,
-    notes: (p.clientNotes || []).map((n) => ({
-      text: n.text,
-      author: n.author,
-      resolved: !!n.resolved,
-      createdAt: n.createdAt,
-    })),
-    // ⚠️ MAI esporre: isDuplicate, status, createdBy, order
+    notes: sanitizeNotes(p.clientNotes, reqEmail),
+    // ⚠️ MAI: isDuplicate, status, createdBy, order
   };
 }
 
@@ -66,6 +80,17 @@ async function loadGated(clientId, email) {
   if (!client) return null;
   if (!recipients(client).includes(norm(email))) return null;
   return client;
+}
+
+// Trova il post del mese giusto (gated già verificato).
+async function findPost(clientId, year, month, postId) {
+  if (!mongoose.isValidObjectId(postId)) return null;
+  return Post.findOne({
+    _id: postId,
+    clientId,
+    year: Number(year),
+    month: Number(month),
+  });
 }
 
 // Sblocca + restituisce il piano del mese (sola lettura, sanitizzato).
@@ -99,14 +124,14 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       })),
       year: Number(year),
       month: Number(month),
-      posts: posts.map((p) => sanitizePost(p, pagesById)),
+      posts: posts.map((p) => sanitizePost(p, pagesById, email)),
     });
   } catch (e) {
     res.status(500).json({ error: "Errore nel caricamento del piano." });
   }
 });
 
-// Lascia una nota su un post (il cliente deve essere "sbloccato" via email).
+// Crea una nota (NESSUNA email qui — solo salvataggio).
 router.post("/plan/note", rateLimit, async (req, res) => {
   try {
     const { clientId, year, month, email, postId, text } = req.body || {};
@@ -114,34 +139,125 @@ router.post("/plan/note", rateLimit, async (req, res) => {
       return res.status(400).json({ error: "La nota è vuota." });
     const client = await loadGated(clientId, email);
     if (!client) return res.status(403).json({ error: "Accesso negato." });
-    if (!mongoose.isValidObjectId(postId))
-      return res.status(400).json({ error: "Post non valido." });
-
-    const post = await Post.findOne({
-      _id: postId,
-      clientId,
-      year: Number(year),
-      month: Number(month),
-    });
+    const post = await findPost(clientId, year, month, postId);
     if (!post) return res.status(404).json({ error: "Post non trovato." });
 
     post.clientNotes.push({
       text: text.trim(),
       author: client.contactName || norm(email),
+      authorEmail: norm(email),
     });
     post.updatedAt = new Date();
     await post.save();
-
-    res.status(201).json({
-      notes: post.clientNotes.map((n) => ({
-        text: n.text,
-        author: n.author,
-        resolved: !!n.resolved,
-        createdAt: n.createdAt,
-      })),
-    });
+    res.status(201).json({ notes: sanitizeNotes(post.clientNotes, email) });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'invio della nota." });
+  }
+});
+
+// Modifica una PROPRIA nota.
+router.put("/plan/note", rateLimit, async (req, res) => {
+  try {
+    const { clientId, year, month, email, postId, noteId, text } = req.body || {};
+    if (!text || !text.trim())
+      return res.status(400).json({ error: "La nota è vuota." });
+    const client = await loadGated(clientId, email);
+    if (!client) return res.status(403).json({ error: "Accesso negato." });
+    const post = await findPost(clientId, year, month, postId);
+    if (!post) return res.status(404).json({ error: "Post non trovato." });
+    const note = post.clientNotes.id(noteId);
+    if (!note) return res.status(404).json({ error: "Nota non trovata." });
+    if (norm(note.authorEmail) !== norm(email))
+      return res
+        .status(403)
+        .json({ error: "Puoi modificare solo le tue note." });
+
+    note.text = text.trim();
+    post.updatedAt = new Date();
+    await post.save();
+    res.json({ notes: sanitizeNotes(post.clientNotes, email) });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nella modifica della nota." });
+  }
+});
+
+// Elimina una PROPRIA nota.
+router.delete("/plan/note", rateLimit, async (req, res) => {
+  try {
+    const { clientId, year, month, email, postId, noteId } = req.body || {};
+    const client = await loadGated(clientId, email);
+    if (!client) return res.status(403).json({ error: "Accesso negato." });
+    const post = await findPost(clientId, year, month, postId);
+    if (!post) return res.status(404).json({ error: "Post non trovato." });
+    const note = post.clientNotes.id(noteId);
+    if (!note) return res.status(404).json({ error: "Nota non trovata." });
+    if (norm(note.authorEmail) !== norm(email))
+      return res
+        .status(403)
+        .json({ error: "Puoi eliminare solo le tue note." });
+
+    note.deleteOne();
+    post.updatedAt = new Date();
+    await post.save();
+    res.json({ notes: sanitizeNotes(post.clientNotes, email) });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nell'eliminazione della nota." });
+  }
+});
+
+// Invia il feedback all'agenzia: UNA sola email digest (non una per nota).
+router.post("/plan/notify", rateLimit, async (req, res) => {
+  try {
+    const { clientId, year, month, email } = req.body || {};
+    const client = await loadGated(clientId, email);
+    if (!client) return res.status(403).json({ error: "Accesso negato." });
+
+    const posts = await Post.find({
+      clientId,
+      year: Number(year),
+      month: Number(month),
+    }).lean();
+    const count = posts.reduce((n, p) => n + (p.clientNotes?.length || 0), 0);
+    if (!count)
+      return res.status(400).json({ error: "Non ci sono note da inviare." });
+
+    // Destinatari: admin + operatori assegnati a questo cliente.
+    const ops = await User.find({
+      $or: [
+        { role: "admin" },
+        { role: "member", assignedClients: clientId },
+      ],
+    })
+      .select("email")
+      .lean();
+    const to = [
+      ...new Set(ops.map((o) => String(o.email || "").trim()).filter(Boolean)),
+    ];
+
+    const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
+    const monthLabel = `${MONTHS_IT[Number(month) - 1] || ""} ${year}`.trim();
+    if (to.length) {
+      const mail = emailTemplates.clientNotesNotification({
+        operatorName: "",
+        clientName: client.name,
+        monthLabel,
+        count,
+        planUrl: `${base}/dashboard`,
+      });
+      await Promise.allSettled(
+        to.map((dest) =>
+          sendMail({
+            to: dest,
+            subject: mail.subject,
+            text: mail.text,
+            html: mail.html,
+          })
+        )
+      );
+    }
+    res.json({ ok: true, count, notified: to.length });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nell'invio del feedback." });
   }
 });
 
