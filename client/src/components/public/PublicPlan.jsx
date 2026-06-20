@@ -15,7 +15,11 @@ import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
 import PostChip from "../dashboard/editorial/PostChip";
 import ChannelIcon from "../dashboard/editorial/ChannelIcon";
-import { toastErr, confirmDialog } from "../dashboard/editorial/uiNotify";
+import {
+  toastErr,
+  confirmDialog,
+  promptDialog,
+} from "../dashboard/editorial/uiNotify";
 import UiHost from "../dashboard/editorial/UiHost";
 import "../dashboard/editorial/EditorialPlans.css";
 import LogoIcon from "../../assets/icon-white.svg";
@@ -268,9 +272,18 @@ export default function PublicPlan() {
   };
 
   const submitFeedback = async () => {
+    const message = await promptDialog(
+      "Invii le tue note all'agenzia. Vuoi aggiungere un messaggio? (facoltativo)",
+      {
+        title: "Invia feedback",
+        confirmLabel: "Invia feedback",
+        placeholder: "Es. una precisazione, un cambiamento in vista…",
+      }
+    );
+    if (message === null) return; // annullato
     setFeedbackSending(true);
     try {
-      await axios.post(`${API_URL}/api/public/plan/notify`, { ...base });
+      await axios.post(`${API_URL}/api/public/plan/notify`, { ...base, message });
       setFeedbackSent(true);
     } catch (err) {
       toastErr(err?.response?.data?.error || "Invio feedback non riuscito.");
@@ -280,16 +293,21 @@ export default function PublicPlan() {
   };
 
   const approvePlan = async () => {
-    if (
-      !(await confirmDialog(
-        "Sei sicuro di voler approvare il piano editoriale?",
-        { confirmLabel: "Approva", title: "Approva piano" }
-      ))
-    )
-      return;
+    const message = await promptDialog(
+      "Confermi l'approvazione del piano editoriale? Puoi aggiungere un messaggio per l'agenzia (facoltativo).",
+      {
+        title: "Approva piano editoriale",
+        confirmLabel: "Approva piano",
+        placeholder: "Es. Tutto perfetto! / una precisazione per il prossimo mese…",
+      }
+    );
+    if (message === null) return; // annullato
     setApproving(true);
     try {
-      const r = await axios.post(`${API_URL}/api/public/plan/approve`, { ...base });
+      const r = await axios.post(`${API_URL}/api/public/plan/approve`, {
+        ...base,
+        message,
+      });
       setApproval(r.data.approval || { at: new Date().toISOString() });
     } catch (err) {
       toastErr(err?.response?.data?.error || "Approvazione non riuscita.");

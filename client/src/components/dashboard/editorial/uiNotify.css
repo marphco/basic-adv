@@ -75,6 +75,25 @@
   line-height: 1.5;
   color: #d8d8d8;
 }
+.ui-prompt-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 0 16px;
+  background: #161616;
+  color: #f6f6f6;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 64px;
+}
+.ui-prompt-input:focus {
+  outline: none;
+  border-color: #ff4003;
+}
 .ui-confirm-actions {
   display: flex;
   justify-content: flex-end;

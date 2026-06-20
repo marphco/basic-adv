@@ -3,7 +3,7 @@
 // chiamano toast()/confirmDialog() da qualsiasi punto; <UiHost/> rende tutto.
 
 const listeners = new Set();
-let state = { toasts: [], confirm: null };
+let state = { toasts: [], confirm: null, prompt: null };
 let seq = 0;
 
 const emit = () => {
@@ -56,4 +56,30 @@ export function resolveConfirm(result) {
   state = { ...state, confirm: null };
   emit();
   if (c) c.resolve(result);
+}
+
+// promptDialog(message, { title, confirmLabel, placeholder, defaultValue })
+// → Promise<string|null>: il testo (anche "") su conferma, null se annullato.
+export function promptDialog(message, opts = {}) {
+  return new Promise((resolve) => {
+    state = {
+      ...state,
+      prompt: {
+        message,
+        title: opts.title || "",
+        confirmLabel: opts.confirmLabel || "Invia",
+        placeholder: opts.placeholder || "",
+        defaultValue: opts.defaultValue || "",
+        resolve,
+      },
+    };
+    emit();
+  });
+}
+
+export function resolvePrompt(result) {
+  const pr = state.prompt;
+  state = { ...state, prompt: null };
+  emit();
+  if (pr) pr.resolve(result);
 }

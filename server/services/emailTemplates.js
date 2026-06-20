@@ -8,6 +8,11 @@ const MUTED = "#6b7280";
 const BG = "#f4f4f5";
 const CARD = "#ffffff";
 const BORDER = "#e5e7eb";
+// Accenti per tipo di notifica (testo colorato + bordo: affidabili anche in dark
+// mode, dove gli sfondi pieni vengono alterati dai client di posta).
+const GREEN = "#16a34a"; // approvazione
+const AMBER = "#d97706"; // modifiche richieste dal cliente
+const BLUE = "#2563eb"; // revisione interna (operatore → admin)
 
 // Header come UNICA immagine (banda scura + logo + riga arancione dentro il PNG):
 // i client di posta non alterano le immagini → resa identica in light e dark.
@@ -31,12 +36,33 @@ function button(label, url) {
   </table>`;
 }
 
-const h = (t) =>
-  `<h1 style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;color:${INK};">${esc(
+const h = (t, color = INK) =>
+  `<h1 style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;color:${color};">${esc(
     t
   )}</h1>`;
 const p = (html) =>
   `<p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#374151;">${html}</p>`;
+
+// Banner che identifica TIPO + MITTENTE della notifica a colpo d'occhio: testo
+// colorato + bordo sinistro (niente sfondo pieno → resa affidabile in dark mode).
+function banner(label, accent) {
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
+    <tr><td style="border-left:4px solid ${accent};background:${BG};border-radius:0 8px 8px 0;padding:9px 14px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;letter-spacing:0.04em;text-transform:uppercase;color:${accent};">
+      ${esc(label)}
+    </td></tr>
+  </table>`;
+}
+
+// Citazione del messaggio personalizzato scritto dal cliente.
+function quote(text) {
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 14px;">
+    <tr><td style="border-left:4px solid ${BRAND};background:${BG};border-radius:0 8px 8px 0;padding:12px 14px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#374151;">
+      ${esc(text).replace(/\n/g, "<br>")}
+    </td></tr>
+  </table>`;
+}
 
 // Scocca comune: header brand + corpo + footer.
 function wrap({ title, preheader = "", bodyHtml }) {
@@ -62,27 +88,31 @@ function wrap({ title, preheader = "", bodyHtml }) {
 </body></html>`;
 }
 
-// → all'OPERATORE: il cliente ha lasciato delle note.
-function clientNotesNotification({ operatorName, clientName, monthLabel, count, planUrl }) {
+// → all'OPERATORE: il cliente ha lasciato delle note (chiede modifiche), con
+//   eventuale messaggio personalizzato.
+function clientNotesNotification({ operatorName, clientName, monthLabel, count, planUrl, message }) {
   const n = Number(count) || 0;
+  const msg = (message || "").trim();
   const body =
-    h("Nuove note dal cliente") +
+    banner("Cliente · modifiche richieste", AMBER) +
+    h("Il cliente chiede modifiche", AMBER) +
     p(`Ciao ${esc(operatorName || "")},`) +
     p(
       `<strong>${esc(clientName)}</strong> ha lasciato <strong>${n} ${
         n === 1 ? "nota" : "note"
       }</strong> sul piano editoriale di <strong>${esc(monthLabel)}</strong>.`
     ) +
+    (msg ? p("Messaggio del cliente:") + quote(msg) : "") +
     p("Apri il piano per vederle e applicare le modifiche richieste.") +
     button("Apri il piano editoriale", planUrl);
   return {
-    subject: `${clientName}: ${n} ${n === 1 ? "nuova nota" : "nuove note"} su ${monthLabel}`,
-    text: `Ciao ${operatorName || ""},\n${clientName} ha lasciato ${n} ${
+    subject: `✏️ Cliente — modifiche richieste · ${monthLabel} (${clientName})`,
+    text: `[CLIENTE · MODIFICHE RICHIESTE]\nCiao ${operatorName || ""},\n${clientName} ha lasciato ${n} ${
       n === 1 ? "nota" : "note"
-    } sul piano editoriale di ${monthLabel}.\nApri il piano: ${planUrl}`,
+    } sul piano editoriale di ${monthLabel}.${msg ? `\nMessaggio del cliente: ${msg}` : ""}\nApri il piano: ${planUrl}`,
     html: wrap({
-      title: "Nuove note dal cliente",
-      preheader: `${clientName} ha lasciato ${n} ${n === 1 ? "nota" : "note"}`,
+      title: "Modifiche richieste dal cliente",
+      preheader: `${clientName}: ${n} ${n === 1 ? "nota" : "note"}${msg ? " + messaggio" : ""}`,
       bodyHtml: body,
     }),
   };
@@ -91,6 +121,7 @@ function clientNotesNotification({ operatorName, clientName, monthLabel, count, 
 // → al CLIENTE: abbiamo recepito le note e aggiornato il piano.
 function revisionsDoneNotification({ contactName, clientName, monthLabel, planUrl }) {
   const body =
+    banner("Da Basic Adv · piano aggiornato", BRAND) +
     h("Il tuo piano editoriale è aggiornato") +
     p(`Ciao ${esc(contactName || clientName)},`) +
     p(
@@ -115,6 +146,7 @@ function revisionsDoneNotification({ contactName, clientName, monthLabel, planUr
 //   dove potrà vedere i post e lasciare le sue note).
 function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl }) {
   const body =
+    banner("Da Basic Adv · piano editoriale", BRAND) +
     h("Il piano editoriale è pronto") +
     p(`Ciao ${esc(contactName || clientName)},`) +
     p(
@@ -137,25 +169,29 @@ function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl }) {
   };
 }
 
-// → all'AGENZIA: il cliente ha APPROVATO il piano del mese.
-function planApprovedNotification({ clientName, monthLabel, by, planUrl }) {
+// → all'AGENZIA: il cliente ha APPROVATO il piano del mese (con eventuale
+//   messaggio personalizzato).
+function planApprovedNotification({ clientName, monthLabel, by, planUrl, message }) {
+  const msg = (message || "").trim();
   const body =
-    h("Piano approvato dal cliente 🎉") +
+    banner("Cliente · piano approvato", GREEN) +
+    h("Piano approvato dal cliente 🎉", GREEN) +
     p(
       `<strong>${esc(clientName)}</strong> ha <strong>approvato</strong> il piano editoriale di <strong>${esc(
         monthLabel
       )}</strong>.`
     ) +
     (by ? p(`Approvato da: <strong>${esc(by)}</strong>.`) : "") +
+    (msg ? p("Messaggio del cliente:") + quote(msg) : "") +
     button("Apri il piano editoriale", planUrl);
   return {
-    subject: `${clientName}: piano di ${monthLabel} APPROVATO ✅`,
-    text: `${clientName} ha approvato il piano editoriale di ${monthLabel}.${
+    subject: `✅ Cliente — piano APPROVATO · ${monthLabel} (${clientName})`,
+    text: `[CLIENTE · PIANO APPROVATO]\n${clientName} ha approvato il piano editoriale di ${monthLabel}.${
       by ? ` Approvato da: ${by}.` : ""
-    }\nApri il piano: ${planUrl}`,
+    }${msg ? `\nMessaggio del cliente: ${msg}` : ""}\nApri il piano: ${planUrl}`,
     html: wrap({
       title: "Piano approvato",
-      preheader: `${clientName} ha approvato il piano di ${monthLabel}`,
+      preheader: `${clientName} ha approvato il piano di ${monthLabel}${msg ? " + messaggio" : ""}`,
       bodyHtml: body,
     }),
   };
@@ -166,7 +202,8 @@ function planApprovedNotification({ clientName, monthLabel, by, planUrl }) {
 // punta alla dashboard, NON alla vista cliente.
 function shareAdminReview({ clientName, monthLabel, dashUrl }) {
   const body =
-    h("Piano pronto per la revisione") +
+    banner("Interno · operatore → admin", BLUE) +
+    h("Piano da revisionare", BLUE) +
     p(
       `Il piano editoriale di <strong>${esc(
         monthLabel
@@ -179,8 +216,8 @@ function shareAdminReview({ clientName, monthLabel, dashUrl }) {
     ) +
     button("Apri in dashboard", dashUrl);
   return {
-    subject: `Da revisionare: piano di ${monthLabel} — ${clientName}`,
-    text: `Il piano editoriale di ${monthLabel} per ${clientName} è pronto per la revisione.\nAprilo in dashboard per modificarlo e lasciare note interne: ${dashUrl}`,
+    subject: `🔍 Interno — da revisionare · ${monthLabel} (${clientName})`,
+    text: `[INTERNO · DA REVISIONARE]\nIl piano editoriale di ${monthLabel} per ${clientName} è pronto per la revisione.\nAprilo in dashboard per modificarlo e lasciare note interne: ${dashUrl}`,
     html: wrap({
       title: "Revisione piano editoriale",
       preheader: `Da revisionare: piano di ${monthLabel} — ${clientName}`,
