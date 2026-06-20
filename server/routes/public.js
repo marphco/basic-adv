@@ -77,13 +77,33 @@ function sanitizePost(p, pagesById, reqEmail) {
   };
 }
 
-// Carica il cliente SOLO se l'email combacia (gate). null altrimenti.
+const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Carica il cliente se l'email è autorizzata. Autorizzati:
+//  1) i destinatari del cliente (clienti veri);
+//  2) gli utenti agenzia: admin → qualsiasi piano; operatore → solo i clienti
+//     assegnati (così un admin può aprire il link di revisione di chiunque).
 async function loadGated(clientId, email) {
   if (!mongoose.isValidObjectId(clientId)) return null;
   const client = await Client.findById(clientId).lean();
   if (!client) return null;
-  if (!recipients(client).includes(norm(email))) return null;
-  return client;
+  const e = norm(email);
+  if (!e) return null;
+  if (recipients(client).includes(e)) return client;
+
+  const user = await User.findOne({
+    email: new RegExp(`^${escapeRe(e)}$`, "i"),
+  }).lean();
+  if (
+    user &&
+    (user.role === "admin" ||
+      (user.assignedClients || []).some(
+        (id) => String(id) === String(clientId)
+      ))
+  )
+    return client;
+
+  return null;
 }
 
 // Trova il post del mese giusto (gated già verificato).
