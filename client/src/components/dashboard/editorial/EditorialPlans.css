@@ -447,6 +447,13 @@
 .pp-wrap .ep-badge--note-done {
   color: #4ade80;
 }
+/* badge nota dell'AGENZIA per il cliente: arancione brand, contorno (distinto
+   dal pieno arancione di "Sponsor") */
+.ep-badge--agency {
+  background: rgba(255, 64, 3, 0.14);
+  color: var(--foreground-color);
+  border: 1px solid rgba(255, 64, 3, 0.45);
+}
 /* badge nota interna (solo agenzia): viola con lucchetto */
 .ep-badge--internal {
   background: rgba(139, 92, 246, 0.18);

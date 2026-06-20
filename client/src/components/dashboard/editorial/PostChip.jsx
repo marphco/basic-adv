@@ -19,20 +19,18 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   const mediaCount = post.media?.length || 0;
   const isVideo = cover?.kind === "video";
   const notes = post.notes || [];
-  // Nota del CLIENTE non risolta → evidenza forte (sfondo giallo): è feedback
-  // che richiede la nostra attenzione. Sparisce quando viene risolta.
-  const clientPending = notes.some((n) => !n.fromAgency && !n.resolved);
-  // nota INTERNA (solo agenzia) non risolta → badge viola distinto.
-  const internalPending = notes.some((n) => n.internal && !n.resolved);
-  // "in sospeso" (badge col conteggio): nota cliente non risolta OPPURE
-  // richiesta dell'agenzia non risolta. Le spiegazioni/interne non lo sono.
-  const pending = notes.filter(
-    (n) => !n.resolved && !n.internal && (!n.fromAgency || n.needsReply)
-  ).length;
-  const hasUnresolved = pending > 0;
-  const hasNotes = notes.length > 0;
-  // verde "risolta" SOLO se non resta nulla in sospeso (incluse le interne).
-  const allResolved = hasNotes && !hasUnresolved && !internalPending;
+  // Badge distinti per ORIGINE della nota:
+  //  • Cliente = note lasciate DAL cliente (l'operatore ci lavora) → ambra se da
+  //    gestire, verde se risolta;
+  //  • Agenzia = note dell'agenzia PER il cliente (informative, nessuno stato
+  //    "risolta": una spiegazione non si "risolve");
+  //  • Interna = solo agenzia, il cliente non le vede MAI.
+  const clientNotes = notes.filter((n) => !n.fromAgency && !n.internal);
+  const agencyNotes = notes.filter((n) => n.fromAgency && !n.internal);
+  const internalNotes = notes.filter((n) => n.internal);
+  // sfondo giallo SOLO se c'è una nota del cliente non risolta (da gestire).
+  const clientPending = clientNotes.some((n) => !n.resolved);
+  const internalPending = internalNotes.some((n) => !n.resolved);
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
 
@@ -42,10 +40,11 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         "ep-post",
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
-        hasUnresolved ? "ep-post--note" : "",
         clientPending ? "ep-post--client-note" : "",
-        internalPending && !clientPending ? "ep-post--internal" : "",
-        allResolved ? "ep-post--note-done" : "",
+        !clientPending && internalPending ? "ep-post--internal" : "",
+        !clientPending && !internalPending && clientNotes.length
+          ? "ep-post--note-done"
+          : "",
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -105,21 +104,26 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
               <FontAwesomeIcon icon={faImages} /> {mediaCount}
             </span>
           )}
-          {hasUnresolved && (
-            <span className="ep-badge ep-badge--note">
+          {clientNotes.length > 0 && (
+            <span
+              className={`ep-badge ${
+                clientPending ? "ep-badge--note" : "ep-badge--note-done"
+              }`}
+            >
+              <FontAwesomeIcon icon={clientPending ? faComment : faCheck} />{" "}
+              Cliente{clientNotes.length > 1 ? ` ${clientNotes.length}` : ""}
+            </span>
+          )}
+          {agencyNotes.length > 0 && (
+            <span className="ep-badge ep-badge--agency">
               <FontAwesomeIcon icon={faComment} />{" "}
-              {pending > 1 ? `${pending} note` : "1 nota"}
+              Agenzia{agencyNotes.length > 1 ? ` ${agencyNotes.length}` : ""}
             </span>
           )}
-          {internalPending && (
+          {internalNotes.length > 0 && (
             <span className="ep-badge ep-badge--internal">
-              <FontAwesomeIcon icon={faLock} /> Interna
-            </span>
-          )}
-          {allResolved && (
-            <span className="ep-badge ep-badge--note-done">
-              <FontAwesomeIcon icon={faCheck} />{" "}
-              {notes.length > 1 ? "Risolte" : "Risolta"}
+              <FontAwesomeIcon icon={internalPending ? faLock : faCheck} />{" "}
+              Interna{internalNotes.length > 1 ? ` ${internalNotes.length}` : ""}
             </span>
           )}
         </div>
