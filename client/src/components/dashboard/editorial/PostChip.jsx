@@ -31,6 +31,18 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   // sfondo giallo SOLO se c'è una nota del cliente non risolta (da gestire).
   const clientPending = clientNotes.some((n) => !n.resolved);
   const internalPending = internalNotes.some((n) => !n.resolved);
+  // Ogni post con una nota ha uno SFONDO (così risalta). Un solo colore, per
+  // stato/origine dominante: cliente da gestire (giallo) → interna da gestire
+  // (blu) → nota per il cliente (arancione) → tutto risolto (verde).
+  const bgClass = clientPending
+    ? "ep-post--client-note"
+    : internalPending
+    ? "ep-post--internal"
+    : agencyNotes.length
+    ? "ep-post--agency-note"
+    : clientNotes.length || internalNotes.length
+    ? "ep-post--note-done"
+    : "";
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
 
@@ -40,11 +52,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         "ep-post",
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
-        clientPending ? "ep-post--client-note" : "",
-        !clientPending && internalPending ? "ep-post--internal" : "",
-        !clientPending && !internalPending && clientNotes.length
-          ? "ep-post--note-done"
-          : "",
+        bgClass,
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -117,7 +125,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
           {agencyNotes.length > 0 && (
             <span className="ep-badge ep-badge--agency">
               <FontAwesomeIcon icon={faComment} />{" "}
-              Agenzia{agencyNotes.length > 1 ? ` ${agencyNotes.length}` : ""}
+              Note{agencyNotes.length > 1 ? ` ${agencyNotes.length}` : ""}
             </span>
           )}
           {internalNotes.length > 0 && (
