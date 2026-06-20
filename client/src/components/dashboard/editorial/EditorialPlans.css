@@ -10,6 +10,8 @@
   --ep-surface-2: #f4f4f4;
   --ep-muted: rgba(22, 22, 22, 0.55);
   --ep-note: #f5a623;
+  /* note interne (solo agenzia): viola, nettamente diverso dal giallo cliente */
+  --ep-internal: #8b5cf6;
   --ep-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 
   color: var(--primary-text-color);
@@ -333,6 +335,10 @@
 .ep-post--client-note:hover {
   background: rgba(245, 166, 35, 0.22);
 }
+/* Nota INTERNA non risolta (e nessuna nota cliente): bordo viola distinto. */
+.ep-post--internal {
+  border-left-color: var(--ep-internal);
+}
 .ep-post--sponsored.ep-post--note {
   /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
   border-left-color: var(--foreground-color);
@@ -440,6 +446,15 @@
 [data-theme="dark"] .ep-badge--note-done,
 .pp-wrap .ep-badge--note-done {
   color: #4ade80;
+}
+/* badge nota interna (solo agenzia): viola con lucchetto */
+.ep-badge--internal {
+  background: rgba(139, 92, 246, 0.18);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+}
+[data-theme="dark"] .ep-badge--internal {
+  color: #c4b5fd;
 }
 .ep-badge--carousel {
   background: var(--ep-surface-2);
@@ -778,6 +793,21 @@
   padding-left: 8px;
   border-left: 2px solid rgba(255, 64, 3, 0.4);
 }
+/* Nota INTERNA nel thread: viola + sfondo, nettamente distinta dalle altre. */
+.ep-note-tag.internal {
+  color: var(--ep-internal);
+}
+.ep-note-tag.internal svg {
+  margin-right: 3px;
+}
+.ep-note-item.internal {
+  padding: 8px;
+  margin-top: 6px;
+  border-top: none;
+  border-left: 3px solid var(--ep-internal);
+  border-radius: 0 8px 8px 0;
+  background: rgba(139, 92, 246, 0.12);
+}
 /* Form: l'agenzia lascia una nota al cliente */
 .ep-agency-note-form {
   margin-top: 10px;
@@ -817,6 +847,96 @@
 [data-theme="dark"] .ep-agency-note-hint,
 .pp-wrap .ep-agency-note-hint {
   color: #4ade80;
+}
+/* Selettore destinatario nota: Per il cliente | Interna (solo agenzia) */
+.ep-note-target {
+  display: flex;
+  gap: 6px;
+}
+.ep-note-target-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--ep-border);
+  background: var(--ep-surface-2);
+  color: var(--ep-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+.ep-note-target-btn.on {
+  border-color: var(--foreground-color);
+  color: var(--foreground-color);
+  background: rgba(255, 64, 3, 0.08);
+}
+.ep-note-target-btn.internal.on {
+  border-color: var(--ep-internal);
+  color: var(--ep-internal);
+  background: rgba(139, 92, 246, 0.12);
+}
+/* Quando il form è in modalità interna, lo si veste di viola */
+.ep-agency-note-form.is-internal .ep-textarea:focus {
+  border-color: var(--ep-internal);
+}
+.ep-note-internal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ep-internal);
+}
+
+/* Selettore admin responsabili (ClientModal) */
+.ep-admin-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ep-admin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--ep-border);
+  background: var(--ep-surface-2);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  font-family: inherit;
+}
+.ep-admin-chip.on {
+  border-color: var(--ep-internal);
+  color: var(--ep-internal);
+  background: rgba(139, 92, 246, 0.12);
+}
+.ep-admin-chip-warn {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ep-note);
+}
+
+/* Sezione "Revisione interna (admin)" nel modale di condivisione */
+.ep-share-admin {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ep-border);
+}
+.ep-share-admin-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ep-internal);
+  margin-bottom: 8px;
 }
 
 /* Share */

@@ -8,6 +8,7 @@ import {
   faComment,
   faClone,
   faCheck,
+  faLock,
 } from "@fortawesome/free-solid-svg-icons";
 import { categoryColor } from "./mockData";
 
@@ -21,13 +22,17 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   // Nota del CLIENTE non risolta → evidenza forte (sfondo giallo): è feedback
   // che richiede la nostra attenzione. Sparisce quando viene risolta.
   const clientPending = notes.some((n) => !n.fromAgency && !n.resolved);
+  // nota INTERNA (solo agenzia) non risolta → badge viola distinto.
+  const internalPending = notes.some((n) => n.internal && !n.resolved);
   // "in sospeso" (badge col conteggio): nota cliente non risolta OPPURE
-  // richiesta dell'agenzia non risolta. Le spiegazioni dell'agenzia non lo sono.
+  // richiesta dell'agenzia non risolta. Le spiegazioni/interne non lo sono.
   const pending = notes.filter(
-    (n) => !n.resolved && (!n.fromAgency || n.needsReply)
+    (n) => !n.resolved && !n.internal && (!n.fromAgency || n.needsReply)
   ).length;
   const hasUnresolved = pending > 0;
   const hasNotes = notes.length > 0;
+  // verde "risolta" SOLO se non resta nulla in sospeso (incluse le interne).
+  const allResolved = hasNotes && !hasUnresolved && !internalPending;
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
 
@@ -39,7 +44,8 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         post.sponsored ? "ep-post--sponsored" : "",
         hasUnresolved ? "ep-post--note" : "",
         clientPending ? "ep-post--client-note" : "",
-        hasNotes && !hasUnresolved ? "ep-post--note-done" : "",
+        internalPending && !clientPending ? "ep-post--internal" : "",
+        allResolved ? "ep-post--note-done" : "",
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -105,7 +111,12 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
               {pending > 1 ? `${pending} note` : "1 nota"}
             </span>
           )}
-          {hasNotes && !hasUnresolved && (
+          {internalPending && (
+            <span className="ep-badge ep-badge--internal">
+              <FontAwesomeIcon icon={faLock} /> Interna
+            </span>
+          )}
+          {allResolved && (
             <span className="ep-badge ep-badge--note-done">
               <FontAwesomeIcon icon={faCheck} />{" "}
               {notes.length > 1 ? "Risolte" : "Risolta"}

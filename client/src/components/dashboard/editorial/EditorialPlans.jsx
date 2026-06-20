@@ -17,6 +17,7 @@ import {
   faAddressBook,
   faPaperPlane,
   faBroom,
+  faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import PostChip from "./PostChip";
@@ -83,6 +84,8 @@ const EditorialPlans = () => {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [sharingAdmin, setSharingAdmin] = useState(false);
+  const [shareAdminMsg, setShareAdminMsg] = useState("");
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
 
   const me = useMemo(readToken, []);
@@ -453,13 +456,47 @@ const EditorialPlans = () => {
       ]
     : [];
 
+  // Admin assegnati a questo cliente, risolti a oggetto utente quando possibile
+  // (la lista utenti è disponibile solo agli admin; gli operatori vedono solo
+  // il conteggio, ma possono comunque inviare → il backend risolve le email).
+  const assignedAdmins = client
+    ? (client.admins || [])
+        .map(String)
+        .map((id) => users.find((u) => String(u.id) === id))
+        .filter(Boolean)
+    : [];
+  const hasAdmins = (client?.admins || []).length > 0;
+
   const openShare = () => {
     setShareMsg("");
+    setShareAdminMsg("");
     setShareOpen(true);
   };
   const closeShare = () => {
     setShareOpen(false);
     setShareMsg("");
+    setShareAdminMsg("");
+  };
+  const sendShareAdmin = async () => {
+    setSharingAdmin(true);
+    setShareAdminMsg("");
+    try {
+      const r = await api.shareAdmin({
+        clientId,
+        year: view.year,
+        month: view.month,
+      });
+      const n = r.sent?.length || 0;
+      setShareAdminMsg(
+        `Inviato a ${n} admin` +
+          (r.failed?.length ? ` · ${r.failed.length} non riusciti` : "")
+      );
+    } catch (e) {
+      const msg = e?.response?.data?.error;
+      toastErr(msg ? `Invio non riuscito: ${msg}` : "Invio all'admin non riuscito.");
+    } finally {
+      setSharingAdmin(false);
+    }
   };
   const sendShare = async () => {
     setSharing(true);
@@ -868,6 +905,7 @@ const EditorialPlans = () => {
       {clientModalOpen && (
         <ClientModal
           clients={clients}
+          adminUsers={users.filter((u) => u.role === "admin")}
           onClose={() => setClientModalOpen(false)}
           onCreate={async (data) => {
             try {
@@ -1039,6 +1077,56 @@ const EditorialPlans = () => {
                   <FontAwesomeIcon icon={copied ? faCheck : faShareNodes} />
                   {copied ? "Copiato" : "Copia"}
                 </button>
+              </div>
+
+              {/* Revisione interna: invio agli admin assegnati (link dashboard) */}
+              <div className="ep-share-admin">
+                <div className="ep-share-admin-head">
+                  <FontAwesomeIcon icon={faUserShield} /> Revisione interna (admin)
+                </div>
+                <p className="ep-share-desc">
+                  Manda il piano agli admin assegnati per una revisione prima del
+                  cliente: lo aprono in dashboard per modificarlo e lasciare note
+                  interne (mai visibili al cliente).
+                </p>
+                {hasAdmins ? (
+                  assignedAdmins.length > 0 ? (
+                    <div className="ep-user-clients">
+                      {assignedAdmins.map((a) => (
+                        <span key={a.id} className="ep-client-chip">
+                          {a.name || a.username}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="ep-share-hint">
+                      {client.admins.length} admin assegnati a questo cliente.
+                    </p>
+                  )
+                ) : (
+                  <div className="ep-share-warning">
+                    <FontAwesomeIcon icon={faTriangleExclamation} /> Nessun admin
+                    assegnato.
+                    {isAdmin
+                      ? " Assegnalo dalla scheda “Clienti”."
+                      : " Chiedi a un admin di assegnarlo."}
+                  </div>
+                )}
+                {shareAdminMsg && (
+                  <div className="ep-share-ok">
+                    <FontAwesomeIcon icon={faCheck} /> {shareAdminMsg}
+                  </div>
+                )}
+                <div className="ep-foot-right ep-share-actions">
+                  <button
+                    className="ep-btn ep-btn--ghost"
+                    onClick={sendShareAdmin}
+                    disabled={!hasAdmins || sharingAdmin}
+                  >
+                    <FontAwesomeIcon icon={faUserShield} />{" "}
+                    {sharingAdmin ? "Invio in corso…" : "Invia all'admin"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

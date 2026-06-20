@@ -26,6 +26,13 @@ const ClientSchema = new mongoose.Schema({
   email: { type: String, default: "" },
   emails: { type: [String], default: [] },
   pages: { type: [PageSchema], default: [] },
+  // Admin responsabili del cliente: ricevono il piano "per revisione" (vista
+  // dashboard con modifiche dirette + note interne). Almeno uno è richiesto
+  // lato UI. Sono utenti con ruolo admin.
+  admins: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    default: [],
+  },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   createdAt: { type: Date, default: Date.now },
 });

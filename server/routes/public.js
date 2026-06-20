@@ -43,8 +43,12 @@ const recipients = (c) =>
 
 // Note sanitizzate: includono id (per modifica/elimina) e `mine` (se la nota è
 // dell'email richiedente), MAI l'email altrui.
+// ⚠️ Le note INTERNE (admin → operatore) vengono SCARTATE qui in modo
+// incondizionato: non devono MAI raggiungere il cliente.
 const sanitizeNotes = (notesArr, reqEmail) =>
-  (notesArr || []).map((n) => ({
+  (notesArr || [])
+    .filter((n) => !n.internal)
+    .map((n) => ({
     id: String(n._id),
     text: n.text,
     author: n.author,
@@ -198,7 +202,9 @@ router.put("/plan/note", rateLimit, async (req, res) => {
     const post = await findPost(clientId, year, month, postId);
     if (!post) return res.status(404).json({ error: "Post non trovato." });
     const note = post.clientNotes.id(noteId);
-    if (!note) return res.status(404).json({ error: "Nota non trovata." });
+    // Le note interne non esistono per il cliente (404, non le riconosciamo).
+    if (!note || note.internal)
+      return res.status(404).json({ error: "Nota non trovata." });
     if (norm(note.authorEmail) !== norm(email))
       return res
         .status(403)
@@ -222,7 +228,9 @@ router.delete("/plan/note", rateLimit, async (req, res) => {
     const post = await findPost(clientId, year, month, postId);
     if (!post) return res.status(404).json({ error: "Post non trovato." });
     const note = post.clientNotes.id(noteId);
-    if (!note) return res.status(404).json({ error: "Nota non trovata." });
+    // Le note interne non esistono per il cliente (404, non le riconosciamo).
+    if (!note || note.internal)
+      return res.status(404).json({ error: "Nota non trovata." });
     if (norm(note.authorEmail) !== norm(email))
       return res
         .status(403)
@@ -249,7 +257,11 @@ router.post("/plan/notify", rateLimit, async (req, res) => {
       year: Number(year),
       month: Number(month),
     }).lean();
-    const count = posts.reduce((n, p) => n + (p.clientNotes?.length || 0), 0);
+    // Conta SOLO le note visibili al cliente (mai le interne).
+    const count = posts.reduce(
+      (n, p) => n + (p.clientNotes || []).filter((x) => !x.internal).length,
+      0
+    );
     if (!count)
       return res.status(400).json({ error: "Non ci sono note da inviare." });
 
