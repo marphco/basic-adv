@@ -18,9 +18,13 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   const mediaCount = post.media?.length || 0;
   const isVideo = cover?.kind === "video";
   const notes = post.notes || [];
-  const unresolved = notes.filter((n) => !n.resolved).length;
-  const hasUnresolved = unresolved > 0;
-  const allResolved = notes.length > 0 && unresolved === 0;
+  // "in sospeso": nota cliente non risolta OPPURE richiesta dell'agenzia non
+  // risolta. Le spiegazioni dell'agenzia non sono "in sospeso".
+  const pending = notes.filter(
+    (n) => !n.resolved && (!n.fromAgency || n.needsReply)
+  ).length;
+  const hasUnresolved = pending > 0;
+  const hasNotes = notes.length > 0;
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
 
@@ -31,7 +35,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
         hasUnresolved ? "ep-post--note" : "",
-        allResolved ? "ep-post--note-done" : "",
+        hasNotes && !hasUnresolved ? "ep-post--note-done" : "",
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -93,12 +97,12 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
           )}
           {hasUnresolved && (
             <span className="ep-badge ep-badge--note">
-              <FontAwesomeIcon icon={faComment} /> {unresolved}
+              <FontAwesomeIcon icon={faComment} /> {pending}
             </span>
           )}
-          {allResolved && (
+          {hasNotes && !hasUnresolved && (
             <span className="ep-badge ep-badge--note-done">
-              <FontAwesomeIcon icon={faCheck} /> Risolte
+              <FontAwesomeIcon icon={faCheck} />
             </span>
           )}
         </div>

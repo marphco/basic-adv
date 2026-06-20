@@ -201,8 +201,12 @@ const EditorialPlans = () => {
     view.year === TODAY.year &&
     view.month === TODAY.month &&
     day === TODAY.day;
-  // Conteggi "da rivedere": solo note NON risolte (le risolte non vanno riviste).
-  const unresolvedCount = (p) => (p.notes || []).filter((n) => !n.resolved).length;
+  // Conteggi "da rivedere": elementi aperti = note cliente non risolte o
+  // richieste dell'agenzia non risolte (le spiegazioni non contano).
+  const unresolvedCount = (p) =>
+    (p.notes || []).filter(
+      (n) => !n.resolved && (!n.fromAgency || n.needsReply)
+    ).length;
   const notesOnDay = (day) =>
     visiblePosts
       .filter((p) => p.day === day)
