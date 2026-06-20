@@ -71,7 +71,15 @@ export default function PublicPlan() {
       setData(r.data);
       setPosts(r.data.posts || []);
     } catch (err) {
-      setError(err?.response?.data?.error || "Accesso non riuscito. Riprova.");
+      const status = err?.response?.status;
+      setError(
+        err?.response?.data?.error ||
+          (status === 404
+            ? "Servizio non ancora disponibile (404). Riprova tra poco."
+            : status
+            ? `Accesso non riuscito (HTTP ${status}).`
+            : "Impossibile contattare il server. Riprova.")
+      );
     } finally {
       setLoading(false);
     }

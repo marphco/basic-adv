@@ -272,9 +272,16 @@ useEffect(() => {
 }, [location.pathname, isMobile]);
 
   // Pagina pubblica del piano editoriale (cliente): standalone, senza la navbar
-  // marketing né il cursore custom del sito.
+  // marketing, ma col cursore custom (la pagina è sempre scura → isDark).
   if (location.pathname.startsWith("/p/")) {
-    return <PublicPlan />;
+    return (
+      <>
+        {window.matchMedia?.("(pointer: fine)").matches && (
+          <Cursor isDark={true} />
+        )}
+        <PublicPlan />
+      </>
+    );
   }
 
   return (
