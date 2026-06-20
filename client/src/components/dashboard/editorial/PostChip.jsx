@@ -18,8 +18,11 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   const mediaCount = post.media?.length || 0;
   const isVideo = cover?.kind === "video";
   const notes = post.notes || [];
-  // "in sospeso": nota cliente non risolta OPPURE richiesta dell'agenzia non
-  // risolta. Le spiegazioni dell'agenzia non sono "in sospeso".
+  // Nota del CLIENTE non risolta → evidenza forte (sfondo giallo): è feedback
+  // che richiede la nostra attenzione. Sparisce quando viene risolta.
+  const clientPending = notes.some((n) => !n.fromAgency && !n.resolved);
+  // "in sospeso" (badge col conteggio): nota cliente non risolta OPPURE
+  // richiesta dell'agenzia non risolta. Le spiegazioni dell'agenzia non lo sono.
   const pending = notes.filter(
     (n) => !n.resolved && (!n.fromAgency || n.needsReply)
   ).length;
@@ -35,6 +38,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
         hasUnresolved ? "ep-post--note" : "",
+        clientPending ? "ep-post--client-note" : "",
         hasNotes && !hasUnresolved ? "ep-post--note-done" : "",
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
@@ -97,12 +101,14 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
           )}
           {hasUnresolved && (
             <span className="ep-badge ep-badge--note">
-              <FontAwesomeIcon icon={faComment} /> {pending}
+              <FontAwesomeIcon icon={faComment} />{" "}
+              {pending > 1 ? `${pending} note` : "1 nota"}
             </span>
           )}
           {hasNotes && !hasUnresolved && (
             <span className="ep-badge ep-badge--note-done">
-              <FontAwesomeIcon icon={faCheck} />
+              <FontAwesomeIcon icon={faCheck} />{" "}
+              {notes.length > 1 ? "Risolte" : "Risolta"}
             </span>
           )}
         </div>

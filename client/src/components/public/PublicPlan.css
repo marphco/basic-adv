@@ -20,6 +20,10 @@
   margin: 0 auto;
   padding: 24px 16px 64px;
   box-sizing: border-box;
+  /* La pagina NON deve mai scrollare in orizzontale su mobile: i contenitori
+     interni (matrice/calendario) hanno il proprio scroll-x, quindi qui possiamo
+     ritagliare in sicurezza qualunque sfondamento. */
+  overflow-x: clip;
 }
 /* Vista piano: contenitore più largo per il calendario/matrice come in dashboard */
 .pp-wrap--plan {

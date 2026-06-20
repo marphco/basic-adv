@@ -56,22 +56,26 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
       prev.map((n, idx) => (idx === i ? { ...n, resolved: !n.resolved } : n))
     );
 
+  // Costruisce la nota dell'agenzia dal testo in bozza (null se vuoto).
+  const buildPendingNote = () => {
+    const t = agencyNoteText.trim();
+    if (!t) return null;
+    return {
+      text: t,
+      author: "Agenzia",
+      fromAgency: true,
+      needsReply: agencyNoteNeedsReply,
+      resolved: false,
+      media: [],
+      createdAt: new Date().toISOString(),
+    };
+  };
+
   // Aggiunge una nota dell'agenzia per il cliente (visibile nella vista pubblica).
   const addAgencyNote = () => {
-    const t = agencyNoteText.trim();
-    if (!t) return;
-    setNotes((prev) => [
-      ...prev,
-      {
-        text: t,
-        author: "Agenzia",
-        fromAgency: true,
-        needsReply: agencyNoteNeedsReply,
-        resolved: false,
-        media: [],
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    const note = buildPendingNote();
+    if (!note) return;
+    setNotes((prev) => [...prev, note]);
     setAgencyNoteText("");
     setAgencyNoteNeedsReply(false);
   };
@@ -132,7 +136,10 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     Number(month) !== initialRef.current.month ||
     Number(year) !== initialRef.current.year ||
     JSON.stringify(media) !== initialRef.current.media ||
-    JSON.stringify(notes) !== initialRef.current.notes;
+    JSON.stringify(notes) !== initialRef.current.notes ||
+    // anche una nota scritta ma non ancora "aggiunta" conta come modifica:
+    // così la chiusura protetta non la perde silenziosamente.
+    agencyNoteText.trim() !== "";
 
   // Chiusura protetta: se ci sono modifiche non salvate, chiede conferma.
   const requestClose = async () => {
@@ -188,6 +195,11 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   };
 
   const handleSave = () => {
+    // Auto-aggiunta: se c'è una nota scritta ma non "aggiunta" col pulsante, la
+    // includo comunque → non si perde per il classico errore "Salva senza
+    // cliccare Aggiungi nota".
+    const pending = buildPendingNote();
+    const finalNotes = pending ? [...notes, pending] : notes;
     onSave(
       {
         ...draft,
@@ -199,7 +211,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
         month: Number(month),
         year: Number(year),
         media,
-        notes,
+        notes: finalNotes,
       },
       hasChanges() // se true e il post era un duplicato → flag rimosso
     );
@@ -484,6 +496,12 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                   <FontAwesomeIcon icon={faPlus} /> Aggiungi nota per il cliente
                 </button>
               </div>
+              {agencyNoteText.trim() && (
+                <p className="ep-agency-note-hint">
+                  <FontAwesomeIcon icon={faCheck} /> Verrà aggiunta
+                  automaticamente quando salvi il post.
+                </p>
+              )}
             </div>
           </div>
         </div>
