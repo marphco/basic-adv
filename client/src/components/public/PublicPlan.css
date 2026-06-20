@@ -143,6 +143,13 @@
   width: auto;
   margin-top: 0;
 }
+/* "Approva" = verde, ben distinto dall'arancione di "Invia feedback" */
+.pp-btn--approve {
+  background: #22c55e;
+}
+.pp-btn--approve:hover {
+  background: #1eae51;
+}
 .pp-error {
   margin-top: 12px;
   background: rgba(226, 59, 59, 0.12);
