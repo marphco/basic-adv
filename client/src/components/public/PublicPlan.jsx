@@ -60,6 +60,26 @@ export default function PublicPlan() {
     [pathname]
   );
 
+  // Persistenza accesso cliente: localStorage con scadenza 30 giorni. Sopravvive
+  // a refresh e riapertura del link (stesso browser); dopo 30 gg richiede l'email.
+  const SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
+  const storeKey = parsed
+    ? `pp:${parsed.clientId}-${parsed.year}${String(parsed.month).padStart(2, "0")}`
+    : "";
+  const readStoredEmail = () => {
+    if (!storeKey) return "";
+    try {
+      const o = JSON.parse(localStorage.getItem(storeKey) || "null");
+      if (!o || !o.email || !o.exp || Date.now() > o.exp) {
+        localStorage.removeItem(storeKey);
+        return "";
+      }
+      return o.email;
+    } catch {
+      return "";
+    }
+  };
+
   const [email, setEmail] = useState("");
   const [data, setData] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -76,6 +96,9 @@ export default function PublicPlan() {
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [approval, setApproval] = useState(null); // { by, at } se approvato
   const [approving, setApproving] = useState(false);
+  // true mentre si tenta il riaccesso automatico da email salvata (evita il
+  // "lampo" del gate al refresh: mostro un caricamento finché non ho i dati).
+  const [booting, setBooting] = useState(() => !!readStoredEmail());
 
   const [isNarrow, setIsNarrow] = useState(
     () =>
@@ -120,12 +143,6 @@ export default function PublicPlan() {
     [posts]
   );
 
-  // Ricorda l'accesso del cliente entro la sessione (niente re-inserimento email
-  // a ogni reload). sessionStorage = si azzera alla chiusura della scheda.
-  const storeKey = parsed
-    ? `pp:${parsed.clientId}-${parsed.year}${String(parsed.month).padStart(2, "0")}`
-    : "";
-
   const doAccess = async (em) => {
     const val = String(em || "").trim();
     if (!val) return;
@@ -142,9 +159,12 @@ export default function PublicPlan() {
       setPosts(r.data.posts || []);
       setApproval(r.data.approval || null);
       try {
-        sessionStorage.setItem(storeKey, val);
+        localStorage.setItem(
+          storeKey,
+          JSON.stringify({ email: val, exp: Date.now() + SESSION_TTL })
+        );
       } catch {
-        /* sessionStorage non disponibile */
+        /* localStorage non disponibile */
       }
     } catch (err) {
       const status = err?.response?.status;
@@ -157,12 +177,13 @@ export default function PublicPlan() {
             : "Impossibile contattare il server. Riprova.")
       );
       try {
-        sessionStorage.removeItem(storeKey);
+        localStorage.removeItem(storeKey);
       } catch {
         /* no-op */
       }
     } finally {
       setLoading(false);
+      setBooting(false);
     }
   };
   const submitAccess = (e) => {
@@ -170,18 +191,14 @@ export default function PublicPlan() {
     doAccess(email);
   };
 
-  // Auto-accesso al reload se l'email è già stata verificata in questa sessione.
+  // Auto-accesso al reload/riapertura se l'email salvata è valida e non scaduta.
   useEffect(() => {
-    if (!parsed) return;
-    let stored = "";
-    try {
-      stored = sessionStorage.getItem(storeKey) || "";
-    } catch {
-      stored = "";
-    }
+    const stored = readStoredEmail();
     if (stored) {
       setEmail(stored);
       doAccess(stored);
+    } else {
+      setBooting(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -322,6 +339,17 @@ export default function PublicPlan() {
   }
 
   if (!data) {
+    // riaccesso automatico in corso: mostro un caricamento, non il gate
+    if (booting) {
+      return (
+        <div className="pp-wrap">
+          {header}
+          <div className="pp-card pp-gate">
+            <p>Caricamento del piano…</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="pp-wrap">
         {header}
