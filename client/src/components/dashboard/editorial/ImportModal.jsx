@@ -17,6 +17,8 @@ const ImportModal = ({ client, view, onClose, onConfirm }) => {
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState("");
   const [result, setResult] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [done, setDone] = useState(0);
   const fileRef = useRef(null);
 
   useEffect(() => {
@@ -155,15 +157,29 @@ const ImportModal = ({ client, view, onClose, onConfirm }) => {
 
         <div className="ep-modal-foot">
           <div className="ep-foot-right">
-            <button className="ep-btn ep-btn--ghost" onClick={onClose}>
+            <button
+              className="ep-btn ep-btn--ghost"
+              onClick={onClose}
+              disabled={importing}
+            >
               Annulla
             </button>
             <button
               className="ep-btn ep-btn--primary"
-              onClick={() => onConfirm(posts)}
-              disabled={posts.length === 0}
+              onClick={async () => {
+                setImporting(true);
+                setDone(0);
+                try {
+                  await onConfirm(posts, (i) => setDone(i));
+                } finally {
+                  setImporting(false);
+                }
+              }}
+              disabled={posts.length === 0 || importing}
             >
-              Importa {posts.length || ""} post
+              {importing
+                ? `Importazione… ${done}/${posts.length}`
+                : `Importa ${posts.length || ""} post`}
             </button>
           </div>
         </div>
