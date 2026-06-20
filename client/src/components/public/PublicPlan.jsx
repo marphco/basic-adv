@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,12 +6,16 @@ import {
   faBullhorn,
   faPaperPlane,
   faLock,
-  faImage,
   faPlay,
   faCheck,
+  faComment,
+  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
+import PostChip from "../dashboard/editorial/PostChip";
+import ChannelIcon from "../dashboard/editorial/ChannelIcon";
+import "../dashboard/editorial/EditorialPlans.css";
 import LogoIcon from "../../assets/icon-white.svg";
 import "./PublicPlan.css";
 
@@ -25,20 +29,31 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replac
   ""
 );
 
-// slug = "<clientId 24 hex>-<yyyy><mm>"  →  { clientId, year, month }
 function parseSlug(slug) {
   const m = String(slug || "").match(/^([a-f0-9]{24})-(\d{4})(\d{2})$/i);
   if (!m) return null;
   return { clientId: m[1], year: Number(m[2]), month: Number(m[3]) };
 }
 
-// Vista pubblica del piano editoriale: il cliente sblocca con la sua email,
-// vede i post del mese in sola lettura e può lasciare note. Nessun dato interno
-// (duplicati/stato) viene esposto: arriva già sanitizzato dal backend.
+function buildMonthMatrix(year, month) {
+  const first = new Date(year, month - 1, 1);
+  const startOffset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  return weeks;
+}
+
+// Vista pubblica del piano editoriale (cliente): gate via email, sola lettura,
+// calendario/matrice su desktop, agenda su mobile. Le note sono modificabili/
+// eliminabili dal cliente; l'agenzia viene avvisata con UNA sola email quando il
+// cliente clicca "Invia il feedback" (mai una email per nota).
 export default function PublicPlan() {
-  useNoindex(); // mai indicizzata
-  // La pagina è renderizzata fuori da una <Route :slug> (short-circuit su /p/),
-  // quindi lo slug si legge dal pathname, non da useParams.
+  useNoindex();
   const { pathname } = useLocation();
   const parsed = useMemo(
     () => parseSlug(pathname.replace(/^\/p\//, "").replace(/\/$/, "")),
@@ -46,15 +61,56 @@ export default function PublicPlan() {
   );
 
   const [email, setEmail] = useState("");
-  const [data, setData] = useState(null); // { client, pages, year, month }
+  const [data, setData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // stato note: quale post ha il form aperto, testo, invio
-  const [noteFor, setNoteFor] = useState(null);
-  const [noteText, setNoteText] = useState("");
+  const [selected, setSelected] = useState(null); // post aperto nel modale
+  const [noteText, setNoteText] = useState(""); // nuova nota
   const [noteSending, setNoteSending] = useState(false);
+  const [editingNote, setEditingNote] = useState(null); // noteId in modifica
+  const [editText, setEditText] = useState("");
+
+  const [feedbackSending, setFeedbackSending] = useState(false);
+  const [feedbackSent, setFeedbackSent] = useState(false);
+
+  const [isNarrow, setIsNarrow] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 640px)").matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const on = (e) => setIsNarrow(e.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  const year = data?.year;
+  const month = data?.month;
+  const pages = data?.pages || [];
+  const isMatrix = pages.length > 1;
+  const weeks = useMemo(
+    () => (data ? buildMonthMatrix(year, month) : []),
+    [data, year, month]
+  );
+  const postsByDay = useMemo(() => {
+    const map = {};
+    for (const p of posts) (map[p.day] ||= []).push(p);
+    return map;
+  }, [posts]);
+  const daysWithPosts = useMemo(
+    () =>
+      Object.keys(postsByDay)
+        .map(Number)
+        .sort((a, b) => a - b),
+    [postsByDay]
+  );
+  const totalNotes = useMemo(
+    () => posts.reduce((n, p) => n + (p.notes?.length || 0), 0),
+    [posts]
+  );
 
   const submitAccess = async (e) => {
     e.preventDefault();
@@ -85,23 +141,24 @@ export default function PublicPlan() {
     }
   };
 
-  const sendNote = async (postId) => {
-    if (!noteText.trim()) return;
+  const base = { clientId: parsed?.clientId, year: parsed?.year, month: parsed?.month, email: email.trim() };
+  const applyNotes = (postId, notes) => {
+    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, notes } : p)));
+    setSelected((s) => (s && s.id === postId ? { ...s, notes } : s));
+    setFeedbackSent(false); // se cambio le note, potrei volerle re-inviare
+  };
+
+  const createNote = async () => {
+    if (!selected || !noteText.trim()) return;
     setNoteSending(true);
     try {
       const r = await axios.post(`${API_URL}/api/public/plan/note`, {
-        clientId: parsed.clientId,
-        year: parsed.year,
-        month: parsed.month,
-        email: email.trim(),
-        postId,
+        ...base,
+        postId: selected.id,
         text: noteText.trim(),
       });
-      setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, notes: r.data.notes } : p))
-      );
+      applyNotes(selected.id, r.data.notes);
       setNoteText("");
-      setNoteFor(null);
     } catch (err) {
       window.alert(err?.response?.data?.error || "Invio nota non riuscito.");
     } finally {
@@ -109,19 +166,73 @@ export default function PublicPlan() {
     }
   };
 
-  const showPage = (data?.pages?.length || 0) > 1;
-  const postsByDay = useMemo(() => {
-    const map = {};
-    for (const p of posts) (map[p.day] ||= []).push(p);
-    return map;
-  }, [posts]);
-  const days = useMemo(
-    () =>
-      Object.keys(postsByDay)
-        .map(Number)
-        .sort((a, b) => a - b),
-    [postsByDay]
-  );
+  const saveEdit = async (noteId) => {
+    if (!editText.trim()) return;
+    try {
+      const r = await axios.put(`${API_URL}/api/public/plan/note`, {
+        ...base,
+        postId: selected.id,
+        noteId,
+        text: editText.trim(),
+      });
+      applyNotes(selected.id, r.data.notes);
+      setEditingNote(null);
+      setEditText("");
+    } catch (err) {
+      window.alert(err?.response?.data?.error || "Modifica non riuscita.");
+    }
+  };
+
+  const deleteNote = async (noteId) => {
+    if (!window.confirm("Eliminare questa nota?")) return;
+    try {
+      const r = await axios.delete(`${API_URL}/api/public/plan/note`, {
+        data: { ...base, postId: selected.id, noteId },
+      });
+      applyNotes(selected.id, r.data.notes);
+    } catch (err) {
+      window.alert(err?.response?.data?.error || "Eliminazione non riuscita.");
+    }
+  };
+
+  const submitFeedback = async () => {
+    setFeedbackSending(true);
+    try {
+      await axios.post(`${API_URL}/api/public/plan/notify`, { ...base });
+      setFeedbackSent(true);
+    } catch (err) {
+      window.alert(err?.response?.data?.error || "Invio feedback non riuscito.");
+    } finally {
+      setFeedbackSending(false);
+    }
+  };
+
+  const openPost = (p) => {
+    setSelected(p);
+    setNoteText("");
+    setEditingNote(null);
+    setEditText("");
+  };
+  const closeModal = () => {
+    setSelected(null);
+    setEditingNote(null);
+    setEditText("");
+  };
+
+  const pageName = (id) => pages.find((p) => p.id === id)?.name || "";
+  const pageChannels = (id) => pages.find((p) => p.id === id)?.channels || [];
+  const postsFor = (pageId, day) =>
+    posts.filter((p) => p.pageId === pageId && p.day === day);
+  const notesOnDay = (day) =>
+    (postsByDay[day] || []).reduce((n, p) => n + (p.notes?.length || 0), 0);
+  const today = new Date();
+  const isToday = (day) =>
+    !!day &&
+    year === today.getFullYear() &&
+    month === today.getMonth() + 1 &&
+    day === today.getDate();
+  const renderChannels = (id) =>
+    pageChannels(id).map((ch) => <ChannelIcon key={ch} channel={ch} />);
 
   const header = (
     <div className="pp-header">
@@ -137,7 +248,6 @@ export default function PublicPlan() {
     </div>
   );
 
-  // --- Gate email ---
   if (!parsed) {
     return (
       <div className="pp-wrap">
@@ -148,6 +258,7 @@ export default function PublicPlan() {
       </div>
     );
   }
+
   if (!data) {
     return (
       <div className="pp-wrap">
@@ -175,149 +286,314 @@ export default function PublicPlan() {
     );
   }
 
-  // --- Vista piano (sola lettura + note) ---
   return (
-    <div className="pp-wrap">
+    <div className="pp-wrap pp-wrap--plan">
       {header}
       <div className="pp-intro">
-        Ciao {data.client?.contactName || data.client?.name}, ecco i contenuti
-        del mese. Tocca <strong>“Lascia una nota”</strong> su un post per darci
-        un feedback.
+        Ciao {data.client?.contactName || data.client?.name}, ecco i contenuti del
+        mese. Clicca un post per leggerlo e lasciare una nota.
       </div>
 
-      {days.length === 0 && (
-        <div className="pp-card">Nessun post pubblicato per questo mese.</div>
+      {totalNotes > 0 && (
+        <div className="pp-feedback-bar">
+          <span className="pp-feedback-info">
+            {feedbackSent ? (
+              <span className="pp-feedback-ok">
+                <FontAwesomeIcon icon={faCheck} /> Feedback inviato all'agenzia.
+              </span>
+            ) : (
+              `Hai lasciato ${totalNotes} ${totalNotes === 1 ? "nota" : "note"}.`
+            )}
+          </span>
+          <button
+            className="pp-btn"
+            onClick={submitFeedback}
+            disabled={feedbackSending || feedbackSent}
+          >
+            <FontAwesomeIcon icon={faPaperPlane} />{" "}
+            {feedbackSending ? "Invio…" : "Invia il feedback all'agenzia"}
+          </button>
+        </div>
       )}
 
-      {days.map((day) => {
-        const wd =
-          WEEKDAYS_IT[
-            (new Date(data.year, data.month - 1, day).getDay() + 6) % 7
-          ];
-        return (
-          <section key={day} className="pp-day">
-            <div className="pp-day-head">
-              <span className="pp-day-num">{day}</span>
-              <span className="pp-day-wd">{wd}</span>
-            </div>
-            {postsByDay[day].map((p) => (
-              <article
-                key={p.id}
-                className="pp-post"
-                style={
-                  p.category ? { borderLeftColor: categoryColor(p.category) } : undefined
-                }
-              >
-                <div className="pp-post-top">
-                  {showPage && p.pageName && (
-                    <span className="pp-page">{p.pageName}</span>
-                  )}
-                  {p.category && (
-                    <span
-                      className="pp-cat"
-                      style={{ color: categoryColor(p.category) }}
-                    >
-                      {p.category}
-                    </span>
-                  )}
-                  {p.sponsored && (
-                    <span className="pp-spons">
-                      <FontAwesomeIcon icon={faBullhorn} /> Sponsorizzato
-                    </span>
-                  )}
-                </div>
-
-                {p.media && p.media.length > 0 && (
-                  <div className="pp-media">
-                    {p.media.map((m, i) => (
-                      <a
-                        key={i}
-                        className="pp-thumb"
-                        href={m.url || m.thumbUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {m.url || m.thumbUrl ? (
-                          <img
-                            src={m.kind === "video" ? m.thumbUrl || m.url : m.url}
-                            alt=""
-                          />
-                        ) : (
-                          <FontAwesomeIcon icon={faImage} />
-                        )}
-                        {m.kind === "video" && (
-                          <span className="pp-play">
-                            <FontAwesomeIcon icon={faPlay} />
-                          </span>
-                        )}
-                      </a>
-                    ))}
+      {daysWithPosts.length === 0 ? (
+        <div className="pp-card">Nessun post pubblicato per questo mese.</div>
+      ) : (
+        <div className="editorial-plans pp-plan">
+          {isNarrow ? (
+            <div className="ep-agenda">
+              {daysWithPosts.map((day) => {
+                const wd =
+                  WEEKDAYS_IT[(new Date(year, month - 1, day).getDay() + 6) % 7];
+                return (
+                  <div
+                    key={day}
+                    className={`ep-agenda-day ${isToday(day) ? "is-today" : ""}`}
+                  >
+                    <div className="ep-agenda-head">
+                      <span className="ep-agenda-date">
+                        <b>{day}</b> {wd}
+                      </span>
+                    </div>
+                    <div className="ep-agenda-posts">
+                      {(postsByDay[day] || []).map((p) => (
+                        <div key={p.id} className="ep-agenda-post">
+                          {isMatrix && (
+                            <span className="ep-agenda-page">
+                              {pageName(p.pageId)}
+                            </span>
+                          )}
+                          <PostChip post={p} onClick={() => openPost(p)} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                )}
-
-                {p.caption && <p className="pp-caption">{p.caption}</p>}
-
-                {/* Note esistenti */}
-                {p.notes && p.notes.length > 0 && (
-                  <div className="pp-notes">
-                    {p.notes.map((n, i) => (
-                      <div key={i} className={`pp-note ${n.resolved ? "done" : ""}`}>
-                        {n.resolved && <FontAwesomeIcon icon={faCheck} />}
-                        <span>{n.text}</span>
+                );
+              })}
+            </div>
+          ) : isMatrix ? (
+            <div className="ep-matrix">
+              {weeks.map((week, wi) => (
+                <div key={wi} className="ep-matrix-week">
+                  <div className="ep-matrix-row ep-matrix-headrow">
+                    <div className="ep-matrix-corner" />
+                    {week.map((day, di) => (
+                      <div
+                        key={di}
+                        className={`ep-matrix-dayhead ${
+                          isToday(day) ? "is-today" : ""
+                        }`}
+                      >
+                        {day && (
+                          <>
+                            <span className="ep-mh-wd">{WEEKDAYS_IT[di]}</span>
+                            <span className="ep-mh-day">{day}</span>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
-                )}
-
-                {/* Aggiungi nota */}
-                {noteFor === p.id ? (
-                  <div className="pp-note-form">
-                    <textarea
-                      className="pp-input"
-                      rows={3}
-                      value={noteText}
-                      placeholder="Scrivi qui la tua nota…"
-                      onChange={(e) => setNoteText(e.target.value)}
-                      autoFocus
-                    />
-                    <div className="pp-note-actions">
-                      <button
-                        className="pp-btn pp-btn--ghost"
-                        onClick={() => {
-                          setNoteFor(null);
-                          setNoteText("");
-                        }}
-                      >
-                        Annulla
-                      </button>
-                      <button
-                        className="pp-btn"
-                        onClick={() => sendNote(p.id)}
-                        disabled={noteSending || !noteText.trim()}
-                      >
-                        <FontAwesomeIcon icon={faPaperPlane} />{" "}
-                        {noteSending ? "Invio…" : "Invia nota"}
-                      </button>
+                  {pages.map((pg) => (
+                    <div key={pg.id} className="ep-matrix-row">
+                      <div className="ep-matrix-pagelabel">
+                        <span className="ep-tab-dots">{renderChannels(pg.id)}</span>
+                        <span className="ep-mp-name">{pg.name}</span>
+                      </div>
+                      {week.map((day, di) => {
+                        if (!day)
+                          return (
+                            <div key={di} className="ep-matrix-cell is-empty" />
+                          );
+                        return (
+                          <div key={di} className="ep-matrix-cell">
+                            {postsFor(pg.id, day).map((p) => (
+                              <PostChip
+                                key={p.id}
+                                post={p}
+                                compact
+                                onClick={() => openPost(p)}
+                              />
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="ep-calendar">
+              <div className="ep-weekrow ep-weekdays">
+                {WEEKDAYS_IT.map((w) => (
+                  <div key={w} className="ep-weekday">
+                    {w}
                   </div>
-                ) : (
-                  <button
-                    className="pp-note-add"
-                    onClick={() => {
-                      setNoteFor(p.id);
-                      setNoteText("");
-                    }}
-                  >
-                    Lascia una nota
-                  </button>
-                )}
-              </article>
-            ))}
-          </section>
-        );
-      })}
+                ))}
+              </div>
+              {weeks.map((week, wi) => (
+                <div key={wi} className="ep-weekrow">
+                  {week.map((day, di) => {
+                    if (!day)
+                      return <div key={di} className="ep-day ep-day--empty" />;
+                    const dayPosts = postsByDay[day] || [];
+                    const dn = notesOnDay(day);
+                    return (
+                      <div
+                        key={di}
+                        className={`ep-day ${isToday(day) ? "ep-day--today" : ""}`}
+                      >
+                        <div className="ep-day-head">
+                          <span className="ep-day-num">{day}</span>
+                          {dn > 0 && (
+                            <span className="ep-day-note-badge">
+                              <FontAwesomeIcon icon={faComment} />
+                              {dn}
+                            </span>
+                          )}
+                        </div>
+                        <div className="ep-day-posts">
+                          {dayPosts.map((p) => (
+                            <PostChip
+                              key={p.id}
+                              post={p}
+                              onClick={() => openPost(p)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="pp-footer">Basic Adv · Piano editoriale</div>
+
+      {/* ---- Modale dettaglio post + note ---- */}
+      {selected && (
+        <div className="pp-modal-overlay" onClick={closeModal}>
+          <div className="pp-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="pp-modal-close"
+              onClick={closeModal}
+              aria-label="Chiudi"
+            >
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+
+            <div className="pp-post-top">
+              {isMatrix && pageName(selected.pageId) && (
+                <span className="pp-page">{pageName(selected.pageId)}</span>
+              )}
+              {selected.category && (
+                <span
+                  className="pp-cat"
+                  style={{ color: categoryColor(selected.category) }}
+                >
+                  {selected.category}
+                </span>
+              )}
+              {selected.sponsored && (
+                <span className="pp-spons">
+                  <FontAwesomeIcon icon={faBullhorn} /> Sponsorizzato
+                </span>
+              )}
+            </div>
+
+            {selected.media && selected.media.length > 0 && (
+              <div className="pp-media">
+                {selected.media.map((m, i) => (
+                  <a
+                    key={i}
+                    className="pp-thumb"
+                    href={m.url || m.thumbUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img
+                      src={m.kind === "video" ? m.thumbUrl || m.url : m.url}
+                      alt=""
+                    />
+                    {m.kind === "video" && (
+                      <span className="pp-play">
+                        <FontAwesomeIcon icon={faPlay} />
+                      </span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {selected.caption && <p className="pp-caption">{selected.caption}</p>}
+
+            {selected.notes && selected.notes.length > 0 && (
+              <div className="pp-notes">
+                {selected.notes.map((n) => (
+                  <div key={n.id} className={`pp-note ${n.resolved ? "done" : ""}`}>
+                    {editingNote === n.id ? (
+                      <>
+                        <textarea
+                          className="pp-input"
+                          rows={2}
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                        />
+                        <div className="pp-note-mine-actions">
+                          <button
+                            className="pp-note-mini"
+                            onClick={() => {
+                              setEditingNote(null);
+                              setEditText("");
+                            }}
+                          >
+                            Annulla
+                          </button>
+                          <button
+                            className="pp-note-mini"
+                            onClick={() => saveEdit(n.id)}
+                          >
+                            Salva
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="pp-note-row">
+                          {n.resolved && <FontAwesomeIcon icon={faCheck} />}
+                          <span>{n.text}</span>
+                        </div>
+                        {n.mine && !n.resolved && (
+                          <div className="pp-note-mine-actions">
+                            <button
+                              className="pp-note-mini"
+                              onClick={() => {
+                                setEditingNote(n.id);
+                                setEditText(n.text);
+                              }}
+                            >
+                              Modifica
+                            </button>
+                            <button
+                              className="pp-note-mini"
+                              onClick={() => deleteNote(n.id)}
+                            >
+                              Elimina
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pp-note-form">
+              <textarea
+                className="pp-input"
+                rows={3}
+                value={noteText}
+                placeholder="Aggiungi una nota su questo post…"
+                onChange={(e) => setNoteText(e.target.value)}
+              />
+              <div className="pp-note-actions">
+                <button
+                  className="pp-btn"
+                  onClick={createNote}
+                  disabled={noteSending || !noteText.trim()}
+                >
+                  <FontAwesomeIcon icon={faPaperPlane} />{" "}
+                  {noteSending ? "Invio…" : "Aggiungi nota"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
