@@ -161,6 +161,34 @@ function planApprovedNotification({ clientName, monthLabel, by, planUrl }) {
   };
 }
 
+// → agli ADMIN assegnati: il piano è pronto per la REVISIONE interna. Gli admin
+// revisionano in dashboard (modifiche dirette + note interne), quindi il link
+// punta alla dashboard, NON alla vista cliente.
+function shareAdminReview({ clientName, monthLabel, dashUrl }) {
+  const body =
+    h("Piano pronto per la revisione") +
+    p(
+      `Il piano editoriale di <strong>${esc(
+        monthLabel
+      )}</strong> per <strong>${esc(
+        clientName
+      )}</strong> è pronto per la tua revisione.`
+    ) +
+    p(
+      "Aprilo in dashboard per modificare i post e lasciare note interne (visibili solo all'agenzia, mai al cliente)."
+    ) +
+    button("Apri in dashboard", dashUrl);
+  return {
+    subject: `Da revisionare: piano di ${monthLabel} — ${clientName}`,
+    text: `Il piano editoriale di ${monthLabel} per ${clientName} è pronto per la revisione.\nAprilo in dashboard per modificarlo e lasciare note interne: ${dashUrl}`,
+    html: wrap({
+      title: "Revisione piano editoriale",
+      preheader: `Da revisionare: piano di ${monthLabel} — ${clientName}`,
+      bodyHtml: body,
+    }),
+  };
+}
+
 // → al NUOVO UTENTE: account creato. Per sicurezza NON contiene la password.
 function accountWelcome({ name, username, role, loginUrl }) {
   const roleLabel = role === "admin" ? "Amministratore" : "Operatore";
@@ -200,6 +228,7 @@ module.exports = {
   clientNotesNotification,
   revisionsDoneNotification,
   shareEditorialPlan,
+  shareAdminReview,
   planApprovedNotification,
   accountWelcome,
   wrap,

@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Client = require("../models/Client");
 const Post = require("../models/Post");
+const User = require("../models/User");
 const PlanApproval = require("../models/PlanApproval");
 const {
   authenticateToken,
@@ -32,6 +34,20 @@ function cleanEmails(emails, email) {
 }
 const recipientsOf = (client) => cleanEmails(client.emails, client.email);
 
+// Lista di ObjectId admin validi e deduplicati (dai dati grezzi del client).
+function cleanAdmins(ids) {
+  if (!Array.isArray(ids)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const x of ids) {
+    const s = String(x || "");
+    if (!mongoose.isValidObjectId(s) || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
+}
+
 // Tutte le rotte dei piani editoriali richiedono login + utente caricato dal DB.
 router.use(authenticateToken, loadUser);
 
@@ -54,7 +70,7 @@ router.get("/clients", async (req, res) => {
 // Crea cliente (solo admin).
 router.post("/clients", requireAdmin, async (req, res) => {
   try {
-    const { name, pages, email, contactName, emails } = req.body || {};
+    const { name, pages, email, contactName, emails, admins } = req.body || {};
     if (!name || !name.trim())
       return res.status(400).json({ error: "Nome cliente obbligatorio" });
     const cleaned = cleanEmails(emails, email);
@@ -64,6 +80,7 @@ router.post("/clients", requireAdmin, async (req, res) => {
       emails: cleaned,
       email: cleaned[0] || "", // primario allineato per compatibilità
       pages: Array.isArray(pages) ? pages : [],
+      admins: cleanAdmins(admins),
       createdBy: req.dbUser._id,
     });
     res.status(201).json(client);
@@ -75,10 +92,11 @@ router.post("/clients", requireAdmin, async (req, res) => {
 // Aggiorna cliente / pagine (solo admin).
 router.put("/clients/:id", requireAdmin, async (req, res) => {
   try {
-    const { name, pages, email, contactName, emails } = req.body || {};
+    const { name, pages, email, contactName, emails, admins } = req.body || {};
     const update = {};
     if (name !== undefined) update.name = name.trim();
     if (contactName !== undefined) update.contactName = contactName;
+    if (admins !== undefined) update.admins = cleanAdmins(admins);
     if (emails !== undefined || email !== undefined) {
       const cleaned = cleanEmails(
         emails !== undefined ? emails : [],
@@ -165,6 +183,69 @@ router.post("/share", async (req, res) => {
   }
 });
 
+// Invia il piano "per revisione" agli ADMIN assegnati al cliente. Gli admin
+// revisionano in DASHBOARD (modifiche dirette + note interne), quindi il link
+// punta alla dashboard, non alla vista pubblica del cliente. Accessibile a chi
+// può gestire il cliente (admin o operatore assegnato).
+router.post("/share-admin", async (req, res) => {
+  try {
+    const { clientId, year, month } = req.body || {};
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    if (!canAccessClient(req.dbUser, clientId))
+      return res.status(403).json({ error: "Accesso negato a questo cliente" });
+
+    const client = await Client.findById(clientId).lean();
+    if (!client) return res.status(404).json({ error: "Cliente non trovato" });
+
+    const adminIds = (client.admins || []).map(String);
+    if (!adminIds.length)
+      return res.status(400).json({
+        error:
+          "Nessun admin assegnato. Assegna almeno un admin dalla scheda cliente.",
+      });
+
+    const admins = await User.find({ _id: { $in: adminIds }, role: "admin" })
+      .select("email name")
+      .lean();
+    const recipients = [
+      ...new Set(admins.map((a) => String(a.email || "").trim()).filter(Boolean)),
+    ];
+    if (!recipients.length)
+      return res.status(400).json({
+        error:
+          "Gli admin assegnati non hanno un'email. Aggiungila nella gestione Utenti.",
+      });
+
+    const m = Number(month);
+    const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
+    const dashUrl = `${base}/dashboard`;
+    const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
+
+    const mail = emailTemplates.shareAdminReview({
+      clientName: client.name,
+      monthLabel,
+      dashUrl,
+    });
+    const results = await Promise.allSettled(
+      recipients.map((to) =>
+        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+      )
+    );
+    const sent = [];
+    const failed = [];
+    results.forEach((r, i) =>
+      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
+    );
+    if (!sent.length)
+      return res.status(502).json({ error: "Invio email non riuscito", failed });
+
+    res.json({ sent, failed });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nell'invio agli admin" });
+  }
+});
+
 // Stato approvazione del piano (cliente) per un mese — per la dashboard.
 router.get("/approval", async (req, res) => {
   try {
@@ -227,6 +308,8 @@ router.post("/posts", async (req, res) => {
       sponsored: !!b.sponsored,
       status: b.status || "draft",
       order: b.order || 0,
+      // note già presenti alla creazione (es. nota dell'agenzia su un post nuovo)
+      clientNotes: Array.isArray(b.clientNotes) ? b.clientNotes : [],
       createdBy: req.dbUser._id,
     });
     res.status(201).json(post);

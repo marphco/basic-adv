@@ -7,6 +7,8 @@ import {
   faTrash,
   faPen,
   faBuilding,
+  faCheck,
+  faUserShield,
 } from "@fortawesome/free-solid-svg-icons";
 import ChannelIcon, { CHANNELS } from "./ChannelIcon";
 import { confirmDialog } from "./uiNotify";
@@ -15,6 +17,7 @@ const emptyForm = {
   name: "",
   contactName: "",
   emails: [""], // un cliente può avere più email (società con più soci)
+  admins: [], // admin responsabili (id) — almeno uno obbligatorio
   pages: [{ name: "", channels: ["instagram"] }],
 };
 
@@ -22,7 +25,14 @@ const emptyForm = {
 // Stesso pattern del modale Utenti. In modifica si preservano gli _id delle
 // pagine esistenti: i post puntano alla pagina tramite il suo _id, quindi
 // rigenerarli orfanerebbe i post già pubblicati.
-const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
+const ClientModal = ({
+  clients,
+  adminUsers = [],
+  onClose,
+  onCreate,
+  onUpdate,
+  onDelete,
+}) => {
   // editing: null | "new" | <clientId>
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -83,6 +93,7 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
           : c.email
           ? [c.email]
           : [""],
+      admins: (c.admins || []).map(String),
       pages: (c.pages || []).map((p) => ({
         _id: p._id,
         name: p.name || "",
@@ -100,6 +111,15 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
   const addEmail = () => setForm((f) => ({ ...f, emails: [...f.emails, ""] }));
   const removeEmail = (i) =>
     setForm((f) => ({ ...f, emails: f.emails.filter((_, idx) => idx !== i) }));
+
+  // --- admin responsabili (selezione multipla) ---
+  const toggleAdmin = (id) =>
+    setForm((f) => ({
+      ...f,
+      admins: f.admins.includes(id)
+        ? f.admins.filter((x) => x !== id)
+        : [...f.admins, id],
+    }));
 
   // --- editor pagine ---
   const addPage = () =>
@@ -131,6 +151,7 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
 
   const canSave =
     form.name.trim() &&
+    form.admins.length > 0 &&
     form.pages.length > 0 &&
     form.pages.every((pg) => pg.name.trim() && pg.channels.length);
 
@@ -139,6 +160,7 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
       name: form.name.trim(),
       contactName: form.contactName.trim(),
       emails: form.emails.map((e) => e.trim()).filter(Boolean),
+      admins: form.admins,
       pages: form.pages.map((pg) => ({
         ...(pg._id ? { _id: pg._id } : {}), // preserva l'id pagina in modifica
         name: pg.name.trim(),
@@ -303,6 +325,49 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
               </p>
 
               <div className="ep-field-head">
+                <label className="ep-field-label">Admin responsabili</label>
+                <span className="ep-media-type">
+                  {form.admins.length
+                    ? `${form.admins.length} selezionat${
+                        form.admins.length === 1 ? "o" : "i"
+                      }`
+                    : "obbligatorio"}
+                </span>
+              </div>
+              {adminUsers.length === 0 ? (
+                <p className="ep-user-noclients">
+                  Nessun admin disponibile. Crea un utente admin nella gestione
+                  Utenti.
+                </p>
+              ) : (
+                <div className="ep-admin-picker">
+                  {adminUsers.map((a) => {
+                    const on = form.admins.includes(a.id);
+                    return (
+                      <button
+                        type="button"
+                        key={a.id}
+                        className={`ep-admin-chip ${on ? "on" : ""}`}
+                        onClick={() => toggleAdmin(a.id)}
+                      >
+                        <FontAwesomeIcon
+                          icon={on ? faCheck : faUserShield}
+                        />
+                        {a.name || a.username}
+                        {!a.email && (
+                          <span className="ep-admin-chip-warn">· senza email</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="ep-user-noclients">
+                Ricevono il piano «per revisione» (modifiche dirette + note
+                interne). Almeno uno è obbligatorio.
+              </p>
+
+              <div className="ep-field-head">
                 <label className="ep-field-label">Pagine</label>
                 <span className="ep-media-type">
                   {form.pages.length === 1
@@ -380,6 +445,7 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
 
 ClientModal.propTypes = {
   clients: PropTypes.array.isRequired,
+  adminUsers: PropTypes.array,
   onClose: PropTypes.func.isRequired,
   onCreate: PropTypes.func.isRequired,
   onUpdate: PropTypes.func.isRequired,

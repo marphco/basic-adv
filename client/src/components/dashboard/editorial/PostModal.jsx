@@ -11,6 +11,7 @@ import {
   faCheck,
   faDownload,
   faCopy,
+  faLock,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
 import { confirmDialog } from "./uiNotify";
@@ -40,9 +41,11 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [notes, setNotes] = useState(draft.notes || []);
   const [lightbox, setLightbox] = useState(null); // { item, source: 'media'|'note' }
   const [captionCopied, setCaptionCopied] = useState(false);
-  // Nota che l'agenzia lascia AL cliente (spiegazione o richiesta).
+  // Nota che l'agenzia lascia AL cliente (spiegazione o richiesta) OPPURE nota
+  // INTERNA (solo agenzia, mai al cliente).
   const [agencyNoteText, setAgencyNoteText] = useState("");
   const [agencyNoteNeedsReply, setAgencyNoteNeedsReply] = useState(false);
+  const [agencyNoteInternal, setAgencyNoteInternal] = useState(false);
   const fileRef = useRef(null);
 
   const copyCaption = () => {
@@ -57,9 +60,22 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     );
 
   // Costruisce la nota dell'agenzia dal testo in bozza (null se vuoto).
+  // internal=true → nota SOLO agenzia (mai al cliente); altrimenti nota per il
+  // cliente (eventualmente con richiesta di risposta).
   const buildPendingNote = () => {
     const t = agencyNoteText.trim();
     if (!t) return null;
+    if (agencyNoteInternal)
+      return {
+        text: t,
+        author: "Agenzia (interna)",
+        fromAgency: true,
+        internal: true,
+        needsReply: false,
+        resolved: false,
+        media: [],
+        createdAt: new Date().toISOString(),
+      };
     return {
       text: t,
       author: "Agenzia",
@@ -71,13 +87,14 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     };
   };
 
-  // Aggiunge una nota dell'agenzia per il cliente (visibile nella vista pubblica).
+  // Aggiunge la nota in bozza (per il cliente o interna).
   const addAgencyNote = () => {
     const note = buildPendingNote();
     if (!note) return;
     setNotes((prev) => [...prev, note]);
     setAgencyNoteText("");
     setAgencyNoteNeedsReply(false);
+    setAgencyNoteInternal(false);
   };
 
   // Elimina una nota (cliente o agenzia). Persistita al salvataggio del post.
@@ -402,20 +419,28 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
               Note ({notes.length})
             </div>
             {notes.map((n, i) => {
-              const resolvable = !n.fromAgency || n.needsReply; // spiegazioni: nessuno stato
+              // interne e richieste sono "risolvibili"; le spiegazioni no
+              const resolvable = n.internal || !n.fromAgency || n.needsReply;
+              const kind = n.internal ? "internal" : n.fromAgency ? "agency" : "";
               return (
                 <div
                   key={i}
-                  className={`ep-note-item ${n.resolved ? "resolved" : ""} ${
-                    n.fromAgency ? "agency" : ""
-                  }`}
+                  className={`ep-note-item ${n.resolved ? "resolved" : ""} ${kind}`}
                 >
-                  <span className={`ep-note-tag ${n.fromAgency ? "agency" : ""}`}>
-                    {n.fromAgency
-                      ? n.needsReply
-                        ? "Agenzia · Richiesta"
-                        : "Agenzia · Nota"
-                      : "Cliente"}
+                  <span className={`ep-note-tag ${kind}`}>
+                    {n.internal ? (
+                      <>
+                        <FontAwesomeIcon icon={faLock} /> Interna · solo agenzia
+                      </>
+                    ) : n.fromAgency ? (
+                      n.needsReply ? (
+                        "Agenzia · Richiesta"
+                      ) : (
+                        "Agenzia · Nota"
+                      )
+                    ) : (
+                      "Cliente"
+                    )}
                   </span>
                   <p>{n.text}</p>
                   {n.media && n.media.length > 0 && (
@@ -469,31 +494,68 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
               );
             })}
 
-            {/* L'agenzia lascia una nota al cliente */}
-            <div className="ep-agency-note-form">
+            {/* L'agenzia lascia una nota: per il CLIENTE oppure INTERNA */}
+            <div
+              className={`ep-agency-note-form ${
+                agencyNoteInternal ? "is-internal" : ""
+              }`}
+            >
+              <div className="ep-note-target">
+                <button
+                  type="button"
+                  className={`ep-note-target-btn ${
+                    !agencyNoteInternal ? "on" : ""
+                  }`}
+                  onClick={() => setAgencyNoteInternal(false)}
+                >
+                  <FontAwesomeIcon icon={faComment} /> Per il cliente
+                </button>
+                <button
+                  type="button"
+                  className={`ep-note-target-btn internal ${
+                    agencyNoteInternal ? "on" : ""
+                  }`}
+                  onClick={() => setAgencyNoteInternal(true)}
+                >
+                  <FontAwesomeIcon icon={faLock} /> Interna (solo agenzia)
+                </button>
+              </div>
               <textarea
                 className="ep-textarea"
                 rows={2}
                 value={agencyNoteText}
-                placeholder="Nota per il cliente (es. perché questa foto, oppure richiedi una foto specifica)…"
+                placeholder={
+                  agencyNoteInternal
+                    ? "Nota interna per l'agenzia (es. istruzioni dell'admin per l'operatore)…"
+                    : "Nota per il cliente (es. perché questa foto, oppure richiedi una foto specifica)…"
+                }
                 onChange={(e) => setAgencyNoteText(e.target.value)}
               />
               <div className="ep-agency-note-foot">
-                <label className="ep-agency-note-check">
-                  <input
-                    type="checkbox"
-                    checked={agencyNoteNeedsReply}
-                    onChange={(e) => setAgencyNoteNeedsReply(e.target.checked)}
-                  />
-                  Richiede una risposta dal cliente
-                </label>
+                {agencyNoteInternal ? (
+                  <span className="ep-note-internal-tag">
+                    <FontAwesomeIcon icon={faLock} /> Mai visibile al cliente
+                  </span>
+                ) : (
+                  <label className="ep-agency-note-check">
+                    <input
+                      type="checkbox"
+                      checked={agencyNoteNeedsReply}
+                      onChange={(e) => setAgencyNoteNeedsReply(e.target.checked)}
+                    />
+                    Richiede una risposta dal cliente
+                  </label>
+                )}
                 <button
                   type="button"
                   className="ep-btn ep-btn--ghost"
                   onClick={addAgencyNote}
                   disabled={!agencyNoteText.trim()}
                 >
-                  <FontAwesomeIcon icon={faPlus} /> Aggiungi nota per il cliente
+                  <FontAwesomeIcon icon={faPlus} />{" "}
+                  {agencyNoteInternal
+                    ? "Aggiungi nota interna"
+                    : "Aggiungi nota per il cliente"}
                 </button>
               </div>
               {agencyNoteText.trim() && (

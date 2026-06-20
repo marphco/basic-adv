@@ -22,6 +22,10 @@ const NoteSchema = new mongoose.Schema({
   // nota dell'agenzia che richiede una risposta/azione del cliente (vs semplice
   // spiegazione). Le spiegazioni non hanno stato "da risolvere".
   needsReply: { type: Boolean, default: false },
+  // ⚠️ Nota INTERNA dell'agenzia (admin → operatore): NON deve MAI essere
+  // mostrata al cliente. Il serializer pubblico la filtra via in modo
+  // incondizionato. Vive solo nella dashboard.
+  internal: { type: Boolean, default: false },
   media: { type: [MediaSchema], default: [] },
   resolved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

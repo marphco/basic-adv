@@ -42,6 +42,11 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/share`, body, auth())
       .then((r) => r.data),
+  // invia il piano "per revisione" agli admin assegnati (link alla dashboard)
+  shareAdmin: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/share-admin`, body, auth())
+      .then((r) => r.data),
   // stato approvazione del piano (cliente) per un mese
   getApproval: (clientId, year, month) =>
     axios
