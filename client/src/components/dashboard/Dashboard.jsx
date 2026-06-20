@@ -12,10 +12,28 @@ import RequestList from "./RequestList";
 import RequestDetails from "./RequestDetails";
 import FileListSection from "./FileListSection";
 import Sidebar from "./Sidebar";
+import EditorialPlans from "./editorial/EditorialPlans";
+import useNoindex from "../../hooks/useNoindex";
+
+// Ruolo dal JWT (solo per la UI; l'autorizzazione vera resta sul server).
+function readRole() {
+  try {
+    return JSON.parse(
+      atob((localStorage.getItem("token") || "").split(".")[1])
+    ).role;
+  } catch {
+    return null;
+  }
+}
 
 const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
+  // Gli operatori (member) usano solo i Piani Editoriali: niente accesso alle
+  // richieste/allegati, e atterrano direttamente sull'editoriale.
+  const isAdmin = readRole() === "admin";
   const [requests, setRequests] = useState([]);
-  const [selectedSection, setSelectedSection] = useState("home");
+  const [selectedSection, setSelectedSection] = useState(
+    isAdmin ? "home" : "editorial"
+  );
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredServices, setFilteredServices] = useState([]);
@@ -54,13 +72,7 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
     "UI/UX Design",
   ];
 
-  useEffect(() => {
-    const el = document.createElement("meta");
-    el.name = "robots";
-    el.content = "noindex, nofollow";
-    document.head.appendChild(el);
-    return () => document.head.removeChild(el);
-  }, []);
+  useNoindex(); // dashboard + piani editoriali: mai indicizzati
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -97,7 +109,9 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
       navigate("/login");
       return;
     }
-    fetchRequests();
+    // Le richieste sono dati admin: l'operatore non le carica (l'endpoint è
+    // anche bloccato lato server) per non finire nel ramo di errore → logout.
+    if (isAdmin) fetchRequests();
     setIsMounted(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
@@ -178,6 +192,8 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   };
 
   const handleSectionChange = (section) => {
+    // L'operatore può stare solo sui Piani Editoriali.
+    if (!isAdmin && section !== "editorial") return;
     setActiveKey(Date.now());
     setSelectedSection(section);
     setSelectedRequest(null);
@@ -322,10 +338,12 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         handleSectionChange={handleSectionChange}
         handleLogout={handleLogout}
         activeKey={activeKey}
+        isAdmin={isAdmin}
       />
       <div className="main-area">
         {selectedSection !== "home" &&
           selectedSection !== "fileList" &&
+          selectedSection !== "editorial" &&
           !selectedRequest && (
             <div className="header-controls">
               <ServiceFilter
@@ -348,6 +366,8 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
             handleSectionChange={handleSectionChange}
             requests={requests}
           />
+        ) : selectedSection === "editorial" ? (
+          <EditorialPlans />
         ) : selectedSection === "fileList" ? (
           <FileListSection
             fileList={fileList}

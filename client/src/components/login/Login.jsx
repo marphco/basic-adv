@@ -7,8 +7,10 @@ import "./Login.css";
 import { PiEyeClosedBold } from "react-icons/pi";
 import { RxEyeOpen } from "react-icons/rx";
 import { FaExclamationCircle, FaSpinner } from "react-icons/fa"; // Importiamo le icone necessarie
+import useNoindex from "../../hooks/useNoindex";
 
 const Login = ({ isDark }) => {
+  useNoindex(); // pagina privata: mai indicizzata
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,14 +22,6 @@ const Login = ({ isDark }) => {
     import.meta.env.VITE_API_URL || "http://localhost:8080"
   ).replace(/\/$/, "");
   const loginUrl = `${API_URL}/api/login`;
-
-  useEffect(() => {
-    const el = document.createElement("meta");
-    el.name = "robots";
-    el.content = "noindex, nofollow";
-    document.head.appendChild(el);
-    return () => document.head.removeChild(el);
-  }, []);
 
   useEffect(() => {
     document.body.style.overflowX = "hidden";

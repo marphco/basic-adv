@@ -12,6 +12,16 @@
       "status": 410
     },
     {
+      "src": "/(dashboard|login)(/.*)?",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" },
+      "continue": true
+    },
+    {
+      "src": "/p/(.*)",
+      "headers": { "X-Robots-Tag": "noindex, nofollow" },
+      "continue": true
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
