@@ -73,6 +73,10 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/duplicate-month`, body, auth())
       .then((r) => r.data.map(normPost)),
+  dedupeMonth: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/dedupe-month`, body, auth())
+      .then((r) => r.data),
 
   // --- utenti (admin) ---
   listUsers: () =>
