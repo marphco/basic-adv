@@ -248,7 +248,8 @@ router.delete("/plan/note", rateLimit, async (req, res) => {
 // Invia il feedback all'agenzia: UNA sola email digest (non una per nota).
 router.post("/plan/notify", rateLimit, async (req, res) => {
   try {
-    const { clientId, year, month, email } = req.body || {};
+    const { clientId, year, month, email, message } = req.body || {};
+    const msg = String(message || "").trim().slice(0, 2000);
     const client = await loadGated(clientId, email);
     if (!client) return res.status(403).json({ error: "Accesso negato." });
 
@@ -286,6 +287,7 @@ router.post("/plan/notify", rateLimit, async (req, res) => {
         clientName: client.name,
         monthLabel,
         count,
+        message: msg,
         planUrl: `${base}/dashboard`,
       });
       await Promise.allSettled(
@@ -309,7 +311,8 @@ router.post("/plan/notify", rateLimit, async (req, res) => {
 // l'approvazione (upsert) e avvisa l'agenzia con 1 email.
 router.post("/plan/approve", rateLimit, async (req, res) => {
   try {
-    const { clientId, year, month, email } = req.body || {};
+    const { clientId, year, month, email, message } = req.body || {};
+    const msg = String(message || "").trim().slice(0, 2000);
     const client = await loadGated(clientId, email);
     if (!client) return res.status(403).json({ error: "Accesso negato." });
 
@@ -344,6 +347,7 @@ router.post("/plan/approve", rateLimit, async (req, res) => {
         clientName: client.name,
         monthLabel,
         by: client.contactName || norm(email),
+        message: msg,
         planUrl: `${base}/dashboard`,
       });
       await Promise.allSettled(
