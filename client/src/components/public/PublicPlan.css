@@ -1,0 +1,302 @@
+/* Vista pubblica del piano editoriale (pagina standalone, fuori dalla dashboard).
+   Dark + brand, mobile-first, contenuto centrato. */
+.pp-wrap {
+  --pp-bg: #161616;
+  --pp-surface: #1e1e1e;
+  --pp-surface-2: #262626;
+  --pp-border: rgba(255, 255, 255, 0.14);
+  --pp-text: #f6f6f6;
+  --pp-muted: rgba(246, 246, 246, 0.55);
+  --pp-brand: #ff4003;
+  min-height: 100vh;
+  background: var(--pp-bg);
+  color: var(--pp-text);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  box-sizing: border-box;
+}
+
+.pp-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--pp-border);
+  margin-bottom: 20px;
+}
+.pp-logo {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+.pp-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.pp-month {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.pp-client {
+  font-size: 0.85rem;
+  color: var(--pp-muted);
+}
+
+.pp-card {
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+/* --- Gate email --- */
+.pp-gate {
+  max-width: 420px;
+  margin: 8vh auto 0;
+  text-align: center;
+}
+.pp-gate-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 64, 3, 0.14);
+  color: var(--pp-brand);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 14px;
+}
+.pp-gate h1 {
+  font-size: 1.3rem;
+  margin: 0 0 8px;
+}
+.pp-gate p {
+  color: var(--pp-muted);
+  font-size: 0.9rem;
+  margin: 0 0 18px;
+}
+
+.pp-input {
+  width: 100%;
+  background: var(--pp-surface-2);
+  color: var(--pp-text);
+  border: 1px solid var(--pp-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.pp-input:focus {
+  outline: none;
+  border-color: var(--pp-brand);
+}
+
+.pp-btn {
+  margin-top: 14px;
+  width: 100%;
+  background: var(--pp-brand);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.pp-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.pp-btn--ghost {
+  background: transparent;
+  color: var(--pp-text);
+  border: 1px solid var(--pp-border);
+  width: auto;
+  margin-top: 0;
+}
+.pp-error {
+  margin-top: 12px;
+  background: rgba(226, 59, 59, 0.12);
+  border: 1px solid #e23b3b;
+  color: #ff8f8f;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+}
+
+.pp-intro {
+  font-size: 0.9rem;
+  color: var(--pp-muted);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+/* --- Giorni / post --- */
+.pp-day {
+  margin-bottom: 22px;
+}
+.pp-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.pp-day-num {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.pp-day-wd {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pp-muted);
+}
+
+.pp-post {
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-left: 4px solid var(--pp-border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.pp-post-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.pp-page {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pp-muted);
+  border: 1px solid var(--pp-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.pp-cat {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pp-spons {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--pp-brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pp-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.pp-thumb {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--pp-surface-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pp-muted);
+}
+.pp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pp-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.pp-caption {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 0 0 12px;
+}
+
+.pp-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.pp-note {
+  background: var(--pp-surface-2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.pp-note.done {
+  color: var(--pp-muted);
+  text-decoration: line-through;
+}
+
+.pp-note-add {
+  background: transparent;
+  border: 1px dashed var(--pp-border);
+  color: var(--pp-text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  width: 100%;
+}
+.pp-note-add:hover {
+  border-color: var(--pp-brand);
+  color: var(--pp-brand);
+}
+.pp-note-form {
+  margin-top: 6px;
+}
+.pp-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pp-note-actions .pp-btn {
+  width: auto;
+  margin-top: 0;
+  padding: 9px 14px;
+  font-size: 0.85rem;
+}
+
+.pp-footer {
+  text-align: center;
+  color: var(--pp-muted);
+  font-size: 0.72rem;
+  margin-top: 32px;
+}

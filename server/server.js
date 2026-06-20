@@ -140,6 +140,9 @@ app.use("/api/editorial", require("./routes/editorial"));
 app.use("/api/users", require("./routes/users"));
 // oppure commentalo del tutto in produzione.
 
+// Vista pubblica del piano editoriale (NESSUN login: gate via email del cliente)
+app.use("/api/public", require("./routes/public"));
+
 // api.interceptors.request.use((config) => {
 //   const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
 //   config.headers = {

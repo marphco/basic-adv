@@ -23,6 +23,7 @@ import ProjectSectionMobile from "./components/portfolio/ProjectSectionMobile";
 import ScrollToTopOnRouteChange from "./components/about-us/ScrollToTopOnRouteChange";
 import Login from "./components/login/Login";
 import Dashboard from "./components/dashboard/Dashboard";
+import PublicPlan from "./components/public/PublicPlan";
 import Footer from "./components/footer/Footer";
 import PrivacyPolicy from "./components/policies/PrivacyPolicy";
 import CookiePolicy from "./components/policies/CookiePolicy";
@@ -269,6 +270,12 @@ useEffect(() => {
     });
   });
 }, [location.pathname, isMobile]);
+
+  // Pagina pubblica del piano editoriale (cliente): standalone, senza la navbar
+  // marketing né il cursore custom del sito.
+  if (location.pathname.startsWith("/p/")) {
+    return <PublicPlan />;
+  }
 
   return (
     <>
