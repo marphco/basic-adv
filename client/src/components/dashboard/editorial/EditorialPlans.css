@@ -322,6 +322,17 @@
 .ep-post--note-done {
   border-left-color: #22c55e;
 }
+/* Nota del CLIENTE non risolta: sfondo giallo semitrasparente per saltare
+   subito all'occhio. Vince sullo sfondo "sponsorizzato" (definito sopra) e
+   sparisce non appena la nota viene risolta. */
+.ep-post--client-note {
+  background: rgba(245, 166, 35, 0.16);
+  border-color: rgba(245, 166, 35, 0.5);
+  border-left-color: var(--ep-note);
+}
+.ep-post--client-note:hover {
+  background: rgba(245, 166, 35, 0.22);
+}
 .ep-post--sponsored.ep-post--note {
   /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
   border-left-color: var(--foreground-color);
@@ -422,9 +433,13 @@
   color: #3a2a00;
 }
 .ep-badge--note-done {
-  background: rgba(34, 197, 94, 0.2);
-  color: #7ee29a;
-  border: 1px solid rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.16);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.45);
+}
+[data-theme="dark"] .ep-badge--note-done,
+.pp-wrap .ep-badge--note-done {
+  color: #4ade80;
 }
 .ep-badge--carousel {
   background: var(--ep-surface-2);
@@ -789,6 +804,19 @@
 }
 .ep-agency-note-check input {
   accent-color: var(--foreground-color);
+}
+/* Avviso: la nota in bozza verrà salvata anche senza cliccare "Aggiungi". */
+.ep-agency-note-hint {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #16a34a;
+}
+[data-theme="dark"] .ep-agency-note-hint,
+.pp-wrap .ep-agency-note-hint {
+  color: #4ade80;
 }
 
 /* Share */
