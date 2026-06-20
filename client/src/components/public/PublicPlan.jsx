@@ -109,8 +109,14 @@ export default function PublicPlan() {
         .sort((a, b) => a - b),
     [postsByDay]
   );
-  const totalNotes = useMemo(
-    () => posts.reduce((n, p) => n + (p.notes?.length || 0), 0),
+  // Note "in sospeso" = non ancora risolte dall'agenzia. Se ce ne sono, il
+  // cliente sta chiedendo modifiche → non mostriamo "Approva".
+  const pendingNotes = useMemo(
+    () =>
+      posts.reduce(
+        (n, p) => n + (p.notes || []).filter((x) => !x.resolved).length,
+        0
+      ),
     [posts]
   );
 
@@ -350,8 +356,11 @@ export default function PublicPlan() {
         mese. Clicca un post per leggerlo e lasciare una nota.
       </div>
 
-      <div className="pp-feedback-bar">
-        {approval ? (
+      {/* Una sola azione alla volta: approvato → conferma; note in sospeso →
+          invia feedback; altrimenti → approva. (Approva e Feedback non
+          coesistono: chi chiede modifiche non approva.) */}
+      {approval ? (
+        <div className="pp-feedback-bar">
           <span className="pp-feedback-ok">
             <FontAwesomeIcon icon={faCheck} /> Piano approvato
             {approval.at
@@ -359,33 +368,15 @@ export default function PublicPlan() {
               : ""}
             .
           </span>
-        ) : (
-          <>
-            <span className="pp-feedback-info">
-              Se è tutto a posto, conferma il piano editoriale.
-            </span>
-            <button
-              className="pp-btn"
-              onClick={approvePlan}
-              disabled={approving}
-            >
-              <FontAwesomeIcon icon={faCheck} />{" "}
-              {approving ? "Approvazione…" : "Approva piano editoriale"}
-            </button>
-          </>
-        )}
-      </div>
-
-      {totalNotes > 0 && (
+        </div>
+      ) : pendingNotes > 0 ? (
         <div className="pp-feedback-bar">
           <span className="pp-feedback-info">
-            {feedbackSent ? (
-              <span className="pp-feedback-ok">
-                <FontAwesomeIcon icon={faCheck} /> Feedback inviato all'agenzia.
-              </span>
-            ) : (
-              `Hai lasciato ${totalNotes} ${totalNotes === 1 ? "nota" : "note"}.`
-            )}
+            {feedbackSent
+              ? "Feedback inviato: l'agenzia applicherà le modifiche."
+              : `Hai lasciato ${pendingNotes} ${
+                  pendingNotes === 1 ? "nota" : "note"
+                }: inviale all'agenzia per le modifiche.`}
           </span>
           <button
             className="pp-btn"
@@ -393,7 +384,25 @@ export default function PublicPlan() {
             disabled={feedbackSending || feedbackSent}
           >
             <FontAwesomeIcon icon={faPaperPlane} />{" "}
-            {feedbackSending ? "Invio…" : "Invia il feedback all'agenzia"}
+            {feedbackSending
+              ? "Invio…"
+              : feedbackSent
+              ? "Feedback inviato"
+              : "Invia il feedback all'agenzia"}
+          </button>
+        </div>
+      ) : (
+        <div className="pp-feedback-bar">
+          <span className="pp-feedback-info">
+            Se è tutto a posto, conferma il piano editoriale.
+          </span>
+          <button
+            className="pp-btn pp-btn--approve"
+            onClick={approvePlan}
+            disabled={approving}
+          >
+            <FontAwesomeIcon icon={faCheck} />{" "}
+            {approving ? "Approvazione…" : "Approva piano editoriale"}
           </button>
         </div>
       )}
