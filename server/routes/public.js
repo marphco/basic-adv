@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const Client = require("../models/Client");
 const Post = require("../models/Post");
 const User = require("../models/User");
+const PlanApproval = require("../models/PlanApproval");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
 
@@ -114,6 +115,11 @@ router.post("/plan/access", rateLimit, async (req, res) => {
     })
       .sort({ day: 1, order: 1 })
       .lean();
+    const ap = await PlanApproval.findOne({
+      clientId,
+      year: Number(year),
+      month: Number(month),
+    }).lean();
 
     res.json({
       client: { name: client.name, contactName: client.contactName || "" },
@@ -125,6 +131,7 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       year: Number(year),
       month: Number(month),
       posts: posts.map((p) => sanitizePost(p, pagesById, email)),
+      approval: ap ? { by: ap.name || ap.email, at: ap.createdAt } : null,
     });
   } catch (e) {
     res.status(500).json({ error: "Errore nel caricamento del piano." });
@@ -258,6 +265,65 @@ router.post("/plan/notify", rateLimit, async (req, res) => {
     res.json({ ok: true, count, notified: to.length });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'invio del feedback." });
+  }
+});
+
+// Il cliente APPROVA il piano del mese (con conferma lato UI). Registra
+// l'approvazione (upsert) e avvisa l'agenzia con 1 email.
+router.post("/plan/approve", rateLimit, async (req, res) => {
+  try {
+    const { clientId, year, month, email } = req.body || {};
+    const client = await loadGated(clientId, email);
+    if (!client) return res.status(403).json({ error: "Accesso negato." });
+
+    const y = Number(year);
+    const m = Number(month);
+    const ap = await PlanApproval.findOneAndUpdate(
+      { clientId, year: y, month: m },
+      {
+        clientId,
+        year: y,
+        month: m,
+        email: norm(email),
+        name: client.contactName || "",
+        createdAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+    // Avvisa l'agenzia (admin + operatori assegnati): 1 email.
+    const ops = await User.find({
+      $or: [{ role: "admin" }, { role: "member", assignedClients: clientId }],
+    })
+      .select("email")
+      .lean();
+    const to = [
+      ...new Set(ops.map((o) => String(o.email || "").trim()).filter(Boolean)),
+    ];
+    if (to.length) {
+      const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
+      const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
+      const mail = emailTemplates.planApprovedNotification({
+        clientName: client.name,
+        monthLabel,
+        by: client.contactName || norm(email),
+        planUrl: `${base}/dashboard`,
+      });
+      await Promise.allSettled(
+        to.map((dest) =>
+          sendMail({
+            to: dest,
+            subject: mail.subject,
+            text: mail.text,
+            html: mail.html,
+          })
+        )
+      );
+    }
+
+    res.json({ approval: { by: ap.name || ap.email, at: ap.createdAt } });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nell'approvazione del piano." });
   }
 });
 

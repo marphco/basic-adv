@@ -80,6 +80,7 @@ const EditorialPlans = () => {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [approval, setApproval] = useState(null); // approvazione cliente del mese
 
   const me = useMemo(readToken, []);
   const isAdmin = me.role === "admin";
@@ -127,6 +128,18 @@ const EditorialPlans = () => {
   useEffect(() => {
     reloadPosts();
   }, [reloadPosts]);
+
+  // Stato approvazione del piano (cliente) per il cliente/mese corrente.
+  useEffect(() => {
+    if (!clientId) {
+      setApproval(null);
+      return;
+    }
+    api
+      .getApproval(clientId, view.year, view.month)
+      .then(setApproval)
+      .catch(() => setApproval(null));
+  }, [clientId, view.year, view.month]);
 
   const visiblePosts = useMemo(
     () =>
@@ -187,10 +200,12 @@ const EditorialPlans = () => {
     view.year === TODAY.year &&
     view.month === TODAY.month &&
     day === TODAY.day;
+  // Conteggi "da rivedere": solo note NON risolte (le risolte non vanno riviste).
+  const unresolvedCount = (p) => (p.notes || []).filter((n) => !n.resolved).length;
   const notesOnDay = (day) =>
     visiblePosts
       .filter((p) => p.day === day)
-      .reduce((n, p) => n + (p.notes?.length || 0), 0);
+      .reduce((n, p) => n + unresolvedCount(p), 0);
   const postsFor = (pageId, day) =>
     visiblePosts.filter((p) => p.pageId === pageId && p.day === day);
   const renderChannels = (pg) =>
@@ -419,7 +434,7 @@ const EditorialPlans = () => {
     }
   };
 
-  const totalNotes = visiblePosts.reduce((n, p) => n + (p.notes?.length || 0), 0);
+  const totalNotes = visiblePosts.reduce((n, p) => n + unresolvedCount(p), 0);
   const duplicateCount = visiblePosts.filter((p) => p.isDuplicate).length;
 
   if (loading) {
@@ -542,6 +557,18 @@ const EditorialPlans = () => {
               )}
             </div>
           </div>
+
+          {/* ---- Banner: piano approvato dal cliente ---- */}
+          {approval && (
+            <div className="ep-approved-banner">
+              <FontAwesomeIcon icon={faCheck} /> Piano approvato dal cliente
+              {approval.by ? ` (${approval.by})` : ""}
+              {approval.at
+                ? ` il ${new Date(approval.at).toLocaleDateString("it-IT")}`
+                : ""}
+              .
+            </div>
+          )}
 
           {/* ---- Banner duplicati da rivedere ---- */}
           {duplicateCount > 0 && (

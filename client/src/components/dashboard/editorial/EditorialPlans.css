@@ -318,6 +318,10 @@
 .ep-post--note {
   border-left-color: var(--ep-note);
 }
+/* note tutte risolte: bordo verde (a colpo d'occhio) */
+.ep-post--note-done {
+  border-left-color: #22c55e;
+}
 .ep-post--sponsored.ep-post--note {
   /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
   border-left-color: var(--foreground-color);
@@ -416,6 +420,11 @@
 .ep-badge--note {
   background: var(--ep-note);
   color: #3a2a00;
+}
+.ep-badge--note-done {
+  background: rgba(34, 197, 94, 0.2);
+  color: #7ee29a;
+  border: 1px solid rgba(34, 197, 94, 0.5);
 }
 .ep-badge--carousel {
   background: var(--ep-surface-2);
@@ -1333,6 +1342,19 @@
 }
 .ep-dup-banner {
   margin-bottom: 14px;
+}
+/* Banner: piano approvato dal cliente */
+.ep-approved-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: var(--primary-text-color);
 }
 
 /* ============================================================

@@ -42,6 +42,14 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/share`, body, auth())
       .then((r) => r.data),
+  // stato approvazione del piano (cliente) per un mese
+  getApproval: (clientId, year, month) =>
+    axios
+      .get(`${API_URL}/api/editorial/approval`, {
+        params: { clientId, year, month },
+        ...auth(),
+      })
+      .then((r) => r.data),
 
   // --- post ---
   listPosts: (clientId, year, month) =>
