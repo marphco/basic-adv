@@ -112,9 +112,15 @@ export default function PublicPlan() {
     [posts]
   );
 
-  const submitAccess = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
+  // Ricorda l'accesso del cliente entro la sessione (niente re-inserimento email
+  // a ogni reload). sessionStorage = si azzera alla chiusura della scheda.
+  const storeKey = parsed
+    ? `pp:${parsed.clientId}-${parsed.year}${String(parsed.month).padStart(2, "0")}`
+    : "";
+
+  const doAccess = async (em) => {
+    const val = String(em || "").trim();
+    if (!val) return;
     setLoading(true);
     setError("");
     try {
@@ -122,10 +128,15 @@ export default function PublicPlan() {
         clientId: parsed.clientId,
         year: parsed.year,
         month: parsed.month,
-        email: email.trim(),
+        email: val,
       });
       setData(r.data);
       setPosts(r.data.posts || []);
+      try {
+        sessionStorage.setItem(storeKey, val);
+      } catch {
+        /* sessionStorage non disponibile */
+      }
     } catch (err) {
       const status = err?.response?.status;
       setError(
@@ -136,10 +147,35 @@ export default function PublicPlan() {
             ? `Accesso non riuscito (HTTP ${status}).`
             : "Impossibile contattare il server. Riprova.")
       );
+      try {
+        sessionStorage.removeItem(storeKey);
+      } catch {
+        /* no-op */
+      }
     } finally {
       setLoading(false);
     }
   };
+  const submitAccess = (e) => {
+    e.preventDefault();
+    doAccess(email);
+  };
+
+  // Auto-accesso al reload se l'email è già stata verificata in questa sessione.
+  useEffect(() => {
+    if (!parsed) return;
+    let stored = "";
+    try {
+      stored = sessionStorage.getItem(storeKey) || "";
+    } catch {
+      stored = "";
+    }
+    if (stored) {
+      setEmail(stored);
+      doAccess(stored);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const base = { clientId: parsed?.clientId, year: parsed?.year, month: parsed?.month, email: email.trim() };
   const applyNotes = (postId, notes) => {

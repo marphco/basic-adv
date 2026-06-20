@@ -296,9 +296,12 @@ const EditorialPlans = () => {
   const handleDuplicatePrev = () =>
     duplicateFrom(prevMonth.year, prevMonth.month);
 
-  const importPosts = async (parsed) => {
-    try {
-      for (const p of parsed) {
+  const importPosts = async (parsed, onProgress) => {
+    let ok = 0;
+    const failed = [];
+    for (let i = 0; i < parsed.length; i++) {
+      const p = parsed[i];
+      try {
         await api.createPost({
           clientId,
           pageId: p.pageId || client.pages[0]?.id,
@@ -311,12 +314,34 @@ const EditorialPlans = () => {
           sponsored: !!p.sponsored,
           status: "approved", // importati = post effettivi, non bozze
         });
+        ok++;
+      } catch (e) {
+        // non interrompo l'intero import per un singolo post: registro e proseguo
+        console.error(
+          "Import post fallito:",
+          e?.response?.status,
+          e?.response?.data || e?.message
+        );
+        failed.push(p);
       }
-      setImportOpen(false);
-      reloadPosts();
-    } catch {
-      window.alert("Errore nell'import dei post.");
+      onProgress?.(i + 1, parsed.length);
     }
+    setImportOpen(false);
+    // gli import possono coprire più mesi: vai sul mese del primo post importato
+    const first = parsed[0];
+    if (
+      first &&
+      (Number(first.year) !== view.year || Number(first.month) !== view.month)
+    ) {
+      setView({ year: Number(first.year), month: Number(first.month) });
+    } else {
+      reloadPosts();
+    }
+    window.alert(
+      failed.length
+        ? `Importati ${ok} post su ${parsed.length}. ${failed.length} non importati (dettagli nella console del browser).`
+        : `Importati ${ok} post.`
+    );
   };
 
   const openNew = (day, pageId) =>
