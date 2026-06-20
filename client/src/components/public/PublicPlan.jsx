@@ -15,6 +15,8 @@ import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
 import PostChip from "../dashboard/editorial/PostChip";
 import ChannelIcon from "../dashboard/editorial/ChannelIcon";
+import { toastErr, confirmDialog } from "../dashboard/editorial/uiNotify";
+import UiHost from "../dashboard/editorial/UiHost";
 import "../dashboard/editorial/EditorialPlans.css";
 import LogoIcon from "../../assets/icon-white.svg";
 import "./PublicPlan.css";
@@ -224,7 +226,7 @@ export default function PublicPlan() {
       applyNotes(selected.id, r.data.notes);
       setNoteText("");
     } catch (err) {
-      window.alert(err?.response?.data?.error || "Invio nota non riuscito.");
+      toastErr(err?.response?.data?.error || "Invio nota non riuscito.");
     } finally {
       setNoteSending(false);
     }
@@ -243,19 +245,25 @@ export default function PublicPlan() {
       setEditingNote(null);
       setEditText("");
     } catch (err) {
-      window.alert(err?.response?.data?.error || "Modifica non riuscita.");
+      toastErr(err?.response?.data?.error || "Modifica non riuscita.");
     }
   };
 
   const deleteNote = async (noteId) => {
-    if (!window.confirm("Eliminare questa nota?")) return;
+    if (
+      !(await confirmDialog("Eliminare questa nota?", {
+        danger: true,
+        confirmLabel: "Elimina",
+      }))
+    )
+      return;
     try {
       const r = await axios.delete(`${API_URL}/api/public/plan/note`, {
         data: { ...base, postId: selected.id, noteId },
       });
       applyNotes(selected.id, r.data.notes);
     } catch (err) {
-      window.alert(err?.response?.data?.error || "Eliminazione non riuscita.");
+      toastErr(err?.response?.data?.error || "Eliminazione non riuscita.");
     }
   };
 
@@ -265,21 +273,26 @@ export default function PublicPlan() {
       await axios.post(`${API_URL}/api/public/plan/notify`, { ...base });
       setFeedbackSent(true);
     } catch (err) {
-      window.alert(err?.response?.data?.error || "Invio feedback non riuscito.");
+      toastErr(err?.response?.data?.error || "Invio feedback non riuscito.");
     } finally {
       setFeedbackSending(false);
     }
   };
 
   const approvePlan = async () => {
-    if (!window.confirm("Sei sicuro di voler approvare il piano editoriale?"))
+    if (
+      !(await confirmDialog(
+        "Sei sicuro di voler approvare il piano editoriale?",
+        { confirmLabel: "Approva", title: "Approva piano" }
+      ))
+    )
       return;
     setApproving(true);
     try {
       const r = await axios.post(`${API_URL}/api/public/plan/approve`, { ...base });
       setApproval(r.data.approval || { at: new Date().toISOString() });
     } catch (err) {
-      window.alert(err?.response?.data?.error || "Approvazione non riuscita.");
+      toastErr(err?.response?.data?.error || "Approvazione non riuscita.");
     } finally {
       setApproving(false);
     }
@@ -367,10 +380,13 @@ export default function PublicPlan() {
           <p>Inserisci la tua email per vedere il piano e lasciare le tue note.</p>
           <input
             className="pp-input"
-            type="email"
+            type="text"
             value={email}
             placeholder="latua@email.it"
             onChange={(e) => setEmail(e.target.value)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             autoFocus
           />
           {error && <div className="pp-error">{error}</div>}
@@ -378,12 +394,14 @@ export default function PublicPlan() {
             {loading ? "Verifica…" : "Accedi al piano"}
           </button>
         </form>
+        <UiHost />
       </div>
     );
   }
 
   return (
     <div className="pp-wrap pp-wrap--plan">
+      <UiHost />
       {header}
       <div className="pp-intro">
         Ciao {data.client?.contactName || data.client?.name}, ecco i contenuti del

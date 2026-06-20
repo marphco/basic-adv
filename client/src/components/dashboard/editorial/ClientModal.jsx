@@ -9,6 +9,7 @@ import {
   faBuilding,
 } from "@fortawesome/free-solid-svg-icons";
 import ChannelIcon, { CHANNELS } from "./ChannelIcon";
+import { confirmDialog } from "./uiNotify";
 
 const emptyForm = {
   name: "",
@@ -31,14 +32,26 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
   const dirty = () =>
     editing !== null && JSON.stringify(form) !== JSON.stringify(initial);
 
-  const cancelEdit = () => {
-    if (dirty() && !window.confirm("Hai modifiche non salvate. Annullarle?"))
+  const cancelEdit = async () => {
+    if (
+      dirty() &&
+      !(await confirmDialog("Hai modifiche non salvate. Annullarle?", {
+        danger: true,
+        confirmLabel: "Annulla modifiche",
+      }))
+    )
       return;
     setEditing(null);
     setForm(emptyForm);
   };
-  const requestClose = () => {
-    if (dirty() && !window.confirm("Hai modifiche non salvate. Chiudere comunque?"))
+  const requestClose = async () => {
+    if (
+      dirty() &&
+      !(await confirmDialog("Hai modifiche non salvate. Chiudere comunque?", {
+        danger: true,
+        confirmLabel: "Chiudi",
+      }))
+    )
       return;
     onClose();
   };
@@ -138,10 +151,11 @@ const ClientModal = ({ clients, onClose, onCreate, onUpdate, onDelete }) => {
     setForm(emptyForm);
   };
 
-  const handleDelete = (c) => {
+  const handleDelete = async (c) => {
     if (
-      window.confirm(
-        `Eliminare definitivamente "${c.name}" e TUTTI i suoi post?\nL'operazione non è reversibile.`
+      await confirmDialog(
+        `Eliminare definitivamente "${c.name}" e TUTTI i suoi post? L'operazione non è reversibile.`,
+        { danger: true, confirmLabel: "Elimina", title: "Elimina cliente" }
       )
     )
       onDelete(c.id);

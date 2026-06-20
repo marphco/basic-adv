@@ -91,8 +91,10 @@ async function loadGated(clientId, email) {
   if (!e) return null;
   if (recipients(client).includes(e)) return client;
 
+  // Utenti agenzia: possono accedere con la propria email OPPURE username.
+  const ident = new RegExp(`^${escapeRe(e)}$`, "i");
   const user = await User.findOne({
-    email: new RegExp(`^${escapeRe(e)}$`, "i"),
+    $or: [{ email: ident }, { username: ident }],
   }).lean();
   if (
     user &&
