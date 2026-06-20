@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -37,8 +37,13 @@ function parseSlug(slug) {
 // (duplicati/stato) viene esposto: arriva già sanitizzato dal backend.
 export default function PublicPlan() {
   useNoindex(); // mai indicizzata
-  const { slug } = useParams();
-  const parsed = useMemo(() => parseSlug(slug), [slug]);
+  // La pagina è renderizzata fuori da una <Route :slug> (short-circuit su /p/),
+  // quindi lo slug si legge dal pathname, non da useParams.
+  const { pathname } = useLocation();
+  const parsed = useMemo(
+    () => parseSlug(pathname.replace(/^\/p\//, "").replace(/\/$/, "")),
+    [pathname]
+  );
 
   const [email, setEmail] = useState("");
   const [data, setData] = useState(null); // { client, pages, year, month }
