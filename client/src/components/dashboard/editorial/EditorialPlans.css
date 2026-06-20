@@ -746,6 +746,50 @@
   font-size: 0.72rem;
   color: var(--ep-muted);
 }
+/* Etichetta nota (Cliente / Agenzia · Richiesta) */
+.ep-note-tag {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ep-muted);
+  margin-bottom: 3px;
+}
+.ep-note-tag.agency {
+  color: var(--foreground-color);
+}
+.ep-note-item.agency {
+  padding-left: 8px;
+  border-left: 2px solid rgba(255, 64, 3, 0.4);
+}
+/* Form: l'agenzia lascia una nota al cliente */
+.ep-agency-note-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--ep-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ep-agency-note-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ep-agency-note-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--primary-text-color);
+  cursor: pointer;
+}
+.ep-agency-note-check input {
+  accent-color: var(--foreground-color);
+}
 
 /* Share */
 .ep-share-desc {

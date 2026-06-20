@@ -137,7 +137,9 @@ export default function PublicPlan() {
   const pendingNotes = useMemo(
     () =>
       posts.reduce(
-        (n, p) => n + (p.notes || []).filter((x) => !x.resolved).length,
+        (n, p) =>
+          n +
+          (p.notes || []).filter((x) => !x.fromAgency && !x.resolved).length,
         0
       ),
     [posts]
@@ -301,7 +303,11 @@ export default function PublicPlan() {
     posts.filter((p) => p.pageId === pageId && p.day === day);
   const notesOnDay = (day) =>
     (postsByDay[day] || []).reduce(
-      (n, p) => n + (p.notes || []).filter((x) => !x.resolved).length,
+      (n, p) =>
+        n +
+        (p.notes || []).filter(
+          (x) => !x.resolved && (!x.fromAgency || x.needsReply)
+        ).length,
       0
     );
   const today = new Date();
@@ -661,6 +667,13 @@ export default function PublicPlan() {
                       </>
                     ) : (
                       <>
+                        {n.fromAgency && (
+                          <span className="pp-note-tag">
+                            {n.needsReply
+                              ? "Richiesta dell'agenzia"
+                              : "Dall'agenzia"}
+                          </span>
+                        )}
                         <div className="pp-note-row">
                           {n.resolved && <FontAwesomeIcon icon={faCheck} />}
                           <span>{n.text}</span>

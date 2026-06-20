@@ -49,8 +49,11 @@ const sanitizeNotes = (notesArr, reqEmail) =>
     text: n.text,
     author: n.author,
     resolved: !!n.resolved,
+    fromAgency: !!n.fromAgency,
+    needsReply: !!n.needsReply,
     createdAt: n.createdAt,
-    mine: norm(n.authorEmail) === norm(reqEmail),
+    // modificabile/eliminabile dal cliente solo se è una SUA nota (mai le agenzia)
+    mine: !n.fromAgency && norm(n.authorEmail) === norm(reqEmail),
   }));
 
 function sanitizePost(p, pagesById, reqEmail) {

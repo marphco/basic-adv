@@ -39,6 +39,9 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [notes, setNotes] = useState(draft.notes || []);
   const [lightbox, setLightbox] = useState(null); // { item, source: 'media'|'note' }
   const [captionCopied, setCaptionCopied] = useState(false);
+  // Nota che l'agenzia lascia AL cliente (spiegazione o richiesta).
+  const [agencyNoteText, setAgencyNoteText] = useState("");
+  const [agencyNoteNeedsReply, setAgencyNoteNeedsReply] = useState(false);
   const fileRef = useRef(null);
 
   const copyCaption = () => {
@@ -51,6 +54,26 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     setNotes((prev) =>
       prev.map((n, idx) => (idx === i ? { ...n, resolved: !n.resolved } : n))
     );
+
+  // Aggiunge una nota dell'agenzia per il cliente (visibile nella vista pubblica).
+  const addAgencyNote = () => {
+    const t = agencyNoteText.trim();
+    if (!t) return;
+    setNotes((prev) => [
+      ...prev,
+      {
+        text: t,
+        author: "Agenzia",
+        fromAgency: true,
+        needsReply: agencyNoteNeedsReply,
+        resolved: false,
+        media: [],
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setAgencyNoteText("");
+    setAgencyNoteNeedsReply(false);
+  };
 
   const isNew = !draft.id;
   // Giorni del mese in base a mese/anno SELEZIONATI (così cambiando mese si
@@ -343,18 +366,29 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
             </span>
           </button>
 
-          {/* Note del cliente: allegati (#4) + "segna risolta" (#3) — punto 5 */}
-          {notes.length > 0 && (
-            <div className="ep-notes-box">
-              <div className="ep-notes-title">
-                <FontAwesomeIcon icon={faComment} />
-                Note del cliente ({notes.length})
-              </div>
-              {notes.map((n, i) => (
+          {/* Note del post: del CLIENTE (con "risolvi") + dell'AGENZIA per il
+              cliente (spiegazione, oppure richiesta che richiede risposta). */}
+          <div className="ep-notes-box">
+            <div className="ep-notes-title">
+              <FontAwesomeIcon icon={faComment} />
+              Note ({notes.length})
+            </div>
+            {notes.map((n, i) => {
+              const resolvable = !n.fromAgency || n.needsReply; // spiegazioni: nessuno stato
+              return (
                 <div
                   key={i}
-                  className={`ep-note-item ${n.resolved ? "resolved" : ""}`}
+                  className={`ep-note-item ${n.resolved ? "resolved" : ""} ${
+                    n.fromAgency ? "agency" : ""
+                  }`}
                 >
+                  <span className={`ep-note-tag ${n.fromAgency ? "agency" : ""}`}>
+                    {n.fromAgency
+                      ? n.needsReply
+                        ? "Agenzia · Richiesta"
+                        : "Agenzia · Nota"
+                      : "Cliente"}
+                  </span>
                   <p>{n.text}</p>
                   {n.media && n.media.length > 0 && (
                     <div className="ep-note-media">
@@ -380,22 +414,51 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                     </div>
                   )}
                   <div className="ep-note-foot">
-                    <span className="ep-note-meta">
-                      {n.author} · {n.createdAt}
-                    </span>
-                    <button
-                      type="button"
-                      className={`ep-note-resolve ${n.resolved ? "on" : ""}`}
-                      onClick={() => toggleResolved(i)}
-                    >
-                      <FontAwesomeIcon icon={faCheck} />
-                      {n.resolved ? "Risolta" : "Segna risolta"}
-                    </button>
+                    <span className="ep-note-meta">{n.author}</span>
+                    {resolvable && (
+                      <button
+                        type="button"
+                        className={`ep-note-resolve ${n.resolved ? "on" : ""}`}
+                        onClick={() => toggleResolved(i)}
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                        {n.resolved ? "Risolta" : "Segna risolta"}
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
+              );
+            })}
+
+            {/* L'agenzia lascia una nota al cliente */}
+            <div className="ep-agency-note-form">
+              <textarea
+                className="ep-textarea"
+                rows={2}
+                value={agencyNoteText}
+                placeholder="Nota per il cliente (es. perché questa foto, oppure richiedi una foto specifica)…"
+                onChange={(e) => setAgencyNoteText(e.target.value)}
+              />
+              <div className="ep-agency-note-foot">
+                <label className="ep-agency-note-check">
+                  <input
+                    type="checkbox"
+                    checked={agencyNoteNeedsReply}
+                    onChange={(e) => setAgencyNoteNeedsReply(e.target.checked)}
+                  />
+                  Richiede una risposta dal cliente
+                </label>
+                <button
+                  type="button"
+                  className="ep-btn ep-btn--ghost"
+                  onClick={addAgencyNote}
+                  disabled={!agencyNoteText.trim()}
+                >
+                  <FontAwesomeIcon icon={faPlus} /> Aggiungi nota per il cliente
+                </button>
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="ep-modal-foot">

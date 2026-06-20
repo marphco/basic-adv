@@ -17,6 +17,11 @@ const NoteSchema = new mongoose.Schema({
   // email di chi ha scritto la nota: serve a far modificare/eliminare al
   // cliente SOLO le proprie note dalla vista pubblica.
   authorEmail: { type: String, default: "" },
+  // true = nota lasciata dall'AGENZIA per il cliente (verso opposto).
+  fromAgency: { type: Boolean, default: false },
+  // nota dell'agenzia che richiede una risposta/azione del cliente (vs semplice
+  // spiegazione). Le spiegazioni non hanno stato "da risolvere".
+  needsReply: { type: Boolean, default: false },
   media: { type: [MediaSchema], default: [] },
   resolved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

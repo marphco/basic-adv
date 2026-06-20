@@ -290,6 +290,16 @@
   color: var(--pp-muted);
   text-decoration: line-through;
 }
+/* etichetta nota dell'agenzia (Dall'agenzia / Richiesta dell'agenzia) */
+.pp-note-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pp-brand);
+  margin-bottom: 4px;
+}
 
 .pp-note-add {
   background: transparent;
