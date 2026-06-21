@@ -35,6 +35,26 @@ function cleanEmails(emails, email) {
 }
 const recipientsOf = (client) => cleanEmails(client.emails, client.email);
 
+// Vista approvazione con STORICO (migra i vecchi doc senza `approvals`).
+function approvalView(ap) {
+  if (!ap) return null;
+  let events =
+    ap.approvals && ap.approvals.length
+      ? ap.approvals
+      : ap.createdAt
+      ? [{ at: ap.createdAt, name: ap.name, email: ap.email }]
+      : [];
+  if (!events.length) return null;
+  events = [...events].sort((a, b) => new Date(a.at) - new Date(b.at));
+  const last = events[events.length - 1];
+  return {
+    at: last.at,
+    by: last.name || last.email || "",
+    count: events.length,
+    history: events.map((e) => ({ at: e.at, by: e.name || e.email || "" })),
+  };
+}
+
 // Lista di ObjectId admin validi e deduplicati (dai dati grezzi del client).
 function cleanAdmins(ids) {
   if (!Array.isArray(ids)) return [];
@@ -260,7 +280,7 @@ router.get("/approval", async (req, res) => {
       year: Number(year),
       month: Number(month),
     }).lean();
-    res.json(ap ? { by: ap.name || ap.email, at: ap.createdAt } : null);
+    res.json(approvalView(ap));
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dell'approvazione" });
   }

@@ -48,6 +48,27 @@ const norm = (e) => String(e || "").trim().toLowerCase();
 const recipients = (c) =>
   [...(c.emails || []), c.email].map(norm).filter(Boolean);
 
+// Normalizza un doc PlanApproval in una vista con STORICO + ultima approvazione.
+// Migra al volo i vecchi doc (senza `approvals`) usando createdAt come 1ª.
+function approvalView(ap) {
+  if (!ap) return null;
+  let events =
+    ap.approvals && ap.approvals.length
+      ? ap.approvals
+      : ap.createdAt
+      ? [{ at: ap.createdAt, name: ap.name, email: ap.email }]
+      : [];
+  if (!events.length) return null;
+  events = [...events].sort((a, b) => new Date(a.at) - new Date(b.at));
+  const last = events[events.length - 1];
+  return {
+    at: last.at,
+    by: last.name || last.email || "",
+    count: events.length,
+    history: events.map((e) => ({ at: e.at, by: e.name || e.email || "" })),
+  };
+}
+
 // Note sanitizzate: includono id (per modifica/elimina) e `mine` (se la nota è
 // dell'email richiedente), MAI l'email altrui.
 // ⚠️ Le note INTERNE (admin → operatore) vengono SCARTATE qui in modo
@@ -175,6 +196,18 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       year: Number(year),
       month: Number(month),
     }).lean();
+    const view = approvalView(ap);
+    // Il piano è stato MODIFICATO dopo l'ultima approvazione? (così si può
+    // riapprovare). Confronto l'ultima approvazione con l'ultima modifica post.
+    let changedSince = false;
+    if (view) {
+      const lastAt = new Date(view.at).getTime();
+      const lastChange = posts.reduce((mx, p) => {
+        const t = new Date(p.updatedAt || p.createdAt || 0).getTime();
+        return t > mx ? t : mx;
+      }, 0);
+      changedSince = lastChange > lastAt;
+    }
 
     res.json({
       client: { name: client.name, contactName: client.contactName || "" },
@@ -186,7 +219,7 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       year: Number(year),
       month: Number(month),
       posts: posts.map((p) => sanitizePost(p, pagesById, email)),
-      approval: ap ? { by: ap.name || ap.email, at: ap.createdAt } : null,
+      approval: view ? { ...view, changedSince } : null,
     });
   } catch (e) {
     res.status(500).json({ error: "Errore nel caricamento del piano." });
@@ -371,18 +404,34 @@ router.post("/plan/approve", rateLimit, async (req, res) => {
 
     const y = Number(year);
     const m = Number(month);
-    const ap = await PlanApproval.findOneAndUpdate(
-      { clientId, year: y, month: m },
-      {
+    // Registra una NUOVA approvazione nello storico (non sovrascrive le
+    // precedenti): così si tiene traccia di 1ª, 2ª, 3ª… approvazione.
+    const event = {
+      at: new Date(),
+      name: client.contactName || "",
+      email: norm(email),
+    };
+    let ap = await PlanApproval.findOne({ clientId, year: y, month: m });
+    if (ap) {
+      // migra i vecchi doc: la 1ª approvazione era solo in createdAt
+      if (!ap.approvals || !ap.approvals.length)
+        ap.approvals = ap.createdAt
+          ? [{ at: ap.createdAt, name: ap.name || "", email: ap.email || "" }]
+          : [];
+      ap.approvals.push(event);
+      ap.name = event.name;
+      ap.email = event.email;
+      await ap.save();
+    } else {
+      ap = await PlanApproval.create({
         clientId,
         year: y,
         month: m,
-        email: norm(email),
-        name: client.contactName || "",
-        createdAt: new Date(),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    ).lean();
+        email: event.email,
+        name: event.name,
+        approvals: [event],
+      });
+    }
 
     // Avvisa l'agenzia (admin + operatori assegnati): 1 email.
     const ops = await User.find({
@@ -415,7 +464,7 @@ router.post("/plan/approve", rateLimit, async (req, res) => {
       );
     }
 
-    res.json({ approval: { by: ap.name || ap.email, at: ap.createdAt } });
+    res.json({ approval: approvalView(ap) });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'approvazione del piano." });
   }

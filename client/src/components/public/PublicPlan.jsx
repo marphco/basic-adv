@@ -37,6 +37,19 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replac
   ""
 );
 
+// Data + ora breve (lo storico approvazioni può avere più voci nello stesso giorno).
+const fmtDateTime = (d) => {
+  try {
+    const dt = new Date(d);
+    return `${dt.toLocaleDateString("it-IT")} · ${dt.toLocaleTimeString("it-IT", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  } catch {
+    return "";
+  }
+};
+
 function parseSlug(slug) {
   const m = String(slug || "").match(/^([a-f0-9]{24})-(\d{4})(\d{2})$/i);
   if (!m) return null;
@@ -345,7 +358,7 @@ export default function PublicPlan() {
         ...base,
         message,
       });
-      setApproval(r.data.approval || { at: new Date().toISOString() });
+      setApproval({ ...(r.data.approval || {}), changedSince: false });
     } catch (err) {
       toastErr(err?.response?.data?.error || "Approvazione non riuscita.");
     } finally {
@@ -509,20 +522,10 @@ export default function PublicPlan() {
         </div>
       )}
 
-      {/* Una sola azione alla volta: approvato → conferma; note in sospeso →
-          invia feedback; altrimenti → approva. (Approva e Feedback non
-          coesistono: chi chiede modifiche non approva.) */}
-      {approval ? (
-        <div className="pp-feedback-bar">
-          <span className="pp-feedback-ok">
-            <FontAwesomeIcon icon={faCheck} /> Piano approvato
-            {approval.at
-              ? ` il ${new Date(approval.at).toLocaleDateString("it-IT")}`
-              : ""}
-            .
-          </span>
-        </div>
-      ) : pendingNotes > 0 ? (
+      {/* Azione corrente. Note in sospeso → invia (riattivo anche dopo
+          un'approvazione). Altrimenti, se mai approvato o aggiornato dopo
+          l'ultima approvazione → approva. Lo storico è mostrato sotto. */}
+      {pendingNotes > 0 ? (
         <div
           className={`pp-feedback-bar ${
             feedbackSent ? "pp-feedback-bar--sent" : ""
@@ -553,10 +556,12 @@ export default function PublicPlan() {
               : "Invia le note a Basic"}
           </button>
         </div>
-      ) : (
+      ) : !approval || approval.changedSince ? (
         <div className="pp-feedback-bar">
           <span className="pp-feedback-info">
-            Se è tutto a posto, conferma il piano editoriale.
+            {approval
+              ? "Il piano è stato aggiornato dopo l'ultima approvazione: se è tutto a posto, riconfermalo."
+              : "Se è tutto a posto, conferma il piano editoriale."}
           </span>
           <button
             className="pp-btn pp-btn--approve"
@@ -564,8 +569,42 @@ export default function PublicPlan() {
             disabled={approving}
           >
             <FontAwesomeIcon icon={faCheck} />{" "}
-            {approving ? "Approvazione…" : "Approva piano editoriale"}
+            {approving
+              ? "Approvazione…"
+              : approval
+              ? "Approva di nuovo"
+              : "Approva piano editoriale"}
           </button>
+        </div>
+      ) : null}
+
+      {/* Storico approvazioni: sempre visibile se c'è almeno un'approvazione.
+          Verde = approvazione valida; neutro = aggiornato dopo (da riconfermare). */}
+      {approval && (
+        <div
+          className={`pp-approval-history ${
+            approval.changedSince ? "pp-approval-history--stale" : ""
+          }`}
+        >
+          <div className="pp-approval-head">
+            <FontAwesomeIcon icon={faCheck} />
+            {approval.count > 1
+              ? `Piano approvato ${approval.count} volte`
+              : `Piano approvato il ${fmtDateTime(approval.at)}`}
+          </div>
+          {approval.count > 1 && (
+            <ul className="pp-approval-list">
+              {approval.history
+                .slice()
+                .reverse()
+                .map((h, i) => (
+                  <li key={i}>
+                    <span>{approval.history.length - i}ª approvazione</span>
+                    <time>{fmtDateTime(h.at)}</time>
+                  </li>
+                ))}
+            </ul>
+          )}
         </div>
       )}
 

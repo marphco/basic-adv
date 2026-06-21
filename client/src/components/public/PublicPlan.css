@@ -460,6 +460,51 @@
   color: #7ee29a;
 }
 
+/* Storico approvazioni */
+.pp-approval-history {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+/* aggiornato dopo l'ultima approvazione → record neutro (da riconfermare) */
+.pp-approval-history--stale {
+  background: var(--pp-surface);
+  border-color: var(--pp-border);
+}
+.pp-approval-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #7ee29a;
+}
+.pp-approval-history--stale .pp-approval-head {
+  color: var(--pp-muted);
+  font-weight: 500;
+}
+.pp-approval-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--pp-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--pp-muted);
+}
+.pp-approval-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pp-approval-list time {
+  color: var(--pp-text);
+}
+
 /* Modale dettaglio post + note */
 .pp-modal-overlay {
   position: fixed;
