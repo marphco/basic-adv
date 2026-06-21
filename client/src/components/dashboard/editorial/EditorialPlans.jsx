@@ -924,7 +924,7 @@ const EditorialPlans = () => {
       {clientModalOpen && (
         <ClientModal
           clients={clients}
-          adminUsers={users.filter((u) => u.role === "admin")}
+          users={users}
           onClose={() => setClientModalOpen(false)}
           onCreate={async (data) => {
             try {

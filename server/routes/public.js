@@ -48,6 +48,31 @@ const norm = (e) => String(e || "").trim().toLowerCase();
 const recipients = (c) =>
   [...(c.emails || []), c.email].map(norm).filter(Boolean);
 
+const uniqEmails = (arr) => [
+  ...new Set((arr || []).map((o) => String(o.email || "").trim()).filter(Boolean)),
+];
+
+// Destinatari dei FEEDBACK / approvazioni del cliente = gli OPERATORI del
+// cliente (utenti, member o admin, con il cliente in assignedClients).
+// L'admin di revisione NON riceve i feedback (solo le revisioni via /share-admin).
+// Fallback difensivo per dati storici senza operatore (admin di revisione →
+// tutti gli admin) così non si perde mai un feedback; con l'assegnazione
+// obbligatoria dell'operatore non scatta.
+async function feedbackRecipients(clientId, client) {
+  let to = uniqEmails(
+    await User.find({ assignedClients: clientId }).select("email").lean()
+  );
+  if (!to.length && client?.admins?.length)
+    to = uniqEmails(
+      await User.find({ _id: { $in: client.admins }, role: "admin" })
+        .select("email")
+        .lean()
+    );
+  if (!to.length)
+    to = uniqEmails(await User.find({ role: "admin" }).select("email").lean());
+  return to;
+}
+
 // Normalizza un doc PlanApproval in una vista con STORICO + ultima approvazione.
 // Migra al volo i vecchi doc (senza `approvals`) usando createdAt come 1ª.
 function approvalView(ap) {
@@ -352,18 +377,8 @@ router.post("/plan/notify", rateLimit, async (req, res) => {
     if (!count)
       return res.status(400).json({ error: "Non ci sono note da inviare." });
 
-    // Destinatari: admin + operatori assegnati a questo cliente.
-    const ops = await User.find({
-      $or: [
-        { role: "admin" },
-        { role: "member", assignedClients: clientId },
-      ],
-    })
-      .select("email")
-      .lean();
-    const to = [
-      ...new Set(ops.map((o) => String(o.email || "").trim()).filter(Boolean)),
-    ];
+    // Destinatari: gli OPERATORI del cliente (non l'admin di revisione).
+    const to = await feedbackRecipients(clientId, client);
 
     const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
     const monthLabel = `${MONTHS_IT[Number(month) - 1] || ""} ${year}`.trim();
@@ -433,15 +448,8 @@ router.post("/plan/approve", rateLimit, async (req, res) => {
       });
     }
 
-    // Avvisa l'agenzia (admin + operatori assegnati): 1 email.
-    const ops = await User.find({
-      $or: [{ role: "admin" }, { role: "member", assignedClients: clientId }],
-    })
-      .select("email")
-      .lean();
-    const to = [
-      ...new Set(ops.map((o) => String(o.email || "").trim()).filter(Boolean)),
-    ];
+    // Avvisa gli OPERATORI del cliente (non l'admin di revisione): 1 email.
+    const to = await feedbackRecipients(clientId, client);
     if (to.length) {
       const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
       const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();

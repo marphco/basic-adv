@@ -55,8 +55,8 @@ function approvalView(ap) {
   };
 }
 
-// Lista di ObjectId admin validi e deduplicati (dai dati grezzi del client).
-function cleanAdmins(ids) {
+// Lista di ObjectId validi e deduplicati (admin o utenti generici).
+function cleanIds(ids) {
   if (!Array.isArray(ids)) return [];
   const seen = new Set();
   const out = [];
@@ -67,6 +67,33 @@ function cleanAdmins(ids) {
     out.push(s);
   }
   return out;
+}
+const cleanAdmins = cleanIds;
+
+// OPERATORI del cliente = utenti (member o admin) con questo cliente in
+// `assignedClients`. Fonte unica = User.assignedClients (così l'accesso resta
+// invariato). Qui riconcilio: aggiungo il cliente agli operatori scelti e lo
+// tolgo a chi non lo è più.
+async function reconcileOperators(clientId, operatorIds) {
+  const ids = cleanIds(operatorIds);
+  await User.updateMany(
+    { _id: { $in: ids } },
+    { $addToSet: { assignedClients: clientId } }
+  );
+  await User.updateMany(
+    { _id: { $nin: ids }, assignedClients: clientId },
+    { $pull: { assignedClients: clientId } }
+  );
+  return ids;
+}
+
+// True se tra gli operatori scelti c'è almeno un admin (→ niente admin di
+// revisione per quel cliente: l'admin-operatore copre entrambi).
+async function operatorsIncludeAdmin(operatorIds) {
+  const ids = cleanIds(operatorIds);
+  if (!ids.length) return false;
+  const n = await User.countDocuments({ _id: { $in: ids }, role: "admin" });
+  return n > 0;
 }
 
 // Tutte le rotte dei piani editoriali richiedono login + utente caricato dal DB.
@@ -82,6 +109,22 @@ router.get("/clients", async (req, res) => {
         ? {}
         : { _id: { $in: req.dbUser.assignedClients || [] } };
     const clients = await Client.find(filter).sort({ name: 1 }).lean();
+    // Allego gli operatori (utenti con il cliente in assignedClients) a ciascun
+    // cliente, così la scheda Cliente può pre-popolare il selettore.
+    const ids = clients.map((c) => c._id);
+    const ops = await User.find({ assignedClients: { $in: ids } })
+      .select("_id assignedClients")
+      .lean();
+    const opsByClient = {};
+    ops.forEach((u) =>
+      (u.assignedClients || []).forEach((cid) => {
+        const k = String(cid);
+        (opsByClient[k] ||= []).push(String(u._id));
+      })
+    );
+    clients.forEach((c) => {
+      c.operators = opsByClient[String(c._id)] || [];
+    });
     res.json(clients);
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dei clienti" });
@@ -91,20 +134,31 @@ router.get("/clients", async (req, res) => {
 // Crea cliente (solo admin).
 router.post("/clients", requireAdmin, async (req, res) => {
   try {
-    const { name, pages, email, contactName, emails, admins } = req.body || {};
+    const { name, pages, email, contactName, emails, admins, operators } =
+      req.body || {};
     if (!name || !name.trim())
       return res.status(400).json({ error: "Nome cliente obbligatorio" });
+    const opIds = cleanIds(operators);
+    if (!opIds.length)
+      return res
+        .status(400)
+        .json({ error: "Assegna almeno un operatore al cliente." });
     const cleaned = cleanEmails(emails, email);
+    // Se un operatore è admin, niente admin di revisione per questo cliente.
+    const reviewAdmins = (await operatorsIncludeAdmin(opIds))
+      ? []
+      : cleanAdmins(admins);
     const client = await Client.create({
       name: name.trim(),
       contactName: contactName || "",
       emails: cleaned,
       email: cleaned[0] || "", // primario allineato per compatibilità
       pages: Array.isArray(pages) ? pages : [],
-      admins: cleanAdmins(admins),
+      admins: reviewAdmins,
       createdBy: req.dbUser._id,
     });
-    res.status(201).json(client);
+    await reconcileOperators(client._id, opIds);
+    res.status(201).json({ ...client.toObject(), operators: opIds });
   } catch (e) {
     res.status(500).json({ error: "Errore nella creazione del cliente" });
   }
@@ -113,11 +167,11 @@ router.post("/clients", requireAdmin, async (req, res) => {
 // Aggiorna cliente / pagine (solo admin).
 router.put("/clients/:id", requireAdmin, async (req, res) => {
   try {
-    const { name, pages, email, contactName, emails, admins } = req.body || {};
+    const { name, pages, email, contactName, emails, admins, operators } =
+      req.body || {};
     const update = {};
     if (name !== undefined) update.name = name.trim();
     if (contactName !== undefined) update.contactName = contactName;
-    if (admins !== undefined) update.admins = cleanAdmins(admins);
     if (emails !== undefined || email !== undefined) {
       const cleaned = cleanEmails(
         emails !== undefined ? emails : [],
@@ -127,11 +181,31 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
       update.email = cleaned[0] || "";
     }
     if (pages !== undefined) update.pages = pages;
+
+    let opIds = null;
+    if (operators !== undefined) {
+      opIds = cleanIds(operators);
+      if (!opIds.length)
+        return res
+          .status(400)
+          .json({ error: "Assegna almeno un operatore al cliente." });
+      // se un operatore è admin → niente admin di revisione per questo cliente
+      update.admins = (await operatorsIncludeAdmin(opIds))
+        ? []
+        : cleanAdmins(admins);
+    } else if (admins !== undefined) {
+      update.admins = cleanAdmins(admins);
+    }
+
     const client = await Client.findByIdAndUpdate(req.params.id, update, {
       new: true,
     });
     if (!client) return res.status(404).json({ error: "Cliente non trovato" });
-    res.json(client);
+    if (opIds) await reconcileOperators(client._id, opIds);
+    const ops = await User.find({ assignedClients: client._id })
+      .select("_id")
+      .lean();
+    res.json({ ...client.toObject(), operators: ops.map((u) => String(u._id)) });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'aggiornamento del cliente" });
   }
@@ -143,6 +217,11 @@ router.delete("/clients/:id", requireAdmin, async (req, res) => {
     const client = await Client.findByIdAndDelete(req.params.id);
     if (!client) return res.status(404).json({ error: "Cliente non trovato" });
     await Post.deleteMany({ clientId: req.params.id });
+    // Tolgo il cliente eliminato dagli assignedClients di chi lo seguiva.
+    await User.updateMany(
+      { assignedClients: req.params.id },
+      { $pull: { assignedClients: req.params.id } }
+    );
     res.json({ message: "Cliente e relativi post eliminati" });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'eliminazione del cliente" });
