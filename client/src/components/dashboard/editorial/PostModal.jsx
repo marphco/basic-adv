@@ -68,7 +68,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     if (agencyNoteInternal)
       return {
         text: t,
-        author: "Agenzia (interna)",
+        author: "Basic (interna)",
         fromAgency: true,
         internal: true,
         needsReply: false,
@@ -78,7 +78,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
       };
     return {
       text: t,
-      author: "Agenzia",
+      author: "Basic",
       fromAgency: true,
       needsReply: agencyNoteNeedsReply,
       resolved: false,
@@ -430,13 +430,13 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                   <span className={`ep-note-tag ${kind}`}>
                     {n.internal ? (
                       <>
-                        <FontAwesomeIcon icon={faLock} /> Interna · solo agenzia
+                        <FontAwesomeIcon icon={faLock} /> Interna · solo Basic
                       </>
                     ) : n.fromAgency ? (
                       n.needsReply ? (
-                        "Agenzia · Richiesta"
+                        "Basic · Richiesta"
                       ) : (
-                        "Agenzia · Nota"
+                        "Basic · Nota"
                       )
                     ) : (
                       "Cliente"
@@ -517,7 +517,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                   }`}
                   onClick={() => setAgencyNoteInternal(true)}
                 >
-                  <FontAwesomeIcon icon={faLock} /> Interna (solo agenzia)
+                  <FontAwesomeIcon icon={faLock} /> Interna (solo Basic)
                 </button>
               </div>
               <textarea
@@ -526,7 +526,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                 value={agencyNoteText}
                 placeholder={
                   agencyNoteInternal
-                    ? "Nota interna per l'agenzia (es. istruzioni dell'admin per l'operatore)…"
+                    ? "Nota interna (es. istruzioni dell'admin per l'operatore)…"
                     : "Nota per il cliente (es. perché questa foto, oppure richiedi una foto specifica)…"
                 }
                 onChange={(e) => setAgencyNoteText(e.target.value)}
