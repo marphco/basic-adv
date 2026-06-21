@@ -461,10 +461,18 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                           onClick={() => setLightbox({ item: m, source: "note" })}
                           title="Ingrandisci"
                         >
-                          <img
-                            src={m.kind === "video" ? m.thumbUrl || m.url : m.url}
-                            alt=""
-                          />
+                          {m.kind === "video" && !m.thumbUrl ? (
+                            <video
+                              src={`${m.url}#t=0.1`}
+                              muted
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img
+                              src={m.kind === "video" ? m.thumbUrl : m.url}
+                              alt=""
+                            />
+                          )}
                           {m.kind === "video" && (
                             <span className="ep-thumb-play">
                               <FontAwesomeIcon icon={faPlay} />

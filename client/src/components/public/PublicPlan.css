@@ -331,13 +331,15 @@
 .pp-media--single .pp-thumb {
   height: auto;
 }
-.pp-thumb img {
+.pp-thumb img,
+.pp-thumb video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.pp-media--single .pp-thumb img {
+.pp-media--single .pp-thumb img,
+.pp-media--single .pp-thumb video {
   height: auto;
   max-height: 460px;
   object-fit: contain;

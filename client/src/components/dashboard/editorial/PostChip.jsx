@@ -65,11 +65,18 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
       {!compact && (
         <div className="ep-post-thumb">
           {cover ? (
-            <img
-              src={isVideo ? cover.thumbUrl || cover.url : cover.url}
-              alt=""
-              loading="lazy"
-            />
+            isVideo && !cover.thumbUrl ? (
+              // video senza poster → <video> mostra il primo fotogramma
+              // (#t=0.1 forza il render del frame anche con preload=metadata;
+              // un <img> con l'URL del video darebbe immagine rotta)
+              <video src={`${cover.url}#t=0.1`} muted preload="metadata" />
+            ) : (
+              <img
+                src={isVideo ? cover.thumbUrl : cover.url}
+                alt=""
+                loading="lazy"
+              />
+            )
           ) : (
             <FontAwesomeIcon icon={faImage} />
           )}

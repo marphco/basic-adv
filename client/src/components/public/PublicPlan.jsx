@@ -792,10 +792,14 @@ export default function PublicPlan() {
                     onClick={() => setLightbox(m)}
                     aria-label="Ingrandisci"
                   >
-                    <img
-                      src={m.kind === "video" ? m.thumbUrl || m.url : m.url}
-                      alt=""
-                    />
+                    {m.kind === "video" && !m.thumbUrl ? (
+                      <video src={`${m.url}#t=0.1`} muted preload="metadata" />
+                    ) : (
+                      <img
+                        src={m.kind === "video" ? m.thumbUrl : m.url}
+                        alt=""
+                      />
+                    )}
                     {m.kind === "video" && (
                       <span className="pp-play">
                         <FontAwesomeIcon icon={faPlay} />
@@ -862,7 +866,11 @@ export default function PublicPlan() {
                                 aria-label="Ingrandisci"
                               >
                                 {m.kind === "video" && !m.thumbUrl ? (
-                                  <video src={m.url} preload="metadata" muted />
+                                  <video
+                                    src={`${m.url}#t=0.1`}
+                                    preload="metadata"
+                                    muted
+                                  />
                                 ) : (
                                   <img
                                     src={m.kind === "video" ? m.thumbUrl : m.url}
@@ -923,7 +931,11 @@ export default function PublicPlan() {
                         aria-label="Ingrandisci"
                       >
                         {m.kind === "video" ? (
-                          <video src={m.url} preload="metadata" muted />
+                          <video
+                            src={`${m.url}#t=0.1`}
+                            preload="metadata"
+                            muted
+                          />
                         ) : (
                           <img src={m.url} alt="" />
                         )}
