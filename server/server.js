@@ -121,6 +121,12 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 // Static serve (ok per anteprime, non forza il download)
 app.use("/uploads", express.static(UPLOAD_DIR));
+// Media dei piani editoriali (sottocartella dedicata, route separata: NON
+// interferisce con /uploads del form AI). L'X-Robots-Tag globale vale anche qui.
+app.use(
+  "/uploads-ped",
+  express.static(require("./services/mediaStore").PED_DIR)
+);
 
 const isDbReady = () => mongoose.connection.readyState === 1;
 

@@ -7,6 +7,13 @@ const User = require("../models/User");
 const PlanApproval = require("../models/PlanApproval");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
+const {
+  mediaUpload,
+  handleUpload,
+  toMedia,
+  removeFiles,
+  isOwnMediaUrl,
+} = require("../services/mediaStore");
 
 // Vista pubblica del piano editoriale (NESSUN login).
 // Accesso "leggero": il link contiene il clientId (ObjectId, non indovinabile) e
@@ -55,6 +62,11 @@ const sanitizeNotes = (notesArr, reqEmail) =>
     resolved: !!n.resolved,
     fromAgency: !!n.fromAgency,
     needsReply: !!n.needsReply,
+    media: (n.media || []).map((m) => ({
+      kind: m.kind,
+      url: m.url,
+      thumbUrl: m.thumbUrl || "",
+    })),
     createdAt: n.createdAt,
     // modificabile/eliminabile dal cliente solo se è una SUA nota (mai le agenzia)
     mine: !n.fromAgency && norm(n.authorEmail) === norm(reqEmail),
@@ -79,6 +91,20 @@ function sanitizePost(p, pagesById, reqEmail) {
     notes: sanitizeNotes(p.clientNotes, reqEmail),
     // ⚠️ MAI: isDuplicate, status, createdBy, order
   };
+}
+
+// Media validi per una nota: solo {kind,url,thumbUrl} con URL servito da NOI
+// (whitelist /uploads-ped → niente link esterni nelle note), max 6.
+function cleanNoteMedia(media) {
+  if (!Array.isArray(media)) return [];
+  return media
+    .filter((m) => m && isOwnMediaUrl(m.url))
+    .slice(0, 6)
+    .map((m) => ({
+      kind: m.kind === "video" ? "video" : "image",
+      url: String(m.url),
+      thumbUrl: isOwnMediaUrl(m.thumbUrl) ? String(m.thumbUrl) : "",
+    }));
 }
 
 const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -167,11 +193,37 @@ router.post("/plan/access", rateLimit, async (req, res) => {
   }
 });
 
-// Crea una nota (NESSUNA email qui — solo salvataggio).
+// Upload allegati per le note del cliente (foto/video). Gated: solo chi può
+// accedere al piano. rateLimit PRIMA del multer (blocca abusi prima di scrivere
+// su disco); se non autorizzato, i file caricati vengono cancellati.
+router.post(
+  "/plan/media",
+  rateLimit,
+  handleUpload(mediaUpload.array("files", 6)),
+  async (req, res) => {
+    try {
+      const { clientId, email } = req.body || {};
+      const client = await loadGated(clientId, email);
+      if (!client) {
+        await removeFiles(req.files);
+        return res.status(403).json({ error: "Accesso negato." });
+      }
+      res.json({ media: toMedia(req, req.files) });
+    } catch (e) {
+      await removeFiles(req.files);
+      res.status(500).json({ error: "Errore nel caricamento degli allegati." });
+    }
+  }
+);
+
+// Crea una nota (NESSUNA email qui — solo salvataggio). Può avere testo e/o
+// allegati (foto/video già caricati via /plan/media).
 router.post("/plan/note", rateLimit, async (req, res) => {
   try {
-    const { clientId, year, month, email, postId, text } = req.body || {};
-    if (!text || !text.trim())
+    const { clientId, year, month, email, postId, text, media } = req.body || {};
+    const t = String(text || "").trim();
+    const cleanMedia = cleanNoteMedia(media);
+    if (!t && !cleanMedia.length)
       return res.status(400).json({ error: "La nota è vuota." });
     const client = await loadGated(clientId, email);
     if (!client) return res.status(403).json({ error: "Accesso negato." });
@@ -179,9 +231,10 @@ router.post("/plan/note", rateLimit, async (req, res) => {
     if (!post) return res.status(404).json({ error: "Post non trovato." });
 
     post.clientNotes.push({
-      text: text.trim(),
+      text: t,
       author: client.contactName || norm(email),
       authorEmail: norm(email),
+      media: cleanMedia,
     });
     post.updatedAt = new Date();
     await post.save();

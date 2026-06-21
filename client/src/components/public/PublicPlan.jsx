@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,6 +11,7 @@ import {
   faComment,
   faTimes,
   faImage,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
@@ -96,6 +97,9 @@ export default function PublicPlan() {
   const [selected, setSelected] = useState(null); // post aperto nel modale
   const [lightbox, setLightbox] = useState(null); // media aperto a tutto schermo
   const [noteText, setNoteText] = useState(""); // nuova nota
+  const [noteMedia, setNoteMedia] = useState([]); // allegati della nuova nota
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteFileRef = useRef(null);
   const [noteSending, setNoteSending] = useState(false);
   const [editingNote, setEditingNote] = useState(null); // noteId in modifica
   const [editText, setEditText] = useState("");
@@ -228,17 +232,40 @@ export default function PublicPlan() {
     setFeedbackSent(false); // se cambio le note, potrei volerle re-inviare
   };
 
+  // Carica foto/video da allegare alla nuova nota (gated lato server).
+  const uploadNoteFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    setNoteUploading(true);
+    try {
+      const fd = new FormData();
+      Object.entries(base).forEach(([k, v]) => fd.append(k, v));
+      files.forEach((f) => fd.append("files", f));
+      const r = await axios.post(`${API_URL}/api/public/plan/media`, fd);
+      setNoteMedia((prev) => [...prev, ...(r.data.media || [])]);
+    } catch (err) {
+      toastErr(err?.response?.data?.error || "Caricamento allegati non riuscito.");
+    } finally {
+      setNoteUploading(false);
+    }
+  };
+  const removeNoteMedia = (i) =>
+    setNoteMedia((prev) => prev.filter((_, idx) => idx !== i));
+
   const createNote = async () => {
-    if (!selected || !noteText.trim()) return;
+    if (!selected || (!noteText.trim() && !noteMedia.length)) return;
     setNoteSending(true);
     try {
       const r = await axios.post(`${API_URL}/api/public/plan/note`, {
         ...base,
         postId: selected.id,
         text: noteText.trim(),
+        media: noteMedia,
       });
       applyNotes(selected.id, r.data.notes);
       setNoteText("");
+      setNoteMedia([]);
     } catch (err) {
       toastErr(err?.response?.data?.error || "Invio nota non riuscito.");
     } finally {
@@ -329,6 +356,7 @@ export default function PublicPlan() {
   const openPost = (p) => {
     setSelected(p);
     setNoteText("");
+    setNoteMedia([]);
     setEditingNote(null);
     setEditText("");
   };
@@ -767,10 +795,39 @@ export default function PublicPlan() {
                             {n.needsReply ? "Richiesta da Basic" : "Nota da Basic"}
                           </span>
                         )}
-                        <div className="pp-note-row">
-                          {n.resolved && <FontAwesomeIcon icon={faCheck} />}
-                          <span>{n.text}</span>
-                        </div>
+                        {n.text && (
+                          <div className="pp-note-row">
+                            {n.resolved && <FontAwesomeIcon icon={faCheck} />}
+                            <span>{n.text}</span>
+                          </div>
+                        )}
+                        {n.media && n.media.length > 0 && (
+                          <div className="pp-note-media">
+                            {n.media.map((m, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                className="pp-note-thumb"
+                                onClick={() => setLightbox(m)}
+                                aria-label="Ingrandisci"
+                              >
+                                {m.kind === "video" && !m.thumbUrl ? (
+                                  <video src={m.url} preload="metadata" muted />
+                                ) : (
+                                  <img
+                                    src={m.kind === "video" ? m.thumbUrl : m.url}
+                                    alt=""
+                                  />
+                                )}
+                                {m.kind === "video" && (
+                                  <span className="pp-play">
+                                    <FontAwesomeIcon icon={faPlay} />
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         {n.mine && !n.resolved && (
                           <div className="pp-note-mine-actions">
                             <button
@@ -802,14 +859,69 @@ export default function PublicPlan() {
                 className="pp-input"
                 rows={3}
                 value={noteText}
-                placeholder="Aggiungi una nota su questo post…"
+                placeholder="Aggiungi una nota su questo post (puoi allegare foto o video)…"
                 onChange={(e) => setNoteText(e.target.value)}
               />
+              {noteMedia.length > 0 && (
+                <div className="pp-note-media pp-note-media--draft">
+                  {noteMedia.map((m, i) => (
+                    <div key={i} className="pp-note-thumb-wrap">
+                      <button
+                        type="button"
+                        className="pp-note-thumb"
+                        onClick={() => setLightbox(m)}
+                        aria-label="Ingrandisci"
+                      >
+                        {m.kind === "video" ? (
+                          <video src={m.url} preload="metadata" muted />
+                        ) : (
+                          <img src={m.url} alt="" />
+                        )}
+                        {m.kind === "video" && (
+                          <span className="pp-play">
+                            <FontAwesomeIcon icon={faPlay} />
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className="pp-note-thumb-x"
+                        onClick={() => removeNoteMedia(i)}
+                        aria-label="Rimuovi allegato"
+                      >
+                        <FontAwesomeIcon icon={faTimes} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="pp-note-actions">
+                <button
+                  type="button"
+                  className="pp-btn pp-btn--ghost pp-note-attach"
+                  onClick={() => noteFileRef.current?.click()}
+                  disabled={noteUploading}
+                >
+                  <FontAwesomeIcon
+                    icon={noteUploading ? faSpinner : faImage}
+                    spin={noteUploading}
+                  />{" "}
+                  {noteUploading ? "Carico…" : "Foto / Video"}
+                </button>
+                <input
+                  ref={noteFileRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  hidden
+                  onChange={uploadNoteFiles}
+                />
                 <button
                   className="pp-btn"
                   onClick={createNote}
-                  disabled={noteSending || !noteText.trim()}
+                  disabled={
+                    noteSending || (!noteText.trim() && !noteMedia.length)
+                  }
                 >
                   <FontAwesomeIcon icon={faPaperPlane} />{" "}
                   {noteSending ? "Invio…" : "Aggiungi nota"}

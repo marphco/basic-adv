@@ -74,6 +74,14 @@ export const api = {
       .then((r) => normPost(r.data)),
   deletePost: (id) =>
     axios.delete(`${API_URL}/api/editorial/posts/${id}`, auth()).then((r) => r.data),
+  // carica foto/video dei post → ritorna [{kind,url,thumbUrl}] con URL assoluti
+  uploadMedia: (files) => {
+    const fd = new FormData();
+    Array.from(files).forEach((f) => fd.append("files", f));
+    return axios
+      .post(`${API_URL}/api/editorial/media`, fd, auth())
+      .then((r) => r.data.media);
+  },
   duplicateMonth: (body) =>
     axios
       .post(`${API_URL}/api/editorial/duplicate-month`, body, auth())

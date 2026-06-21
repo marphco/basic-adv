@@ -13,6 +13,7 @@ const {
 } = require("../middleware/auth");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
+const { mediaUpload, handleUpload, toMedia } = require("../services/mediaStore");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -264,6 +265,22 @@ router.get("/approval", async (req, res) => {
     res.status(500).json({ error: "Errore nel recupero dell'approvazione" });
   }
 });
+
+/* ===================== MEDIA ===================== */
+
+// Upload media dei post (foto/video) — agenzia loggata. Ritorna URL assoluti
+// serviti da /uploads-ped. (Storage interim su volume Railway; → R2 in futuro.)
+router.post(
+  "/media",
+  handleUpload(mediaUpload.array("files", 10)),
+  async (req, res) => {
+    try {
+      res.json({ media: toMedia(req, req.files) });
+    } catch (e) {
+      res.status(500).json({ error: "Errore nel caricamento dei media" });
+    }
+  }
+);
 
 /* ===================== POST ===================== */
 
