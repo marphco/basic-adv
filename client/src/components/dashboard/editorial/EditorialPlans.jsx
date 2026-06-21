@@ -662,13 +662,25 @@ const EditorialPlans = () => {
 
           {/* ---- Banner: piano approvato dal cliente ---- */}
           {approval && (
-            <div className="ep-approved-banner">
+            <div
+              className="ep-approved-banner"
+              title={
+                approval.count > 1 && approval.history
+                  ? "Approvazioni: " +
+                    approval.history
+                      .map((h) => new Date(h.at).toLocaleString("it-IT"))
+                      .join(" · ")
+                  : undefined
+              }
+            >
               <FontAwesomeIcon icon={faCheck} /> Piano approvato dal cliente
               {approval.by ? ` (${approval.by})` : ""}
               {approval.at
                 ? ` il ${new Date(approval.at).toLocaleDateString("it-IT")}`
                 : ""}
-              .
+              {approval.count > 1
+                ? ` · ${approval.count} approvazioni (passa il mouse per le date)`
+                : "."}
             </div>
           )}
 
