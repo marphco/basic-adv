@@ -478,15 +478,23 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: 1px solid var(--pp-border);
-  color: var(--pp-text);
+  /* la X è nel DOM PRIMA del media: senza z-index l'immagine (che viene dopo)
+     le si dipinge sopra. z-index la tiene davanti; lo sfondo la rende leggibile
+     anche sopra le foto chiare. */
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: rgba(22, 22, 22, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .pp-modal-close:hover {
+  background: rgba(22, 22, 22, 0.85);
   border-color: var(--pp-brand);
   color: var(--pp-brand);
 }
