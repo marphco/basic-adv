@@ -39,6 +39,12 @@ const ClientModal = ({
   const adminUsers = users.filter((u) => u.role === "admin");
   const adminIdSet = new Set(adminUsers.map((u) => u.id));
   const operatorIsAdmin = (ids) => ids.some((id) => adminIdSet.has(id));
+  // Nomi (per la lista clienti) dagli id assegnati.
+  const namesOf = (ids) =>
+    (ids || [])
+      .map((id) => users.find((u) => String(u.id) === String(id)))
+      .filter(Boolean)
+      .map((u) => u.name || u.username);
   // editing: null | "new" | <clientId>
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -254,6 +260,23 @@ const ClientModal = ({
                       </span>
                     ))}
                   </div>
+                  {(namesOf(c.operators).length > 0 ||
+                    namesOf(c.admins).length > 0) && (
+                    <div className="ep-client-assign">
+                      {namesOf(c.operators).length > 0 && (
+                        <span className="ep-assign-tag">
+                          <FontAwesomeIcon icon={faUser} />{" "}
+                          {namesOf(c.operators).join(", ")}
+                        </span>
+                      )}
+                      {namesOf(c.admins).length > 0 && (
+                        <span className="ep-assign-tag ep-assign-tag--admin">
+                          <FontAwesomeIcon icon={faUserShield} /> Rev:{" "}
+                          {namesOf(c.admins).join(", ")}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="ep-user-actions">
                   <button
