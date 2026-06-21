@@ -167,8 +167,77 @@
 .pp-intro {
   font-size: 0.9rem;
   color: var(--pp-muted);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   line-height: 1.5;
+}
+
+/* --- Box "Come funziona" (guida per il cliente) --- */
+.pp-guide {
+  background: var(--pp-surface);
+  border: 1px solid var(--pp-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.pp-guide-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pp-brand);
+  margin-bottom: 12px;
+}
+.pp-guide-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  counter-reset: pp-step;
+}
+.pp-guide-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--pp-text);
+}
+.pp-guide-steps li svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--pp-brand);
+}
+.pp-guide-steps strong {
+  font-weight: 700;
+}
+.pp-guide-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--pp-border);
+  font-size: 0.8rem;
+  color: var(--pp-muted);
+}
+.pp-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.pp-legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+.pp-legend-dot--you {
+  background: #f5a623;
+}
+.pp-legend-dot--basic {
+  background: var(--pp-brand);
 }
 
 /* --- Giorni / post --- */
@@ -235,27 +304,43 @@
 }
 
 .pp-media {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+/* Una sola foto/video → grande, a tutta larghezza del modale. */
+.pp-media--single {
+  grid-template-columns: 1fr;
 }
 .pp-thumb {
   position: relative;
-  width: 84px;
-  height: 84px;
-  border-radius: 8px;
+  width: 100%;
+  height: 190px;
+  border: none;
+  padding: 0;
+  border-radius: 10px;
   overflow: hidden;
   background: var(--pp-surface-2);
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   color: var(--pp-muted);
+  cursor: pointer;
+}
+.pp-media--single .pp-thumb {
+  height: auto;
 }
 .pp-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+.pp-media--single .pp-thumb img {
+  height: auto;
+  max-height: 460px;
+  object-fit: contain;
 }
 .pp-play {
   position: absolute;
@@ -442,4 +527,52 @@
   font-size: 0.66rem;
   color: var(--pp-muted);
   margin-top: 4px;
+}
+
+/* --- Lightbox media: foto/video ingranditi in overlay (non a tutto schermo) --- */
+.pp-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 2147483200; /* sopra il modale, sotto il cursore custom */
+}
+.pp-lightbox-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 92vw;
+  max-height: 88vh;
+}
+.pp-lightbox-inner img,
+.pp-lightbox-inner video {
+  max-width: 92vw;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+.pp-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
 }

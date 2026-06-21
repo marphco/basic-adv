@@ -212,7 +212,7 @@ function shareAdminReview({ clientName, monthLabel, dashUrl }) {
       )}</strong> è pronto per la tua revisione.`
     ) +
     p(
-      "Aprilo in dashboard per modificare i post e lasciare note interne (visibili solo all'agenzia, mai al cliente)."
+      "Aprilo in dashboard per modificare i post e lasciare note interne (visibili solo al team Basic, mai al cliente)."
     ) +
     button("Apri in dashboard", dashUrl);
   return {

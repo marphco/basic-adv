@@ -10,6 +10,7 @@ import {
   faCheck,
   faComment,
   faTimes,
+  faImage,
 } from "@fortawesome/free-solid-svg-icons";
 import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
@@ -93,6 +94,7 @@ export default function PublicPlan() {
   const [error, setError] = useState("");
 
   const [selected, setSelected] = useState(null); // post aperto nel modale
+  const [lightbox, setLightbox] = useState(null); // media aperto a tutto schermo
   const [noteText, setNoteText] = useState(""); // nuova nota
   const [noteSending, setNoteSending] = useState(false);
   const [editingNote, setEditingNote] = useState(null); // noteId in modifica
@@ -117,6 +119,14 @@ export default function PublicPlan() {
     mq.addEventListener("change", on);
     return () => mq.removeEventListener("change", on);
   }, []);
+
+  // ESC chiude il lightbox media (se aperto).
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e) => e.key === "Escape" && setLightbox(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightbox]);
 
   const year = data?.year;
   const month = data?.month;
@@ -273,10 +283,10 @@ export default function PublicPlan() {
 
   const submitFeedback = async () => {
     const message = await promptDialog(
-      "Invii le tue note all'agenzia. Vuoi aggiungere un messaggio? (facoltativo)",
+      "Invii le tue note a Basic. Vuoi aggiungere un messaggio? (facoltativo)",
       {
-        title: "Invia feedback",
-        confirmLabel: "Invia feedback",
+        title: "Invia le note a Basic",
+        confirmLabel: "Invia le note",
         placeholder: "Es. una precisazione, un cambiamento in vista…",
       }
     );
@@ -294,7 +304,7 @@ export default function PublicPlan() {
 
   const approvePlan = async () => {
     const message = await promptDialog(
-      "Confermi l'approvazione del piano editoriale? Puoi aggiungere un messaggio per l'agenzia (facoltativo).",
+      "Confermi l'approvazione del piano editoriale? Puoi aggiungere un messaggio per Basic (facoltativo).",
       {
         title: "Approva piano editoriale",
         confirmLabel: "Approva piano",
@@ -422,9 +432,54 @@ export default function PublicPlan() {
       <UiHost />
       {header}
       <div className="pp-intro">
-        Ciao {data.client?.contactName || data.client?.name}, ecco i contenuti del
-        mese. Clicca un post per leggerlo e lasciare una nota.
+        Ciao {data.client?.contactName || data.client?.name}, ecco il piano
+        editoriale del mese.
       </div>
+
+      {!approval && (
+        <div className="pp-guide">
+          <div className="pp-guide-title">Come funziona</div>
+          <ol className="pp-guide-steps">
+            <li>
+              <FontAwesomeIcon icon={faImage} />
+              <span>
+                Clicca un post per vederlo in grande (foto e testo).
+              </span>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faComment} />
+              <span>
+                Se vuoi una <strong>modifica</strong>, lascia una nota sul post.
+                Puoi lasciarne quante vuoi, anche su più post.
+              </span>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faPaperPlane} />
+              <span>
+                Quando hai segnalato <strong>tutte</strong> le modifiche, premi{" "}
+                <strong>«Invia le note a Basic»</strong>: le riceviamo tutte in
+                una volta sola.
+              </span>
+            </li>
+            <li>
+              <FontAwesomeIcon icon={faCheck} />
+              <span>
+                Se è già tutto a posto, premi{" "}
+                <strong>«Approva piano editoriale»</strong>.
+              </span>
+            </li>
+          </ol>
+          <div className="pp-guide-legend">
+            <span className="pp-legend-item">
+              <span className="pp-legend-dot pp-legend-dot--you" /> Le tue note
+            </span>
+            <span className="pp-legend-item">
+              <span className="pp-legend-dot pp-legend-dot--basic" /> Nota da
+              Basic
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Una sola azione alla volta: approvato → conferma; note in sospeso →
           invia feedback; altrimenti → approva. (Approva e Feedback non
@@ -443,10 +498,10 @@ export default function PublicPlan() {
         <div className="pp-feedback-bar">
           <span className="pp-feedback-info">
             {feedbackSent
-              ? "Feedback inviato: l'agenzia applicherà le modifiche."
+              ? "Note inviate: Basic applicherà le modifiche."
               : `Hai lasciato ${pendingNotes} ${
                   pendingNotes === 1 ? "nota" : "note"
-                }: inviale all'agenzia per le modifiche.`}
+                }: inviale a Basic per le modifiche.`}
           </span>
           <button
             className="pp-btn"
@@ -457,8 +512,8 @@ export default function PublicPlan() {
             {feedbackSending
               ? "Invio…"
               : feedbackSent
-              ? "Feedback inviato"
-              : "Invia il feedback all'agenzia"}
+              ? "Note inviate"
+              : "Invia le note a Basic"}
           </button>
         </div>
       ) : (
@@ -646,14 +701,18 @@ export default function PublicPlan() {
             </div>
 
             {selected.media && selected.media.length > 0 && (
-              <div className="pp-media">
+              <div
+                className={`pp-media ${
+                  selected.media.length === 1 ? "pp-media--single" : ""
+                }`}
+              >
                 {selected.media.map((m, i) => (
-                  <a
+                  <button
                     key={i}
+                    type="button"
                     className="pp-thumb"
-                    href={m.url || m.thumbUrl}
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => setLightbox(m)}
+                    aria-label="Ingrandisci"
                   >
                     <img
                       src={m.kind === "video" ? m.thumbUrl || m.url : m.url}
@@ -664,7 +723,7 @@ export default function PublicPlan() {
                         <FontAwesomeIcon icon={faPlay} />
                       </span>
                     )}
-                  </a>
+                  </button>
                 ))}
               </div>
             )}
@@ -705,9 +764,7 @@ export default function PublicPlan() {
                       <>
                         {n.fromAgency && (
                           <span className="pp-note-tag">
-                            {n.needsReply
-                              ? "Richiesta dell'agenzia"
-                              : "Dall'agenzia"}
+                            {n.needsReply ? "Richiesta da Basic" : "Nota da Basic"}
                           </span>
                         )}
                         <div className="pp-note-row">
@@ -759,6 +816,27 @@ export default function PublicPlan() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox media: ingrandisce foto/video in un overlay (NON apre il file
+          a tutto schermo nel browser). */}
+      {lightbox && (
+        <div className="pp-lightbox" onClick={() => setLightbox(null)}>
+          <button
+            className="pp-lightbox-close"
+            onClick={() => setLightbox(null)}
+            aria-label="Chiudi"
+          >
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+          <div className="pp-lightbox-inner" onClick={(e) => e.stopPropagation()}>
+            {lightbox.kind === "video" ? (
+              <video src={lightbox.url} controls autoPlay />
+            ) : (
+              <img src={lightbox.url || lightbox.thumbUrl} alt="" />
+            )}
           </div>
         </div>
       )}
