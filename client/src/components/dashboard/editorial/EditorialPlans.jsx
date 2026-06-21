@@ -477,6 +477,14 @@ const EditorialPlans = () => {
         .filter(Boolean)
     : [];
   const hasAdmins = (client?.admins || []).length > 0;
+  // Se un operatore del cliente è già admin, la revisione interna non ha senso
+  // (l'admin-operatore copre tutto): nascondo del tutto quella sezione.
+  const adminIdSet = new Set(
+    users.filter((u) => u.role === "admin").map((u) => String(u.id))
+  );
+  const operatorIsAdmin = (client?.operators || []).some((id) =>
+    adminIdSet.has(String(id))
+  );
 
   const openShare = () => {
     setShareMsg("");
@@ -1098,7 +1106,9 @@ const EditorialPlans = () => {
                 </button>
               </div>
 
-              {/* Revisione interna: invio agli admin assegnati (link dashboard) */}
+              {/* Revisione interna: solo se l'operatore NON è già admin
+                  (altrimenti l'admin-operatore copre tutto, niente revisione). */}
+              {!operatorIsAdmin && (
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
                   <FontAwesomeIcon icon={faUserShield} /> Revisione interna (admin)
@@ -1147,6 +1157,7 @@ const EditorialPlans = () => {
                   </button>
                 </div>
               </div>
+              )}
             </div>
           </div>
         </div>
