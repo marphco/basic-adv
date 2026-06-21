@@ -378,7 +378,8 @@
   color: var(--ep-muted);
   font-size: 0.9rem;
 }
-.ep-post-thumb img {
+.ep-post-thumb img,
+.ep-post-thumb video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1428,7 +1429,8 @@
   background: var(--ep-surface-2);
   display: block;
 }
-.ep-note-thumb img {
+.ep-note-thumb img,
+.ep-note-thumb video {
   width: 100%;
   height: 100%;
   object-fit: cover;
