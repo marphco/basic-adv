@@ -440,6 +440,14 @@
   padding: 12px 16px;
   margin-bottom: 18px;
 }
+/* Note inviate → tutto a posto: barra verde (come l'approvazione). */
+.pp-feedback-bar--sent {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+.pp-feedback-bar--sent .pp-btn:disabled {
+  opacity: 1; /* il verde "Note inviate" resta pieno, non sbiadito */
+}
 .pp-feedback-bar .pp-btn {
   width: auto;
   margin-top: 0;
