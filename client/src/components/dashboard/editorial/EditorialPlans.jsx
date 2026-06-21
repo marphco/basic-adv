@@ -38,6 +38,17 @@ const MONTHS_IT = [
 ];
 const WEEKDAYS_IT = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
+// Data + ora dell'approvazione, sempre in fuso ITALIANO (Europe/Rome).
+const fmtApprovalDate = (d) =>
+  new Date(d).toLocaleString("it-IT", {
+    timeZone: "Europe/Rome",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
 const now = new Date();
 const TODAY = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
 
@@ -667,17 +678,13 @@ const EditorialPlans = () => {
               title={
                 approval.count > 1 && approval.history
                   ? "Approvazioni: " +
-                    approval.history
-                      .map((h) => new Date(h.at).toLocaleString("it-IT"))
-                      .join(" · ")
+                    approval.history.map((h) => fmtApprovalDate(h.at)).join(" · ")
                   : undefined
               }
             >
               <FontAwesomeIcon icon={faCheck} /> Piano approvato dal cliente
               {approval.by ? ` (${approval.by})` : ""}
-              {approval.at
-                ? ` il ${new Date(approval.at).toLocaleDateString("it-IT")}`
-                : ""}
+              {approval.at ? ` il ${fmtApprovalDate(approval.at)}` : ""}
               {approval.count > 1
                 ? ` · ${approval.count} approvazioni (passa il mouse per le date)`
                 : "."}

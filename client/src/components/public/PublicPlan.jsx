@@ -37,14 +37,16 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replac
   ""
 );
 
-// Data + ora breve (lo storico approvazioni può avere più voci nello stesso giorno).
+// Data + ora (sempre fuso ITALIANO Europe/Rome, a prescindere dal dispositivo
+// del cliente). Lo storico può avere più voci nello stesso giorno.
 const fmtDateTime = (d) => {
   try {
     const dt = new Date(d);
-    return `${dt.toLocaleDateString("it-IT")} · ${dt.toLocaleTimeString("it-IT", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+    const tz = { timeZone: "Europe/Rome" };
+    return `${dt.toLocaleDateString("it-IT", tz)} · ${dt.toLocaleTimeString(
+      "it-IT",
+      { ...tz, hour: "2-digit", minute: "2-digit" }
+    )}`;
   } catch {
     return "";
   }
