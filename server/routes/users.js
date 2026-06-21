@@ -57,8 +57,9 @@ router.post("/", async (req, res) => {
       name: name || "",
       email: email || "",
       role,
-      // i clienti assegnati hanno senso solo per gli operatori
-      assignedClients: role === "member" ? assignedClients || [] : [],
+      // l'assegnazione clienti (operatore) si gestisce dalla scheda Cliente; qui
+      // accettata per qualsiasi ruolo (anche admin può fare da operatore).
+      assignedClients: Array.isArray(assignedClients) ? assignedClients : [],
     });
 
     // Email di benvenuto (senza password) — fire-and-forget: se fallisce,
@@ -101,7 +102,9 @@ router.put("/:id", async (req, res) => {
       user.role = role;
     }
     if (assignedClients !== undefined)
-      user.assignedClients = user.role === "member" ? assignedClients : [];
+      user.assignedClients = Array.isArray(assignedClients)
+        ? assignedClients
+        : [];
     if (password) user.passwordHash = await bcrypt.hash(password, 10);
 
     await user.save();

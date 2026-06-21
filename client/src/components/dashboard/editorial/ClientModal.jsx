@@ -9,6 +9,7 @@ import {
   faBuilding,
   faCheck,
   faUserShield,
+  faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import ChannelIcon, { CHANNELS } from "./ChannelIcon";
 import { confirmDialog } from "./uiNotify";
@@ -17,7 +18,8 @@ const emptyForm = {
   name: "",
   contactName: "",
   emails: [""], // un cliente può avere più email (società con più soci)
-  admins: [], // admin responsabili (id) — almeno uno obbligatorio
+  operators: [], // operatore/i (id utente) — almeno uno obbligatorio
+  admins: [], // admin di revisione (id) — opzionale; assente se operatore è admin
   pages: [{ name: "", channels: ["instagram"] }],
 };
 
@@ -27,12 +29,16 @@ const emptyForm = {
 // rigenerarli orfanerebbe i post già pubblicati.
 const ClientModal = ({
   clients,
-  adminUsers = [],
+  users = [],
   onClose,
   onCreate,
   onUpdate,
   onDelete,
 }) => {
+  // Tutti gli utenti (operatori = member o admin); admin = solo ruolo admin.
+  const adminUsers = users.filter((u) => u.role === "admin");
+  const adminIdSet = new Set(adminUsers.map((u) => u.id));
+  const operatorIsAdmin = (ids) => ids.some((id) => adminIdSet.has(id));
   // editing: null | "new" | <clientId>
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
@@ -93,6 +99,7 @@ const ClientModal = ({
           : c.email
           ? [c.email]
           : [""],
+      operators: (c.operators || []).map(String),
       admins: (c.admins || []).map(String),
       pages: (c.pages || []).map((p) => ({
         _id: p._id,
@@ -112,7 +119,16 @@ const ClientModal = ({
   const removeEmail = (i) =>
     setForm((f) => ({ ...f, emails: f.emails.filter((_, idx) => idx !== i) }));
 
-  // --- admin responsabili (selezione multipla) ---
+  // --- operatori (selezione multipla; member o admin) ---
+  const toggleOperator = (id) =>
+    setForm((f) => ({
+      ...f,
+      operators: f.operators.includes(id)
+        ? f.operators.filter((x) => x !== id)
+        : [...f.operators, id],
+    }));
+
+  // --- admin di revisione (selezione multipla) ---
   const toggleAdmin = (id) =>
     setForm((f) => ({
       ...f,
@@ -151,16 +167,19 @@ const ClientModal = ({
 
   const canSave =
     form.name.trim() &&
-    form.admins.length > 0 &&
+    form.operators.length > 0 &&
     form.pages.length > 0 &&
     form.pages.every((pg) => pg.name.trim() && pg.channels.length);
 
   const submit = () => {
+    // Se un operatore è admin → niente admin di revisione per questo cliente.
+    const reviewAdmins = operatorIsAdmin(form.operators) ? [] : form.admins;
     const payload = {
       name: form.name.trim(),
       contactName: form.contactName.trim(),
       emails: form.emails.map((e) => e.trim()).filter(Boolean),
-      admins: form.admins,
+      operators: form.operators,
+      admins: reviewAdmins,
       pages: form.pages.map((pg) => ({
         ...(pg._id ? { _id: pg._id } : {}), // preserva l'id pagina in modifica
         name: pg.name.trim(),
@@ -324,38 +343,39 @@ const ClientModal = ({
                 Per società con più soci puoi inviare il piano a più indirizzi.
               </p>
 
+              {/* Operatori: chi gestisce il cliente e riceve i suoi feedback */}
               <div className="ep-field-head">
-                <label className="ep-field-label">Admin responsabili</label>
+                <label className="ep-field-label">Operatori</label>
                 <span className="ep-media-type">
-                  {form.admins.length
-                    ? `${form.admins.length} selezionat${
-                        form.admins.length === 1 ? "o" : "i"
+                  {form.operators.length
+                    ? `${form.operators.length} selezionat${
+                        form.operators.length === 1 ? "o" : "i"
                       }`
                     : "obbligatorio"}
                 </span>
               </div>
-              {adminUsers.length === 0 ? (
+              {users.length === 0 ? (
                 <p className="ep-user-noclients">
-                  Nessun admin disponibile. Crea un utente admin nella gestione
-                  Utenti.
+                  Nessun utente disponibile. Creane uno nella gestione Utenti.
                 </p>
               ) : (
                 <div className="ep-admin-picker">
-                  {adminUsers.map((a) => {
-                    const on = form.admins.includes(a.id);
+                  {users.map((u) => {
+                    const on = form.operators.includes(u.id);
+                    const isAdmin = adminIdSet.has(u.id);
                     return (
                       <button
                         type="button"
-                        key={a.id}
+                        key={u.id}
                         className={`ep-admin-chip ${on ? "on" : ""}`}
-                        onClick={() => toggleAdmin(a.id)}
+                        onClick={() => toggleOperator(u.id)}
                       >
                         <FontAwesomeIcon
-                          icon={on ? faCheck : faUserShield}
+                          icon={on ? faCheck : isAdmin ? faUserShield : faUser}
                         />
-                        {a.name || a.username}
-                        {!a.email && (
-                          <span className="ep-admin-chip-warn">· senza email</span>
+                        {u.name || u.username}
+                        {isAdmin && (
+                          <span className="ep-admin-chip-warn">· admin</span>
                         )}
                       </button>
                     );
@@ -363,9 +383,66 @@ const ClientModal = ({
                 </div>
               )}
               <p className="ep-user-noclients">
-                Ricevono il piano «per revisione» (modifiche dirette + note
-                interne). Almeno uno è obbligatorio.
+                Chi gestisce il cliente e riceve i suoi feedback. Almeno uno è
+                obbligatorio.
               </p>
+
+              {/* Admin di revisione: solo se nessun operatore è già admin */}
+              {!operatorIsAdmin(form.operators) ? (
+                <>
+                  <div className="ep-field-head">
+                    <label className="ep-field-label">Admin di revisione</label>
+                    <span className="ep-media-type">
+                      {form.admins.length
+                        ? `${form.admins.length} selezionat${
+                            form.admins.length === 1 ? "o" : "i"
+                          }`
+                        : "facoltativo"}
+                    </span>
+                  </div>
+                  {adminUsers.filter((a) => !form.operators.includes(a.id))
+                    .length === 0 ? (
+                    <p className="ep-user-noclients">
+                      Nessun admin disponibile per la revisione.
+                    </p>
+                  ) : (
+                    <div className="ep-admin-picker">
+                      {adminUsers
+                        .filter((a) => !form.operators.includes(a.id))
+                        .map((a) => {
+                          const on = form.admins.includes(a.id);
+                          return (
+                            <button
+                              type="button"
+                              key={a.id}
+                              className={`ep-admin-chip ${on ? "on" : ""}`}
+                              onClick={() => toggleAdmin(a.id)}
+                            >
+                              <FontAwesomeIcon
+                                icon={on ? faCheck : faUserShield}
+                              />
+                              {a.name || a.username}
+                              {!a.email && (
+                                <span className="ep-admin-chip-warn">
+                                  · senza email
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                    </div>
+                  )}
+                  <p className="ep-user-noclients">
+                    Riceve il piano «per revisione» quando l'operatore glielo
+                    invia (modifiche dirette + note interne).
+                  </p>
+                </>
+              ) : (
+                <p className="ep-user-noclients">
+                  Un operatore è già admin: per questo cliente non serve un admin
+                  di revisione.
+                </p>
+              )}
 
               <div className="ep-field-head">
                 <label className="ep-field-label">Pagine</label>
@@ -445,7 +522,7 @@ const ClientModal = ({
 
 ClientModal.propTypes = {
   clients: PropTypes.array.isRequired,
-  adminUsers: PropTypes.array,
+  users: PropTypes.array,
   onClose: PropTypes.func.isRequired,
   onCreate: PropTypes.func.isRequired,
   onUpdate: PropTypes.func.isRequired,

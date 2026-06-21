@@ -40,13 +40,6 @@ const UserManagementModal = ({
   }, [onClose, editing]);
 
   const clientName = (id) => clients.find((c) => c.id === id)?.name || id;
-  const toggleClient = (id) =>
-    setForm((f) => ({
-      ...f,
-      assignedClients: f.assignedClients.includes(id)
-        ? f.assignedClients.filter((x) => x !== id)
-        : [...f.assignedClients, id],
-    }));
 
   const startCreate = () => {
     setForm(emptyForm);
@@ -70,6 +63,8 @@ const UserManagementModal = ({
     (isNew ? form.username.trim() && form.password.trim() : true);
 
   const submit = () => {
+    // NB: l'assegnazione clienti (operatore) si gestisce dalla scheda Cliente,
+    // non qui — quindi NON inviamo assignedClients (il server non lo tocca).
     if (isNew) {
       onCreate({
         username: form.username.trim(),
@@ -77,14 +72,12 @@ const UserManagementModal = ({
         email: form.email.trim(),
         password: form.password,
         role: form.role,
-        assignedClients: form.role === "member" ? form.assignedClients : [],
       });
     } else {
       const data = {
         name: form.name.trim(),
         email: form.email.trim(),
         role: form.role,
-        assignedClients: form.role === "member" ? form.assignedClients : [],
       };
       if (form.password) data.password = form.password; // vuoto = non cambiare
       onUpdate(editing, data);
@@ -227,31 +220,10 @@ const UserManagementModal = ({
                 </div>
               </div>
 
-              {form.role === "member" && (
-                <>
-                  <label className="ep-field-label">Clienti assegnati</label>
-                  {clients.length === 0 ? (
-                    <span className="ep-user-noclients">
-                      Crea prima un cliente, poi potrai assegnarlo.
-                    </span>
-                  ) : (
-                    <div className="ep-assign-list">
-                      {clients.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          className={`ep-assign-chip ${
-                            form.assignedClients.includes(c.id) ? "on" : ""
-                          }`}
-                          onClick={() => toggleClient(c.id)}
-                        >
-                          {c.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
+              <p className="ep-user-noclients">
+                L'assegnazione ai clienti (operatore / admin di revisione) si
+                gestisce dalla scheda «Clienti».
+              </p>
 
               <div className="ep-foot-right">
                 <button
