@@ -529,6 +529,61 @@
   margin-top: 4px;
 }
 
+/* --- Allegati nelle note (foto/video) --- */
+.pp-note-media {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+.pp-note-media--draft {
+  margin: 10px 0 0;
+}
+.pp-note-thumb-wrap {
+  position: relative;
+}
+.pp-note-thumb {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border: none;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--pp-surface-2);
+  cursor: pointer;
+  display: block;
+}
+.pp-note-thumb img,
+.pp-note-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pp-note-thumb-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #161616;
+  border: 1px solid var(--pp-border);
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-note-thumb-x:hover {
+  background: var(--pp-brand);
+}
+.pp-note-attach {
+  margin-right: auto; /* spinge "Aggiungi nota" a destra */
+}
+
 /* --- Lightbox media: foto/video ingranditi in overlay (non a tutto schermo) --- */
 .pp-lightbox {
   position: fixed;

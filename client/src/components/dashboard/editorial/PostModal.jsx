@@ -12,9 +12,11 @@ import {
   faDownload,
   faCopy,
   faLock,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
-import { confirmDialog } from "./uiNotify";
+import { confirmDialog, toastErr } from "./uiNotify";
+import { api } from "./api";
 
 const MONTHS_IT = [
   "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -38,6 +40,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [month, setMonth] = useState(Number(draft.month));
   const [year, setYear] = useState(Number(draft.year));
   const [media, setMedia] = useState(draft.media || []);
+  const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState(draft.notes || []);
   const [lightbox, setLightbox] = useState(null); // { item, source: 'media'|'note' }
   const [captionCopied, setCaptionCopied] = useState(false);
@@ -182,16 +185,20 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Aggiunge uno o più file (foto e/o video) al carosello (anteprima locale).
-  const handleFiles = (e) => {
+  // Carica uno o più file (foto/video) sul server → URL persistenti.
+  const handleFiles = async (e) => {
     const files = Array.from(e.target.files || []);
-    const items = files.map((f) => ({
-      kind: f.type.startsWith("video") ? "video" : "image",
-      url: URL.createObjectURL(f),
-      thumbUrl: "",
-    }));
-    setMedia((prev) => [...prev, ...items]);
     e.target.value = ""; // consente di riselezionare lo stesso file
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const items = await api.uploadMedia(files);
+      setMedia((prev) => [...prev, ...items]);
+    } catch (err) {
+      toastErr(err?.response?.data?.error || "Caricamento media non riuscito.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeMedia = (i) =>
@@ -288,9 +295,10 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
               type="button"
               className="ep-media-add"
               onClick={() => fileRef.current?.click()}
+              disabled={uploading}
             >
-              <FontAwesomeIcon icon={faPlus} />
-              <span>Aggiungi</span>
+              <FontAwesomeIcon icon={uploading ? faSpinner : faPlus} spin={uploading} />
+              <span>{uploading ? "Carico…" : "Aggiungi"}</span>
             </button>
             <input
               ref={fileRef}

@@ -12,7 +12,8 @@ const MediaSchema = new mongoose.Schema({
 // allegati (foto/video) e viene marcata `resolved` dall'operatore quando il
 // post è stato sistemato come richiesto.
 const NoteSchema = new mongoose.Schema({
-  text: { type: String, required: true },
+  // testo non obbligatorio: una nota può contenere SOLO allegati (foto/video).
+  text: { type: String, default: "" },
   author: { type: String, default: "Cliente" },
   // email di chi ha scritto la nota: serve a far modificare/eliminare al
   // cliente SOLO le proprie note dalla vista pubblica.
