@@ -947,6 +947,31 @@
   color: var(--ep-note);
 }
 
+/* Riga "operatori / admin di revisione" nella lista clienti */
+.ep-client-assign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.ep-assign-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ep-border);
+  color: var(--ep-muted);
+}
+.ep-assign-tag svg {
+  font-size: 0.66rem;
+}
+.ep-assign-tag--admin {
+  color: var(--ep-internal);
+  border-color: rgba(37, 99, 235, 0.4);
+}
+
 /* Sezione "Revisione interna (admin)" nel modale di condivisione */
 .ep-share-admin {
   margin-top: 18px;
