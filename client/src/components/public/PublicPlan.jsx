@@ -523,20 +523,29 @@ export default function PublicPlan() {
           </span>
         </div>
       ) : pendingNotes > 0 ? (
-        <div className="pp-feedback-bar">
-          <span className="pp-feedback-info">
-            {feedbackSent
-              ? "Note inviate: Basic applicherà le modifiche."
-              : `Hai lasciato ${pendingNotes} ${
-                  pendingNotes === 1 ? "nota" : "note"
-                }: inviale a Basic per le modifiche.`}
-          </span>
+        <div
+          className={`pp-feedback-bar ${
+            feedbackSent ? "pp-feedback-bar--sent" : ""
+          }`}
+        >
+          {feedbackSent ? (
+            <span className="pp-feedback-ok">
+              <FontAwesomeIcon icon={faCheck} /> Note inviate: Basic applicherà le
+              modifiche.
+            </span>
+          ) : (
+            <span className="pp-feedback-info">
+              {`Hai lasciato ${pendingNotes} ${
+                pendingNotes === 1 ? "nota" : "note"
+              }: inviale a Basic per le modifiche.`}
+            </span>
+          )}
           <button
-            className="pp-btn"
+            className={`pp-btn ${feedbackSent ? "pp-btn--approve" : ""}`}
             onClick={submitFeedback}
             disabled={feedbackSending || feedbackSent}
           >
-            <FontAwesomeIcon icon={faPaperPlane} />{" "}
+            <FontAwesomeIcon icon={feedbackSent ? faCheck : faPaperPlane} />{" "}
             {feedbackSending
               ? "Invio…"
               : feedbackSent
