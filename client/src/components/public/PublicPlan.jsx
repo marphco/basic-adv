@@ -12,6 +12,8 @@ import {
   faTimes,
   faImage,
   faSpinner,
+  faChevronLeft,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
@@ -77,6 +79,17 @@ function buildMonthMatrix(year, month) {
 // cliente clicca "Invia il feedback" (mai una email per nota).
 export default function PublicPlan() {
   useNoindex();
+  // Guard definitivo anti scroll-orizzontale su mobile: blocca l'overflow-x a
+  // livello di documento (html+body), cross-browser (anche iOS Safari dove
+  // `overflow: clip` può non bastare). Solo mentre la vista pubblica è montata.
+  useEffect(() => {
+    document.documentElement.classList.add("pp-no-hscroll");
+    document.body.classList.add("pp-no-hscroll");
+    return () => {
+      document.documentElement.classList.remove("pp-no-hscroll");
+      document.body.classList.remove("pp-no-hscroll");
+    };
+  }, []);
   const { pathname } = useLocation();
   const parsed = useMemo(
     () => parseSlug(pathname.replace(/^\/p\//, "").replace(/\/$/, "")),
@@ -140,9 +153,37 @@ export default function PublicPlan() {
   }, []);
 
   // ESC chiude il lightbox media (se aperto).
+  // Carosello del lightbox (più media): precedente/successivo ciclici.
+  const lightboxPrev = () =>
+    setLightbox(
+      (lb) =>
+        lb && {
+          ...lb,
+          index: (lb.index - 1 + lb.list.length) % lb.list.length,
+        }
+    );
+  const lightboxNext = () =>
+    setLightbox(
+      (lb) => lb && { ...lb, index: (lb.index + 1) % lb.list.length }
+    );
+  const lbTouchX = useRef(null);
+  const onLbTouchStart = (e) => {
+    lbTouchX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onLbTouchEnd = (e) => {
+    if (lbTouchX.current == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? 0) - lbTouchX.current;
+    lbTouchX.current = null;
+    if (Math.abs(dx) > 40) (dx < 0 ? lightboxNext : lightboxPrev)();
+  };
+
   useEffect(() => {
     if (!lightbox) return;
-    const onKey = (e) => e.key === "Escape" && setLightbox(null);
+    const onKey = (e) => {
+      if (e.key === "Escape") setLightbox(null);
+      else if (e.key === "ArrowLeft") lightboxPrev();
+      else if (e.key === "ArrowRight") lightboxNext();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [lightbox]);
@@ -248,9 +289,10 @@ export default function PublicPlan() {
   };
 
   // Carica foto/video da allegare alla nuova nota (gated lato server).
-  const uploadNoteFiles = async (e) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
+  const uploadNoteFilesList = async (fileList) => {
+    const files = Array.from(fileList || []).filter((f) =>
+      /^(image|video)\//.test(f.type)
+    );
     if (!files.length) return;
     setNoteUploading(true);
     try {
@@ -265,8 +307,28 @@ export default function PublicPlan() {
       setNoteUploading(false);
     }
   };
+  const uploadNoteFiles = (e) => {
+    uploadNoteFilesList(e.target.files);
+    e.target.value = "";
+  };
   const removeNoteMedia = (i) =>
     setNoteMedia((prev) => prev.filter((_, idx) => idx !== i));
+
+  // Drag & drop allegati sul form nota.
+  const [noteDragOver, setNoteDragOver] = useState(false);
+  const onNoteDrop = (e) => {
+    e.preventDefault();
+    setNoteDragOver(false);
+    if (e.dataTransfer?.files?.length) uploadNoteFilesList(e.dataTransfer.files);
+  };
+  const onNoteDragOver = (e) => {
+    e.preventDefault();
+    if (!noteDragOver) setNoteDragOver(true);
+  };
+  const onNoteDragLeave = (e) => {
+    e.preventDefault();
+    setNoteDragOver(false);
+  };
 
   const createNote = async () => {
     if (!selected || (!noteText.trim() && !noteMedia.length)) return;
@@ -789,7 +851,7 @@ export default function PublicPlan() {
                     key={i}
                     type="button"
                     className="pp-thumb"
-                    onClick={() => setLightbox(m)}
+                    onClick={() => setLightbox({ list: selected.media, index: i })}
                     aria-label="Ingrandisci"
                   >
                     {m.kind === "video" && !m.thumbUrl ? (
@@ -862,7 +924,7 @@ export default function PublicPlan() {
                                 key={i}
                                 type="button"
                                 className="pp-note-thumb"
-                                onClick={() => setLightbox(m)}
+                                onClick={() => setLightbox({ list: n.media, index: i })}
                                 aria-label="Ingrandisci"
                               >
                                 {m.kind === "video" && !m.thumbUrl ? (
@@ -912,7 +974,12 @@ export default function PublicPlan() {
               </div>
             )}
 
-            <div className="pp-note-form">
+            <div
+              className={`pp-note-form ${noteDragOver ? "is-dragover" : ""}`}
+              onDragOver={onNoteDragOver}
+              onDragLeave={onNoteDragLeave}
+              onDrop={onNoteDrop}
+            >
               <textarea
                 className="pp-input"
                 rows={3}
@@ -927,7 +994,7 @@ export default function PublicPlan() {
                       <button
                         type="button"
                         className="pp-note-thumb"
-                        onClick={() => setLightbox(m)}
+                        onClick={() => setLightbox({ list: noteMedia, index: i })}
                         aria-label="Ingrandisci"
                       >
                         {m.kind === "video" ? (
@@ -994,26 +1061,65 @@ export default function PublicPlan() {
         </div>
       )}
 
-      {/* Lightbox media: ingrandisce foto/video in un overlay (NON apre il file
-          a tutto schermo nel browser). */}
-      {lightbox && (
-        <div className="pp-lightbox" onClick={() => setLightbox(null)}>
-          <button
-            className="pp-lightbox-close"
-            onClick={() => setLightbox(null)}
-            aria-label="Chiudi"
-          >
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
-          <div className="pp-lightbox-inner" onClick={(e) => e.stopPropagation()}>
-            {lightbox.kind === "video" ? (
-              <video src={lightbox.url} controls autoPlay />
-            ) : (
-              <img src={lightbox.url || lightbox.thumbUrl} alt="" />
-            )}
-          </div>
-        </div>
-      )}
+      {/* Lightbox media: ingrandisce foto/video in un overlay, con carosello
+          (frecce + swipe + ←/→) quando il post ha più media. */}
+      {lightbox?.list?.[lightbox.index] &&
+        (() => {
+          const item = lightbox.list[lightbox.index];
+          const multi = lightbox.list.length > 1;
+          return (
+            <div className="pp-lightbox" onClick={() => setLightbox(null)}>
+              <button
+                className="pp-lightbox-close"
+                onClick={() => setLightbox(null)}
+                aria-label="Chiudi"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+              {multi && (
+                <button
+                  className="pp-lightbox-nav pp-lightbox-nav--prev"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    lightboxPrev();
+                  }}
+                  aria-label="Precedente"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                </button>
+              )}
+              <div
+                className="pp-lightbox-inner"
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={onLbTouchStart}
+                onTouchEnd={onLbTouchEnd}
+              >
+                {item.kind === "video" ? (
+                  <video src={item.url} controls autoPlay />
+                ) : (
+                  <img src={item.url || item.thumbUrl} alt="" />
+                )}
+              </div>
+              {multi && (
+                <button
+                  className="pp-lightbox-nav pp-lightbox-nav--next"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    lightboxNext();
+                  }}
+                  aria-label="Successivo"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+              )}
+              {multi && (
+                <div className="pp-lightbox-count">
+                  {lightbox.index + 1} / {lightbox.list.length}
+                </div>
+              )}
+            </div>
+          );
+        })()}
     </div>
   );
 }

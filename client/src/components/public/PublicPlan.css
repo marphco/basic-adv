@@ -1,5 +1,14 @@
 /* Vista pubblica del piano editoriale (pagina standalone, fuori dalla dashboard).
    Dark + brand, mobile-first, contenuto centrato. */
+
+/* Guard anti scroll-orizzontale (classe aggiunta a html+body solo su /p/):
+   blocca l'overflow-x a livello di documento, cross-browser. */
+html.pp-no-hscroll,
+body.pp-no-hscroll {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 .pp-wrap {
   --pp-bg: #161616;
   --pp-surface: #1e1e1e;
@@ -408,6 +417,14 @@
 }
 .pp-note-form {
   margin-top: 6px;
+  border-radius: 10px;
+  transition: outline-color 0.15s ease, background-color 0.15s ease;
+}
+/* feedback visivo durante il drag&drop di allegati sulla nota */
+.pp-note-form.is-dragover {
+  outline: 2px dashed var(--pp-brand);
+  outline-offset: 6px;
+  background: rgba(255, 64, 3, 0.06);
 }
 .pp-note-actions {
   display: flex;
@@ -693,4 +710,57 @@
 }
 .pp-lightbox-close:hover {
   background: rgba(255, 255, 255, 0.22);
+}
+.pp-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.pp-lightbox-nav--prev {
+  left: 12px;
+}
+.pp-lightbox-nav--next {
+  right: 12px;
+}
+.pp-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.pp-lightbox-count {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Mobile: la X del modale post deve avere una striscia libera sopra i media
+   (altrimenti finisce attaccata all'immagine ed è scomoda da toccare) + tap
+   target più grande. */
+@media (max-width: 640px) {
+  .pp-modal {
+    padding-top: 58px;
+  }
+  .pp-modal-close {
+    top: 10px;
+    right: 10px;
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+  }
 }
