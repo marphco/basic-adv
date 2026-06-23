@@ -95,8 +95,10 @@ const EditorialPlans = () => {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  const [clientMsg, setClientMsg] = useState(""); // messaggio opzionale al cliente
   const [sharingAdmin, setSharingAdmin] = useState(false);
   const [shareAdminMsg, setShareAdminMsg] = useState("");
+  const [adminMsg, setAdminMsg] = useState(""); // messaggio opzionale agli admin
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
 
   const me = useMemo(readToken, []);
@@ -489,12 +491,16 @@ const EditorialPlans = () => {
   const openShare = () => {
     setShareMsg("");
     setShareAdminMsg("");
+    setClientMsg("");
+    setAdminMsg("");
     setShareOpen(true);
   };
   const closeShare = () => {
     setShareOpen(false);
     setShareMsg("");
     setShareAdminMsg("");
+    setClientMsg("");
+    setAdminMsg("");
   };
   const sendShareAdmin = async () => {
     setSharingAdmin(true);
@@ -504,6 +510,7 @@ const EditorialPlans = () => {
         clientId,
         year: view.year,
         month: view.month,
+        message: adminMsg,
       });
       const n = r.sent?.length || 0;
       setShareAdminMsg(
@@ -525,6 +532,7 @@ const EditorialPlans = () => {
         clientId,
         year: view.year,
         month: view.month,
+        message: clientMsg,
       });
       const n = r.sent?.length || 0;
       setShareMsg(
@@ -1077,6 +1085,19 @@ const EditorialPlans = () => {
                 </div>
               )}
 
+              {clientEmails.length > 0 && (
+                <div className="ep-share-msg">
+                  <label className="ep-field-label">Messaggio (facoltativo)</label>
+                  <textarea
+                    className="ep-textarea"
+                    rows={2}
+                    value={clientMsg}
+                    placeholder="Aggiungi un messaggio personale per il cliente…"
+                    onChange={(e) => setClientMsg(e.target.value)}
+                  />
+                </div>
+              )}
+
               {shareMsg && (
                 <div className="ep-share-ok">
                   <FontAwesomeIcon icon={faCheck} /> {shareMsg}
@@ -1139,6 +1160,20 @@ const EditorialPlans = () => {
                     {isAdmin
                       ? " Assegnalo dalla scheda “Clienti”."
                       : " Chiedi a un admin di assegnarlo."}
+                  </div>
+                )}
+                {hasAdmins && (
+                  <div className="ep-share-msg">
+                    <label className="ep-field-label">
+                      Messaggio (facoltativo)
+                    </label>
+                    <textarea
+                      className="ep-textarea"
+                      rows={2}
+                      value={adminMsg}
+                      placeholder="Aggiungi un messaggio per l'admin di revisione…"
+                      onChange={(e) => setAdminMsg(e.target.value)}
+                    />
                   </div>
                 )}
                 {shareAdminMsg && (

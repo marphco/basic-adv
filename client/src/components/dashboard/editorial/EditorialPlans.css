@@ -973,6 +973,14 @@
   border-color: rgba(37, 99, 235, 0.4);
 }
 
+/* Messaggio opzionale nel modale di condivisione */
+.ep-share-msg {
+  margin: 12px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* Sezione "Revisione interna (admin)" nel modale di condivisione */
 .ep-share-admin {
   margin-top: 18px;

@@ -233,7 +233,7 @@ router.delete("/clients/:id", requireAdmin, async (req, res) => {
 // cliente (admin o operatore assegnato).
 router.post("/share", async (req, res) => {
   try {
-    const { clientId, year, month } = req.body || {};
+    const { clientId, year, month, message } = req.body || {};
     if (!clientId || !year || !month)
       return res.status(400).json({ error: "Parametri mancanti" });
     if (!canAccessClient(req.dbUser, clientId))
@@ -259,6 +259,7 @@ router.post("/share", async (req, res) => {
       contactName: client.contactName,
       monthLabel,
       planUrl,
+      message: String(message || "").trim().slice(0, 2000),
     });
 
     // Invio individuale (ognuno riceve la propria copia, niente indirizzi esposti).
@@ -289,7 +290,7 @@ router.post("/share", async (req, res) => {
 // può gestire il cliente (admin o operatore assegnato).
 router.post("/share-admin", async (req, res) => {
   try {
-    const { clientId, year, month } = req.body || {};
+    const { clientId, year, month, message } = req.body || {};
     if (!clientId || !year || !month)
       return res.status(400).json({ error: "Parametri mancanti" });
     if (!canAccessClient(req.dbUser, clientId))
@@ -326,6 +327,7 @@ router.post("/share-admin", async (req, res) => {
       clientName: client.name,
       monthLabel,
       dashUrl,
+      message: String(message || "").trim().slice(0, 2000),
     });
     const results = await Promise.allSettled(
       recipients.map((to) =>

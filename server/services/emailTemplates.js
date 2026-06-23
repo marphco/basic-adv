@@ -144,7 +144,8 @@ function revisionsDoneNotification({ contactName, clientName, monthLabel, planUr
 
 // → al CLIENTE: condivisione del piano editoriale del mese (link di sola lettura
 //   dove potrà vedere i post e lasciare le sue note).
-function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl }) {
+function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl, message }) {
+  const msg = (message || "").trim();
   const body =
     banner("Da Basic Adv · piano editoriale", BRAND) +
     h("Il piano editoriale è pronto") +
@@ -154,13 +155,16 @@ function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl }) {
         monthLabel
       )}</strong> per <strong>${esc(clientName)}</strong>.`
     ) +
+    (msg ? quote(msg) : "") +
     p(
       "Apri il link per vedere tutti i post del mese e lasciare le tue note direttamente sui singoli contenuti."
     ) +
     button("Vedi il piano editoriale", planUrl);
   return {
     subject: `Piano editoriale di ${monthLabel} — ${clientName}`,
-    text: `Ciao ${contactName || clientName},\nEcco il piano editoriale di ${monthLabel} per ${clientName}.\nVedi il piano e lascia le tue note: ${planUrl}`,
+    text: `Ciao ${contactName || clientName},\nEcco il piano editoriale di ${monthLabel} per ${clientName}.${
+      msg ? `\n\n${msg}\n` : ""
+    }\nVedi il piano e lascia le tue note: ${planUrl}`,
     html: wrap({
       title: "Piano editoriale",
       preheader: `Piano editoriale di ${monthLabel}`,
@@ -200,7 +204,8 @@ function planApprovedNotification({ clientName, monthLabel, by, planUrl, message
 // → agli ADMIN assegnati: il piano è pronto per la REVISIONE interna. Gli admin
 // revisionano in dashboard (modifiche dirette + note interne), quindi il link
 // punta alla dashboard, NON alla vista cliente.
-function shareAdminReview({ clientName, monthLabel, dashUrl }) {
+function shareAdminReview({ clientName, monthLabel, dashUrl, message }) {
+  const msg = (message || "").trim();
   const body =
     banner("Interno · operatore → admin", BLUE) +
     h("Piano da revisionare", BLUE) +
@@ -211,13 +216,16 @@ function shareAdminReview({ clientName, monthLabel, dashUrl }) {
         clientName
       )}</strong> è pronto per la tua revisione.`
     ) +
+    (msg ? p("Messaggio dell'operatore:") + quote(msg) : "") +
     p(
       "Aprilo in dashboard per modificare i post e lasciare note interne (visibili solo al team Basic, mai al cliente)."
     ) +
     button("Apri in dashboard", dashUrl);
   return {
     subject: `🔍 Interno — da revisionare · ${monthLabel} (${clientName})`,
-    text: `[INTERNO · DA REVISIONARE]\nIl piano editoriale di ${monthLabel} per ${clientName} è pronto per la revisione.\nAprilo in dashboard per modificarlo e lasciare note interne: ${dashUrl}`,
+    text: `[INTERNO · DA REVISIONARE]\nIl piano editoriale di ${monthLabel} per ${clientName} è pronto per la revisione.${
+      msg ? `\nMessaggio dell'operatore: ${msg}` : ""
+    }\nAprilo in dashboard per modificarlo e lasciare note interne: ${dashUrl}`,
     html: wrap({
       title: "Revisione piano editoriale",
       preheader: `Da revisionare: piano di ${monthLabel} — ${clientName}`,
