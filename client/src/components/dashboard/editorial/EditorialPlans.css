@@ -573,6 +573,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  border-radius: 8px;
+  transition: outline-color 0.15s ease, background-color 0.15s ease;
+}
+/* feedback visivo durante il trascinamento di file sull'area media */
+.ep-media-grid.is-dragover {
+  outline: 2px dashed var(--foreground-color);
+  outline-offset: 4px;
+  background: rgba(255, 64, 3, 0.06);
 }
 .ep-media-tile {
   position: relative;
@@ -1554,6 +1562,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+/* Carosello lightbox: frecce + contatore */
+.ep-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+.ep-lightbox-nav--prev {
+  left: 16px;
+}
+.ep-lightbox-nav--next {
+  right: 16px;
+}
+.ep-lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+.ep-lightbox-count {
+  margin-top: 10px;
+  text-align: center;
+  color: #fff;
+  font-size: 0.85rem;
 }
 
 /* ============================================================

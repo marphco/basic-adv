@@ -244,14 +244,22 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
      } else {
        gsap.set(banner, { willChange: "transform" });
        gsap.to(banner, {
-         yPercent: 90,
+         // ridotto da 90 a 74: con 90 il testo a fine corsa usciva ~55px sotto
+         // la barra arancione. A 74 lo spostamento finale è ~450px e il testo
+         // resta dentro la barra con margine (yPercent scala col viewport, così
+         // non esce nemmeno su finestre più basse).
+         yPercent: 74,
          ease: "none",
          scrollTrigger: {
            trigger: sectionEl,
            containerAnimation: scrollTween, // CHIAVE identica a Portfolio
            start: "left center",
            end: "right center",
-           scrub: 2,
+           // scrub leggero (0.8): un filo di inerzia per restare in linea con le
+           // altre bande arancioni del sito (stesso valore dello scroller home).
+           // Molto meno del 2 originale, che faceva proseguire il testo ~540px
+           // DOPO che ti fermavi in fondo (sembrava uno scroll verticale).
+           scrub: 0.8,
            invalidateOnRefresh: true,
            // markers: true,
          },

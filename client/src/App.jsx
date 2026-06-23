@@ -271,6 +271,19 @@ useEffect(() => {
   });
 }, [location.pathname, isMobile]);
 
+  // Sulla vista pubblica /p/ disattiviamo la normalizzazione scroll di GSAP
+  // (serve solo allo scroller orizzontale del sito marketing): su mobile
+  // "litigava" con lo slancio nativo causando un piccolo rimbalzo verso l'alto
+  // durante lo scroll veloce. La riattiviamo sulle altre rotte touch.
+  useEffect(() => {
+    const isPublic = location.pathname.startsWith("/p/");
+    const touch =
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches;
+    if (isPublic) ScrollTrigger.normalizeScroll(false);
+    else if (touch) ScrollTrigger.normalizeScroll(true);
+  }, [location.pathname]);
+
   // Pagina pubblica del piano editoriale (cliente): standalone, senza la navbar
   // marketing, ma col cursore custom (la pagina è sempre scura → isDark).
   if (location.pathname.startsWith("/p/")) {

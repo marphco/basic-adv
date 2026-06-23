@@ -13,6 +13,8 @@ import {
   faCopy,
   faLock,
   faSpinner,
+  faChevronLeft,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
 import { confirmDialog, toastErr } from "./uiNotify";
@@ -174,21 +176,60 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     onClose();
   };
 
+  // Carosello del lightbox (più media): precedente/successivo ciclici + swipe.
+  const lightboxPrev = () =>
+    setLightbox(
+      (lb) =>
+        lb && {
+          ...lb,
+          index: (lb.index - 1 + lb.list.length) % lb.list.length,
+        }
+    );
+  const lightboxNext = () =>
+    setLightbox(
+      (lb) => lb && { ...lb, index: (lb.index + 1) % lb.list.length }
+    );
+  const lbTouchX = useRef(null);
+  const onLbTouchStart = (e) => {
+    lbTouchX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onLbTouchEnd = (e) => {
+    if (lbTouchX.current == null) return;
+    const dx = (e.changedTouches[0]?.clientX ?? 0) - lbTouchX.current;
+    lbTouchX.current = null;
+    if (Math.abs(dx) > 40) (dx < 0 ? lightboxNext : lightboxPrev)();
+  };
+
   // Riferimento sempre aggiornato così il listener ESC usa lo stato corrente.
   const closeRef = useRef(requestClose);
   useEffect(() => {
     closeRef.current = requestClose;
   });
+  // ref per sapere se il lightbox è aperto (così ESC chiude prima il lightbox)
+  const lightboxRef = useRef(null);
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && closeRef.current();
+    lightboxRef.current = lightbox;
+  });
+  useEffect(() => {
+    const onKey = (e) => {
+      // se il lightbox è aperto: ESC lo chiude, ←/→ navigano (niente chiusura modale)
+      if (lightboxRef.current) {
+        if (e.key === "Escape") setLightbox(null);
+        else if (e.key === "ArrowLeft") lightboxPrev();
+        else if (e.key === "ArrowRight") lightboxNext();
+        return;
+      }
+      if (e.key === "Escape") closeRef.current();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   // Carica uno o più file (foto/video) sul server → URL persistenti.
-  const handleFiles = async (e) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = ""; // consente di riselezionare lo stesso file
+  const uploadFiles = async (fileList) => {
+    const files = Array.from(fileList || []).filter((f) =>
+      /^(image|video)\//.test(f.type)
+    );
     if (!files.length) return;
     setUploading(true);
     try {
@@ -199,6 +240,26 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     } finally {
       setUploading(false);
     }
+  };
+  const handleFiles = (e) => {
+    uploadFiles(e.target.files);
+    e.target.value = ""; // consente di riselezionare lo stesso file
+  };
+
+  // Drag & drop dei file sull'area media.
+  const [dragOver, setDragOver] = useState(false);
+  const onMediaDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer?.files?.length) uploadFiles(e.dataTransfer.files);
+  };
+  const onMediaDragOver = (e) => {
+    e.preventDefault();
+    if (!dragOver) setDragOver(true);
+  };
+  const onMediaDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
   };
 
   const removeMedia = (i) =>
@@ -257,13 +318,20 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
             <label className="ep-field-label">Media</label>
             <span className="ep-media-type">{mediaTypeLabel(media)}</span>
           </div>
-          <div className="ep-media-grid">
+          <div
+            className={`ep-media-grid ${dragOver ? "is-dragover" : ""}`}
+            onDragOver={onMediaDragOver}
+            onDragLeave={onMediaDragLeave}
+            onDrop={onMediaDrop}
+          >
             {media.map((m, i) => (
               <div key={i} className="ep-media-tile">
                 <button
                   type="button"
                   className="ep-media-open"
-                  onClick={() => setLightbox({ item: m, source: "media" })}
+                  onClick={() =>
+                    setLightbox({ list: media, index: i, source: "media" })
+                  }
                   title="Ingrandisci"
                 >
                   {m.kind === "video" ? (
@@ -458,7 +526,9 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
                           key={j}
                           type="button"
                           className="ep-note-thumb"
-                          onClick={() => setLightbox({ item: m, source: "note" })}
+                          onClick={() =>
+                            setLightbox({ list: n.media, index: j, source: "note" })
+                          }
                           title="Ingrandisci"
                         >
                           {m.kind === "video" && !m.thumbUrl ? (
@@ -603,54 +673,88 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
           </div>
         </div>
 
-        {/* Lightbox allegato nota: ingrandisci, scarica, aggiungi ai media */}
-        {lightbox && (
-          <div className="ep-lightbox" onClick={() => setLightbox(null)}>
-            <div
-              className="ep-lightbox-inner"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="ep-lightbox-close"
-                onClick={() => setLightbox(null)}
-                aria-label="Chiudi"
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-              {lightbox.item.kind === "video" && lightbox.item.url ? (
-                <video src={lightbox.item.url} controls />
-              ) : (
-                <img
-                  src={
-                    lightbox.item.kind === "video"
-                      ? lightbox.item.thumbUrl
-                      : lightbox.item.url
-                  }
-                  alt=""
-                />
-              )}
-              <div className="ep-lightbox-actions">
-                <a
-                  className="ep-btn ep-btn--ghost"
-                  href={lightbox.item.url || lightbox.item.thumbUrl}
-                  download
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <FontAwesomeIcon icon={faDownload} /> Scarica
-                </a>
-                {lightbox.source === "note" && (
+        {/* Lightbox: ingrandisci/scarica/aggiungi ai media, con carosello
+            (frecce + swipe + ←/→) quando ci sono più media. */}
+        {lightbox?.list?.[lightbox.index] &&
+          (() => {
+            const item = lightbox.list[lightbox.index];
+            const multi = lightbox.list.length > 1;
+            return (
+              <div className="ep-lightbox" onClick={() => setLightbox(null)}>
+                {multi && (
                   <button
-                    className="ep-btn ep-btn--primary"
-                    onClick={() => addMediaFromNote(lightbox.item)}
+                    className="ep-lightbox-nav ep-lightbox-nav--prev"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      lightboxPrev();
+                    }}
+                    aria-label="Precedente"
                   >
-                    <FontAwesomeIcon icon={faPlus} /> Aggiungi ai media del post
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </button>
+                )}
+                <div
+                  className="ep-lightbox-inner"
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={onLbTouchStart}
+                  onTouchEnd={onLbTouchEnd}
+                >
+                  <button
+                    className="ep-lightbox-close"
+                    onClick={() => setLightbox(null)}
+                    aria-label="Chiudi"
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                  {item.kind === "video" && item.url ? (
+                    <video src={item.url} controls />
+                  ) : (
+                    <img
+                      src={item.kind === "video" ? item.thumbUrl : item.url}
+                      alt=""
+                    />
+                  )}
+                  <div className="ep-lightbox-actions">
+                    <a
+                      className="ep-btn ep-btn--ghost"
+                      href={item.url || item.thumbUrl}
+                      download
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <FontAwesomeIcon icon={faDownload} /> Scarica
+                    </a>
+                    {lightbox.source === "note" && (
+                      <button
+                        className="ep-btn ep-btn--primary"
+                        onClick={() => addMediaFromNote(item)}
+                      >
+                        <FontAwesomeIcon icon={faPlus} /> Aggiungi ai media del
+                        post
+                      </button>
+                    )}
+                  </div>
+                  {multi && (
+                    <div className="ep-lightbox-count">
+                      {lightbox.index + 1} / {lightbox.list.length}
+                    </div>
+                  )}
+                </div>
+                {multi && (
+                  <button
+                    className="ep-lightbox-nav ep-lightbox-nav--next"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      lightboxNext();
+                    }}
+                    aria-label="Successivo"
+                  >
+                    <FontAwesomeIcon icon={faChevronRight} />
                   </button>
                 )}
               </div>
-            </div>
-          </div>
-        )}
+            );
+          })()}
       </div>
     </div>
   );
