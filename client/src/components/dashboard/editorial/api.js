@@ -47,6 +47,11 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/share-admin`, body, auth())
       .then((r) => r.data),
+  // notifica gli operatori assegnati che il piano è pronto (admin → operatori)
+  notifyOperators: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/notify-operators`, body, auth())
+      .then((r) => r.data),
   // stato approvazione del piano (cliente) per un mese
   getApproval: (clientId, year, month) =>
     axios

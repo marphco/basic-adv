@@ -62,6 +62,14 @@ const PostSchema = new mongoose.Schema({
     enum: ["draft", "review", "approved"],
     default: "draft",
   },
+  // Stato di lavorazione INTERNO (workflow agenzia): "schedulato" (giallo, in
+  // coda) → "pubblicato" (verde, fatto). Solo dashboard: il serializer pubblico
+  // NON lo espone.
+  publishStatus: {
+    type: String,
+    enum: ["none", "schedulato", "pubblicato"],
+    default: "none",
+  },
   order: { type: Number, default: 0 },
   clientNotes: { type: [NoteSchema], default: [] },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

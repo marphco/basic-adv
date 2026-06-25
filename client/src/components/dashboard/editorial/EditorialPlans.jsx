@@ -99,6 +99,10 @@ const EditorialPlans = () => {
   const [sharingAdmin, setSharingAdmin] = useState(false);
   const [shareAdminMsg, setShareAdminMsg] = useState("");
   const [adminMsg, setAdminMsg] = useState(""); // messaggio opzionale agli admin
+  const [sharingOps, setSharingOps] = useState(false);
+  const [shareOpsMsg, setShareOpsMsg] = useState("");
+  const [opsMsg, setOpsMsg] = useState(""); // messaggio opzionale agli operatori
+  const [selectedOpIds, setSelectedOpIds] = useState([]); // operatori scelti
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
 
   const me = useMemo(readToken, []);
@@ -246,6 +250,7 @@ const EditorialPlans = () => {
     media: d.media,
     sponsored: d.sponsored,
     status: d.status,
+    publishStatus: d.publishStatus,
     clientNotes: d.notes || [],
   });
 
@@ -487,12 +492,23 @@ const EditorialPlans = () => {
   const operatorIsAdmin = (client?.operators || []).some((id) =>
     adminIdSet.has(String(id))
   );
+  // Operatori del cliente con nome + mansioni, ESCLUSO chi è loggato: sono i
+  // possibili destinatari della notifica. Arrivano da /clients (operatorsInfo),
+  // quindi disponibili anche agli operatori (non solo agli admin). La sezione di
+  // notifica compare solo se c'è almeno un ALTRO operatore da avvisare.
+  const selectableOperators = (client?.operatorsInfo || []).filter(
+    (o) => String(o.id) !== String(currentUserId)
+  );
+  const canNotifyOperators = selectableOperators.length > 0;
 
   const openShare = () => {
     setShareMsg("");
     setShareAdminMsg("");
     setClientMsg("");
     setAdminMsg("");
+    setShareOpsMsg("");
+    setOpsMsg("");
+    setSelectedOpIds(selectableOperators.map((o) => o.id)); // pre-seleziona tutti
     setShareOpen(true);
   };
   const closeShare = () => {
@@ -501,7 +517,14 @@ const EditorialPlans = () => {
     setShareAdminMsg("");
     setClientMsg("");
     setAdminMsg("");
+    setShareOpsMsg("");
+    setOpsMsg("");
+    setSelectedOpIds([]);
   };
+  const toggleOpId = (id) =>
+    setSelectedOpIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
   const sendShareAdmin = async () => {
     setSharingAdmin(true);
     setShareAdminMsg("");
@@ -522,6 +545,31 @@ const EditorialPlans = () => {
       toastErr(msg ? `Invio non riuscito: ${msg}` : "Invio all'admin non riuscito.");
     } finally {
       setSharingAdmin(false);
+    }
+  };
+  const sendNotifyOperators = async () => {
+    setSharingOps(true);
+    setShareOpsMsg("");
+    try {
+      const r = await api.notifyOperators({
+        clientId,
+        year: view.year,
+        month: view.month,
+        message: opsMsg,
+        operatorIds: selectedOpIds,
+      });
+      const n = r.sent?.length || 0;
+      setShareOpsMsg(
+        `Inviato a ${n} ${n === 1 ? "operatore" : "operatori"}` +
+          (r.failed?.length ? ` · ${r.failed.length} non riusciti` : "")
+      );
+    } catch (e) {
+      const msg = e?.response?.data?.error;
+      toastErr(
+        msg ? `Invio non riuscito: ${msg}` : "Invio agli operatori non riuscito."
+      );
+    } finally {
+      setSharingOps(false);
     }
   };
   const sendShare = async () => {
@@ -1127,9 +1175,11 @@ const EditorialPlans = () => {
                 </button>
               </div>
 
-              {/* Revisione interna: solo se l'operatore NON è già admin
-                  (altrimenti l'admin-operatore copre tutto, niente revisione). */}
-              {!operatorIsAdmin && (
+              {/* Revisione interna (operatore → admin): ha senso solo per gli
+                  OPERATORI, che mandano il piano all'admin di revisione. Un admin
+                  loggato è già il revisore, quindi non la vede. Inoltre nascosta
+                  se l'operatore del cliente è già admin (copre tutto). */}
+              {!isAdmin && !operatorIsAdmin && (
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
                   <FontAwesomeIcon icon={faUserShield} /> Revisione interna (admin)
@@ -1189,6 +1239,71 @@ const EditorialPlans = () => {
                   >
                     <FontAwesomeIcon icon={faUserShield} />{" "}
                     {sharingAdmin ? "Invio in corso…" : "Invia all'admin"}
+                  </button>
+                </div>
+              </div>
+              )}
+
+              {/* Notifica agli operatori: avvisa gli ALTRI operatori del cliente
+                  (admin → operatori oppure operatore → operatori). Compare solo
+                  se c'è almeno un altro operatore oltre a chi è loggato. */}
+              {canNotifyOperators && (
+              <div className="ep-share-admin">
+                <div className="ep-share-admin-head">
+                  <FontAwesomeIcon icon={faUsers} /> Notifica agli operatori
+                </div>
+                <p className="ep-share-desc">
+                  Avvisa gli operatori del cliente che possono lavorare al piano
+                  (es. dopo aver applicato delle modifiche). Scegli chi avvisare:
+                  riceveranno un'email con il link alla dashboard.
+                </p>
+                <div className="ep-op-list">
+                  {selectableOperators.map((o) => (
+                    <label key={o.id} className="ep-op-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedOpIds.includes(o.id)}
+                        onChange={() => toggleOpId(o.id)}
+                      />
+                      <span className="ep-op-name">
+                        {o.name || "Operatore"}
+                        {o.role === "admin" && (
+                          <span className="ep-role-badge admin">Admin</span>
+                        )}
+                      </span>
+                      {o.jobRoles && o.jobRoles.length > 0 && (
+                        <span className="ep-op-roles">
+                          {o.jobRoles.join(" · ")}
+                        </span>
+                      )}
+                    </label>
+                  ))}
+                </div>
+                <div className="ep-share-msg">
+                  <label className="ep-field-label">
+                    Messaggio (facoltativo)
+                  </label>
+                  <textarea
+                    className="ep-textarea"
+                    rows={2}
+                    value={opsMsg}
+                    placeholder="Aggiungi un messaggio per gli operatori…"
+                    onChange={(e) => setOpsMsg(e.target.value)}
+                  />
+                </div>
+                {shareOpsMsg && (
+                  <div className="ep-share-ok">
+                    <FontAwesomeIcon icon={faCheck} /> {shareOpsMsg}
+                  </div>
+                )}
+                <div className="ep-foot-right ep-share-actions">
+                  <button
+                    className="ep-btn ep-btn--ghost"
+                    onClick={sendNotifyOperators}
+                    disabled={!selectedOpIds.length || sharingOps}
+                  >
+                    <FontAwesomeIcon icon={faPaperPlane} />{" "}
+                    {sharingOps ? "Invio in corso…" : "Invia agli operatori"}
                   </button>
                 </div>
               </div>

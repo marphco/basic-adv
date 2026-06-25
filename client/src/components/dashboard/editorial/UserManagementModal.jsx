@@ -10,12 +10,23 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 
+// Mansioni suggerite (selezionabili); con "Altro" se ne aggiungono di custom.
+const JOB_ROLES = [
+  "Social Media Manager",
+  "Graphic Designer",
+  "Copywriter",
+  "Web Developer",
+  "Video Maker",
+  "Project Manager",
+];
+
 const emptyForm = {
   username: "",
   name: "",
   email: "",
   password: "",
   role: "member",
+  jobRoles: [],
   assignedClients: [],
 };
 
@@ -32,6 +43,22 @@ const UserManagementModal = ({
   // editing: null | "new" | <userId>
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
+  const [customRole, setCustomRole] = useState("");
+
+  const toggleJobRole = (r) =>
+    setForm((f) => ({
+      ...f,
+      jobRoles: f.jobRoles.includes(r)
+        ? f.jobRoles.filter((x) => x !== r)
+        : [...f.jobRoles, r],
+    }));
+  const addCustomRole = () => {
+    const r = customRole.trim();
+    if (r && !form.jobRoles.some((x) => x.toLowerCase() === r.toLowerCase())) {
+      setForm((f) => ({ ...f, jobRoles: [...f.jobRoles, r] }));
+    }
+    setCustomRole("");
+  };
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && (editing ? setEditing(null) : onClose());
@@ -43,6 +70,7 @@ const UserManagementModal = ({
 
   const startCreate = () => {
     setForm(emptyForm);
+    setCustomRole("");
     setEditing("new");
   };
   const startEdit = (u) => {
@@ -52,8 +80,10 @@ const UserManagementModal = ({
       email: u.email || "",
       password: "",
       role: u.role,
+      jobRoles: u.jobRoles || [],
       assignedClients: u.assignedClients || [],
     });
+    setCustomRole("");
     setEditing(u.id);
   };
 
@@ -72,12 +102,14 @@ const UserManagementModal = ({
         email: form.email.trim(),
         password: form.password,
         role: form.role,
+        jobRoles: form.jobRoles,
       });
     } else {
       const data = {
         name: form.name.trim(),
         email: form.email.trim(),
         role: form.role,
+        jobRoles: form.jobRoles,
       };
       if (form.password) data.password = form.password; // vuoto = non cambiare
       onUpdate(editing, data);
@@ -113,6 +145,15 @@ const UserManagementModal = ({
                     </span>
                   </div>
                   {u.email && <div className="ep-user-email">{u.email}</div>}
+                  {u.jobRoles && u.jobRoles.length > 0 && (
+                    <div className="ep-role-chips ep-role-chips--readonly">
+                      {u.jobRoles.map((r) => (
+                        <span key={r} className="ep-role-chip is-on">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {u.role === "member" && (
                     <div className="ep-user-clients">
                       {u.assignedClients && u.assignedClients.length ? (
@@ -217,6 +258,59 @@ const UserManagementModal = ({
                     <option value="member">Operatore</option>
                     <option value="admin">Admin</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="ep-field">
+                <label className="ep-field-label">Mansioni (facoltative)</label>
+                <div className="ep-role-chips">
+                  {JOB_ROLES.map((r) => (
+                    <button
+                      type="button"
+                      key={r}
+                      className={`ep-role-chip ${
+                        form.jobRoles.includes(r) ? "is-on" : ""
+                      }`}
+                      onClick={() => toggleJobRole(r)}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                  {form.jobRoles
+                    .filter((r) => !JOB_ROLES.includes(r))
+                    .map((r) => (
+                      <button
+                        type="button"
+                        key={r}
+                        className="ep-role-chip is-on is-custom"
+                        onClick={() => toggleJobRole(r)}
+                        title="Rimuovi"
+                      >
+                        {r} ✕
+                      </button>
+                    ))}
+                </div>
+                <div className="ep-role-add">
+                  <input
+                    className="ep-input"
+                    placeholder="Altro ruolo…"
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomRole();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="ep-btn ep-btn--ghost"
+                    onClick={addCustomRole}
+                    disabled={!customRole.trim()}
+                  >
+                    Aggiungi
+                  </button>
                 </div>
               </div>
 

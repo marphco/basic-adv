@@ -80,3 +80,17 @@ body {
   font-synthesis-weight: none;
   font-synthesis-style: none;
 }
+
+/* iOS Safari zooma automaticamente quando il focus va su un input/textarea con
+   font-size < 16px. Nel sito lo zoom è disabilitato (viewport + useDisableZoom),
+   quindi quello zoom resterebbe "bloccato" e provocherebbe scroll orizzontale
+   (es. nel piano editoriale pubblico quando si apre la tastiera). Forziamo 16px
+   sui campi di testo SOLO su mobile, così la tastiera non innesca più lo zoom.
+   !important per vincere sui font-size impostati per-classe (es. .pp-input). */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
