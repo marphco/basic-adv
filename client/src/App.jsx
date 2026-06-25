@@ -271,16 +271,21 @@ useEffect(() => {
   });
 }, [location.pathname, isMobile]);
 
-  // Sulla vista pubblica /p/ disattiviamo la normalizzazione scroll di GSAP
-  // (serve solo allo scroller orizzontale del sito marketing): su mobile
-  // "litigava" con lo slancio nativo causando un piccolo rimbalzo verso l'alto
-  // durante lo scroll veloce. La riattiviamo sulle altre rotte touch.
+  // Sulla vista pubblica /p/ e sulla dashboard disattiviamo la normalizzazione
+  // scroll di GSAP (serve solo allo scroller orizzontale del sito marketing).
+  // Su touch normalizeScroll intercetta i touchmove a livello di documento e
+  // guida lo scroll della pagina principale: questo IMPEDISCE lo scroll nativo
+  // dentro i contenitori annidati (es. il PostModal del piano editoriale, che è
+  // position:fixed con overflow-y:auto) → il modale risultava non scrollabile su
+  // mobile. La dashboard è una UI admin senza scroller GSAP, quindi non ne ha
+  // bisogno. La riattiviamo solo sulle altre rotte touch (marketing).
   useEffect(() => {
     const isPublic = location.pathname.startsWith("/p/");
+    const isDashboard = location.pathname === "/dashboard";
     const touch =
       typeof window !== "undefined" &&
       window.matchMedia("(pointer: coarse)").matches;
-    if (isPublic) ScrollTrigger.normalizeScroll(false);
+    if (isPublic || isDashboard) ScrollTrigger.normalizeScroll(false);
     else if (touch) ScrollTrigger.normalizeScroll(true);
   }, [location.pathname]);
 
