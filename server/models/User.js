@@ -9,6 +9,9 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, default: "" },
   // Email per le notifiche (es. avviso quando un cliente lascia delle note).
   email: { type: String, default: "" },
+  // Mansioni dell'operatore (es. "Social Media Manager", "Graphic Designer").
+  // Più ruoli possibili; valori liberi (lista suggerita lato UI + "Altro").
+  jobRoles: { type: [String], default: [] },
   assignedClients: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
   createdAt: { type: Date, default: Date.now },
 });

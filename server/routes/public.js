@@ -135,7 +135,7 @@ function sanitizePost(p, pagesById, reqEmail) {
     })),
     sponsored: !!p.sponsored,
     notes: sanitizeNotes(p.clientNotes, reqEmail),
-    // ⚠️ MAI: isDuplicate, status, createdBy, order
+    // ⚠️ MAI: isDuplicate, status, publishStatus, createdBy, order
   };
 }
 

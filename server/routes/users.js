@@ -19,6 +19,20 @@ const safe = (userDoc) => {
   return obj;
 };
 
+// Mansioni: array di stringhe pulite, deduplicate (case-insensitive), max 10.
+const cleanRoles = (roles) => {
+  if (!Array.isArray(roles)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const r of roles) {
+    const s = String(r || "").trim();
+    if (!s || seen.has(s.toLowerCase())) continue;
+    seen.add(s.toLowerCase());
+    out.push(s.slice(0, 60));
+  }
+  return out.slice(0, 10);
+};
+
 // Lista utenti (mai la password)
 router.get("/", async (req, res) => {
   try {
@@ -35,7 +49,7 @@ router.get("/", async (req, res) => {
 // Crea utente (operatore = "member", oppure "admin")
 router.post("/", async (req, res) => {
   try {
-    const { username, password, name, email, role, assignedClients } =
+    const { username, password, name, email, role, assignedClients, jobRoles } =
       req.body || {};
     if (!username || !username.trim() || !password)
       return res.status(400).json({ error: "Username e password obbligatori" });
@@ -57,6 +71,7 @@ router.post("/", async (req, res) => {
       name: name || "",
       email: email || "",
       role,
+      jobRoles: cleanRoles(jobRoles),
       // l'assegnazione clienti (operatore) si gestisce dalla scheda Cliente; qui
       // accettata per qualsiasi ruolo (anche admin può fare da operatore).
       assignedClients: Array.isArray(assignedClients) ? assignedClients : [],
@@ -90,12 +105,14 @@ router.post("/", async (req, res) => {
 // Aggiorna utente (nome, ruolo, clienti assegnati, password opzionale)
 router.put("/:id", async (req, res) => {
   try {
-    const { name, email, role, assignedClients, password } = req.body || {};
+    const { name, email, role, assignedClients, password, jobRoles } =
+      req.body || {};
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "Utente non trovato" });
 
     if (name !== undefined) user.name = name;
     if (email !== undefined) user.email = email;
+    if (jobRoles !== undefined) user.jobRoles = cleanRoles(jobRoles);
     if (role !== undefined) {
       if (!["admin", "member"].includes(role))
         return res.status(400).json({ error: "Ruolo non valido" });

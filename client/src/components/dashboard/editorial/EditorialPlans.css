@@ -2043,3 +2043,164 @@
   font-size: 0.9rem;
   margin-bottom: 2px;
 }
+
+/* ---- Mansioni operatore: chip selezionabili + aggiunta custom ---- */
+.ep-role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+.ep-role-chip {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ep-surface-2);
+  border: 1px solid var(--ep-border);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.ep-role-chip:hover {
+  border-color: var(--foreground-color);
+}
+.ep-role-chip.is-on {
+  background: var(--foreground-color);
+  border-color: var(--foreground-color);
+  color: #fff;
+}
+/* In sola lettura (lista utenti): niente puntatore/hover */
+.ep-role-chips--readonly .ep-role-chip {
+  cursor: default;
+}
+.ep-role-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ep-role-add .ep-input {
+  flex: 1;
+}
+
+/* ---- Selezione operatori da notificare (checkbox) ---- */
+.ep-op-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0;
+}
+.ep-op-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ep-op-item:hover {
+  background: var(--ep-surface-2);
+}
+.ep-op-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--foreground-color);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ep-op-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--primary-text-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ep-op-roles {
+  font-size: 0.72rem;
+  color: var(--ep-muted, #8a8a8a);
+  margin-left: auto;
+  text-align: right;
+}
+
+/* ====== Stato di lavorazione del post (interno): schedulato / pubblicato ======
+   Giallo "schedulato" = LEMON (#facc15), volutamente diverso dall'ocra delle
+   note cliente (--ep-note #f5a623). Verde "pubblicato" pieno (#16a34a), diverso
+   dal verde tenue di "nota risolta". Mai mostrato al cliente. */
+.ep-badge--sched {
+  background: #facc15;
+  color: #1c1917;
+  font-weight: 700;
+}
+.ep-badge--pub {
+  background: #16a34a;
+  color: #fff;
+  font-weight: 700;
+}
+/* Anello sull'intera card per "flaggare" il post a colpo d'occhio: non
+   interferisce con lo sfondo delle note né col bordo-categoria a sinistra. */
+.ep-post--sched {
+  outline: 2px solid #facc15;
+  outline-offset: -2px;
+}
+.ep-post--pub {
+  outline: 2px solid #16a34a;
+  outline-offset: -2px;
+}
+/* Sfondo dello stato: applicato SOLO sui post senza sfondo-nota/duplicato
+   (vedi PostChip → statusBgClass), così non si confonde con ocra/verde delle
+   note. Intensità in linea con gli altri sfondi (~0.16). */
+.ep-post--sched-bg {
+  background: rgba(250, 204, 21, 0.16);
+}
+.ep-post--pub-bg {
+  background: rgba(22, 163, 74, 0.16);
+}
+
+/* Selettore stato nel modale post (segmented) */
+.ep-status-field {
+  margin-top: 12px;
+}
+.ep-status-field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-text-color);
+  margin-bottom: 6px;
+}
+.ep-status-seg {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ep-status-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--ep-surface-2);
+  border: 1px solid var(--ep-border);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.ep-status-opt:hover {
+  border-color: var(--foreground-color);
+}
+.ep-status-opt--sched.is-on {
+  background: #facc15;
+  border-color: #facc15;
+  color: #1c1917;
+}
+.ep-status-opt--pub.is-on {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+/* "Nessuno" attivo: selezione neutra evidenziata */
+.ep-status-opt.is-on:not(.ep-status-opt--sched):not(.ep-status-opt--pub) {
+  border-color: var(--foreground-color);
+  box-shadow: inset 0 0 0 1px var(--foreground-color);
+}

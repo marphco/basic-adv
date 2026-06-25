@@ -113,17 +113,27 @@ router.get("/clients", async (req, res) => {
     // cliente, così la scheda Cliente può pre-popolare il selettore.
     const ids = clients.map((c) => c._id);
     const ops = await User.find({ assignedClients: { $in: ids } })
-      .select("_id assignedClients")
+      .select("_id name role jobRoles assignedClients")
       .lean();
     const opsByClient = {};
     ops.forEach((u) =>
       (u.assignedClients || []).forEach((cid) => {
         const k = String(cid);
-        (opsByClient[k] ||= []).push(String(u._id));
+        (opsByClient[k] ||= []).push({
+          id: String(u._id),
+          name: u.name || "",
+          role: u.role,
+          jobRoles: Array.isArray(u.jobRoles) ? u.jobRoles : [],
+        });
       })
     );
     clients.forEach((c) => {
-      c.operators = opsByClient[String(c._id)] || [];
+      const list = opsByClient[String(c._id)] || [];
+      // `operators` resta la lista di soli ID (retro-compatibilità: scheda
+      // Cliente, gating, ecc.); `operatorsInfo` aggiunge nome+ruoli per la UI
+      // (es. notifica agli operatori), disponibile anche ai non-admin.
+      c.operators = list.map((o) => o.id);
+      c.operatorsInfo = list;
     });
     res.json(clients);
   } catch (e) {
@@ -348,6 +358,82 @@ router.post("/share-admin", async (req, res) => {
   }
 });
 
+// Notifica gli OPERATORI del cliente che il piano è pronto perché ci lavorino
+// (es. dopo che un admin ha revisionato/applicato le modifiche). Speculare a
+// /share-admin: link alla dashboard. Accessibile a chi può gestire il cliente;
+// il mittente non notifica sé stesso (caso admin-operatore).
+router.post("/notify-operators", async (req, res) => {
+  try {
+    const { clientId, year, month, message, operatorIds } = req.body || {};
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    if (!canAccessClient(req.dbUser, clientId))
+      return res.status(403).json({ error: "Accesso negato a questo cliente" });
+
+    const client = await Client.findById(clientId).lean();
+    if (!client) return res.status(404).json({ error: "Cliente non trovato" });
+
+    // Operatori = utenti con questo cliente tra gli assignedClients.
+    const operators = await User.find({ assignedClients: clientId })
+      .select("email name")
+      .lean();
+    const senderId = String(req.dbUser?._id || "");
+    // Mai me stesso (chi invia, anche se è operatore del cliente).
+    let pool = operators.filter((o) => String(o._id) !== senderId);
+    // Se il client indica quali operatori notificare, restringo a quelli (e li
+    // valido: solo operatori reali del cliente, niente ID arbitrari).
+    const wanted = Array.isArray(operatorIds)
+      ? operatorIds.map(String).filter(Boolean)
+      : null;
+    if (wanted) pool = pool.filter((o) => wanted.includes(String(o._id)));
+    const recipients = [
+      ...new Set(
+        pool.map((o) => String(o.email || "").trim()).filter(Boolean)
+      ),
+    ];
+    if (!recipients.length)
+      return res.status(400).json({
+        error: "Nessun operatore valido da notificare per questo cliente.",
+      });
+
+    const m = Number(month);
+    const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
+    const dashUrl = `${base}/dashboard`;
+    const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
+    const senderName = String(
+      req.dbUser?.name || req.dbUser?.username || ""
+    ).trim();
+    const senderRoles = Array.isArray(req.dbUser?.jobRoles)
+      ? req.dbUser.jobRoles
+      : [];
+
+    const mail = emailTemplates.notifyOperators({
+      senderName,
+      senderRoles,
+      clientName: client.name,
+      monthLabel,
+      dashUrl,
+      message: String(message || "").trim().slice(0, 2000),
+    });
+    const results = await Promise.allSettled(
+      recipients.map((to) =>
+        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+      )
+    );
+    const sent = [];
+    const failed = [];
+    results.forEach((r, i) =>
+      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
+    );
+    if (!sent.length)
+      return res.status(502).json({ error: "Invio email non riuscito", failed });
+
+    res.json({ sent, failed });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nell'invio agli operatori" });
+  }
+});
+
 // Stato approvazione del piano (cliente) per un mese — per la dashboard.
 router.get("/approval", async (req, res) => {
   try {
@@ -425,6 +511,9 @@ router.post("/posts", async (req, res) => {
       media: Array.isArray(b.media) ? b.media : [],
       sponsored: !!b.sponsored,
       status: b.status || "draft",
+      publishStatus: ["schedulato", "pubblicato"].includes(b.publishStatus)
+        ? b.publishStatus
+        : "none",
       order: b.order || 0,
       // note già presenti alla creazione (es. nota dell'agenzia su un post nuovo)
       clientNotes: Array.isArray(b.clientNotes) ? b.clientNotes : [],
@@ -452,6 +541,12 @@ router.put("/posts/:id", async (req, res) => {
       if (b[k] !== undefined) post[k] = Number(b[k]);
     });
     if (b.sponsored !== undefined) post.sponsored = !!b.sponsored;
+    if (b.publishStatus !== undefined)
+      post.publishStatus = ["schedulato", "pubblicato"].includes(
+        b.publishStatus
+      )
+        ? b.publishStatus
+        : "none";
     // Il client invia isDuplicate=false quando il contenuto è stato modificato.
     if (b.isDuplicate !== undefined) post.isDuplicate = !!b.isDuplicate;
     // Note del cliente (es. operatore che le marca "risolte").

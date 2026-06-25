@@ -234,6 +234,41 @@ function shareAdminReview({ clientName, monthLabel, dashUrl, message }) {
   };
 }
 
+// → agli OPERATORI assegnati: notifica interna di team su un piano. La manda un
+// admin (es. "ho fatto le modifiche, puoi lavorarci") o un altro operatore
+// (comunicazione cross-team). Generica: il mittente + l'eventuale messaggio
+// danno il contesto. Link alla dashboard (gli operatori lavorano lì).
+function notifyOperators({ senderName, senderRoles, clientName, monthLabel, dashUrl, message }) {
+  const msg = (message || "").trim();
+  const who = String(senderName || "").trim() || "Un membro del team";
+  const roles = Array.isArray(senderRoles) ? senderRoles.filter(Boolean) : [];
+  const whoLine = roles.length ? `${who} (${roles.join(", ")})` : who;
+  const body =
+    banner("Interno · notifica team", BLUE) +
+    h("Notifica sul piano", BLUE) +
+    p(
+      `<strong>${esc(
+        whoLine
+      )}</strong> ti ha inviato una notifica sul piano editoriale di <strong>${esc(
+        monthLabel
+      )}</strong> per <strong>${esc(clientName)}</strong>.`
+    ) +
+    (msg ? p("Messaggio:") + quote(msg) : "") +
+    p("Aprilo in dashboard per vedere gli aggiornamenti e procedere.") +
+    button("Apri in dashboard", dashUrl);
+  return {
+    subject: `🔔 Interno — notifica team · ${monthLabel} (${clientName})`,
+    text: `[INTERNO · NOTIFICA TEAM]\n${whoLine} ti ha inviato una notifica sul piano di ${monthLabel} per ${clientName}.${
+      msg ? `\nMessaggio: ${msg}` : ""
+    }\nAprilo in dashboard: ${dashUrl}`,
+    html: wrap({
+      title: "Notifica piano editoriale",
+      preheader: `Notifica sul piano di ${monthLabel} — ${clientName}`,
+      bodyHtml: body,
+    }),
+  };
+}
+
 // → al NUOVO UTENTE: account creato. Per sicurezza NON contiene la password.
 function accountWelcome({ name, username, role, loginUrl }) {
   const roleLabel = role === "admin" ? "Amministratore" : "Operatore";
@@ -274,6 +309,7 @@ module.exports = {
   revisionsDoneNotification,
   shareEditorialPlan,
   shareAdminReview,
+  notifyOperators,
   planApprovedNotification,
   accountWelcome,
   wrap,

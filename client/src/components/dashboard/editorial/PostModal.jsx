@@ -15,6 +15,7 @@ import {
   faSpinner,
   faChevronLeft,
   faChevronRight,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
 import { confirmDialog, toastErr } from "./uiNotify";
@@ -37,6 +38,9 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [caption, setCaption] = useState(draft.caption || "");
   const [category, setCategory] = useState(draft.category || "");
   const [sponsored, setSponsored] = useState(!!draft.sponsored);
+  const [publishStatus, setPublishStatus] = useState(
+    draft.publishStatus || "none"
+  );
   const [pageId, setPageId] = useState(draft.pageId || client.pages[0]?.id);
   const [day, setDay] = useState(draft.day);
   const [month, setMonth] = useState(Number(draft.month));
@@ -142,6 +146,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     caption: draft.caption || "",
     category: draft.category || "",
     sponsored: !!draft.sponsored,
+    publishStatus: draft.publishStatus || "none",
     pageId: draft.pageId || client.pages[0]?.id,
     day: Number(draft.day),
     month: Number(draft.month),
@@ -153,6 +158,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     caption !== initialRef.current.caption ||
     category !== initialRef.current.category ||
     sponsored !== initialRef.current.sponsored ||
+    publishStatus !== initialRef.current.publishStatus ||
     pageId !== initialRef.current.pageId ||
     Number(day) !== initialRef.current.day ||
     Number(month) !== initialRef.current.month ||
@@ -291,6 +297,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
         caption: caption.trim(),
         category: category.trim(),
         sponsored,
+        publishStatus,
         pageId,
         day: Number(day),
         month: Number(month),
@@ -486,6 +493,41 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
               <span className="ep-switch-knob" />
             </span>
           </button>
+
+          {/* Stato di lavorazione interno (giallo = schedulato, verde =
+              pubblicato). Non visibile al cliente. */}
+          <div className="ep-status-field">
+            <span className="ep-status-field-label">Stato di lavorazione</span>
+            <div className="ep-status-seg">
+              <button
+                type="button"
+                className={`ep-status-opt ${
+                  publishStatus === "none" ? "is-on" : ""
+                }`}
+                onClick={() => setPublishStatus("none")}
+              >
+                Nessuno
+              </button>
+              <button
+                type="button"
+                className={`ep-status-opt ep-status-opt--sched ${
+                  publishStatus === "schedulato" ? "is-on" : ""
+                }`}
+                onClick={() => setPublishStatus("schedulato")}
+              >
+                <FontAwesomeIcon icon={faClock} /> Schedulato
+              </button>
+              <button
+                type="button"
+                className={`ep-status-opt ep-status-opt--pub ${
+                  publishStatus === "pubblicato" ? "is-on" : ""
+                }`}
+                onClick={() => setPublishStatus("pubblicato")}
+              >
+                <FontAwesomeIcon icon={faCheck} /> Pubblicato
+              </button>
+            </div>
+          </div>
 
           {/* Note del post: del CLIENTE (con "risolvi") + dell'AGENZIA per il
               cliente (spiegazione, oppure richiesta che richiede risposta). */}

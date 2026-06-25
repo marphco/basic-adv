@@ -9,6 +9,7 @@ import {
   faClone,
   faCheck,
   faLock,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { categoryColor } from "./mockData";
 
@@ -45,6 +46,25 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
     : "";
   // Colore del bordo laterale = colore della categoria (come nel prototipo).
   const catColor = post.category ? categoryColor(post.category) : null;
+  // Stato di lavorazione interno: schedulato (giallo) / pubblicato (verde).
+  // L'anello + badge ci sono SEMPRE; lo SFONDO colorato dello stato si mette solo
+  // se il post non ha già uno sfondo-nota o di duplicato (che hanno priorità), per
+  // non confondere il giallo stato con l'ocra delle note cliente né il verde stato
+  // col verde "risolta".
+  const ps = post.publishStatus;
+  const statusClass =
+    ps === "pubblicato"
+      ? "ep-post--pub"
+      : ps === "schedulato"
+      ? "ep-post--sched"
+      : "";
+  const noOtherBg = !bgClass && !post.isDuplicate;
+  const statusBgClass =
+    noOtherBg && ps === "pubblicato"
+      ? "ep-post--pub-bg"
+      : noOtherBg && ps === "schedulato"
+      ? "ep-post--sched-bg"
+      : "";
 
   return (
     <button
@@ -53,6 +73,8 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         compact ? "ep-post--compact" : "",
         post.sponsored ? "ep-post--sponsored" : "",
         bgClass,
+        statusClass,
+        statusBgClass,
         post.isDuplicate ? "ep-post--dup" : "",
         movable ? "ep-post--draggable" : "",
       ]
@@ -104,6 +126,16 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         )}
         <span className="ep-post-caption">{post.caption}</span>
         <div className="ep-post-badges">
+          {ps === "schedulato" && (
+            <span className="ep-badge ep-badge--sched">
+              <FontAwesomeIcon icon={faClock} /> Schedulato
+            </span>
+          )}
+          {ps === "pubblicato" && (
+            <span className="ep-badge ep-badge--pub">
+              <FontAwesomeIcon icon={faCheck} /> Pubblicato
+            </span>
+          )}
           {post.sponsored && (
             <span className="ep-badge ep-badge--sponsored">
               <FontAwesomeIcon icon={faBullhorn} /> Sponsor
