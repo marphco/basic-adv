@@ -4,16 +4,15 @@ import {
   faTimes,
   faPaperPlane,
   faEnvelopeOpenText,
-  faTriangleExclamation,
   faClockRotateLeft,
   faUserShield,
   faUsers,
-  faWandMagicSparkles,
   faCopy,
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
+import NotificationLog from "./NotificationLog";
 
-// Data + ora sempre in fuso ITALIANO (come il banner approvazioni).
+// Data + ora in fuso ITALIANO (come il banner approvazioni).
 const fmt = (d) =>
   new Date(d).toLocaleString("it-IT", {
     timeZone: "Europe/Rome",
@@ -24,7 +23,8 @@ const fmt = (d) =>
     minute: "2-digit",
   });
 
-// Con i SECONDI: serve per cercare l'invio nei log del server di posta.
+// Con i SECONDI: serve solo nei dettagli tecnici, per cercare un messaggio nei
+// log del server di posta.
 const fmtPrecise = (d) =>
   new Date(d).toLocaleString("it-IT", {
     timeZone: "Europe/Rome",
@@ -38,7 +38,7 @@ const fmtPrecise = (d) =>
 
 const KIND_LABEL = {
   client: "Al cliente",
-  admin: "All'admin di revisione",
+  admin: "All'admin",
   operators: "Agli operatori",
 };
 const KIND_ICON = {
@@ -47,8 +47,6 @@ const KIND_ICON = {
   operators: faUsers,
 };
 
-// Riferimento tecnico di un destinatario, in una riga: è quello che serve per
-// far cercare l'invio nei log del server di posta.
 const techLine = (r) =>
   [
     r.email,
@@ -65,8 +63,6 @@ const techLine = (r) =>
 // Una voce di invio: quando, da chi, a quali indirizzi e con quale esito.
 const NotificationRow = ({ n, clientName, monthLabel }) => {
   const [copied, setCopied] = useState(false);
-  // I dati tecnici esistono solo per gli invii registrati davvero (non per le
-  // voci ricostruite a posteriori) e per gli invii fatti dopo questa funzione.
   const hasTech = n.recipients.some(
     (r) => r.sentAt || r.providerId || r.providerResponse
   );
@@ -88,10 +84,7 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
         <FontAwesomeIcon icon={KIND_ICON[n.kind] || faPaperPlane} />
         <strong>{KIND_LABEL[n.kind] || "Invio"}</strong>
         <span className="ep-hist-date">{fmt(n.at)}</span>
-        {n.by && <span className="ep-hist-by">· inviata da {n.by}</span>}
-        {n.source === "maillog" && (
-          <span className="ep-hist-badge">dal server di posta</span>
-        )}
+        {n.by && <span className="ep-hist-by">· {n.by}</span>}
       </div>
       <div className="ep-hist-recipients">
         {n.recipients.map((r) => (
@@ -100,9 +93,7 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
             className={`ep-client-chip ${r.ok ? "" : "ep-chip-fail"}`}
             title={
               r.ok
-                ? `Consegnata al mailer${
-                    r.sentAt ? ` il ${fmtPrecise(r.sentAt)}` : ""
-                  }${r.providerId ? ` · id ${r.providerId}` : ""}`
+                ? `Consegnata al mailer${r.sentAt ? ` il ${fmtPrecise(r.sentAt)}` : ""}`
                 : r.error || "Invio non riuscito"
             }
           >
@@ -112,11 +103,10 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
         ))}
       </div>
       {n.message && <p className="ep-hist-msg">“{n.message}”</p>}
-      {n.evidence && <p className="ep-hist-evidence">{n.evidence}</p>}
 
       {hasTech && (
         <details className="ep-hist-tech">
-          <summary>Dettagli tecnici (per i log del mail server)</summary>
+          <summary>Dettagli tecnici</summary>
           <ul>
             {n.recipients.map((r) => (
               <li key={r.email}>{techLine(r)}</li>
@@ -124,7 +114,7 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
           </ul>
           <button className="ep-btn ep-btn--ghost" onClick={copyTech}>
             <FontAwesomeIcon icon={copied ? faCheck : faCopy} />{" "}
-            {copied ? "Copiato" : "Copia dettagli"}
+            {copied ? "Copiato" : "Copia"}
           </button>
         </details>
       )}
@@ -132,7 +122,11 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
   );
 };
 
+// Storico del piano: una sola finestra, due schede.
+//  • Questo mese  → invii e aperture del mese aperto
+//  • Tutti i mesi → colpo d'occhio e cronologia completa
 const PlanHistoryModal = ({
+  clientId,
   clientName,
   monthLabel,
   year,
@@ -143,9 +137,9 @@ const PlanHistoryModal = ({
   onBackfill,
   onClose,
 }) => {
+  const [tab, setTab] = useState("month");
   const [busy, setBusy] = useState(false);
   const [backfillMsg, setBackfillMsg] = useState("");
-
 
   const notifications = history?.notifications || [];
   const accesses = history?.accesses || [];
@@ -154,39 +148,25 @@ const PlanHistoryModal = ({
   const clientOpens = accesses.filter((a) => !a.isAgency);
   const agencyOpens = accesses.filter((a) => a.isAgency);
 
-  // Spiega l'esito della ricostruzione. Il caso più frequente — e il più
-  // frainteso — è "non c'è nulla da ricostruire": va detto chiaramente che in
-  // archivio non esistono prove per quel mese, non che lo storico è a posto.
-  const backfillOutcome = (r, year, month) => {
-    if (r.accesses)
-      return `Ricostruite ${r.accesses} aperture del piano da approvazioni e note già in archivio.`;
-
-    const scanned = r.details?.[0]?.monthsScanned || [];
-    const here = scanned.find((m) => m.year === year && m.month === month);
+  const backfillOutcome = (r) => {
+    if (r.accesses) return `Ricostruite ${r.accesses} aperture.`;
+    const here = (r.details?.[0]?.monthsScanned || []).find(
+      (m) => m.year === year && m.month === month
+    );
     if (!here)
-      return (
-        `Per ${monthLabel} non c'è nessuna prova in archivio: il cliente non ha ` +
-        `approvato il piano né lasciato note. Ricevere l'email non lascia traccia ` +
-        `nel sistema, quindi non c'è niente da ricostruire — gli invii vengono ` +
-        `registrati da qui in avanti.`
-      );
+      return `Nessuna traccia in archivio per ${monthLabel}: il cliente non ha approvato né lasciato note.`;
     if (!here.clientEvidence)
-      return (
-        `Per ${monthLabel} le uniche tracce in archivio (${here.approvals} approvazioni, ` +
-        `${here.notes} note) risultano di utenti dell'agenzia, non del cliente: ` +
-        `non provano che il piano gli sia arrivato.`
-      );
-    return `Storico già completo per ${monthLabel}: le prove in archivio erano già state ricostruite.`;
+      return `Per ${monthLabel} le tracce in archivio sono di utenti dell'agenzia, non del cliente.`;
+    return `Già ricostruito per ${monthLabel}.`;
   };
 
   const runBackfill = async () => {
     setBusy(true);
     setBackfillMsg("");
     try {
-      const r = await onBackfill();
-      setBackfillMsg(backfillOutcome(r, year, month));
+      setBackfillMsg(backfillOutcome(await onBackfill()));
     } catch {
-      setBackfillMsg("Ricostruzione non riuscita. Riprova.");
+      setBackfillMsg("Ricostruzione non riuscita.");
     } finally {
       setBusy(false);
     }
@@ -194,31 +174,40 @@ const PlanHistoryModal = ({
 
   return (
     <div className="ep-modal-overlay" onClick={onClose}>
-      <div
-        className="ep-modal ep-modal--share"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="ep-modal ep-modal--share" onClick={(e) => e.stopPropagation()}>
         <div className="ep-modal-head">
-          <h3>Storico notifiche — {monthLabel}</h3>
+          <h3>Storico — {clientName}</h3>
           <button className="ep-icon-btn" onClick={onClose} aria-label="Chiudi">
             <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
-        <div className="ep-modal-body">
-          <p className="ep-share-desc">
-            Tutto ciò che è partito a <strong>{clientName}</strong> per questo
-            mese e quando il piano è stato aperto dal link ricevuto.
-          </p>
 
-          {loading ? (
-            <p className="ep-share-hint">Caricamento dello storico…</p>
+        <div className="ep-tabs">
+          <button
+            className={`ep-tab ${tab === "month" ? "active" : ""}`}
+            onClick={() => setTab("month")}
+          >
+            {monthLabel}
+          </button>
+          <button
+            className={`ep-tab ${tab === "all" ? "active" : ""}`}
+            onClick={() => setTab("all")}
+          >
+            Tutti i mesi
+          </button>
+        </div>
+
+        <div className="ep-modal-body">
+          {tab === "all" ? (
+            <NotificationLog clientId={clientId} clientName={clientName} />
+          ) : loading ? (
+            <p className="ep-share-hint">Caricamento…</p>
           ) : (
             <>
               {/* ---- Invii al cliente ---- */}
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
-                  <FontAwesomeIcon icon={faPaperPlane} /> Invii al cliente (
-                  {toClient.length})
+                  <FontAwesomeIcon icon={faPaperPlane} /> Invii ({toClient.length})
                 </div>
                 {toClient.length ? (
                   <ul className="ep-hist-list">
@@ -232,58 +221,40 @@ const PlanHistoryModal = ({
                     ))}
                   </ul>
                 ) : (
-                  <p className="ep-share-hint">
-                    Nessun invio registrato per questo mese.
-                  </p>
+                  <p className="ep-share-hint">Nessun invio registrato.</p>
                 )}
               </div>
 
               {/* ---- Aperture del piano ---- */}
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
-                  <FontAwesomeIcon icon={faEnvelopeOpenText} /> Aperture del
-                  piano ({clientOpens.length})
+                  <FontAwesomeIcon icon={faEnvelopeOpenText} /> Aperture (
+                  {clientOpens.length})
                 </div>
-                <p className="ep-share-desc">
-                  Il link si sblocca solo con un'email del cliente: ogni
-                  apertura qui sotto è la prova che il piano è arrivato.
-                </p>
                 {clientOpens.length || agencyOpens.length ? (
                   <ul className="ep-hist-list">
                     {[...clientOpens, ...agencyOpens].map((a) => (
-                      <li
-                        key={a.email}
-                        className={`ep-hist-item ${
-                          a.source === "inferred" ? "inferred" : ""
-                        }`}
-                      >
+                      <li key={a.email} className="ep-hist-item">
                         <div className="ep-hist-line">
                           <FontAwesomeIcon icon={faEnvelopeOpenText} />
                           <strong>{a.email}</strong>
                           {a.isAgency && (
                             <span className="ep-role-badge admin">agenzia</span>
                           )}
-                          <span className="ep-hist-date">
-                            1ª apertura {fmt(a.firstAt)}
-                          </span>
+                          <span className="ep-hist-date">{fmt(a.firstAt)}</span>
                           {a.count > 1 && (
                             <span className="ep-hist-by">
                               · {a.count} aperture, ultima {fmt(a.lastAt)}
                             </span>
                           )}
-                          {a.source === "inferred" && (
-                            <span className="ep-hist-badge">ricostruita</span>
-                          )}
                         </div>
-                        {a.evidence && (
-                          <p className="ep-hist-evidence">{a.evidence}</p>
-                        )}
                       </li>
                     ))}
                   </ul>
                 ) : (
                   <p className="ep-share-hint">
-                    Nessuna apertura registrata per questo mese.
+                    Nessuna apertura. Il link si sblocca solo con un'email del
+                    cliente: un'apertura è la prova che il piano è arrivato.
                   </p>
                 )}
               </div>
@@ -308,25 +279,20 @@ const PlanHistoryModal = ({
                 </div>
               )}
 
-              {/* ---- Ricostruzione retroattiva (solo admin) ---- */}
+              {/* ---- Ricostruzione aperture passate (solo admin) ---- */}
               {isAdmin && (
                 <div className="ep-share-admin">
                   <div className="ep-share-admin-head">
-                    <FontAwesomeIcon icon={faClockRotateLeft} /> Storico
-                    precedente
+                    <FontAwesomeIcon icon={faClockRotateLeft} /> Mesi precedenti
                   </div>
                   <p className="ep-share-desc">
-                    Per i mesi passati si possono ricostruire le{" "}
-                    <strong>aperture</strong> del piano dalle prove in archivio:
-                    approvazioni e note del cliente, che si possono fare solo
-                    aprendo il link ricevuto. Gli <strong>invii</strong> invece
-                    non si ricostruiscono mai: compaiono solo con la data e
-                    l'ora vere del click, come le approvazioni.
+                    Ricostruisce le <strong>aperture</strong> passate da
+                    approvazioni e note del cliente. Gli invii no: quelli
+                    compaiono solo con data e ora vere.
                   </p>
                   {backfillMsg && (
                     <div className="ep-share-ok">
-                      <FontAwesomeIcon icon={faWandMagicSparkles} />{" "}
-                      {backfillMsg}
+                      <FontAwesomeIcon icon={faCheck} /> {backfillMsg}
                     </div>
                   )}
                   <div className="ep-foot-right ep-share-actions">
@@ -336,19 +302,11 @@ const PlanHistoryModal = ({
                       disabled={busy}
                     >
                       <FontAwesomeIcon icon={faClockRotateLeft} />{" "}
-                      {busy
-                        ? "Ricostruzione in corso…"
-                        : "Ricostruisci lo storico di questo cliente"}
+                      {busy ? "Ricostruzione…" : "Ricostruisci aperture"}
                     </button>
                   </div>
                 </div>
               )}
-
-              <p className="ep-share-hint">
-                <FontAwesomeIcon icon={faTriangleExclamation} /> “Inviata”
-                significa consegnata al servizio di posta: se un indirizzo
-                risulta in errore lo trovi barrato qui sopra.
-              </p>
             </>
           )}
         </div>

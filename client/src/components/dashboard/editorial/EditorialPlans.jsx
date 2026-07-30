@@ -28,7 +28,6 @@ import DuplicateModal from "./DuplicateModal";
 import UserManagementModal from "./UserManagementModal";
 import ImportModal from "./ImportModal";
 import PlanHistoryModal from "./PlanHistoryModal";
-import NotificationLogModal from "./NotificationLogModal";
 import ChannelIcon from "./ChannelIcon";
 import useCalendarDnD from "./useCalendarDnD";
 import { toast, toastErr, confirmDialog } from "./uiNotify";
@@ -119,7 +118,6 @@ const EditorialPlans = () => {
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
   const [history, setHistory] = useState(null); // storico notifiche del mese
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [logOpen, setLogOpen] = useState(false); // storico invii (tutti i mesi)
   const [historyLoading, setHistoryLoading] = useState(false);
 
   const me = useMemo(readToken, []);
@@ -696,20 +694,23 @@ const EditorialPlans = () => {
       )}
 
       {/* ---- Intestazione + toolbar ---- */}
+      {/* Intestazione: selettore cliente, azioni secondarie in griglia (su
+          mobile due colonne, niente pulsanti orfani a fine riga) e azione
+          principale sempre in fondo, a tutta larghezza. */}
       <div className="ep-header">
-        <div className="ep-header-left">
-          <select
-            className="ep-client-select"
-            value={clientId}
-            onChange={(e) => handleClientChange(e.target.value)}
-          >
-            {clients.length === 0 && <option value="">Nessun cliente</option>}
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <select
+          className="ep-client-select"
+          value={clientId}
+          onChange={(e) => handleClientChange(e.target.value)}
+        >
+          {clients.length === 0 && <option value="">Nessun cliente</option>}
+          {clients.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        <div className="ep-header-actions">
           {isAdmin && (
             <button className="ep-btn ep-btn--ghost" onClick={() => setClientModalOpen(true)}>
               <FontAwesomeIcon icon={faAddressBook} /> Clienti
@@ -727,14 +728,9 @@ const EditorialPlans = () => {
           )}
         </div>
         {client && (
-          <div className="ep-header-right">
-            <button className="ep-btn ep-btn--ghost" onClick={() => setLogOpen(true)}>
-              <FontAwesomeIcon icon={faClockRotateLeft} /> Storico invii
-            </button>
-            <button className="ep-btn ep-btn--primary" onClick={openShare}>
-              <FontAwesomeIcon icon={faShareNodes} /> Condividi mese
-            </button>
-          </div>
+          <button className="ep-btn ep-btn--primary ep-header-cta" onClick={openShare}>
+            <FontAwesomeIcon icon={faShareNodes} /> Condividi mese
+          </button>
         )}
       </div>
 
@@ -781,8 +777,12 @@ const EditorialPlans = () => {
               <button className="ep-today-btn" onClick={goToday}>
                 <FontAwesomeIcon icon={faCalendarDay} /> Oggi
               </button>
+            </div>
+            {/* Azioni sul mese su una riga propria: in colonna sotto il titolo
+                restavano larghezze diverse e allineamenti a caso. */}
+            <div className="ep-month-tools">
               <button className="ep-dup-btn" onClick={handleDuplicatePrev}>
-                <FontAwesomeIcon icon={faClone} /> Duplica dal mese precedente
+                <FontAwesomeIcon icon={faClone} /> Duplica mese prec.
               </button>
               <button className="ep-dup-btn" onClick={() => setDupModalOpen(true)}>
                 <FontAwesomeIcon icon={faClone} /> Duplica da…
@@ -842,52 +842,40 @@ const EditorialPlans = () => {
               ) : sendState === "unknown" ? (
                 "Storico invii non disponibile in questo momento."
               ) : histSummary.clientCount ? (
-                /* Stessa forma del banner "piano approvato": fatto, da chi,
-                   quando. Niente date dedotte: qui c'è solo l'orario vero del
-                   click su "Invia al cliente". */
+                /* Stessa forma del banner "piano approvato": cosa, chi,
+                   quando. Solo l'orario vero del click su "Invia al cliente". */
                 <>
-                  Piano inviato al cliente
-                  {histSummary.lastClientBy
-                    ? ` da ${histSummary.lastClientBy}`
-                    : ""}
+                  <strong>Inviato</strong>
                   {histSummary.lastClientAt
                     ? ` il ${fmtApprovalDate(histSummary.lastClientAt)}`
                     : ""}
+                  {histSummary.lastClientBy ? ` da ${histSummary.lastClientBy}` : ""}
                   {histSummary.clientCount > 1
-                    ? ` · ${histSummary.clientCount} invii in tutto`
+                    ? ` · ${histSummary.clientCount} invii`
                     : ""}
                   {histSummary.clientOpens
-                    ? ` · aperto da ${histSummary.clientOpens} ${
-                        histSummary.clientOpens === 1
-                          ? "destinatario"
-                          : "destinatari"
-                      }`
-                    : " · nessuna apertura registrata"}
+                    ? ` · aperto da ${histSummary.clientOpens}`
+                    : " · mai aperto"}
                 </>
               ) : sendState === "failed" ? (
                 <>
-                  <strong>Invio non riuscito:</strong> il piano non è arrivato a
-                  nessun destinatario
+                  <strong>Invio non riuscito</strong> · nessun destinatario
+                  raggiunto
                 </>
               ) : (
                 <>
-                  <strong>Nessun invio registrato</strong> per questo mese
-                  {/* Mesi precedenti all'attivazione del registro: l'invio non
-                      ha una data, ma se il cliente ha aperto il piano quella
-                      data è certa e vale come riscontro. */}
+                  <strong>Non ancora inviato</strong>
+                  {/* Mesi precedenti al registro: l'invio non ha una data, ma
+                      se il cliente ha aperto il piano quella data è certa. */}
                   {histSummary.firstClientOpenAt
-                    ? ` · il piano risulta però aperto dal cliente il ${fmtApprovalDate(
+                    ? ` · aperto dal cliente il ${fmtApprovalDate(
                         histSummary.firstClientOpenAt
                       )}`
                     : ""}
                 </>
               )}
               {histSummary.failedAttempts > 0 &&
-                ` · ${histSummary.failedAttempts} ${
-                  histSummary.failedAttempts === 1
-                    ? "tentativo non riuscito"
-                    : "tentativi non riusciti"
-                }`}
+                ` · ${histSummary.failedAttempts} non riusciti`}
             </span>
             <button
               className="ep-btn ep-btn--ghost"
@@ -896,7 +884,7 @@ const EditorialPlans = () => {
                 reloadHistory();
               }}
             >
-              <FontAwesomeIcon icon={faClockRotateLeft} /> Storico notifiche
+              <FontAwesomeIcon icon={faClockRotateLeft} /> Storico
             </button>
           </div>
 
@@ -1461,6 +1449,7 @@ const EditorialPlans = () => {
       {/* ---- Storico notifiche del mese (prova di invio + aperture) ---- */}
       {historyOpen && client && (
         <PlanHistoryModal
+          clientId={clientId}
           clientName={client.name}
           monthLabel={`${MONTHS_IT[view.month - 1]} ${view.year}`}
           year={view.year}
@@ -1473,14 +1462,6 @@ const EditorialPlans = () => {
         />
       )}
 
-      {/* ---- Storico invii: tutti i mesi, dal più recente ---- */}
-      {logOpen && client && (
-        <NotificationLogModal
-          clientId={clientId}
-          clientName={client.name}
-          onClose={() => setLogOpen(false)}
-        />
-      )}
 
       {/* ---- Ghost del post in trascinamento (segue il puntatore) ---- */}
       {dnd.dragPost && (
