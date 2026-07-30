@@ -11,9 +11,7 @@ import {
   faWandMagicSparkles,
   faCopy,
   faCheck,
-  faPlug,
 } from "@fortawesome/free-solid-svg-icons";
-import { api } from "./api";
 
 // Data + ora sempre in fuso ITALIANO (come il banner approvazioni).
 const fmt = (d) =>
@@ -143,38 +141,11 @@ const PlanHistoryModal = ({
   loading,
   isAdmin,
   onBackfill,
-  onImportMailLog,
   onClose,
 }) => {
   const [busy, setBusy] = useState(false);
   const [backfillMsg, setBackfillMsg] = useState("");
-  const [mailLogBusy, setMailLogBusy] = useState(false);
-  const [mailLogMsg, setMailLogMsg] = useState("");
-  const [probe, setProbe] = useState(null); // esito della verifica connessione
-  const [probeBusy, setProbeBusy] = useState(false);
-  const [copiedProbe, setCopiedProbe] = useState(false);
 
-  // Verifica la connessione al pannello del provider e mostra il formato dei
-  // dati restituiti: serve a confermare comando e nomi dei campi senza dover
-  // interrogare l'API a mano.
-  const runProbe = async () => {
-    setProbeBusy(true);
-    setProbe(null);
-    try {
-      setProbe({ ok: true, data: await api.probeMailLog() });
-    } catch (e) {
-      setProbe({
-        ok: false,
-        error:
-          e?.response?.data?.error ||
-          `${e?.response?.status || ""} ${e?.message || "connessione non riuscita"}`.trim(),
-        status: e?.response?.status,
-        attempts: e?.response?.data?.attempts || [],
-      });
-    } finally {
-      setProbeBusy(false);
-    }
-  };
 
   const notifications = history?.notifications || [];
   const accesses = history?.accesses || [];
@@ -334,129 +305,6 @@ const PlanHistoryModal = ({
                       />
                     ))}
                   </ul>
-                </div>
-              )}
-
-              {/* ---- Recupero dal log del server di posta (solo admin) ---- */}
-              {isAdmin && (
-                <div className="ep-share-admin">
-                  <div className="ep-share-admin-head">
-                    <FontAwesomeIcon icon={faEnvelopeOpenText} /> Log del server
-                    di posta
-                  </div>
-                  <p className="ep-share-desc">
-                    Interroga il pannello del provider e riporta qui gli invii
-                    di {monthLabel} con <strong>data e ora reali</strong>, anche
-                    se sono precedenti al registro interno. Il log dice quando e
-                    a chi, non chi ha premuto invia: quelle voci restano marcate
-                    come provenienti dal server di posta.
-                  </p>
-                  {mailLogMsg && (
-                    <div className="ep-share-ok">
-                      <FontAwesomeIcon icon={faEnvelopeOpenText} /> {mailLogMsg}
-                    </div>
-                  )}
-
-                  {/* Esito della verifica: se qualcosa non torna, qui si legge
-                      esattamente cosa (credenziali, permesso, comando). */}
-                  {probe && (
-                    <div className="ep-hist-tech">
-                      {probe.ok ? (
-                        <ul>
-                          <li>connessione riuscita a {probe.data.endpoint}</li>
-                          <li>record letti: {probe.data.recordsFound}</li>
-                          <li>
-                            campi disponibili:{" "}
-                            {(probe.data.sampleKeys || []).join(", ") || "—"}
-                          </li>
-                          <li>
-                            esempio interpretato:{" "}
-                            {probe.data.sampleNormalized
-                              ? JSON.stringify(probe.data.sampleNormalized)
-                              : "—"}
-                          </li>
-                          {probe.data.rawPreview && (
-                            <li>
-                              risposta non interpretata (
-                              {probe.data.rawLength} caratteri
-                              {probe.data.rawLooksHtml ? ", pagina HTML" : ""}),
-                              inizio: {probe.data.rawPreview}
-                            </li>
-                          )}
-                          {(probe.data.attempts || []).map((a) => (
-                            <li key={a.endpoint}>
-                              scartato {a.endpoint} → {a.status}
-                              {a.response ? ` — ${a.response}` : ""}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <ul>
-                          <li>{probe.error}</li>
-                          {(probe.attempts || []).map((a) => (
-                            <li key={a.endpoint}>
-                              {a.endpoint} → {a.status || "nessuna risposta"}
-                              {a.response ? ` — ${a.response}` : ""}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      <button
-                        className="ep-btn ep-btn--ghost"
-                        onClick={() => {
-                          navigator.clipboard
-                            ?.writeText(JSON.stringify(probe, null, 2))
-                            .catch(() => {});
-                          setCopiedProbe(true);
-                          setTimeout(() => setCopiedProbe(false), 1800);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={copiedProbe ? faCheck : faCopy} />{" "}
-                        {copiedProbe ? "Copiato" : "Copia esito"}
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="ep-foot-right ep-share-actions">
-                    <button
-                      className="ep-btn ep-btn--ghost"
-                      onClick={runProbe}
-                      disabled={probeBusy}
-                    >
-                      <FontAwesomeIcon icon={faPlug} />{" "}
-                      {probeBusy ? "Verifica…" : "Verifica connessione"}
-                    </button>
-                    <button
-                      className="ep-btn ep-btn--ghost"
-                      onClick={async () => {
-                        setMailLogBusy(true);
-                        setMailLogMsg("");
-                        try {
-                          const r = await onImportMailLog();
-                          setMailLogMsg(
-                            r.found
-                              ? `Trovati ${r.found} invii nel log: ${r.imported} aggiunti allo storico` +
-                                (r.skipped ? `, ${r.skipped} già presenti` : "") +
-                                "."
-                              : `Nessun invio di ${monthLabel} trovato nel log del server di posta (potrebbe essere fuori dal periodo conservato dal provider).`
-                          );
-                        } catch (e) {
-                          setMailLogMsg(
-                            e?.response?.data?.error ||
-                              "Lettura del log non riuscita."
-                          );
-                        } finally {
-                          setMailLogBusy(false);
-                        }
-                      }}
-                      disabled={mailLogBusy}
-                    >
-                      <FontAwesomeIcon icon={faEnvelopeOpenText} />{" "}
-                      {mailLogBusy
-                        ? "Lettura in corso…"
-                        : "Recupera dal log del server di posta"}
-                    </button>
-                  </div>
                 </div>
               )}
 

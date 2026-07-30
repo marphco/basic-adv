@@ -1,5 +1,15 @@
 // Log di consegna del SERVER DI POSTA (DirectAdmin → E-mail → Tracking).
 //
+// ⚠️ DORMIENTE (luglio 2026). Sul nostro hosting Keliweb la rotta
+// `/api/email-logs` risponde `403 {"type":"ACCESS_DENIED"}` sia con una login
+// key dedicata sia con la sessione utente del pannello: la funzione è chiusa
+// lato provider, non è un problema di permessi della chiave (la rotta esiste —
+// altrimenti risponderebbe 404). I `CMD_...` non sono un'alternativa: sono
+// pagine della skin Evolution e restituiscono HTML.
+// Il codice resta qui, con le sue rotte admin, perché funziona: se Keliweb
+// abilita l'accesso basta rimettere il pulsante in dashboard. L'interfaccia è
+// stata tolta per non lasciare in giro un comando che dà sempre errore.
+//
 // Serve a recuperare la data e l'ora REALI di un invio anche quando non sono
 // state registrate da noi (mesi precedenti al registro interno), e come
 // controprova indipendente per quelli registrati.
