@@ -9,16 +9,25 @@
 // Config (variabili d'ambiente, tutte obbligatorie per attivare la funzione):
 //   DA_HOST  es. webda7.keliweb.com:2222
 //   DA_USER  utente DirectAdmin
-//   DA_KEY   login key
-//   DA_MAIL_LOG_CMD  (opzionale) comando della pagina log; default CMD_EMAIL_TRACKING
+//   DA_KEY   login key (permesso: solo `email-logs`)
+//   DA_MAIL_LOG_CMD  (opzionale) comando; default `email-logs`
 const axios = require("axios");
 
 const cfg = () => ({
   host: String(process.env.DA_HOST || "").replace(/^https?:\/\//, "").replace(/\/$/, ""),
   user: process.env.DA_USER || "",
   key: process.env.DA_KEY || "",
-  cmd: (process.env.DA_MAIL_LOG_CMD || "CMD_EMAIL_TRACKING").replace(/^\//, ""),
+  cmd: (process.env.DA_MAIL_LOG_CMD || "email-logs").replace(/^\//, ""),
 });
+
+// DirectAdmin ha due generazioni di API e i nomi dei permessi le distinguono:
+// i comandi storici sono `CMD_...` (pagine skin, JSON con `?json=yes`), quelli
+// moderni sono in minuscolo (`email-logs`) e vivono sotto /api/, già in JSON.
+const isLegacyCmd = (cmd) => /^CMD_/i.test(cmd);
+const endpointFor = (c) =>
+  isLegacyCmd(c.cmd)
+    ? `https://${c.host}/${c.cmd}`
+    : `https://${c.host}/api/${c.cmd}`;
 
 const isConfigured = () => {
   const c = cfg();
@@ -33,8 +42,9 @@ async function rawQuery(params = {}) {
     throw new Error(
       "Log del server di posta non configurato (DA_HOST / DA_USER / DA_KEY mancanti)."
     );
-  const { data } = await axios.get(`https://${c.host}/${c.cmd}`, {
-    params: { json: "yes", ...params },
+  const { data } = await axios.get(endpointFor(c), {
+    // `json=yes` serve solo ai comandi storici: /api/ risponde già in JSON.
+    params: isLegacyCmd(c.cmd) ? { json: "yes", ...params } : params,
     auth: { username: c.user, password: c.key },
     timeout: 25000,
     // La verifica TLS resta attiva: il pannello ha un certificato valido.
@@ -151,6 +161,7 @@ async function probe() {
   return {
     ok: true,
     command: cfg().cmd,
+    endpoint: endpointFor(cfg()),
     recordsFound: records.length,
     sampleKeys: records.length ? Object.keys(records[0]) : Object.keys(payload || {}),
     sampleNormalized: records.length ? normalizeRecord(records[0]) : null,
