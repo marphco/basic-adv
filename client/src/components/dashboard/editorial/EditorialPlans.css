@@ -55,12 +55,37 @@
 }
 
 /* ---------- Header ---------- */
+/* Intestazione. Mobile: tutto in colonna, azioni secondarie in una griglia a
+   colonne uguali (niente pulsanti orfani di larghezze diverse), azione
+   principale a tutta larghezza in fondo. Desktop: una sola riga. */
 .ep-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  gap: 10px;
   margin-bottom: 18px;
+}
+.ep-header-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+.ep-header-actions .ep-btn,
+.ep-header-cta {
+  justify-content: center;
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .ep-header {
+    grid-template-columns: minmax(180px, 260px) 1fr auto;
+    align-items: center;
+  }
+  .ep-header-actions {
+    grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+    justify-content: start;
+  }
+  .ep-header-actions .ep-btn,
+  .ep-header-cta {
+    width: auto;
+  }
 }
 
 .ep-client-select {
@@ -86,11 +111,27 @@
 }
 
 /* ---------- Tab pagine ---------- */
+/* Pagine: su schermi stretti una riga sola che scorre, invece di andare a capo
+   creando blocchi di altezza irregolare. */
 .ep-pages {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ep-pages::-webkit-scrollbar {
+  display: none;
+}
+.ep-pages .ep-page-tab {
+  flex: 0 0 auto;
+}
+@media (min-width: 900px) {
+  .ep-pages {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
 .ep-page-tab {
   display: inline-flex;
@@ -134,14 +175,96 @@
 .ep-month-nav {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
+}
+.ep-month-nav .ep-month-title {
+  flex: 1 1 auto;
+  text-align: center;
+  white-space: nowrap;
+}
+/* Azioni sul mese: colonne uguali, così non restano pulsanti di larghezze
+   diverse allineati a caso. */
+.ep-month-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+.ep-month-tools .ep-dup-btn {
+  justify-content: center;
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .ep-month-nav .ep-month-title {
+    flex: 0 0 auto;
+    text-align: left;
+  }
+  /* Su desktop niente griglia: i pulsanti prendono la loro larghezza e stanno
+     in riga (la griglia auto-fit, in un contenitore stretto, collassava in
+     colonna). */
+  .ep-month-tools {
+    display: flex;
+    flex-wrap: wrap;
+    width: auto;
+    margin-top: 0;
+  }
+  .ep-month-tools .ep-dup-btn {
+    width: auto;
+  }
+}
+
+/* Su mobile un ultimo pulsante spaiato resterebbe corto a metà riga: gli
+   faccio occupare la riga intera, così la griglia resta simmetrica. */
+@media (max-width: 899px) {
+  .ep-header-actions .ep-btn:last-child:nth-child(odd),
+  .ep-month-tools .ep-dup-btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  /* Banner: testo e pulsante in colonna. Affiancati, il testo veniva
+     strizzato in tre righe con la data spezzata a metà. */
+  .ep-history-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* In colonna il `flex-basis` del testo diventa ALTEZZA: senza questo il
+     banner si allunga di 240px di vuoto. */
+  .ep-history-banner .ep-history-text {
+    flex: 0 0 auto;
+  }
+  .ep-history-banner .ep-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Schede dello storico (mese corrente / tutti i mesi) */
+.ep-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ep-border);
+}
+.ep-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--ep-muted);
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ep-tab.active {
+  color: var(--primary-text-color);
+  border-bottom-color: var(--foreground-color);
+  font-weight: 600;
 }
 .ep-month-title {
   font-size: 1.35rem;
   font-weight: 300;
   margin: 0;
-  min-width: 190px;
   text-align: center;
 }
 .ep-today-btn {
