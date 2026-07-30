@@ -36,20 +36,49 @@ const isConfigured = () => {
 
 // Chiamata grezza al pannello. `json=yes` fa restituire a DirectAdmin gli
 // stessi dati che userebbe per disegnare la pagina.
+// Corpo della risposta in forma leggibile: quando il pannello rifiuta, il
+// motivo sta lì dentro ("permission denied", "command not allowed"…) ed è
+// l'unica cosa che dice davvero cosa correggere.
+function bodyText(data) {
+  if (data === undefined || data === null) return "";
+  if (typeof data === "string") return data.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 400);
+  try {
+    return JSON.stringify(data).slice(0, 400);
+  } catch {
+    return String(data).slice(0, 400);
+  }
+}
+
+async function callCommand(cmd, params = {}) {
+  const c = { ...cfg(), cmd };
+  const { data } = await axios.get(endpointFor(c), {
+    // `json=yes` serve solo ai comandi storici: /api/ risponde già in JSON.
+    params: isLegacyCmd(cmd) ? { json: "yes", ...params } : params,
+    auth: { username: c.user, password: c.key },
+    headers: { Accept: "application/json" },
+    timeout: 25000,
+    // La verifica TLS resta attiva: il pannello ha un certificato valido.
+  });
+  return data;
+}
+
 async function rawQuery(params = {}) {
   const c = cfg();
   if (!isConfigured())
     throw new Error(
       "Log del server di posta non configurato (DA_HOST / DA_USER / DA_KEY mancanti)."
     );
-  const { data } = await axios.get(endpointFor(c), {
-    // `json=yes` serve solo ai comandi storici: /api/ risponde già in JSON.
-    params: isLegacyCmd(c.cmd) ? { json: "yes", ...params } : params,
-    auth: { username: c.user, password: c.key },
-    timeout: 25000,
-    // La verifica TLS resta attiva: il pannello ha un certificato valido.
-  });
-  return data;
+  try {
+    return await callCommand(c.cmd, params);
+  } catch (e) {
+    // Riporto anche stato e corpo: senza, l'errore dice solo "403" e non si
+    // capisce se è la chiave, il permesso o il comando sbagliato.
+    const status = e?.response?.status;
+    const body = bodyText(e?.response?.data);
+    throw new Error(
+      `${status || "errore"} da ${endpointFor(c)}${body ? ` — ${body}` : ""}`
+    );
+  }
 }
 
 // DirectAdmin restituisce strutture diverse a seconda di versione e comando:
@@ -152,20 +181,52 @@ async function searchDeliveries({ recipients = [], subject = "", from, until }) 
     .sort((a, b) => a.at - b.at);
 }
 
-// Diagnostica: verifica credenziali e formato, e mostra un record di esempio.
-// Serve a confermare il nome del comando e la mappatura dei campi contro il
-// pannello vero, invece di darli per scontati.
+// Diagnostica. Prova i nomi plausibili del comando e riporta, per ognuno,
+// stato e risposta del pannello: così un rifiuto dice quale correzione serve
+// invece di limitarsi a "403". Il primo che funziona vince.
+const CANDIDATES = [
+  "email-logs", // API moderna: /api/email-logs
+  "CMD_EMAIL_LOGS", // comandi storici, se il pannello è più vecchio
+  "CMD_EMAIL_TRACKING",
+];
+
 async function probe() {
-  const payload = await rawQuery({});
-  const records = extractRecords(payload);
-  return {
-    ok: true,
-    command: cfg().cmd,
-    endpoint: endpointFor(cfg()),
-    recordsFound: records.length,
-    sampleKeys: records.length ? Object.keys(records[0]) : Object.keys(payload || {}),
-    sampleNormalized: records.length ? normalizeRecord(records[0]) : null,
-  };
+  const c = cfg();
+  const tries = [...new Set([c.cmd, ...CANDIDATES])];
+  const attempts = [];
+
+  for (const cmd of tries) {
+    const endpoint = endpointFor({ ...c, cmd });
+    try {
+      const payload = await callCommand(cmd);
+      const records = extractRecords(payload);
+      return {
+        ok: true,
+        command: cmd,
+        endpoint,
+        usingConfigured: cmd === c.cmd,
+        recordsFound: records.length,
+        sampleKeys: records.length
+          ? Object.keys(records[0])
+          : Object.keys(payload || {}),
+        sampleNormalized: records.length ? normalizeRecord(records[0]) : null,
+        attempts,
+      };
+    } catch (e) {
+      attempts.push({
+        command: cmd,
+        endpoint,
+        status: e?.response?.status || null,
+        response: bodyText(e?.response?.data) || e?.message || "",
+      });
+    }
+  }
+
+  const err = new Error(
+    "Nessun comando dei log accessibile con queste credenziali."
+  );
+  err.attempts = attempts;
+  throw err;
 }
 
 module.exports = {

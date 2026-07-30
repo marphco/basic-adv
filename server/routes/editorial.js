@@ -572,7 +572,13 @@ router.get("/mail-log/probe", requireAdmin, async (req, res) => {
       });
     res.json(await mailLog.probe());
   } catch (e) {
-    res.status(502).json({ error: e?.message || "Connessione non riuscita" });
+    // `attempts` elenca cosa ha risposto il pannello a ogni indirizzo provato:
+    // è l'informazione che serve per capire se manca il permesso o è il
+    // comando a essere diverso.
+    res.status(502).json({
+      error: e?.message || "Connessione non riuscita",
+      attempts: e?.attempts || [],
+    });
   }
 });
 
