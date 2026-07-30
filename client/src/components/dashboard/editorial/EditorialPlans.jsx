@@ -820,11 +820,25 @@ const EditorialPlans = () => {
                   {histSummary.clientCount === 1
                     ? "1 volta"
                     : `${histSummary.clientCount} volte`}
-                  {histSummary.lastClientAt
-                    ? ` · ultimo invio ${
-                        histSummary.lastClientInferred ? "entro il " : "il "
-                      }${fmtApprovalDate(histSummary.lastClientAt)}`
-                    : ""}
+                  {/* Voce RICOSTRUITA: la data è un limite massimo, non la data
+                      dell'invio. Va detto a chiare lettere, altrimenti si legge
+                      come "mandato quel giorno" e sembra smentire chi l'ha
+                      inviato prima. */}
+                  {histSummary.lastClientAt && histSummary.lastClientInferred ? (
+                    <>
+                      {" · "}
+                      <span className="ep-hist-badge">data ricostruita</span>{" "}
+                      inviato <strong>non oltre</strong> il{" "}
+                      {fmtApprovalDate(histSummary.lastClientAt)} — l'invio vero
+                      è avvenuto prima, ma non era ancora registrato
+                    </>
+                  ) : histSummary.lastClientAt ? (
+                    ` · ultimo invio il ${fmtApprovalDate(
+                      histSummary.lastClientAt
+                    )}`
+                  ) : (
+                    ""
+                  )}
                   {histSummary.lastClientBy
                     ? ` da ${histSummary.lastClientBy}`
                     : ""}
