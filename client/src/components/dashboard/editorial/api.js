@@ -76,6 +76,11 @@ export const api = {
         ...auth(),
       })
       .then((r) => r.data),
+  // verifica connessione al pannello del provider e formato dei dati (admin)
+  probeMailLog: () =>
+    axios
+      .get(`${API_URL}/api/editorial/mail-log/probe`, auth())
+      .then((r) => r.data),
   // recupera dal log del server di posta gli invii reali di un mese (admin)
   importMailLog: (body) =>
     axios

@@ -11,7 +11,9 @@ import {
   faWandMagicSparkles,
   faCopy,
   faCheck,
+  faPlug,
 } from "@fortawesome/free-solid-svg-icons";
+import { api } from "./api";
 
 // Data + ora sempre in fuso ITALIANO (come il banner approvazioni).
 const fmt = (d) =>
@@ -148,6 +150,30 @@ const PlanHistoryModal = ({
   const [backfillMsg, setBackfillMsg] = useState("");
   const [mailLogBusy, setMailLogBusy] = useState(false);
   const [mailLogMsg, setMailLogMsg] = useState("");
+  const [probe, setProbe] = useState(null); // esito della verifica connessione
+  const [probeBusy, setProbeBusy] = useState(false);
+  const [copiedProbe, setCopiedProbe] = useState(false);
+
+  // Verifica la connessione al pannello del provider e mostra il formato dei
+  // dati restituiti: serve a confermare comando e nomi dei campi senza dover
+  // interrogare l'API a mano.
+  const runProbe = async () => {
+    setProbeBusy(true);
+    setProbe(null);
+    try {
+      setProbe({ ok: true, data: await api.probeMailLog() });
+    } catch (e) {
+      setProbe({
+        ok: false,
+        error:
+          e?.response?.data?.error ||
+          `${e?.response?.status || ""} ${e?.message || "connessione non riuscita"}`.trim(),
+        status: e?.response?.status,
+      });
+    } finally {
+      setProbeBusy(false);
+    }
+  };
 
   const notifications = history?.notifications || [];
   const accesses = history?.accesses || [];
@@ -329,7 +355,65 @@ const PlanHistoryModal = ({
                       <FontAwesomeIcon icon={faEnvelopeOpenText} /> {mailLogMsg}
                     </div>
                   )}
+
+                  {/* Esito della verifica: se qualcosa non torna, qui si legge
+                      esattamente cosa (credenziali, permesso, comando). */}
+                  {probe && (
+                    <div className="ep-hist-tech">
+                      {probe.ok ? (
+                        <ul>
+                          <li>connessione riuscita a {probe.data.endpoint}</li>
+                          <li>record letti: {probe.data.recordsFound}</li>
+                          <li>
+                            campi disponibili:{" "}
+                            {(probe.data.sampleKeys || []).join(", ") || "—"}
+                          </li>
+                          <li>
+                            esempio interpretato:{" "}
+                            {probe.data.sampleNormalized
+                              ? JSON.stringify(probe.data.sampleNormalized)
+                              : "—"}
+                          </li>
+                        </ul>
+                      ) : (
+                        <ul>
+                          <li>{probe.error}</li>
+                          <li>
+                            {probe.status === 401
+                              ? "401: utente o chiave non validi."
+                              : probe.status === 403
+                              ? "403: alla chiave manca il permesso email-logs."
+                              : probe.status === 404
+                              ? "404: comando inesistente su questo pannello."
+                              : "Controlla DA_HOST, DA_USER e DA_KEY su Railway."}
+                          </li>
+                        </ul>
+                      )}
+                      <button
+                        className="ep-btn ep-btn--ghost"
+                        onClick={() => {
+                          navigator.clipboard
+                            ?.writeText(JSON.stringify(probe, null, 2))
+                            .catch(() => {});
+                          setCopiedProbe(true);
+                          setTimeout(() => setCopiedProbe(false), 1800);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={copiedProbe ? faCheck : faCopy} />{" "}
+                        {copiedProbe ? "Copiato" : "Copia esito"}
+                      </button>
+                    </div>
+                  )}
+
                   <div className="ep-foot-right ep-share-actions">
+                    <button
+                      className="ep-btn ep-btn--ghost"
+                      onClick={runProbe}
+                      disabled={probeBusy}
+                    >
+                      <FontAwesomeIcon icon={faPlug} />{" "}
+                      {probeBusy ? "Verifica…" : "Verifica connessione"}
+                    </button>
                     <button
                       className="ep-btn ep-btn--ghost"
                       onClick={async () => {
