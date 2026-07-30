@@ -83,18 +83,12 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
   };
 
   return (
-    <li className={`ep-hist-item ${n.source === "inferred" ? "inferred" : ""}`}>
+    <li className="ep-hist-item">
       <div className="ep-hist-line">
         <FontAwesomeIcon icon={KIND_ICON[n.kind] || faPaperPlane} />
         <strong>{KIND_LABEL[n.kind] || "Invio"}</strong>
-        <span className="ep-hist-date">
-          {n.atUpperBound ? "entro il " : ""}
-          {fmt(n.at)}
-        </span>
+        <span className="ep-hist-date">{fmt(n.at)}</span>
         {n.by && <span className="ep-hist-by">· inviata da {n.by}</span>}
-        {n.source === "inferred" && (
-          <span className="ep-hist-badge">ricostruita</span>
-        )}
       </div>
       <div className="ep-hist-recipients">
         {n.recipients.map((r) => (
@@ -160,8 +154,8 @@ const PlanHistoryModal = ({
   // frainteso — è "non c'è nulla da ricostruire": va detto chiaramente che in
   // archivio non esistono prove per quel mese, non che lo storico è a posto.
   const backfillOutcome = (r, year, month) => {
-    if (r.notifications || r.accesses)
-      return `Ricostruite ${r.notifications} notifiche e ${r.accesses} aperture da approvazioni e note già in archivio.`;
+    if (r.accesses)
+      return `Ricostruite ${r.accesses} aperture del piano da approvazioni e note già in archivio.`;
 
     const scanned = r.details?.[0]?.monthsScanned || [];
     const here = scanned.find((m) => m.year === year && m.month === month);
@@ -318,11 +312,12 @@ const PlanHistoryModal = ({
                     precedente
                   </div>
                   <p className="ep-share-desc">
-                    Per i mesi passati (prima di questa funzione) lo storico può
-                    essere ricostruito dalle prove già in archivio: approvazioni
-                    del piano e note lasciate dal cliente, che si possono fare
-                    solo aprendo il link ricevuto. Le voci ricostruite sono
-                    marcate come tali e non sovrascrivono mai quelle reali.
+                    Per i mesi passati si possono ricostruire le{" "}
+                    <strong>aperture</strong> del piano dalle prove in archivio:
+                    approvazioni e note del cliente, che si possono fare solo
+                    aprendo il link ricevuto. Gli <strong>invii</strong> invece
+                    non si ricostruiscono mai: compaiono solo con la data e
+                    l'ora vere del click, come le approvazioni.
                   </p>
                   {backfillMsg && (
                     <div className="ep-share-ok">

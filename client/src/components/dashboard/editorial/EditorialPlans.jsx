@@ -660,8 +660,8 @@ const EditorialPlans = () => {
     clientCount: 0,
     lastClientAt: null,
     lastClientBy: "",
-    lastClientInferred: false,
     clientOpens: 0,
+    firstClientOpenAt: null,
     failedAttempts: 0,
   };
   const sendState = sendStateOf(histSummary);
@@ -841,32 +841,19 @@ const EditorialPlans = () => {
               ) : sendState === "unknown" ? (
                 "Storico invii non disponibile in questo momento."
               ) : histSummary.clientCount ? (
+                /* Stessa forma del banner "piano approvato": fatto, da chi,
+                   quando. Niente date dedotte: qui c'è solo l'orario vero del
+                   click su "Invia al cliente". */
                 <>
-                  Piano inviato al cliente{" "}
-                  {histSummary.clientCount === 1
-                    ? "1 volta"
-                    : `${histSummary.clientCount} volte`}
-                  {/* Voce RICOSTRUITA: la data è un limite massimo, non la data
-                      dell'invio. Va detto a chiare lettere, altrimenti si legge
-                      come "mandato quel giorno" e sembra smentire chi l'ha
-                      inviato prima. */}
-                  {histSummary.lastClientAt && histSummary.lastClientInferred ? (
-                    <>
-                      {" · "}
-                      <span className="ep-hist-badge">data ricostruita</span>{" "}
-                      inviato <strong>non oltre</strong> il{" "}
-                      {fmtApprovalDate(histSummary.lastClientAt)} — l'invio vero
-                      è avvenuto prima, ma non era ancora registrato
-                    </>
-                  ) : histSummary.lastClientAt ? (
-                    ` · ultimo invio il ${fmtApprovalDate(
-                      histSummary.lastClientAt
-                    )}`
-                  ) : (
-                    ""
-                  )}
+                  Piano inviato al cliente
                   {histSummary.lastClientBy
                     ? ` da ${histSummary.lastClientBy}`
+                    : ""}
+                  {histSummary.lastClientAt
+                    ? ` il ${fmtApprovalDate(histSummary.lastClientAt)}`
+                    : ""}
+                  {histSummary.clientCount > 1
+                    ? ` · ${histSummary.clientCount} invii in tutto`
                     : ""}
                   {histSummary.clientOpens
                     ? ` · aperto da ${histSummary.clientOpens} ${
@@ -883,8 +870,15 @@ const EditorialPlans = () => {
                 </>
               ) : (
                 <>
-                  <strong>Piano non ancora inviato al cliente</strong> per questo
-                  mese
+                  <strong>Nessun invio registrato</strong> per questo mese
+                  {/* Mesi precedenti all'attivazione del registro: l'invio non
+                      ha una data, ma se il cliente ha aperto il piano quella
+                      data è certa e vale come riscontro. */}
+                  {histSummary.firstClientOpenAt
+                    ? ` · il piano risulta però aperto dal cliente il ${fmtApprovalDate(
+                        histSummary.firstClientOpenAt
+                      )}`
+                    : ""}
                 </>
               )}
               {histSummary.failedAttempts > 0 &&

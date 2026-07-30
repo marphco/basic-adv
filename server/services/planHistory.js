@@ -118,7 +118,9 @@ async function historyView(clientId, year, month) {
   const y = Number(year);
   const m = Number(month);
   const [notifications, accesses] = await Promise.all([
-    PlanNotification.find({ clientId, year: y, month: m })
+    // Solo invii REALI: data e ora sono quelle del click, come per le
+    // approvazioni. (`source: "inferred"` era la vecchia ricostruzione.)
+    PlanNotification.find({ clientId, year: y, month: m, source: "app" })
       .sort({ at: -1 })
       .lean(),
     PlanAccess.find({ clientId, year: y, month: m }).sort({ firstAt: 1 }).lean(),
@@ -169,8 +171,14 @@ async function historyView(clientId, year, month) {
       clientCount: delivered.length,
       lastClientAt: delivered[0]?.at || null,
       lastClientBy: delivered[0]?.by || "",
-      lastClientInferred: delivered[0]?.source === "inferred",
       clientOpens: accesses.filter((a) => !a.isAgency).length,
+      // prima apertura del cliente: per i mesi in cui l'invio non era ancora
+      // registrato, è l'unica data certa che abbiamo di quel piano
+      firstClientOpenAt:
+        accesses
+          .filter((a) => !a.isAgency)
+          .map((a) => a.firstAt)
+          .sort((x, z) => new Date(x) - new Date(z))[0] || null,
       // tentativi in cui nessun indirizzo è stato raggiunto
       failedAttempts: toClient.length - delivered.length,
     },
@@ -182,7 +190,7 @@ async function historyView(clientId, year, month) {
 // un cliente che sostiene di non aver ricevuto il piano.
 // Visibilità: l'admin vede tutto, l'operatore solo i clienti assegnati.
 async function notificationLog({ user, clientId = null, limit = 100 }) {
-  const filter = {};
+  const filter = { source: "app" }; // solo invii con data e ora reali
   if (clientId) filter.clientId = clientId;
   else if (user?.role !== "admin")
     filter.clientId = { $in: user?.assignedClients || [] };
@@ -374,45 +382,12 @@ async function backfillClient(client, { dryRun }, agencyEmails) {
       });
     }
 
-    // 2) Notifica al cliente ricostruita: solo se per quel mese non ne esiste
-    //    già una (reale o ricostruita) e solo se le prove vengono dal cliente.
-    let notifications = 0;
-    if (clientEvents.length) {
-      const exists = await PlanNotification.findOne({
-        clientId: client._id,
-        year,
-        month,
-        kind: "client",
-      }).lean();
-      if (!exists) {
-        notifications = 1;
-        if (!dryRun) {
-          const firstAt = clientEvents.reduce(
-            (min, e) => (new Date(e.at) < new Date(min) ? e.at : min),
-            clientEvents[0].at
-          );
-          const proved = [
-            ...new Set(clientEvents.map((e) => e.email).filter(Boolean)),
-          ];
-          await PlanNotification.create({
-            clientId: client._id,
-            year,
-            month,
-            kind: "client",
-            at: firstAt,
-            sentByName: "",
-            // Indirizzi che hanno DIMOSTRATO di aver ricevuto il piano; se le
-            // prove non portano un'email, ripiego sui destinatari attuali.
-            recipients: (proved.length ? proved : clientEmailsOf(client)).map(
-              (email) => ({ email, ok: true })
-            ),
-            source: "inferred",
-            atUpperBound: true,
-            evidence: evidenceText(clientEvents),
-          });
-        }
-      }
-    }
+    // NB: NON si ricostruiscono le notifiche. Un invio compare nello storico
+    // solo se ne conosciamo data e ora vere (registrate al click). Dedurre
+    // "inviato entro il…" da un indizio produceva voci ambigue, che si
+    // leggevano come date di invio senza esserlo. Le APERTURE invece sono
+    // fatti: quelle sì si ricostruiscono (qui sopra).
+    const notifications = 0;
 
     out.monthsScanned.push({
       year,
@@ -445,6 +420,19 @@ async function backfillHistory({ clientId = null, dryRun = false } = {}) {
     (await User.find().select("email").lean()).map((u) => norm(u.email)).filter(Boolean)
   );
 
+  // Pulizia: le notifiche "ricostruite" create dalle versioni precedenti non
+  // sono prove di invio (la data era solo un limite massimo) e confondono la
+  // lettura dello storico. Non contengono nulla di originale — tutto ciò che
+  // le generava resta in archivio — quindi si possono togliere.
+  let removedInferred = 0;
+  if (!dryRun) {
+    const r = await PlanNotification.deleteMany({
+      ...(clientId ? { clientId } : {}),
+      source: "inferred",
+    });
+    removedInferred = r?.deletedCount || 0;
+  }
+
   const details = [];
   let notifications = 0;
   let accesses = 0;
@@ -456,7 +444,14 @@ async function backfillHistory({ clientId = null, dryRun = false } = {}) {
     // dashboard per dire PERCHÉ non è stato ricostruito nulla.
     if (r.months.length || r.monthsScanned.length || clientId) details.push(r);
   }
-  return { dryRun: !!dryRun, clients: clients.length, notifications, accesses, details };
+  return {
+    dryRun: !!dryRun,
+    clients: clients.length,
+    notifications,
+    accesses,
+    removedInferred,
+    details,
+  };
 }
 
 module.exports = {
