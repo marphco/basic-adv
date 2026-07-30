@@ -68,6 +68,14 @@ export const api = {
         ...auth(),
       })
       .then((r) => r.data),
+  // log piatto di tutti gli invii, dal più recente (tutti i mesi)
+  listNotifications: ({ clientId, limit } = {}) =>
+    axios
+      .get(`${API_URL}/api/editorial/notifications`, {
+        params: { clientId, limit },
+        ...auth(),
+      })
+      .then((r) => r.data),
   // ricostruzione retroattiva dello storico dai dati in archivio (solo admin)
   backfillPlanHistory: (body) =>
     axios

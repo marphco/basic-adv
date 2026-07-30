@@ -17,6 +17,7 @@ const { mediaUpload, handleUpload, toMedia } = require("../services/mediaStore")
 const {
   recordNotification,
   historyView,
+  notificationLog,
   backfillHistory,
 } = require("../services/planHistory");
 
@@ -511,6 +512,25 @@ router.get("/plan-history", async (req, res) => {
     res.json(await historyView(clientId, year, month));
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dello storico" });
+  }
+});
+
+// LOG di tutti gli invii in ordine di data (tutti i mesi, tutti i clienti
+// visibili all'utente): la vista "Storico invii" della dashboard.
+router.get("/notifications", async (req, res) => {
+  try {
+    const { clientId, limit } = req.query;
+    if (clientId && !canAccessClient(req.dbUser, clientId))
+      return res.status(403).json({ error: "Accesso negato a questo cliente" });
+    res.json(
+      await notificationLog({
+        user: req.dbUser,
+        clientId: clientId || null,
+        limit,
+      })
+    );
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel recupero degli invii" });
   }
 });
 

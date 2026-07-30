@@ -28,6 +28,7 @@ import DuplicateModal from "./DuplicateModal";
 import UserManagementModal from "./UserManagementModal";
 import ImportModal from "./ImportModal";
 import PlanHistoryModal from "./PlanHistoryModal";
+import NotificationLogModal from "./NotificationLogModal";
 import ChannelIcon from "./ChannelIcon";
 import useCalendarDnD from "./useCalendarDnD";
 import { toast, toastErr, confirmDialog } from "./uiNotify";
@@ -108,6 +109,7 @@ const EditorialPlans = () => {
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
   const [history, setHistory] = useState(null); // storico notifiche del mese
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [logOpen, setLogOpen] = useState(false); // storico invii (tutti i mesi)
   const [historyLoading, setHistoryLoading] = useState(false);
 
   const me = useMemo(readToken, []);
@@ -705,9 +707,14 @@ const EditorialPlans = () => {
           )}
         </div>
         {client && (
-          <button className="ep-btn ep-btn--primary" onClick={openShare}>
-            <FontAwesomeIcon icon={faShareNodes} /> Condividi mese
-          </button>
+          <div className="ep-header-right">
+            <button className="ep-btn ep-btn--ghost" onClick={() => setLogOpen(true)}>
+              <FontAwesomeIcon icon={faClockRotateLeft} /> Storico invii
+            </button>
+            <button className="ep-btn ep-btn--primary" onClick={openShare}>
+              <FontAwesomeIcon icon={faShareNodes} /> Condividi mese
+            </button>
+          </div>
         )}
       </div>
 
@@ -1420,6 +1427,15 @@ const EditorialPlans = () => {
           isAdmin={isAdmin}
           onBackfill={runBackfill}
           onClose={() => setHistoryOpen(false)}
+        />
+      )}
+
+      {/* ---- Storico invii: tutti i mesi, dal più recente ---- */}
+      {logOpen && client && (
+        <NotificationLogModal
+          clientId={clientId}
+          clientName={client.name}
+          onClose={() => setLogOpen(false)}
         />
       )}
 

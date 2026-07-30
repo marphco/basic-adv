@@ -177,6 +177,52 @@ async function historyView(clientId, year, month) {
   };
 }
 
+// LOG PIATTO di tutti gli invii, dal più recente: la vista "storico invii"
+// della dashboard. Niente navigazione per mese — è la schermata da mostrare a
+// un cliente che sostiene di non aver ricevuto il piano.
+// Visibilità: l'admin vede tutto, l'operatore solo i clienti assegnati.
+async function notificationLog({ user, clientId = null, limit = 100 }) {
+  const filter = {};
+  if (clientId) filter.clientId = clientId;
+  else if (user?.role !== "admin")
+    filter.clientId = { $in: user?.assignedClients || [] };
+
+  const rows = await PlanNotification.find(filter)
+    .sort({ at: -1 })
+    .limit(Math.min(Number(limit) || 100, 500))
+    .lean();
+
+  const names = {};
+  const ids = [...new Set(rows.map((r) => String(r.clientId)))];
+  if (ids.length)
+    (await Client.find({ _id: { $in: ids } }).select("name").lean()).forEach(
+      (c) => (names[String(c._id)] = c.name)
+    );
+
+  return rows.map((n) => ({
+    id: String(n._id),
+    at: n.at,
+    clientId: String(n.clientId),
+    clientName: names[String(n.clientId)] || "Cliente eliminato",
+    year: n.year,
+    month: n.month,
+    kind: n.kind,
+    by: n.sentByName || "",
+    message: n.message || "",
+    source: n.source,
+    atUpperBound: !!n.atUpperBound,
+    recipients: (n.recipients || []).map((r) => ({
+      email: r.email,
+      ok: !!r.ok,
+      error: r.error || "",
+      sentAt: r.sentAt || null,
+      providerId: r.providerId || "",
+    })),
+    sent: (n.recipients || []).filter((r) => r.ok).length,
+    failed: (n.recipients || []).filter((r) => !r.ok).length,
+  }));
+}
+
 /* ===================== RICOSTRUZIONE RETROATTIVA ===================== */
 //
 // Per i mesi precedenti all'introduzione dello storico non esiste il log
@@ -417,5 +463,6 @@ module.exports = {
   recordNotification,
   recordAccess,
   historyView,
+  notificationLog,
   backfillHistory,
 };
