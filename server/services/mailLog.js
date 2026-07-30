@@ -85,9 +85,41 @@ async function rawQuery(params = {}) {
 // a volte un array, a volte {records:[…]}, a volte un oggetto con chiavi
 // numeriche. Cerco il primo array di oggetti presente nel payload invece di
 // dipendere da un nome preciso.
+// I comandi storici non rispondono sempre in JSON: possono restituire il
+// formato urlencoded di DirectAdmin (`a=1&b=2`) o direttamente la pagina HTML.
+// Provo a ricondurre una stringa a dati strutturati prima di arrendermi.
+function parseStringPayload(text) {
+  const s = String(text).trim();
+  if (!s) return null;
+  if (/^\s*[[{]/.test(s)) {
+    try {
+      return JSON.parse(s);
+    } catch {
+      /* non era JSON */
+    }
+  }
+  if (/^\s*</.test(s)) return null; // HTML: nessun dato da estrarre
+  if (s.includes("=")) {
+    const out = {};
+    for (const [k, v] of new URLSearchParams(s)) {
+      // le liste arrivano come chiavi ripetute o `nome[]`
+      const key = k.replace(/\[\]$/, "");
+      if (out[key] === undefined) out[key] = v;
+      else if (Array.isArray(out[key])) out[key].push(v);
+      else out[key] = [out[key], v];
+    }
+    return Object.keys(out).length ? out : null;
+  }
+  return null;
+}
+
 function extractRecords(payload) {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload.filter((x) => x && typeof x === "object");
+  if (typeof payload === "string") {
+    const parsed = parseStringPayload(payload);
+    return parsed ? extractRecords(parsed) : [];
+  }
   if (typeof payload !== "object") return [];
 
   const direct = ["records", "rows", "results", "entries", "list", "data"];
@@ -200,16 +232,23 @@ async function probe() {
     try {
       const payload = await callCommand(cmd);
       const records = extractRecords(payload);
+      const rawText =
+        typeof payload === "string" ? payload : JSON.stringify(payload || {});
       return {
         ok: true,
         command: cmd,
         endpoint,
         usingConfigured: cmd === c.cmd,
         recordsFound: records.length,
-        sampleKeys: records.length
-          ? Object.keys(records[0])
-          : Object.keys(payload || {}),
+        // Solo i primi nomi: se la risposta non è nel formato atteso l'elenco
+        // può contenere migliaia di voci inutili da leggere.
+        sampleKeys: records.length ? Object.keys(records[0]).slice(0, 30) : [],
         sampleNormalized: records.length ? normalizeRecord(records[0]) : null,
+        // Quando non si riesce a estrarre nulla, l'inizio della risposta è
+        // l'unico modo per capire in che formato risponde il pannello.
+        rawPreview: records.length ? "" : rawText.slice(0, 600),
+        rawLength: rawText.length,
+        rawLooksHtml: /^\s*</.test(rawText),
         attempts,
       };
     } catch (e) {
