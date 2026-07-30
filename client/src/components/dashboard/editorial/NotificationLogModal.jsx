@@ -133,9 +133,17 @@ const NotificationLogModal = ({ clientId, clientName, onClose }) => {
                   </span>
                   {row ? (
                     <span className="ep-month-cell-info">
-                      inviato {row.atUpperBound ? "entro il " : "il "}
-                      {fmt(row.at)}
-                      {row.by ? ` da ${row.by}` : ""}
+                      {row.atUpperBound ? (
+                        <>
+                          inviato non oltre il {fmt(row.at)}
+                          <span className="ep-hist-badge">ricostruita</span>
+                        </>
+                      ) : (
+                        <>
+                          inviato il {fmt(row.at)}
+                          {row.by ? ` da ${row.by}` : ""}
+                        </>
+                      )}
                     </span>
                   ) : (
                     <span className="ep-month-cell-info">mai inviato</span>

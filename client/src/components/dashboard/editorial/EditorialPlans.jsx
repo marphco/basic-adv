@@ -52,6 +52,16 @@ const fmtApprovalDate = (d) =>
     minute: "2-digit",
   });
 
+// Icona del banner per stato dell'invio: spunta se il piano è partito,
+// triangolo se c'è da fare qualcosa (mai inviato / invio fallito).
+const SEND_STATE_ICON = {
+  sent: faCheck,
+  todo: faPaperPlane,
+  failed: faTriangleExclamation,
+  loading: faPaperPlane,
+  unknown: faTriangleExclamation,
+};
+
 const now = new Date();
 const TODAY = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
 
@@ -637,6 +647,14 @@ const EditorialPlans = () => {
     }
   };
 
+  // Stato dell'invio del mese, per colorare il banner a colpo d'occhio.
+  // Finché il dato non è arrivato NON si colora: un "non inviato" lampeggiato
+  // per sbaglio è peggio di nessuna informazione.
+  const sendStateOf = (s) => {
+    if (!history) return historyLoading ? "loading" : "unknown";
+    return s.clientCount ? "sent" : s.failedAttempts ? "failed" : "todo";
+  };
+
   // Riepilogo dello storico per il banner (0 invii finché non arriva il dato).
   const histSummary = history?.summary || {
     clientCount: 0,
@@ -646,6 +664,7 @@ const EditorialPlans = () => {
     clientOpens: 0,
     failedAttempts: 0,
   };
+  const sendState = sendStateOf(histSummary);
 
   // Ricostruzione retroattiva (solo admin): deduce gli invii passati dalle
   // approvazioni e dalle note già in archivio, poi ricarica lo storico.
@@ -810,21 +829,42 @@ const EditorialPlans = () => {
             </div>
           )}
 
-          {/* ---- Banner: storico notifiche inviate al cliente ---- */}
-          <div className="ep-history-banner">
+          {/* ---- Banner: stato dell'invio del mese ----
+               Verde = mandato, viola = ancora da mandare, rosso = tentato ma
+               non arrivato a nessuno. Stessa grammatica cromatica del banner
+               "piano approvato" (verde) e di quello dei duplicati (viola). */}
+          <div className={`ep-history-banner is-${sendState}`}>
             <span className="ep-history-text">
-              <FontAwesomeIcon icon={faPaperPlane} />{" "}
-              {histSummary.clientCount ? (
+              <FontAwesomeIcon icon={SEND_STATE_ICON[sendState]} />{" "}
+              {sendState === "loading" ? (
+                "Verifica degli invii…"
+              ) : sendState === "unknown" ? (
+                "Storico invii non disponibile in questo momento."
+              ) : histSummary.clientCount ? (
                 <>
                   Piano inviato al cliente{" "}
                   {histSummary.clientCount === 1
                     ? "1 volta"
                     : `${histSummary.clientCount} volte`}
-                  {histSummary.lastClientAt
-                    ? ` · ultimo invio ${
-                        histSummary.lastClientInferred ? "entro il " : "il "
-                      }${fmtApprovalDate(histSummary.lastClientAt)}`
-                    : ""}
+                  {/* Voce RICOSTRUITA: la data è un limite massimo, non la data
+                      dell'invio. Va detto a chiare lettere, altrimenti si legge
+                      come "mandato quel giorno" e sembra smentire chi l'ha
+                      inviato prima. */}
+                  {histSummary.lastClientAt && histSummary.lastClientInferred ? (
+                    <>
+                      {" · "}
+                      <span className="ep-hist-badge">data ricostruita</span>{" "}
+                      inviato <strong>non oltre</strong> il{" "}
+                      {fmtApprovalDate(histSummary.lastClientAt)} — l'invio vero
+                      è avvenuto prima, ma non era ancora registrato
+                    </>
+                  ) : histSummary.lastClientAt ? (
+                    ` · ultimo invio il ${fmtApprovalDate(
+                      histSummary.lastClientAt
+                    )}`
+                  ) : (
+                    ""
+                  )}
                   {histSummary.lastClientBy
                     ? ` da ${histSummary.lastClientBy}`
                     : ""}
@@ -836,8 +876,16 @@ const EditorialPlans = () => {
                       }`
                     : " · nessuna apertura registrata"}
                 </>
+              ) : sendState === "failed" ? (
+                <>
+                  <strong>Invio non riuscito:</strong> il piano non è arrivato a
+                  nessun destinatario
+                </>
               ) : (
-                "Nessun invio del piano registrato per questo mese."
+                <>
+                  <strong>Piano non ancora inviato al cliente</strong> per questo
+                  mese
+                </>
               )}
               {histSummary.failedAttempts > 0 &&
                 ` · ${histSummary.failedAttempts} ${

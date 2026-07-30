@@ -13,6 +13,12 @@
   /* note interne (solo agenzia): BLU — distinto dal giallo cliente e dal viola
      dei duplicati ("da rivedere"), così non si confondono */
   --ep-internal: #2563eb;
+  /* Colori di STATO (fatto / da fare / errore). Tonalità scure sul tema
+     chiaro: sui fondini tenui restano leggibili. Vengono schiarite nel blocco
+     dark più sotto, dove le stesse tinte scure non avrebbero contrasto. */
+  --ep-ok: #15803d;
+  --ep-todo: #7c3aed;
+  --ep-danger: #b91c1c;
   --ep-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 
   color: var(--primary-text-color);
@@ -31,6 +37,9 @@
   --ep-surface: #1e1e1e;
   --ep-surface-2: #262626;
   --ep-muted: rgba(246, 246, 246, 0.55);
+  --ep-ok: #4ade80;
+  --ep-todo: #a78bfa;
+  --ep-danger: #f87171;
   --ep-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -1645,8 +1654,8 @@
   align-items: center;
   gap: 8px;
   background: rgba(124, 58, 237, 0.12);
-  border: 1px solid #7c3aed;
-  color: #7c3aed;
+  border: 1px solid var(--ep-todo);
+  color: var(--ep-todo);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 0.85rem;
@@ -1700,7 +1709,7 @@
 }
 .ep-month-cell.sent {
   background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.5);
+  border-color: var(--ep-ok);
 }
 .ep-month-cell.missing {
   background: var(--ep-surface-2);
@@ -1730,7 +1739,7 @@
   align-items: baseline;
   padding: 10px 12px;
   border: 1px solid var(--ep-border);
-  border-left: 3px solid rgba(34, 197, 94, 0.6);
+  border-left: 3px solid var(--ep-ok);
   border-radius: 8px;
   background: var(--ep-surface-2);
   font-size: 0.82rem;
@@ -1760,7 +1769,9 @@
   }
 }
 
-/* Banner: storico delle notifiche inviate al cliente */
+/* Banner: stato dell'invio del mese. Tre stati, stessi colori usati altrove:
+   verde = fatto (come "piano approvato"), viola = da fare (come i duplicati
+   da rivedere), rosso = invio non riuscito (come i destinatari in errore). */
 .ep-history-banner {
   display: flex;
   align-items: center;
@@ -1774,6 +1785,29 @@
   background: var(--ep-surface-2);
   border: 1px solid var(--ep-border);
   color: var(--primary-text-color);
+}
+/* "Inviato": testo nel colore del tema (come il banner delle approvazioni),
+   stato affidato a fondino, bordo e icona — così resta leggibile ovunque. */
+.ep-history-banner.is-sent {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: var(--ep-ok);
+}
+.ep-history-banner.is-sent .ep-history-text > svg {
+  color: var(--ep-ok);
+}
+.ep-history-banner.is-todo {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: var(--ep-todo);
+}
+.ep-history-banner.is-todo .ep-history-text {
+  color: var(--ep-todo);
+}
+.ep-history-banner.is-failed {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: var(--ep-danger);
+}
+.ep-history-banner.is-failed .ep-history-text {
+  color: var(--ep-danger);
 }
 .ep-history-text {
   display: inline-flex;
@@ -1793,7 +1827,7 @@
 }
 .ep-hist-item {
   border: 1px solid var(--ep-border);
-  border-left: 3px solid rgba(34, 197, 94, 0.6);
+  border-left: 3px solid var(--ep-ok);
   border-radius: 8px;
   padding: 8px 10px;
   background: var(--ep-surface-2);
@@ -1801,7 +1835,7 @@
 /* Voce RICOSTRUITA a posteriori: bordo diverso, così non si confonde con
    una prova diretta dell'invio. */
 .ep-hist-item.inferred {
-  border-left-color: rgba(124, 58, 237, 0.7);
+  border-left-color: var(--ep-todo);
 }
 .ep-hist-line {
   display: flex;
@@ -1824,8 +1858,8 @@
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(124, 58, 237, 0.15);
-  border: 1px solid rgba(124, 58, 237, 0.6);
-  color: #7c3aed;
+  border: 1px solid var(--ep-todo);
+  color: var(--ep-todo);
 }
 .ep-hist-recipients {
   display: flex;
@@ -1837,8 +1871,8 @@
    definita più sotto e con pari specificità vincerebbe l'ordine. */
 .ep-client-chip.ep-chip-fail {
   background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.6);
-  color: #ef4444;
+  border-color: var(--ep-danger);
+  color: var(--ep-danger);
 }
 .ep-hist-msg {
   margin: 6px 0 0;
