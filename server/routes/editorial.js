@@ -11,9 +11,14 @@ const {
   requireAdmin,
   canAccessClient,
 } = require("../middleware/auth");
-const { sendMail } = require("../services/mailer");
+const { sendMailTracked } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
 const { mediaUpload, handleUpload, toMedia } = require("../services/mediaStore");
+const {
+  recordNotification,
+  historyView,
+  backfillHistory,
+} = require("../services/planHistory");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -272,17 +277,33 @@ router.post("/share", async (req, res) => {
       message: String(message || "").trim().slice(0, 2000),
     });
 
-    // Invio individuale (ognuno riceve la propria copia, niente indirizzi esposti).
-    const results = await Promise.allSettled(
+    // Invio individuale (ognuno riceve la propria copia, niente indirizzi
+    // esposti) e TRACCIATO: di ogni destinatario restano esito, orari esatti e
+    // risposta del relay.
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
+
+    // STORICO: registro sempre il tentativo (anche se fallito) — è la prova di
+    // cosa è stato inviato, a chi e da chi.
+    await recordNotification({
+      clientId,
+      year,
+      month: m,
+      kind: "client",
+      sentBy: req.dbUser._id,
+      sentByName: req.dbUser.name || req.dbUser.username || "",
+      recipients,
+      deliveries,
+      message,
+      planUrl,
+    });
+
     if (!sent.length)
       return res
         .status(502)
@@ -339,16 +360,28 @@ router.post("/share-admin", async (req, res) => {
       dashUrl,
       message: String(message || "").trim().slice(0, 2000),
     });
-    const results = await Promise.allSettled(
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
+
+    await recordNotification({
+      clientId,
+      year,
+      month: m,
+      kind: "admin",
+      sentBy: req.dbUser._id,
+      sentByName: req.dbUser.name || req.dbUser.username || "",
+      recipients,
+      deliveries,
+      message,
+      planUrl: dashUrl,
+    });
+
     if (!sent.length)
       return res.status(502).json({ error: "Invio email non riuscito", failed });
 
@@ -415,16 +448,28 @@ router.post("/notify-operators", async (req, res) => {
       dashUrl,
       message: String(message || "").trim().slice(0, 2000),
     });
-    const results = await Promise.allSettled(
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
+
+    await recordNotification({
+      clientId,
+      year,
+      month: m,
+      kind: "operators",
+      sentBy: req.dbUser._id,
+      sentByName: senderName,
+      recipients,
+      deliveries,
+      message,
+      planUrl: dashUrl,
+    });
+
     if (!sent.length)
       return res.status(502).json({ error: "Invio email non riuscito", failed });
 
@@ -450,6 +495,38 @@ router.get("/approval", async (req, res) => {
     res.json(approvalView(ap));
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dell'approvazione" });
+  }
+});
+
+// STORICO delle notifiche del piano (invii + aperture della vista pubblica)
+// per un cliente/mese — speculare a /approval. Serve a dimostrare quando e a
+// chi il piano è stato mandato, e quando il cliente l'ha aperto.
+router.get("/plan-history", async (req, res) => {
+  try {
+    const { clientId, year, month } = req.query;
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    if (!canAccessClient(req.dbUser, clientId))
+      return res.status(403).json({ error: "Accesso negato a questo cliente" });
+    res.json(await historyView(clientId, year, month));
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel recupero dello storico" });
+  }
+});
+
+// Ricostruzione RETROATTIVA dello storico (solo admin): per i mesi precedenti
+// all'introduzione del log, deduce invii e aperture dalle prove già in archivio
+// (approvazioni del piano e note lasciate dal cliente). Idempotente: non
+// sovrascrive i record reali e non duplica quelli ricostruiti.
+// `dryRun: true` → mostra solo cosa verrebbe creato.
+router.post("/plan-history/backfill", requireAdmin, async (req, res) => {
+  try {
+    const { clientId, dryRun } = req.body || {};
+    if (clientId && !mongoose.isValidObjectId(clientId))
+      return res.status(400).json({ error: "clientId non valido" });
+    res.json(await backfillHistory({ clientId: clientId || null, dryRun: !!dryRun }));
+  } catch (e) {
+    res.status(500).json({ error: "Errore nella ricostruzione dello storico" });
   }
 });
 

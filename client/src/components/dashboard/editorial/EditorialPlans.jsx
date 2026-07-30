@@ -18,6 +18,7 @@ import {
   faPaperPlane,
   faBroom,
   faUserShield,
+  faClockRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import PostChip from "./PostChip";
@@ -26,6 +27,7 @@ import ClientModal from "./ClientModal";
 import DuplicateModal from "./DuplicateModal";
 import UserManagementModal from "./UserManagementModal";
 import ImportModal from "./ImportModal";
+import PlanHistoryModal from "./PlanHistoryModal";
 import ChannelIcon from "./ChannelIcon";
 import useCalendarDnD from "./useCalendarDnD";
 import { toast, toastErr, confirmDialog } from "./uiNotify";
@@ -104,6 +106,9 @@ const EditorialPlans = () => {
   const [opsMsg, setOpsMsg] = useState(""); // messaggio opzionale agli operatori
   const [selectedOpIds, setSelectedOpIds] = useState([]); // operatori scelti
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
+  const [history, setHistory] = useState(null); // storico notifiche del mese
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const me = useMemo(readToken, []);
   const isAdmin = me.role === "admin";
@@ -163,6 +168,27 @@ const EditorialPlans = () => {
       .then(setApproval)
       .catch(() => setApproval(null));
   }, [clientId, view.year, view.month]);
+
+  // Storico notifiche (invii + aperture) del cliente/mese corrente.
+  const reloadHistory = useCallback(() => {
+    if (!clientId) {
+      setHistory(null);
+      return Promise.resolve(null);
+    }
+    setHistoryLoading(true);
+    return api
+      .getPlanHistory(clientId, view.year, view.month)
+      .then((h) => {
+        setHistory(h);
+        return h;
+      })
+      .catch(() => setHistory(null))
+      .finally(() => setHistoryLoading(false));
+  }, [clientId, view.year, view.month]);
+
+  useEffect(() => {
+    reloadHistory();
+  }, [reloadHistory]);
 
   const visiblePosts = useMemo(
     () =>
@@ -540,6 +566,7 @@ const EditorialPlans = () => {
         `Inviato a ${n} admin` +
           (r.failed?.length ? ` · ${r.failed.length} non riusciti` : "")
       );
+      reloadHistory();
     } catch (e) {
       const msg = e?.response?.data?.error;
       toastErr(msg ? `Invio non riuscito: ${msg}` : "Invio all'admin non riuscito.");
@@ -563,6 +590,7 @@ const EditorialPlans = () => {
         `Inviato a ${n} ${n === 1 ? "operatore" : "operatori"}` +
           (r.failed?.length ? ` · ${r.failed.length} non riusciti` : "")
       );
+      reloadHistory();
     } catch (e) {
       const msg = e?.response?.data?.error;
       toastErr(
@@ -587,6 +615,8 @@ const EditorialPlans = () => {
         `Inviato a ${n} ${n === 1 ? "destinatario" : "destinatari"}` +
           (r.failed?.length ? ` · ${r.failed.length} non riusciti` : "")
       );
+      // Lo storico è la prova dell'invio: lo riallineo subito.
+      reloadHistory();
     } catch (e) {
       const status = e?.response?.status;
       const msg = e?.response?.data?.error;
@@ -603,6 +633,24 @@ const EditorialPlans = () => {
     } finally {
       setSharing(false);
     }
+  };
+
+  // Riepilogo dello storico per il banner (0 invii finché non arriva il dato).
+  const histSummary = history?.summary || {
+    clientCount: 0,
+    lastClientAt: null,
+    lastClientBy: "",
+    lastClientInferred: false,
+    clientOpens: 0,
+    failedAttempts: 0,
+  };
+
+  // Ricostruzione retroattiva (solo admin): deduce gli invii passati dalle
+  // approvazioni e dalle note già in archivio, poi ricarica lo storico.
+  const runBackfill = async () => {
+    const r = await api.backfillPlanHistory({ clientId });
+    await reloadHistory();
+    return r;
   };
 
   const totalNotes = visiblePosts.reduce((n, p) => n + unresolvedCount(p), 0);
@@ -754,6 +802,53 @@ const EditorialPlans = () => {
                 : "."}
             </div>
           )}
+
+          {/* ---- Banner: storico notifiche inviate al cliente ---- */}
+          <div className="ep-history-banner">
+            <span className="ep-history-text">
+              <FontAwesomeIcon icon={faPaperPlane} />{" "}
+              {histSummary.clientCount ? (
+                <>
+                  Piano inviato al cliente{" "}
+                  {histSummary.clientCount === 1
+                    ? "1 volta"
+                    : `${histSummary.clientCount} volte`}
+                  {histSummary.lastClientAt
+                    ? ` · ultimo invio ${
+                        histSummary.lastClientInferred ? "entro il " : "il "
+                      }${fmtApprovalDate(histSummary.lastClientAt)}`
+                    : ""}
+                  {histSummary.lastClientBy
+                    ? ` da ${histSummary.lastClientBy}`
+                    : ""}
+                  {histSummary.clientOpens
+                    ? ` · aperto da ${histSummary.clientOpens} ${
+                        histSummary.clientOpens === 1
+                          ? "destinatario"
+                          : "destinatari"
+                      }`
+                    : " · nessuna apertura registrata"}
+                </>
+              ) : (
+                "Nessun invio del piano registrato per questo mese."
+              )}
+              {histSummary.failedAttempts > 0 &&
+                ` · ${histSummary.failedAttempts} ${
+                  histSummary.failedAttempts === 1
+                    ? "tentativo non riuscito"
+                    : "tentativi non riusciti"
+                }`}
+            </span>
+            <button
+              className="ep-btn ep-btn--ghost"
+              onClick={() => {
+                setHistoryOpen(true);
+                reloadHistory();
+              }}
+            >
+              <FontAwesomeIcon icon={faClockRotateLeft} /> Storico notifiche
+            </button>
+          </div>
 
           {/* ---- Banner duplicati da rivedere ---- */}
           {duplicateCount > 0 && (
@@ -1311,6 +1406,19 @@ const EditorialPlans = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ---- Storico notifiche del mese (prova di invio + aperture) ---- */}
+      {historyOpen && client && (
+        <PlanHistoryModal
+          clientName={client.name}
+          monthLabel={`${MONTHS_IT[view.month - 1]} ${view.year}`}
+          history={history}
+          loading={historyLoading}
+          isAdmin={isAdmin}
+          onBackfill={runBackfill}
+          onClose={() => setHistoryOpen(false)}
+        />
       )}
 
       {/* ---- Ghost del post in trascinamento (segue il puntatore) ---- */}
