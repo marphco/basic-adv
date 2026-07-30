@@ -169,6 +169,7 @@ const PlanHistoryModal = ({
           e?.response?.data?.error ||
           `${e?.response?.status || ""} ${e?.message || "connessione non riuscita"}`.trim(),
         status: e?.response?.status,
+        attempts: e?.response?.data?.attempts || [],
       });
     } finally {
       setProbeBusy(false);
@@ -378,15 +379,12 @@ const PlanHistoryModal = ({
                       ) : (
                         <ul>
                           <li>{probe.error}</li>
-                          <li>
-                            {probe.status === 401
-                              ? "401: utente o chiave non validi."
-                              : probe.status === 403
-                              ? "403: alla chiave manca il permesso email-logs."
-                              : probe.status === 404
-                              ? "404: comando inesistente su questo pannello."
-                              : "Controlla DA_HOST, DA_USER e DA_KEY su Railway."}
-                          </li>
+                          {(probe.attempts || []).map((a) => (
+                            <li key={a.endpoint}>
+                              {a.endpoint} → {a.status || "nessuna risposta"}
+                              {a.response ? ` — ${a.response}` : ""}
+                            </li>
+                          ))}
                         </ul>
                       )}
                       <button
