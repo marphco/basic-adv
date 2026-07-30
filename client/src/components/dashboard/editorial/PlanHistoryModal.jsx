@@ -89,6 +89,9 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
         <strong>{KIND_LABEL[n.kind] || "Invio"}</strong>
         <span className="ep-hist-date">{fmt(n.at)}</span>
         {n.by && <span className="ep-hist-by">· inviata da {n.by}</span>}
+        {n.source === "maillog" && (
+          <span className="ep-hist-badge">dal server di posta</span>
+        )}
       </div>
       <div className="ep-hist-recipients">
         {n.recipients.map((r) => (
@@ -138,10 +141,13 @@ const PlanHistoryModal = ({
   loading,
   isAdmin,
   onBackfill,
+  onImportMailLog,
   onClose,
 }) => {
   const [busy, setBusy] = useState(false);
   const [backfillMsg, setBackfillMsg] = useState("");
+  const [mailLogBusy, setMailLogBusy] = useState(false);
+  const [mailLogMsg, setMailLogMsg] = useState("");
 
   const notifications = history?.notifications || [];
   const accesses = history?.accesses || [];
@@ -301,6 +307,60 @@ const PlanHistoryModal = ({
                       />
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* ---- Recupero dal log del server di posta (solo admin) ---- */}
+              {isAdmin && (
+                <div className="ep-share-admin">
+                  <div className="ep-share-admin-head">
+                    <FontAwesomeIcon icon={faEnvelopeOpenText} /> Log del server
+                    di posta
+                  </div>
+                  <p className="ep-share-desc">
+                    Interroga il pannello del provider e riporta qui gli invii
+                    di {monthLabel} con <strong>data e ora reali</strong>, anche
+                    se sono precedenti al registro interno. Il log dice quando e
+                    a chi, non chi ha premuto invia: quelle voci restano marcate
+                    come provenienti dal server di posta.
+                  </p>
+                  {mailLogMsg && (
+                    <div className="ep-share-ok">
+                      <FontAwesomeIcon icon={faEnvelopeOpenText} /> {mailLogMsg}
+                    </div>
+                  )}
+                  <div className="ep-foot-right ep-share-actions">
+                    <button
+                      className="ep-btn ep-btn--ghost"
+                      onClick={async () => {
+                        setMailLogBusy(true);
+                        setMailLogMsg("");
+                        try {
+                          const r = await onImportMailLog();
+                          setMailLogMsg(
+                            r.found
+                              ? `Trovati ${r.found} invii nel log: ${r.imported} aggiunti allo storico` +
+                                (r.skipped ? `, ${r.skipped} già presenti` : "") +
+                                "."
+                              : `Nessun invio di ${monthLabel} trovato nel log del server di posta (potrebbe essere fuori dal periodo conservato dal provider).`
+                          );
+                        } catch (e) {
+                          setMailLogMsg(
+                            e?.response?.data?.error ||
+                              "Lettura del log non riuscita."
+                          );
+                        } finally {
+                          setMailLogBusy(false);
+                        }
+                      }}
+                      disabled={mailLogBusy}
+                    >
+                      <FontAwesomeIcon icon={faEnvelopeOpenText} />{" "}
+                      {mailLogBusy
+                        ? "Lettura in corso…"
+                        : "Recupera dal log del server di posta"}
+                    </button>
+                  </div>
                 </div>
               )}
 

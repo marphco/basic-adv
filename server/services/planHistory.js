@@ -15,6 +15,7 @@ const User = require("../models/User");
 const PlanApproval = require("../models/PlanApproval");
 const PlanNotification = require("../models/PlanNotification");
 const PlanAccess = require("../models/PlanAccess");
+const mailLog = require("./mailLog");
 
 const norm = (e) => String(e || "").trim().toLowerCase();
 const clientEmailsOf = (c) =>
@@ -118,9 +119,14 @@ async function historyView(clientId, year, month) {
   const y = Number(year);
   const m = Number(month);
   const [notifications, accesses] = await Promise.all([
-    // Solo invii REALI: data e ora sono quelle del click, come per le
-    // approvazioni. (`source: "inferred"` era la vecchia ricostruzione.)
-    PlanNotification.find({ clientId, year: y, month: m, source: "app" })
+    // Solo invii REALI: registrati al click o recuperati dal log del server di
+    // posta. (`source: "inferred"` era la vecchia ricostruzione, ora rimossa.)
+    PlanNotification.find({
+      clientId,
+      year: y,
+      month: m,
+      source: { $in: ["app", "maillog"] },
+    })
       .sort({ at: -1 })
       .lean(),
     PlanAccess.find({ clientId, year: y, month: m }).sort({ firstAt: 1 }).lean(),
@@ -190,7 +196,9 @@ async function historyView(clientId, year, month) {
 // un cliente che sostiene di non aver ricevuto il piano.
 // Visibilità: l'admin vede tutto, l'operatore solo i clienti assegnati.
 async function notificationLog({ user, clientId = null, limit = 100 }) {
-  const filter = { source: "app" }; // solo invii con data e ora reali
+  // Solo invii con data e ora REALI: registrati al click ("app") o recuperati
+  // dal log del server di posta ("maillog").
+  const filter = { source: { $in: ["app", "maillog"] } };
   if (clientId) filter.clientId = clientId;
   else if (user?.role !== "admin")
     filter.clientId = { $in: user?.assignedClients || [] };
@@ -229,6 +237,109 @@ async function notificationLog({ user, clientId = null, limit = 100 }) {
     sent: (n.recipients || []).filter((r) => r.ok).length,
     failed: (n.recipients || []).filter((r) => !r.ok).length,
   }));
+}
+
+/* =============== RECUPERO DAL LOG DEL SERVER DI POSTA =============== */
+//
+// Per i mesi in cui l'invio non è stato registrato da noi, la data e l'ora
+// VERE esistono comunque: nel log di consegna del server di posta. Qui le
+// leggiamo e le scriviamo nello storico come invii veri (source "maillog"),
+// distinti da quelli registrati al click solo perché non sappiamo chi ha
+// premuto il pulsante.
+const MONTHS_IT = [
+  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+];
+
+// Stati di consegna che il pannello considera riusciti.
+const okStatus = (s) => !/fail|bounce|error|defer|reject|frozen/i.test(String(s || ""));
+
+// Finestra di ricerca: un piano si manda tipicamente nel mese precedente o
+// durante il mese stesso, quindi parto dal 1° del mese prima.
+function searchWindow(year, month) {
+  const from = new Date(Date.UTC(year, month - 2, 1));
+  const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59));
+  const now = new Date();
+  return { from, until: endOfMonth > now ? now : endOfMonth };
+}
+
+async function importFromMailLog({ clientId, year, month, dryRun = false }) {
+  const y = Number(year);
+  const m = Number(month);
+  const client = await Client.findById(clientId).lean();
+  if (!client) throw new Error("Cliente non trovato");
+
+  const recipients = clientEmailsOf(client);
+  if (!recipients.length)
+    return { found: 0, imported: 0, skipped: 0, matches: [], note: "Il cliente non ha email." };
+
+  const monthLabel = `${MONTHS_IT[m - 1] || ""} ${y}`.trim();
+  // Stesso oggetto usato da emailTemplates.shareEditorialPlan.
+  const subject = `Piano editoriale di ${monthLabel} — ${client.name}`;
+  const { from, until } = searchWindow(y, m);
+
+  const found = await mailLog.searchDeliveries({ recipients, subject, from, until });
+
+  // Non duplico ciò che è già nello storico: stesso destinatario a meno di
+  // cinque minuti di distanza è lo stesso invio.
+  const existing = await PlanNotification.find({
+    clientId,
+    year: y,
+    month: m,
+    kind: "client",
+  }).lean();
+  const alreadyLogged = (rec) =>
+    existing.some(
+      (n) =>
+        Math.abs(new Date(n.at) - rec.at) < 5 * 60 * 1000 &&
+        (n.recipients || []).some((r) => norm(r.email) === norm(rec.to))
+    );
+
+  let imported = 0;
+  let skipped = 0;
+  for (const rec of found) {
+    if (alreadyLogged(rec)) {
+      skipped += 1;
+      continue;
+    }
+    imported += 1;
+    if (dryRun) continue;
+    await PlanNotification.create({
+      clientId,
+      year: y,
+      month: m,
+      kind: "client",
+      at: rec.at,
+      sentByName: "", // il log dice quando e a chi, non chi ha premuto invia
+      recipients: [
+        {
+          email: rec.to,
+          ok: okStatus(rec.status),
+          error: okStatus(rec.status) ? "" : String(rec.status).slice(0, 300),
+          sentAt: rec.at,
+          providerId: rec.messageId,
+          providerResponse: JSON.stringify(rec.raw || {}).slice(0, 1000),
+        },
+      ],
+      source: "maillog",
+      evidence:
+        `Recuperata dal log del server di posta: oggetto "${rec.subject}"` +
+        (rec.status ? `, stato "${rec.status}"` : "") +
+        ".",
+    });
+  }
+
+  return {
+    found: found.length,
+    imported,
+    skipped,
+    matches: found.map((r) => ({
+      at: r.at,
+      to: r.to,
+      subject: r.subject,
+      status: r.status,
+    })),
+  };
 }
 
 /* ===================== RICOSTRUZIONE RETROATTIVA ===================== */
@@ -459,5 +570,6 @@ module.exports = {
   recordAccess,
   historyView,
   notificationLog,
+  importFromMailLog,
   backfillHistory,
 };
