@@ -133,20 +133,13 @@ const NotificationLogModal = ({ clientId, clientName, onClose }) => {
                   </span>
                   {row ? (
                     <span className="ep-month-cell-info">
-                      {row.atUpperBound ? (
-                        <>
-                          inviato non oltre il {fmt(row.at)}
-                          <span className="ep-hist-badge">ricostruita</span>
-                        </>
-                      ) : (
-                        <>
-                          inviato il {fmt(row.at)}
-                          {row.by ? ` da ${row.by}` : ""}
-                        </>
-                      )}
+                      inviato il {fmt(row.at)}
+                      {row.by ? ` da ${row.by}` : ""}
                     </span>
                   ) : (
-                    <span className="ep-month-cell-info">mai inviato</span>
+                    <span className="ep-month-cell-info">
+                      nessun invio registrato
+                    </span>
                   )}
                 </div>
               ))}
@@ -157,27 +150,19 @@ const NotificationLogModal = ({ clientId, clientName, onClose }) => {
             <p className="ep-share-hint">Caricamento…</p>
           ) : visible.length === 0 ? (
             <p className="ep-share-hint">
-              Nessun invio registrato. Gli invii vengono registrati da quando la
-              funzione è attiva: quelli precedenti non sono ricostruibili se il
-              cliente non ha lasciato tracce (approvazioni o note).
+              Nessun invio registrato.
             </p>
           ) : (
             <ul className="ep-log-list">
               {visible.map((r) => (
                 <li key={r.id} className="ep-log-row">
-                  <span className="ep-log-date">
-                    {r.atUpperBound ? "entro il " : ""}
-                    {fmt(r.at)}
-                  </span>
+                  <span className="ep-log-date">{fmt(r.at)}</span>
                   <span className="ep-log-main">
                     <FontAwesomeIcon icon={(KIND[r.kind] || KIND.client).icon} />{" "}
                     <strong>{r.clientName}</strong> — piano di{" "}
                     {MONTHS_IT[r.month - 1]} {r.year}, inviato{" "}
                     {(KIND[r.kind] || KIND.client).label}
                     {r.by ? ` da ${r.by}` : ""}
-                    {r.source === "inferred" && (
-                      <span className="ep-hist-badge">ricostruita</span>
-                    )}
                   </span>
                   <span className="ep-log-to">
                     {r.recipients.map((d) => (
@@ -198,6 +183,17 @@ const NotificationLogModal = ({ clientId, clientName, onClose }) => {
                 </li>
               ))}
             </ul>
+          )}
+
+          {/* Da quando il registro è attivo: evita di leggere "nessun invio"
+              su un mese vecchio come "non è mai stato mandato". */}
+          {rows !== null && rows.length > 0 && (
+            <p className="ep-share-hint">
+              Data e ora sono quelle del click su “Invia al cliente”. Il
+              registro è attivo dal{" "}
+              {fmt(rows[rows.length - 1].at)}: per i mesi precedenti l'invio non
+              è stato registrato.
+            </p>
           )}
         </div>
       </div>

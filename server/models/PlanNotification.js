@@ -50,7 +50,11 @@ const PlanNotificationSchema = new mongoose.Schema({
   recipients: { type: [RecipientSchema], default: [] },
   message: { type: String, default: "" },
   planUrl: { type: String, default: "" },
-  source: { type: String, enum: ["app", "inferred"], default: "app" },
+  // "app"     → registrata al momento del click (fonte primaria)
+  // "maillog" → recuperata dal log del server di posta: data e ora reali,
+  //             ma senza sapere chi ha premuto invia
+  // "inferred" → vecchie voci dedotte, non più prodotte (vengono ripulite)
+  source: { type: String, enum: ["app", "maillog", "inferred"], default: "app" },
   // `at` è un limite superiore (invio avvenuto "entro" quella data): vero solo
   // per le notifiche ricostruite.
   atUpperBound: { type: Boolean, default: false },

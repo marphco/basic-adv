@@ -18,8 +18,10 @@ const {
   recordNotification,
   historyView,
   notificationLog,
+  importFromMailLog,
   backfillHistory,
 } = require("../services/planHistory");
+const mailLog = require("../services/mailLog");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -531,6 +533,46 @@ router.get("/notifications", async (req, res) => {
     );
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero degli invii" });
+  }
+});
+
+// Recupera dal LOG DEL SERVER DI POSTA la data e l'ora reali degli invii di un
+// mese e le scrive nello storico. Serve per i mesi precedenti al registro
+// interno e come controprova indipendente. Solo admin: usa le credenziali del
+// pannello. `dryRun: true` → mostra cosa troverebbe senza scrivere.
+router.post("/plan-history/mail-log", requireAdmin, async (req, res) => {
+  try {
+    const { clientId, year, month, dryRun } = req.body || {};
+    if (!clientId || !year || !month)
+      return res.status(400).json({ error: "Parametri mancanti" });
+    if (!mailLog.isConfigured())
+      return res.status(400).json({
+        error:
+          "Log del server di posta non configurato: mancano DA_HOST, DA_USER o DA_KEY.",
+      });
+    res.json(
+      await importFromMailLog({ clientId, year, month, dryRun: !!dryRun })
+    );
+  } catch (e) {
+    res.status(502).json({
+      error: `Lettura del log del server di posta non riuscita: ${e?.message || "errore"}`,
+    });
+  }
+});
+
+// Diagnostica della connessione al pannello: conferma credenziali, comando e
+// nomi dei campi restituiti. Da usare la prima volta per allineare la
+// mappatura al formato reale del pannello.
+router.get("/mail-log/probe", requireAdmin, async (req, res) => {
+  try {
+    if (!mailLog.isConfigured())
+      return res.status(400).json({
+        error:
+          "Log del server di posta non configurato: mancano DA_HOST, DA_USER o DA_KEY.",
+      });
+    res.json(await mailLog.probe());
+  } catch (e) {
+    res.status(502).json({ error: e?.message || "Connessione non riuscita" });
   }
 });
 
