@@ -375,6 +375,20 @@ const PlanHistoryModal = ({
                               ? JSON.stringify(probe.data.sampleNormalized)
                               : "—"}
                           </li>
+                          {probe.data.rawPreview && (
+                            <li>
+                              risposta non interpretata (
+                              {probe.data.rawLength} caratteri
+                              {probe.data.rawLooksHtml ? ", pagina HTML" : ""}),
+                              inizio: {probe.data.rawPreview}
+                            </li>
+                          )}
+                          {(probe.data.attempts || []).map((a) => (
+                            <li key={a.endpoint}>
+                              scartato {a.endpoint} → {a.status}
+                              {a.response ? ` — ${a.response}` : ""}
+                            </li>
+                          ))}
                         </ul>
                       ) : (
                         <ul>
