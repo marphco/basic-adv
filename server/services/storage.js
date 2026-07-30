@@ -26,6 +26,10 @@ const cfg = () => ({
   accessKeyId: process.env.R2_ACCESS_KEY_ID || "",
   secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "",
   bucket: process.env.R2_BUCKET || "",
+  // Endpoint alternativo: i bucket creati con "Specifica giurisdizione"
+  // (es. Unione Europea) rispondono su <account>.eu.r2.cloudflarestorage.com
+  // e non sull'indirizzo standard. Lasciando vuoto si usa quello standard.
+  endpoint: process.env.R2_ENDPOINT || "",
 });
 
 const mode = () => cfg().mode;
@@ -44,7 +48,7 @@ function client() {
   if (!S3) S3 = require("@aws-sdk/client-s3");
   cachedClient = new S3.S3Client({
     region: "auto", // R2 non usa regioni
-    endpoint: `https://${c.accountId}.r2.cloudflarestorage.com`,
+    endpoint: c.endpoint || `https://${c.accountId}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: c.accessKeyId, secretAccessKey: c.secretAccessKey },
   });
   return cachedClient;
