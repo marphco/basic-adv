@@ -674,16 +674,6 @@ const EditorialPlans = () => {
     return r;
   };
 
-  // Recupero degli invii reali dal log del server di posta, per il mese aperto.
-  const runMailLogImport = async () => {
-    const r = await api.importMailLog({
-      clientId,
-      year: view.year,
-      month: view.month,
-    });
-    await reloadHistory();
-    return r;
-  };
 
   const totalNotes = visiblePosts.reduce((n, p) => n + unresolvedCount(p), 0);
   const duplicateCount = visiblePosts.filter((p) => p.isDuplicate).length;
@@ -1479,7 +1469,6 @@ const EditorialPlans = () => {
           loading={historyLoading}
           isAdmin={isAdmin}
           onBackfill={runBackfill}
-          onImportMailLog={runMailLogImport}
           onClose={() => setHistoryOpen(false)}
         />
       )}
