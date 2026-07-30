@@ -1760,7 +1760,9 @@
   }
 }
 
-/* Banner: storico delle notifiche inviate al cliente */
+/* Banner: stato dell'invio del mese. Tre stati, stessi colori usati altrove:
+   verde = fatto (come "piano approvato"), viola = da fare (come i duplicati
+   da rivedere), rosso = invio non riuscito (come i destinatari in errore). */
 .ep-history-banner {
   display: flex;
   align-items: center;
@@ -1774,6 +1776,24 @@
   background: var(--ep-surface-2);
   border: 1px solid var(--ep-border);
   color: var(--primary-text-color);
+}
+.ep-history-banner.is-sent {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+.ep-history-banner.is-todo {
+  background: rgba(124, 58, 237, 0.12);
+  border-color: #7c3aed;
+}
+.ep-history-banner.is-todo .ep-history-text {
+  color: #7c3aed;
+}
+.ep-history-banner.is-failed {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.6);
+}
+.ep-history-banner.is-failed .ep-history-text {
+  color: #ef4444;
 }
 .ep-history-text {
   display: inline-flex;
