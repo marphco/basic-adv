@@ -185,16 +185,25 @@
 }
 /* Azioni sul mese: colonne uguali, così non restano pulsanti di larghezze
    diverse allineati a caso. */
+/* Flex, non griglia: più in basso esiste già una regola storica
+   `.ep-dup-btn { flex: 1 1 45% }` per il mobile, che dentro una griglia
+   sarebbe inerte — le due impostazioni si contraddicevano e i pulsanti
+   finivano più larghi del contenitore (tagliati a destra da `overflow-x`).
+   In flex i pulsanti possono anche restringersi, quindi non sbordano mai. */
 .ep-month-tools {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
-  width: 100%;
 }
 .ep-month-tools .ep-dup-btn {
+  flex: 1 1 140px;
   justify-content: center;
-  width: 100%;
+  /* `white-space: nowrap` impedirebbe di scendere sotto la lunghezza del
+     testo: qui il testo può andare a capo e il pulsante rimpicciolirsi. */
+  white-space: normal;
+  min-width: 0;
+  text-align: center;
 }
 @media (min-width: 900px) {
   .ep-month-nav .ep-month-title {
@@ -205,10 +214,11 @@
      in riga (la griglia auto-fit, in un contenitore stretto, collassava in
      colonna). */
   .ep-month-tools {
-    display: flex;
-    flex-wrap: wrap;
-    width: auto;
     margin-top: 0;
+  }
+  .ep-month-tools .ep-dup-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
   .ep-month-tools .ep-dup-btn {
     width: auto;
@@ -218,8 +228,7 @@
 /* Su mobile un ultimo pulsante spaiato resterebbe corto a metà riga: gli
    faccio occupare la riga intera, così la griglia resta simmetrica. */
 @media (max-width: 899px) {
-  .ep-header-actions .ep-btn:last-child:nth-child(odd),
-  .ep-month-tools .ep-dup-btn:last-child:nth-child(odd) {
+  .ep-header-actions .ep-btn:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
   /* Banner: testo e pulsante in colonna. Affiancati, il testo veniva
