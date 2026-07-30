@@ -69,8 +69,16 @@ async function rawQuery(params = {}) {
       "Log del server di posta non configurato (DA_HOST / DA_USER / DA_KEY mancanti)."
     );
   try {
-    return await callCommand(c.cmd, params);
+    const data = await callCommand(c.cmd, params);
+    if (looksHtml(typeof data === "string" ? data : "")) {
+      throw new Error(
+        `${endpointFor(c)} ha risposto con la pagina del pannello, non con dati: ` +
+          "non è una rotta API (verifica DA_MAIL_LOG_CMD)."
+      );
+    }
+    return data;
   } catch (e) {
+    if (!e?.response) throw e; // errore già esplicito (es. risposta HTML)
     // Riporto anche stato e corpo: senza, l'errore dice solo "403" e non si
     // capisce se è la chiave, il permesso o il comando sbagliato.
     const status = e?.response?.status;
@@ -216,11 +224,18 @@ async function searchDeliveries({ recipients = [], subject = "", from, until }) 
 // Diagnostica. Prova i nomi plausibili del comando e riporta, per ognuno,
 // stato e risposta del pannello: così un rifiuto dice quale correzione serve
 // invece di limitarsi a "403". Il primo che funziona vince.
+// Solo comandi che restituiscono DATI. I `CMD_...` della skin Evolution
+// rispondono 200 con la pagina HTML dell'applicazione anche quando non hanno
+// nulla da dare: sono rotte del front-end, non dell'API.
 const CANDIDATES = [
   "email-logs", // API moderna: /api/email-logs
-  "CMD_EMAIL_LOGS", // comandi storici, se il pannello è più vecchio
-  "CMD_EMAIL_TRACKING",
+  "email-logs-summary", // stessa famiglia, se il permesso concesso è quello
 ];
+
+// Una risposta HTML non è un risultato: è la pagina del pannello. Trattarla
+// come successo maschererebbe l'errore vero (permesso mancante, sessione
+// scaduta) dietro uno "0 record trovati".
+const looksHtml = (text) => /^\s*<(!doctype|html)/i.test(String(text || ""));
 
 async function probe() {
   const c = cfg();
@@ -234,6 +249,16 @@ async function probe() {
       const records = extractRecords(payload);
       const rawText =
         typeof payload === "string" ? payload : JSON.stringify(payload || {});
+      if (!records.length && looksHtml(rawText)) {
+        attempts.push({
+          command: cmd,
+          endpoint,
+          status: 200,
+          response:
+            "ha risposto con la pagina HTML del pannello, non con dati: non è una rotta API.",
+        });
+        continue;
+      }
       return {
         ok: true,
         command: cmd,
