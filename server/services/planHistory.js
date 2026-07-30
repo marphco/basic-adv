@@ -30,8 +30,9 @@ const fmtIt = (d) =>
     minute: "2-digit",
   });
 
-// Registra un invio. `results` è l'array di Promise.allSettled parallelo a
-// `recipients` (stesso ordine), così si salva l'esito indirizzo per indirizzo.
+// Registra un invio. `deliveries` è l'array restituito da sendMailTracked,
+// parallelo a `recipients` (stesso ordine): per ogni indirizzo si salvano
+// esito, orari esatti e risposta del relay.
 async function recordNotification({
   clientId,
   year,
@@ -40,7 +41,7 @@ async function recordNotification({
   sentBy,
   sentByName = "",
   recipients = [],
-  results = [],
+  deliveries = [],
   message = "",
   planUrl = "",
 }) {
@@ -54,12 +55,16 @@ async function recordNotification({
       sentBy,
       sentByName,
       recipients: recipients.map((email, i) => {
-        const r = results[i];
-        const ok = !r || r.status === "fulfilled";
+        const d = deliveries[i];
+        const ok = d ? !!d.ok : true;
         return {
           email,
           ok,
-          error: ok ? "" : String(r?.reason?.message || "invio non riuscito").slice(0, 300),
+          error: ok ? "" : String(d?.error || "invio non riuscito").slice(0, 300),
+          sentAt: d?.sentAt || null,
+          ackAt: d?.ackAt || null,
+          providerId: String(d?.id || "").slice(0, 120),
+          providerResponse: String(d?.raw || "").slice(0, 1000),
         };
       }),
       message: String(message || "").slice(0, 2000),
@@ -133,12 +138,21 @@ async function historyView(clientId, year, month) {
       email: r.email,
       ok: !!r.ok,
       error: r.error || "",
+      // riferimenti tecnici per i log del mail server
+      sentAt: r.sentAt || null,
+      ackAt: r.ackAt || null,
+      providerId: r.providerId || "",
+      providerResponse: r.providerResponse || "",
     })),
     sent: (n.recipients || []).filter((r) => r.ok).length,
     failed: (n.recipients || []).filter((r) => !r.ok).length,
   }));
 
   const toClient = notif.filter((n) => n.kind === "client");
+  // Un invio in cui NESSUN destinatario è stato raggiunto non è una prova di
+  // consegna: resta nello storico (col motivo dell'errore) ma non alimenta il
+  // conteggio "piano inviato".
+  const delivered = toClient.filter((n) => n.sent > 0);
   return {
     notifications: notif,
     accesses: accesses.map((a) => ({
@@ -152,11 +166,13 @@ async function historyView(clientId, year, month) {
     })),
     // Riepilogo per il banner in dashboard (solo invii al cliente).
     summary: {
-      clientCount: toClient.length,
-      lastClientAt: toClient[0]?.at || null,
-      lastClientBy: toClient[0]?.by || "",
-      lastClientInferred: toClient[0]?.source === "inferred",
+      clientCount: delivered.length,
+      lastClientAt: delivered[0]?.at || null,
+      lastClientBy: delivered[0]?.by || "",
+      lastClientInferred: delivered[0]?.source === "inferred",
       clientOpens: accesses.filter((a) => !a.isAgency).length,
+      // tentativi in cui nessun indirizzo è stato raggiunto
+      failedAttempts: toClient.length - delivered.length,
     },
   };
 }

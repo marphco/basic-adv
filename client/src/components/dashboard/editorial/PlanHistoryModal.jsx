@@ -9,6 +9,8 @@ import {
   faUserShield,
   faUsers,
   faWandMagicSparkles,
+  faCopy,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Data + ora sempre in fuso ITALIANO (come il banner approvazioni).
@@ -22,6 +24,18 @@ const fmt = (d) =>
     minute: "2-digit",
   });
 
+// Con i SECONDI: serve per cercare l'invio nei log del server di posta.
+const fmtPrecise = (d) =>
+  new Date(d).toLocaleString("it-IT", {
+    timeZone: "Europe/Rome",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
 const KIND_LABEL = {
   client: "Al cliente",
   admin: "All'admin di revisione",
@@ -33,37 +47,93 @@ const KIND_ICON = {
   operators: faUsers,
 };
 
+// Riferimento tecnico di un destinatario, in una riga: è quello che serve per
+// far cercare l'invio nei log del server di posta.
+const techLine = (r) =>
+  [
+    r.email,
+    r.ok ? "consegnata al mailer" : `ERRORE: ${r.error || "invio non riuscito"}`,
+    r.sentAt
+      ? `${fmtPrecise(r.sentAt)} (UTC ${new Date(r.sentAt).toISOString()})`
+      : "orario non registrato",
+    r.providerId ? `id ${r.providerId}` : "",
+    r.providerResponse ? `risposta relay: ${r.providerResponse}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
 // Una voce di invio: quando, da chi, a quali indirizzi e con quale esito.
-const NotificationRow = ({ n }) => (
-  <li className={`ep-hist-item ${n.source === "inferred" ? "inferred" : ""}`}>
-    <div className="ep-hist-line">
-      <FontAwesomeIcon icon={KIND_ICON[n.kind] || faPaperPlane} />
-      <strong>{KIND_LABEL[n.kind] || "Invio"}</strong>
-      <span className="ep-hist-date">
-        {n.atUpperBound ? "entro il " : ""}
-        {fmt(n.at)}
-      </span>
-      {n.by && <span className="ep-hist-by">· inviata da {n.by}</span>}
-      {n.source === "inferred" && (
-        <span className="ep-hist-badge">ricostruita</span>
-      )}
-    </div>
-    <div className="ep-hist-recipients">
-      {n.recipients.map((r) => (
-        <span
-          key={r.email}
-          className={`ep-client-chip ${r.ok ? "" : "ep-chip-fail"}`}
-          title={r.ok ? "Consegnata al mailer" : r.error || "Invio non riuscito"}
-        >
-          {r.email}
-          {!r.ok && " ✕"}
+const NotificationRow = ({ n, clientName, monthLabel }) => {
+  const [copied, setCopied] = useState(false);
+  // I dati tecnici esistono solo per gli invii registrati davvero (non per le
+  // voci ricostruite a posteriori) e per gli invii fatti dopo questa funzione.
+  const hasTech = n.recipients.some(
+    (r) => r.sentAt || r.providerId || r.providerResponse
+  );
+
+  const copyTech = () => {
+    const text = [
+      `Invio piano editoriale — ${clientName} — ${monthLabel}`,
+      `Registrato ${fmtPrecise(n.at)}${n.by ? ` · inviato da ${n.by}` : ""}`,
+      ...n.recipients.map((r) => `- ${techLine(r)}`),
+    ].join("\n");
+    navigator.clipboard?.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <li className={`ep-hist-item ${n.source === "inferred" ? "inferred" : ""}`}>
+      <div className="ep-hist-line">
+        <FontAwesomeIcon icon={KIND_ICON[n.kind] || faPaperPlane} />
+        <strong>{KIND_LABEL[n.kind] || "Invio"}</strong>
+        <span className="ep-hist-date">
+          {n.atUpperBound ? "entro il " : ""}
+          {fmt(n.at)}
         </span>
-      ))}
-    </div>
-    {n.message && <p className="ep-hist-msg">“{n.message}”</p>}
-    {n.evidence && <p className="ep-hist-evidence">{n.evidence}</p>}
-  </li>
-);
+        {n.by && <span className="ep-hist-by">· inviata da {n.by}</span>}
+        {n.source === "inferred" && (
+          <span className="ep-hist-badge">ricostruita</span>
+        )}
+      </div>
+      <div className="ep-hist-recipients">
+        {n.recipients.map((r) => (
+          <span
+            key={r.email}
+            className={`ep-client-chip ${r.ok ? "" : "ep-chip-fail"}`}
+            title={
+              r.ok
+                ? `Consegnata al mailer${
+                    r.sentAt ? ` il ${fmtPrecise(r.sentAt)}` : ""
+                  }${r.providerId ? ` · id ${r.providerId}` : ""}`
+                : r.error || "Invio non riuscito"
+            }
+          >
+            {r.email}
+            {!r.ok && " ✕"}
+          </span>
+        ))}
+      </div>
+      {n.message && <p className="ep-hist-msg">“{n.message}”</p>}
+      {n.evidence && <p className="ep-hist-evidence">{n.evidence}</p>}
+
+      {hasTech && (
+        <details className="ep-hist-tech">
+          <summary>Dettagli tecnici (per i log del mail server)</summary>
+          <ul>
+            {n.recipients.map((r) => (
+              <li key={r.email}>{techLine(r)}</li>
+            ))}
+          </ul>
+          <button className="ep-btn ep-btn--ghost" onClick={copyTech}>
+            <FontAwesomeIcon icon={copied ? faCheck : faCopy} />{" "}
+            {copied ? "Copiato" : "Copia dettagli"}
+          </button>
+        </details>
+      )}
+    </li>
+  );
+};
 
 const PlanHistoryModal = ({
   clientName,
@@ -132,7 +202,12 @@ const PlanHistoryModal = ({
                 {toClient.length ? (
                   <ul className="ep-hist-list">
                     {toClient.map((n) => (
-                      <NotificationRow key={n.id} n={n} />
+                      <NotificationRow
+                        key={n.id}
+                        n={n}
+                        clientName={clientName}
+                        monthLabel={monthLabel}
+                      />
                     ))}
                   </ul>
                 ) : (
@@ -201,7 +276,12 @@ const PlanHistoryModal = ({
                   </div>
                   <ul className="ep-hist-list">
                     {internal.map((n) => (
-                      <NotificationRow key={n.id} n={n} />
+                      <NotificationRow
+                        key={n.id}
+                        n={n}
+                        clientName={clientName}
+                        monthLabel={monthLabel}
+                      />
                     ))}
                   </ul>
                 </div>

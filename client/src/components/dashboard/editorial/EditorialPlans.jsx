@@ -642,6 +642,7 @@ const EditorialPlans = () => {
     lastClientBy: "",
     lastClientInferred: false,
     clientOpens: 0,
+    failedAttempts: 0,
   };
 
   // Ricostruzione retroattiva (solo admin): deduce gli invii passati dalle
@@ -831,6 +832,12 @@ const EditorialPlans = () => {
               ) : (
                 "Nessun invio del piano registrato per questo mese."
               )}
+              {histSummary.failedAttempts > 0 &&
+                ` · ${histSummary.failedAttempts} ${
+                  histSummary.failedAttempts === 1
+                    ? "tentativo non riuscito"
+                    : "tentativi non riusciti"
+                }`}
             </span>
             <button
               className="ep-btn ep-btn--ghost"

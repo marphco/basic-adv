@@ -1742,7 +1742,9 @@
   gap: 5px;
   margin-top: 6px;
 }
-.ep-chip-fail {
+/* Destinatario con invio non riuscito. Doppia classe: `.ep-client-chip` è
+   definita più sotto e con pari specificità vincerebbe l'ordine. */
+.ep-client-chip.ep-chip-fail {
   background: rgba(239, 68, 68, 0.12);
   border-color: rgba(239, 68, 68, 0.6);
   color: #ef4444;
@@ -1757,6 +1759,29 @@
   margin: 6px 0 0;
   font-size: 0.72rem;
   color: var(--ep-muted);
+}
+/* Riferimenti tecnici dell'invio (orari al secondo, id, risposta del relay):
+   servono per farsi cercare il messaggio nei log del server di posta. */
+.ep-hist-tech {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: var(--ep-muted);
+}
+.ep-hist-tech summary {
+  cursor: pointer;
+  user-select: none;
+}
+.ep-hist-tech ul {
+  list-style: none;
+  margin: 6px 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--ep-surface);
+  border: 1px solid var(--ep-border);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 /* ============================================================

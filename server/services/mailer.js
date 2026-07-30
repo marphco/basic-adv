@@ -46,4 +46,74 @@ async function sendMail({ to, subject, html, text, replyTo }) {
   return data;
 }
 
-module.exports = { sendMail };
+// Il relay può rispondere in modi diversi (oggetto JSON o testo semplice):
+// provo a estrarne un identificativo del messaggio, se c'è. Quando non c'è,
+// resta comunque la risposta grezza (vedi `raw`).
+const ID_KEYS = [
+  "id",
+  "messageId",
+  "message_id",
+  "messageID",
+  "msgId",
+  "msg_id",
+  "queueId",
+  "queue_id",
+  "mailId",
+];
+function pickProviderId(data) {
+  if (!data || typeof data !== "object") return "";
+  // alcuni relay annidano il payload utile sotto `data`
+  const flat =
+    data.data && typeof data.data === "object" ? { ...data, ...data.data } : data;
+  const key = ID_KEYS.find((k) => flat[k]);
+  return key ? String(flat[key]).slice(0, 120) : "";
+}
+
+// Risposta (o errore) in forma di stringa breve e leggibile, da conservare
+// nello storico: è ciò che permette di incrociare un invio con i log del
+// server di posta.
+function stringifyPayload(payload) {
+  if (payload === undefined || payload === null) return "";
+  if (typeof payload === "string") return payload.slice(0, 1000);
+  try {
+    return JSON.stringify(payload).slice(0, 1000);
+  } catch {
+    return "[risposta non serializzabile]";
+  }
+}
+
+// Variante TRACCIATA di sendMail: non solleva mai e restituisce sempre
+//   { ok, sentAt, ackAt, id, raw, error }
+// dove `sentAt`/`ackAt` sono l'istante in cui il messaggio è stato passato al
+// relay e quello della sua risposta. Con questi dati (orario al secondo,
+// destinatario ed eventuale id) un invio è rintracciabile nei log del mail
+// server anche a distanza di tempo.
+async function sendMailTracked(opts) {
+  const sentAt = new Date();
+  try {
+    const data = await sendMail(opts);
+    return {
+      ok: true,
+      sentAt,
+      ackAt: new Date(),
+      id: pickProviderId(data),
+      raw: stringifyPayload(data),
+      error: "",
+    };
+  } catch (e) {
+    const status = e?.response?.status;
+    const body = stringifyPayload(e?.response?.data);
+    return {
+      ok: false,
+      sentAt,
+      ackAt: new Date(),
+      id: "",
+      raw: body,
+      error: [status ? `HTTP ${status}` : "", body || e?.message || "invio non riuscito"]
+        .filter(Boolean)
+        .join(": "),
+    };
+  }
+}
+
+module.exports = { sendMail, sendMailTracked };

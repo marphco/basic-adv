@@ -2,11 +2,18 @@ const mongoose = require("mongoose");
 
 // Esito dell'invio per un singolo destinatario: serve a dimostrare CHI ha
 // ricevuto la notifica e chi no (invio non riuscito).
+// `sentAt`/`ackAt` + `providerId`/`providerResponse` sono i riferimenti tecnici
+// per incrociare l'invio con i log del server di posta: orario al secondo,
+// destinatario e — se il relay lo restituisce — identificativo del messaggio.
 const RecipientSchema = new mongoose.Schema(
   {
     email: { type: String, default: "" },
     ok: { type: Boolean, default: true },
     error: { type: String, default: "" },
+    sentAt: { type: Date, default: null }, // consegnato al relay
+    ackAt: { type: Date, default: null }, // risposta del relay
+    providerId: { type: String, default: "" },
+    providerResponse: { type: String, default: "" },
   },
   { _id: false }
 );

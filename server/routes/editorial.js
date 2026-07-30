@@ -11,7 +11,7 @@ const {
   requireAdmin,
   canAccessClient,
 } = require("../middleware/auth");
-const { sendMail } = require("../services/mailer");
+const { sendMailTracked } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
 const { mediaUpload, handleUpload, toMedia } = require("../services/mediaStore");
 const {
@@ -277,17 +277,17 @@ router.post("/share", async (req, res) => {
       message: String(message || "").trim().slice(0, 2000),
     });
 
-    // Invio individuale (ognuno riceve la propria copia, niente indirizzi esposti).
-    const results = await Promise.allSettled(
+    // Invio individuale (ognuno riceve la propria copia, niente indirizzi
+    // esposti) e TRACCIATO: di ogni destinatario restano esito, orari esatti e
+    // risposta del relay.
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
 
     // STORICO: registro sempre il tentativo (anche se fallito) — è la prova di
     // cosa è stato inviato, a chi e da chi.
@@ -299,7 +299,7 @@ router.post("/share", async (req, res) => {
       sentBy: req.dbUser._id,
       sentByName: req.dbUser.name || req.dbUser.username || "",
       recipients,
-      results,
+      deliveries,
       message,
       planUrl,
     });
@@ -360,16 +360,14 @@ router.post("/share-admin", async (req, res) => {
       dashUrl,
       message: String(message || "").trim().slice(0, 2000),
     });
-    const results = await Promise.allSettled(
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
 
     await recordNotification({
       clientId,
@@ -379,7 +377,7 @@ router.post("/share-admin", async (req, res) => {
       sentBy: req.dbUser._id,
       sentByName: req.dbUser.name || req.dbUser.username || "",
       recipients,
-      results,
+      deliveries,
       message,
       planUrl: dashUrl,
     });
@@ -450,16 +448,14 @@ router.post("/notify-operators", async (req, res) => {
       dashUrl,
       message: String(message || "").trim().slice(0, 2000),
     });
-    const results = await Promise.allSettled(
+    const deliveries = await Promise.all(
       recipients.map((to) =>
-        sendMail({ to, subject: mail.subject, text: mail.text, html: mail.html })
+        sendMailTracked({ to, subject: mail.subject, text: mail.text, html: mail.html })
       )
     );
     const sent = [];
     const failed = [];
-    results.forEach((r, i) =>
-      (r.status === "fulfilled" ? sent : failed).push(recipients[i])
-    );
+    deliveries.forEach((d, i) => (d.ok ? sent : failed).push(recipients[i]));
 
     await recordNotification({
       clientId,
@@ -469,7 +465,7 @@ router.post("/notify-operators", async (req, res) => {
       sentBy: req.dbUser._id,
       sentByName: senderName,
       recipients,
-      results,
+      deliveries,
       message,
       planUrl: dashUrl,
     });
