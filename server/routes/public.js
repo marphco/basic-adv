@@ -7,6 +7,7 @@ const User = require("../models/User");
 const PlanApproval = require("../models/PlanApproval");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
+const { recordAccess } = require("../services/planHistory");
 const {
   mediaUpload,
   handleUpload,
@@ -204,6 +205,22 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       return res
         .status(403)
         .json({ error: "Email non riconosciuta per questo piano." });
+
+    // STORICO: registro l'apertura del piano. È la prova più forte che il piano
+    // è arrivato al cliente (il link si sblocca solo con una sua email).
+    await recordAccess({
+      clientId,
+      year,
+      month,
+      email,
+      // chi apre non è tra i destinatari del cliente → è un utente agenzia
+      isAgency: !recipients(client).includes(norm(email)),
+      ip:
+        (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+        req.ip ||
+        "",
+      userAgent: req.headers["user-agent"] || "",
+    });
 
     const pagesById = {};
     (client.pages || []).forEach((pg) => {

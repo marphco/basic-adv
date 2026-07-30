@@ -60,6 +60,19 @@ export const api = {
         ...auth(),
       })
       .then((r) => r.data),
+  // storico notifiche del piano (invii + aperture) per un mese
+  getPlanHistory: (clientId, year, month) =>
+    axios
+      .get(`${API_URL}/api/editorial/plan-history`, {
+        params: { clientId, year, month },
+        ...auth(),
+      })
+      .then((r) => r.data),
+  // ricostruzione retroattiva dello storico dai dati in archivio (solo admin)
+  backfillPlanHistory: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/plan-history/backfill`, body, auth())
+      .then((r) => r.data),
 
   // --- post ---
   listPosts: (clientId, year, month) =>
