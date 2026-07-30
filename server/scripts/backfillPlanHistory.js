@@ -37,9 +37,19 @@ const arg = (name) => {
   const r = await backfillHistory({ clientId, dryRun });
   r.details.forEach((d) => {
     console.log(`\n• ${d.client}`);
-    d.months.forEach((m) =>
+    if (!d.monthsScanned.length) {
+      console.log(
+        "   nessuna prova in archivio (nessuna approvazione, nessuna nota del cliente)"
+      );
+      return;
+    }
+    // Elenco tutti i mesi con prove, non solo quelli che producono qualcosa:
+    // così si vede subito PERCHÉ un mese non genera nessuna voce.
+    d.monthsScanned.forEach((m) =>
       console.log(
         `   ${String(m.month).padStart(2, "0")}/${m.year}: ` +
+          `prove ${m.approvals} approvazioni + ${m.notes} note ` +
+          `(${m.clientEvidence} dal cliente) → ` +
           `${m.notifications} notifiche, ${m.accesses} aperture`
       )
     );
