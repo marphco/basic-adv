@@ -1413,6 +1413,8 @@ const EditorialPlans = () => {
         <PlanHistoryModal
           clientName={client.name}
           monthLabel={`${MONTHS_IT[view.month - 1]} ${view.year}`}
+          year={view.year}
+          month={view.month}
           history={history}
           loading={historyLoading}
           isAdmin={isAdmin}

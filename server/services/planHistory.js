@@ -270,7 +270,16 @@ function evidenceText(events) {
 
 async function backfillClient(client, { dryRun }, agencyEmails) {
   const byMonth = await collectEvidence(client, agencyEmails);
-  const out = { client: client.name, months: [], notifications: 0, accesses: 0 };
+  // `monthsScanned` elenca TUTTI i mesi in cui esiste almeno una prova, anche
+  // quando non c'è nulla di nuovo da creare: serve a spiegare all'utente
+  // perché un mese non produce nessuna voce (di solito: prove = zero).
+  const out = {
+    client: client.name,
+    months: [],
+    monthsScanned: [],
+    notifications: 0,
+    accesses: 0,
+  };
 
   for (const { year, month, events } of byMonth.values()) {
     const clientEvents = events.filter((e) => e.fromClient);
@@ -359,6 +368,17 @@ async function backfillClient(client, { dryRun }, agencyEmails) {
       }
     }
 
+    out.monthsScanned.push({
+      year,
+      month,
+      approvals: events.filter((e) => e.kind === "approval").length,
+      notes: events.filter((e) => e.kind === "note").length,
+      // prove riconducibili al CLIENTE (le sole che provano l'invio)
+      clientEvidence: clientEvents.length,
+      notifications,
+      accesses,
+    });
+
     if (accesses || notifications) {
       out.months.push({ year, month, accesses, notifications });
       out.accesses += accesses;
@@ -386,7 +406,9 @@ async function backfillHistory({ clientId = null, dryRun = false } = {}) {
     const r = await backfillClient(c, { dryRun }, agencyEmails);
     notifications += r.notifications;
     accesses += r.accesses;
-    if (r.months.length) details.push(r);
+    // Su un singolo cliente riporto sempre l'esito (anche vuoto): serve alla
+    // dashboard per dire PERCHÉ non è stato ricostruito nulla.
+    if (r.months.length || r.monthsScanned.length || clientId) details.push(r);
   }
   return { dryRun: !!dryRun, clients: clients.length, notifications, accesses, details };
 }

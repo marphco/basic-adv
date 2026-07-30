@@ -138,6 +138,8 @@ const NotificationRow = ({ n, clientName, monthLabel }) => {
 const PlanHistoryModal = ({
   clientName,
   monthLabel,
+  year,
+  month,
   history,
   loading,
   isAdmin,
@@ -154,16 +156,37 @@ const PlanHistoryModal = ({
   const clientOpens = accesses.filter((a) => !a.isAgency);
   const agencyOpens = accesses.filter((a) => a.isAgency);
 
+  // Spiega l'esito della ricostruzione. Il caso più frequente — e il più
+  // frainteso — è "non c'è nulla da ricostruire": va detto chiaramente che in
+  // archivio non esistono prove per quel mese, non che lo storico è a posto.
+  const backfillOutcome = (r, year, month) => {
+    if (r.notifications || r.accesses)
+      return `Ricostruite ${r.notifications} notifiche e ${r.accesses} aperture da approvazioni e note già in archivio.`;
+
+    const scanned = r.details?.[0]?.monthsScanned || [];
+    const here = scanned.find((m) => m.year === year && m.month === month);
+    if (!here)
+      return (
+        `Per ${monthLabel} non c'è nessuna prova in archivio: il cliente non ha ` +
+        `approvato il piano né lasciato note. Ricevere l'email non lascia traccia ` +
+        `nel sistema, quindi non c'è niente da ricostruire — gli invii vengono ` +
+        `registrati da qui in avanti.`
+      );
+    if (!here.clientEvidence)
+      return (
+        `Per ${monthLabel} le uniche tracce in archivio (${here.approvals} approvazioni, ` +
+        `${here.notes} note) risultano di utenti dell'agenzia, non del cliente: ` +
+        `non provano che il piano gli sia arrivato.`
+      );
+    return `Storico già completo per ${monthLabel}: le prove in archivio erano già state ricostruite.`;
+  };
+
   const runBackfill = async () => {
     setBusy(true);
     setBackfillMsg("");
     try {
       const r = await onBackfill();
-      setBackfillMsg(
-        r.notifications || r.accesses
-          ? `Ricostruite ${r.notifications} notifiche e ${r.accesses} aperture da approvazioni e note già in archivio.`
-          : "Nessuna nuova prova da ricostruire: lo storico è già completo."
-      );
+      setBackfillMsg(backfillOutcome(r, year, month));
     } catch {
       setBackfillMsg("Ricostruzione non riuscita. Riprova.");
     } finally {
