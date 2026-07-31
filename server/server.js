@@ -123,6 +123,10 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 // `bucketFallback` viene DOPO: entra in gioco solo per i file che non stanno
 // (più) sul volume, quindi finché il disco ha il file nulla cambia.
 const bucketFallback = require("./middleware/bucketFallback");
+// Nota: qui si chiama `bucket` e non `storage` perché più sotto `storage` è
+// già la configurazione di multer.
+const bucket = require("./services/storage");
+const mediaIntake = require("./services/mediaIntake");
 app.use("/uploads", express.static(UPLOAD_DIR), bucketFallback("uploads"));
 // Media dei piani editoriali (sottocartella dedicata, route separata: NON
 // interferisce con /uploads del form AI). L'X-Robots-Tag globale vale anche qui.
@@ -746,12 +750,40 @@ const safeJoin = (base, file) => {
   return path.join(base, p);
 };
 
+// Scarica un allegato dal bucket. Serve quando il file non è (più) sul volume:
+// il nome resta lo stesso, quindi il link nella dashboard non cambia mai.
+async function downloadFromBucket(filename, res) {
+  const obj = await bucket.getObject(`uploads/${path.basename(filename)}`);
+  if (!obj) return false;
+  res.setHeader(
+    "Content-Type",
+    obj.contentType ||
+      mime.contentType(path.extname(filename)) ||
+      "application/octet-stream"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${path.basename(filename).replace(/"/g, "")}"`
+  );
+  if (obj.contentLength) res.setHeader("Content-Length", obj.contentLength);
+  obj.body.pipe(res);
+  return true;
+}
+
 app.get("/api/download/:filename", (req, res) => {
   const filename = req.params.filename;
   const filePath = safeJoin(UPLOAD_DIR, filename);
 
-  fs.access(filePath, fs.constants.R_OK, (err) => {
+  fs.access(filePath, fs.constants.R_OK, async (err) => {
     if (err) {
+      // Non sul volume: può essere sul bucket. Il disco ha la precedenza, il
+      // bucket è il ripiego — così nessun link si rompe durante o dopo la
+      // migrazione.
+      try {
+        if (await downloadFromBucket(filename, res)) return;
+      } catch (e) {
+        console.error("[download] lettura dal bucket non riuscita:", e?.message);
+      }
       console.error("File non trovato o non leggibile:", filePath, err?.code);
       return res.status(404).json({ error: "File non trovato" });
     }
@@ -793,6 +825,22 @@ app.get("/api/uploads/list", authenticateToken, requireAdminToken, async (req, r
         })
       )
     ).filter(Boolean);
+
+    // Gli allegati che stanno sul bucket vanno elencati insieme a quelli del
+    // volume: per chi guarda la dashboard è un elenco solo, e non deve
+    // cambiare a seconda di dove il file è finito. Il disco ha la precedenza
+    // (se un file sta in tutti e due i posti, conta una volta sola).
+    try {
+      const suDisco = new Set(details.map((f) => f.name));
+      for (const o of await bucket.listObjects("uploads/")) {
+        const name = o.key.slice("uploads/".length);
+        if (!name || name.includes("/") || suDisco.has(name)) continue;
+        details.push({ name, size: o.size, lastModified: o.lastModified });
+      }
+    } catch (e) {
+      // Bucket irraggiungibile: mostro comunque quello che c'è sul volume.
+      console.error("[uploads] elenco dal bucket non riuscito:", e?.message);
+    }
 
     const names = details.map((f) => f.name);
 
@@ -958,9 +1006,18 @@ app.delete("/api/requests/:sessionId", authenticateToken, requireAdminToken, asy
     }
 
     if (projectLog.formData.currentLogo) {
-      const filePath = path.join(UPLOAD_DIR, projectLog.formData.currentLogo);
+      const nome = path.basename(projectLog.formData.currentLogo);
+      const filePath = path.join(UPLOAD_DIR, nome);
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
+      }
+      // Il file può stare anche (o solo) sul bucket: se cancello la richiesta
+      // devo cancellarlo da entrambi, altrimenti resta lì a occupare spazio
+      // per sempre senza che nessuno sappia più a chi apparteneva.
+      try {
+        await bucket.deleteObject(`uploads/${nome}`);
+      } catch (e) {
+        console.error("[richieste] file non rimosso dal bucket:", e?.message);
       }
     }
 
@@ -1376,6 +1433,14 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     // currentLogo opzionale
     if (req.file) {
+      // Il file del cliente va messo al sicuro sul bucket, ma NON compresso:
+      // è un logo, magari serve per la stampa. `strict: false` perché un
+      // problema col bucket non deve far fallire il form di un cliente: in
+      // quel caso il file resta sul volume e si prosegue.
+      await mediaIntake.receive([req.file], "uploads", {
+        compress: false,
+        strict: false,
+      });
       formData.currentLogo = req.file.filename;
     }
 
