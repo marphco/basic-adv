@@ -143,10 +143,16 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
 
   // File presenti sul bucket che nessun post cita più: sono i post cancellati
   // nel tempo. Occupano spazio e non li vede nessuno.
+  //
+  // ⚠️ Solo i media dei piani. Gli allegati del form (uploads/) NON compaiono
+  // qui: nessun post li cita per definizione — appartengono alle richieste dei
+  // clienti — e finirebbero nell'elenco di ciò che si può cancellare. Sono
+  // loghi ed esecutivi altrui: non devono nemmeno essere proposti.
   const orfani = [];
   if (bucketLetto)
     for (const [key, bytes] of suBucket)
-      if (!citati.has(key)) orfani.push({ key, name: path.basename(key), bytes });
+      if (key.startsWith("uploads-ped/") && !citati.has(key))
+        orfani.push({ key, name: path.basename(key), bytes });
 
   const somma = (arr) => arr.reduce((n, f) => n + (f.bytes || 0), 0);
   return {

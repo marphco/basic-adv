@@ -50,6 +50,9 @@ const InventoryPanel = () => {
     );
   if (!data) return <p className="ep-share-hint">Caricamento…</p>;
 
+  // I totali arrivano in un oggetto a parte: gli elenchi hanno gli stessi nomi
+  // e allo stesso livello si sarebbero sovrascritti a vicenda.
+  const t = data.totali || {};
   const problemi = data.mancanti?.length || 0;
 
   return (
@@ -65,15 +68,15 @@ const InventoryPanel = () => {
             </>
           ) : (
             <>
-              <strong>Tutti i {data.citati} file dei piani sono al loro posto.</strong>{" "}
+              <strong>Tutti i {t.citati} file dei piani sono al loro posto.</strong>{" "}
               Nessuna immagine rotta.
             </>
           )}
           <div className="ep-inv-sub">
-            {data.citati} file usati nei piani · {MB(data.bytes)}
-            {data.soloDisco ? ` · ${data.soloDisco} ancora solo sul volume` : ""}
-            {data.orfani
-              ? ` · ${data.orfani.length} non più usati (${MB(data.bytesOrfani)})`
+            {t.citati} file usati nei piani · {MB(t.bytes)}
+            {t.soloDisco ? ` · ${t.soloDisco} ancora solo sul volume` : ""}
+            {t.orfani
+              ? ` · ${t.orfani} non più usati, ${MB(t.bytesOrfani)} recuperabili`
               : ""}
           </div>
         </div>

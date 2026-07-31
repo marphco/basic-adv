@@ -616,8 +616,11 @@ router.get("/storage/inventory", requireAdmin, async (req, res) => {
     const mancanti = inv.files.filter((f) => f.stato === "mancante");
     const soloDisco = inv.files.filter((f) => f.stato === "soloDisco");
 
+    // I totali stanno in un oggetto a parte: tenerli allo stesso livello degli
+    // elenchi faceva sì che `soloDisco` numero venisse sovrascritto da
+    // `soloDisco` elenco, e nel pannello il numero spariva.
     res.json({
-      ...inv.totali,
+      totali: inv.totali,
       bucketLetto: inv.bucketLetto,
       mesi,
       pesanti,
