@@ -155,6 +155,17 @@ const StorageModal = ({ onClose }) => {
                 )}
               </div>
 
+              {/* Se la compressione non funziona su questo server è meglio
+                  vederlo subito, non scoprirlo dai file che pesano il doppio. */}
+              {status.compression && !status.compression.images && (
+                <div className="ep-share-warning">
+                  <FontAwesomeIcon icon={faTriangleExclamation} /> Compressione
+                  delle foto non disponibile su questo server: i file vengono
+                  salvati come sono.
+                  {status.compression.error ? ` (${status.compression.error})` : ""}
+                </div>
+              )}
+
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
                   <FontAwesomeIcon icon={faCloudArrowUp} /> Bucket

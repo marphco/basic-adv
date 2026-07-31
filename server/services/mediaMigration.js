@@ -107,6 +107,9 @@ async function status() {
     disk: { ...disk, files: diskFiles, bytes: diskBytes },
     byKind,
     bucket,
+    // Se la compressione non è utilizzabile su questo server, meglio saperlo
+    // guardando il pannello che scoprendolo dai file che pesano il doppio.
+    compression: mediaCompress.probe(),
   };
 }
 

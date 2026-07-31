@@ -18,12 +18,43 @@
 //    originale resta subito disponibile allo stesso indirizzo e viene
 //    sostituito sul posto quando la ricodifica è pronta — quindi il nome non
 //    cambia mai e nessun link si rompe.
+//
+// ⚠️ REGOLA IMPARATA A SPESE NOSTRE: la compressione è una comodità, non deve
+// avere il potere di buttare giù il sito. Il 31/07/2026 il server è rimasto
+// fuori uso perché `sharp` veniva caricato all'avvio e su Node 18 si rifiutava
+// di partire: il processo moriva e con lui il login, i piani, tutto.
+// Da qui in poi: `sharp` e `ffmpeg` si caricano SOLO quando servono davvero e
+// sempre dentro una protezione. Se non si caricano, i file vengono salvati
+// senza compressione e il sito continua a funzionare come se niente fosse.
 const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
-const sharp = require("sharp");
 
 const num = (v, def) => (Number.isFinite(Number(v)) ? Number(v) : def);
+
+/* ==================== CARICAMENTO PROTETTO ==================== */
+
+let sharpLib; // undefined = non ancora provato, null = non disponibile
+let sharpError = "";
+
+// Restituisce sharp, o null se su questo server non è utilizzabile.
+// Il tentativo si fa una volta sola e l'esito resta in memoria.
+function loadSharp() {
+  if (sharpLib !== undefined) return sharpLib;
+  try {
+    sharpLib = require("sharp");
+    console.log(`[media] compressione immagini attiva (sharp ${sharpLib.versions.sharp})`);
+  } catch (e) {
+    sharpLib = null;
+    sharpError = e?.message || String(e);
+    console.error(
+      "[media] compressione immagini NON disponibile, i file verranno salvati " +
+        "come sono. Motivo:",
+      sharpError.split("\n")[0]
+    );
+  }
+  return sharpLib;
+}
 
 // Limiti: oltre non si guadagna nulla di visibile.
 const IMG_MAX = () => num(process.env.MEDIA_IMG_MAX, 2560); // lato lungo
@@ -57,6 +88,8 @@ function encoderFor(pipeline, ext, q) {
 // altrove e non tocca il disco originale). Restituisce i byte scritti, o null
 // se il formato non si ricodifica.
 async function renderImage(src, dest, outExt) {
+  const sharp = loadSharp();
+  if (!sharp) return null; // niente compressione: il file resta com'è
   const pipeline = sharp(src, { failOn: "none" })
     .rotate() // applica l'orientamento EXIF e lo azzera
     .resize({
@@ -263,6 +296,35 @@ async function processUploads(files = []) {
   return files;
 }
 
+/* ==================== DIAGNOSI ==================== */
+
+// Dice se la compressione è utilizzabile su QUESTO server. Serve a due cose:
+// scriverlo nei log all'avvio e mostrarlo nel pannello Archivio, così se un
+// giorno smette di funzionare si vede subito invece di scoprirlo dai file che
+// pesano il doppio.
+// Non solleva mai: è una diagnosi, non deve poter rompere nulla.
+function probe() {
+  let images = false;
+  try {
+    images = !!loadSharp();
+  } catch {
+    images = false;
+  }
+  let video = false;
+  try {
+    const bin = ffmpegPath();
+    video = !!bin && fs.existsSync(bin);
+  } catch {
+    video = false;
+  }
+  return {
+    images,
+    video,
+    error: images ? "" : sharpError.split("\n")[0],
+    node: process.version,
+  };
+}
+
 module.exports = {
   processUploads,
   compressImage,
@@ -272,4 +334,5 @@ module.exports = {
   queueVideo,
   isImage,
   isVideo,
+  probe,
 };
