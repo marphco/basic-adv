@@ -56,13 +56,13 @@ const StorageModal = ({ onClose }) => {
         <div className="ep-modal-body">
           <div className="ep-tabs">
             <button
-              className={`ep-tab ${scheda === "spazio" ? "is-active" : ""}`}
+              className={`ep-tab ${scheda === "spazio" ? "active" : ""}`}
               onClick={() => setScheda("spazio")}
             >
               Spazio
             </button>
             <button
-              className={`ep-tab ${scheda === "contenuti" ? "is-active" : ""}`}
+              className={`ep-tab ${scheda === "contenuti" ? "active" : ""}`}
               onClick={() => setScheda("contenuti")}
             >
               Contenuti
