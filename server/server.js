@@ -577,7 +577,15 @@ app.post("/api/sendEmails", async (req, res) => {
     }
 
     const userEmail = contactInfo.email;
-    const adminEmail = process.env.ADMIN_EMAIL;
+    // Più destinatari, separati da virgola: serve per cambiare la casella
+    // interna senza rischi — si aggiunge la nuova accanto alla vecchia, si
+    // verifica che arrivi, e solo dopo si toglie quella vecchia.
+    // Ogni indirizzo riceve una email a sé: così funziona con qualsiasi
+    // sistema di invio, senza dipendere da come tratta le liste.
+    const adminEmails = String(process.env.ADMIN_EMAIL || "")
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
     // Indirizzo a cui deve arrivare la risposta di chi ha compilato il form:
     // la casella dell'agenzia, non quella personale di chi la gestisce.
     const contattoAgenzia = process.env.CONTACT_REPLY_TO || "info@basicadv.com";
@@ -620,7 +628,7 @@ app.post("/api/sendEmails", async (req, res) => {
     try {
       await Promise.all([
         sendViaKeliWebhook({ to: userEmail, ...userMsg }),
-        sendViaKeliWebhook({ to: adminEmail, ...adminMsg }),
+        ...adminEmails.map((to) => sendViaKeliWebhook({ to, ...adminMsg })),
       ]);
       return res.status(200).json({ message: "Email inviate (HTTPS relay)" });
     } catch (relayErr) {
@@ -634,7 +642,7 @@ app.post("/api/sendEmails", async (req, res) => {
     try {
       await Promise.all([
         sendViaSendGrid({ to: userEmail, ...userMsg }),
-        sendViaSendGrid({ to: adminEmail, ...adminMsg }),
+        ...adminEmails.map((to) => sendViaSendGrid({ to, ...adminMsg })),
       ]);
       return res.status(200).json({ message: "Email inviate (SendGrid)" });
     } catch (sgErr) {
@@ -653,11 +661,13 @@ app.post("/api/sendEmails", async (req, res) => {
           ...userMsg,
           from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
         }),
-        sendViaKeliSMTP({
-          to: adminEmail,
-          ...adminMsg,
-          from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
-        }),
+        ...adminEmails.map((to) =>
+          sendViaKeliSMTP({
+            to,
+            ...adminMsg,
+            from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
+          })
+        ),
       ]);
       return res.status(200).json({ message: "Email inviate (SMTP fallback)" });
     } catch (smtpErr) {
