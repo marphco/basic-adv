@@ -41,22 +41,39 @@ const sizeOf = (p) => {
 // Carica il file sul bucket e verifica rileggendo la dimensione. La chiave
 // ricalca l'URL pubblico, quindi il file resta raggiungibile allo stesso
 // indirizzo di sempre.
-async function publish(file, folder) {
+// Con il volume staccato la copia locale vive in una cartella temporanea che
+// sparisce al riavvio: se il caricamento sul bucket non riesce, non c'è più
+// nessuna rete sotto. Per questo si riprova: quasi tutti i guasti di rete
+// durano meno di qualche secondo.
+async function publish(file, folder, tentativi = 3) {
   const key = `${folder}/${file.filename}`;
-  const size = sizeOf(file.path);
-  await storage.putFile({
-    localPath: file.path,
-    key,
-    contentType: mime.lookup(file.filename) || "application/octet-stream",
-  });
-  const check = await storage.headObject(key);
-  if (!check || check.size !== size)
-    throw new Error(
-      `verifica fallita per ${key} (attesi ${size} byte, sul bucket ${
-        check?.size ?? "assente"
-      })`
-    );
-  return key;
+  let ultimo;
+  for (let i = 1; i <= tentativi; i++) {
+    try {
+      const size = sizeOf(file.path);
+      await storage.putFile({
+        localPath: file.path,
+        key,
+        contentType: mime.lookup(file.filename) || "application/octet-stream",
+      });
+      const check = await storage.headObject(key);
+      if (!check || check.size !== size)
+        throw new Error(
+          `verifica fallita (attesi ${size} byte, sul bucket ${
+            check?.size ?? "assente"
+          })`
+        );
+      if (i > 1) console.log(`[media] ${key} caricato al tentativo ${i}`);
+      return key;
+    } catch (e) {
+      ultimo = e;
+      if (i < tentativi) {
+        console.error(`[media] ${key}: tentativo ${i} fallito (${e?.message}), riprovo`);
+        await new Promise((r) => setTimeout(r, 400 * i));
+      }
+    }
+  }
+  throw new Error(`${key}: ${ultimo?.message || ultimo}`);
 }
 
 /* ==================== CODE ==================== */
