@@ -47,11 +47,9 @@ const StorageModal = ({ onClose }) => {
       const r = await api.storageAlertTest();
       setProva(
         r.inviato
-          ? `Email inviata a ${status.avviso.destinatario}. Controlla la casella.`
-          : r.sotto
-          ? `Lo spazio è sotto la soglia, quindi non c'era niente da segnalare: ` +
-            `l'avviso partirà da solo quando serve.`
-          : r.errore || "Invio non riuscito."
+          ? `Email di prova inviata a ${r.destinatario}. Controlla la casella ` +
+            `(anche nello spam, la prima volta).`
+          : `Non inviata: ${r.errore || "motivo sconosciuto"}`
       );
     } catch (e) {
       setProva(e?.response?.data?.error || "Invio non riuscito.");

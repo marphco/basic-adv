@@ -674,7 +674,7 @@ router.post("/storage/cleanup", requireAdmin, async (req, res) => {
 // arrivare non è un avviso.
 router.post("/storage/alert/test", requireAdmin, async (req, res) => {
   try {
-    res.json(await storageAlert.check({ force: true }));
+    res.json(await storageAlert.sendTest());
   } catch (e) {
     res.status(500).json({ error: e?.message || "Invio di prova non riuscito" });
   }
