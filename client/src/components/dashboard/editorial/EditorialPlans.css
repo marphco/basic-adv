@@ -2321,6 +2321,12 @@
 /* ============================================================
    Import Excel
    ============================================================ */
+/* Conferma di eliminazione: una domanda secca, non deve occupare mezzo
+   schermo come le finestre di lavoro. */
+.ep-modal--confirm {
+  max-width: 420px;
+}
+
 .ep-modal--wide {
   max-width: 720px;
 }

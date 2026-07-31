@@ -212,13 +212,13 @@ const InventoryPanel = () => {
 
       <div className="ep-tabs">
         <button
-          className={`ep-tab ${vista === "mesi" ? "is-active" : ""}`}
+          className={`ep-tab ${vista === "mesi" ? "active" : ""}`}
           onClick={() => cambiaVista("mesi", undefined)}
         >
           Per mese
         </button>
         <button
-          className={`ep-tab ${vista === "file" ? "is-active" : ""}`}
+          className={`ep-tab ${vista === "file" ? "active" : ""}`}
           onClick={() => cambiaVista("file", "peso")}
         >
           File più pesanti
@@ -227,7 +227,7 @@ const InventoryPanel = () => {
             sempre vuota è solo una domanda senza risposta. */}
         {!!rotti.length && (
           <button
-            className={`ep-tab ${vista === "rotti" ? "is-active" : ""}`}
+            className={`ep-tab ${vista === "rotti" ? "active" : ""}`}
             onClick={() => cambiaVista("rotti")}
           >
             Da controllare ({rotti.length})
