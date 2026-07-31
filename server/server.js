@@ -1057,6 +1057,13 @@ if (!global.serverRunning) {
     } catch (e) {
       console.error("[media] diagnosi compressione non riuscita:", e?.message);
     }
+    // Guardiano dello spazio sul bucket: avvisa via email prima che si
+    // riempia, non quando gli operatori non riescono più a caricare.
+    try {
+      require("./services/storageAlert").schedule();
+    } catch (e) {
+      console.error("[spazio] guardiano non avviato:", e?.message);
+    }
   });
 
   server.on("error", (err) => {
