@@ -39,9 +39,10 @@ const StorageModal = ({ onClose }) => {
     setBusy(true);
     setLog("");
     try {
-      const r = await api.migrateMedia({ dryRun: true, limit: 100 });
+      // limite alto: la simulazione non scrive, quindi può contare tutto
+      const r = await api.migrateMedia({ dryRun: true, limit: 5000 });
       setLog(
-        `Da copiare: ${r.copied + r.remaining} file (${MB(r.bytes)} nel primo lotto). ` +
+        `Da copiare: ${r.copied + r.remaining} file, ${MB(r.bytes)} in tutto. ` +
           `Già sul bucket: ${r.skipped}.` +
           (r.failed ? ` Problemi: ${r.failed}.` : "")
       );
@@ -131,6 +132,20 @@ const StorageModal = ({ onClose }) => {
                     </div>
                   </li>
                 </ul>
+                {/* Composizione dei media: foto e video si comprimono in modo
+                    (e a costi) molto diversi. */}
+                {status.byKind && (
+                  <p className="ep-share-hint">
+                    Di cui foto {status.byKind.image.files} ·{" "}
+                    {MB(status.byKind.image.bytes)} — video{" "}
+                    {status.byKind.video.files} · {MB(status.byKind.video.bytes)}
+                    {status.byKind.other.files
+                      ? ` — altro ${status.byKind.other.files} · ${MB(
+                          status.byKind.other.bytes
+                        )}`
+                      : ""}
+                  </p>
+                )}
               </div>
 
               <div className="ep-share-admin">
