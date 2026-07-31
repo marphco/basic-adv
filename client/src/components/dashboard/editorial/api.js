@@ -76,6 +76,15 @@ export const api = {
         ...auth(),
       })
       .then((r) => r.data),
+  // archivio file: stato del volume/bucket e copia a lotti (solo admin)
+  storageStatus: () =>
+    axios
+      .get(`${API_URL}/api/editorial/storage/status`, auth())
+      .then((r) => r.data),
+  migrateMedia: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/storage/migrate`, body, auth())
+      .then((r) => r.data),
   // ricostruzione retroattiva dello storico dai dati in archivio (solo admin)
   backfillPlanHistory: (body) =>
     axios
