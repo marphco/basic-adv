@@ -53,10 +53,11 @@ function refsOfPost(post) {
   const out = [];
   const push = (m, origine) => {
     const loc = locate(m?.url);
-    if (loc) out.push({ ...loc, kind: m.kind || "image", origine });
     // Il poster di un video è un file a parte: se sparisce lui, il video
     // resta ma senza anteprima.
     const t = locate(m?.thumbUrl);
+    if (loc)
+      out.push({ ...loc, kind: m.kind || "image", origine, thumb: t?.name || "" });
     if (t) out.push({ ...t, kind: "image", origine: `${origine} (anteprima)` });
   };
   (post.media || []).forEach((m) => push(m, "post"));
@@ -125,6 +126,11 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
       files.push({
         key,
         name: ref.name,
+        // Percorso pubblico: serve al pannello per mostrare l'anteprima.
+        // Relativo e non assoluto, così vale con qualsiasi indirizzo del
+        // server e non si porta dietro URL vecchi salvati nei post.
+        path: `/${key}`,
+        thumb: ref.thumb ? `/${ref.folder}/${ref.thumb}` : "",
         kind: ref.kind,
         origine: ref.origine,
         bytes: bytesBucket != null ? bytesBucket : bytesDisco,
@@ -152,7 +158,13 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
   if (bucketLetto)
     for (const [key, bytes] of suBucket)
       if (key.startsWith("uploads-ped/") && !citati.has(key))
-        orfani.push({ key, name: path.basename(key), bytes });
+        orfani.push({
+          key,
+          name: path.basename(key),
+          path: `/${key}`, // serve l'anteprima anche qui: non si cancella al buio
+          kind: /\.(mp4|mov|m4v|webm)$/i.test(key) ? "video" : "image",
+          bytes,
+        });
 
   const somma = (arr) => arr.reduce((n, f) => n + (f.bytes || 0), 0);
   return {
@@ -191,6 +203,7 @@ function byMonth(files) {
         video: 0,
         mancanti: 0,
         keys: [],
+        anteprime: [],
       });
     const g = gruppi.get(k);
     g.files += 1;
@@ -198,6 +211,10 @@ function byMonth(files) {
     if (f.kind === "video") g.video += 1;
     if (f.stato === "mancante") g.mancanti += 1;
     g.keys.push(f.key);
+    // Poche anteprime per riga: servono a riconoscere il mese a colpo
+    // d'occhio, non a sfogliarlo.
+    if (g.anteprime.length < 6 && f.stato !== "mancante")
+      g.anteprime.push({ path: f.path, thumb: f.thumb, kind: f.kind });
   }
   return [...gruppi.values()];
 }

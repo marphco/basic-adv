@@ -629,7 +629,7 @@ router.get("/storage/inventory", requireAdmin, async (req, res) => {
       pesanti,
       mancanti: mancanti.slice(0, 200),
       soloDisco: soloDisco.slice(0, 200),
-      orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 100),
+      orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 200),
     });
   } catch (e) {
     res.status(500).json({ error: e?.message || "Inventario non riuscito" });
