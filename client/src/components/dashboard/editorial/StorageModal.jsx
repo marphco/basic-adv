@@ -4,8 +4,9 @@ import {
   faTimes,
   faTriangleExclamation,
   faCheck,
-  faCloudArrowUp,
-  faHardDrive,
+  faImages,
+  faPaperclip,
+  faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import InventoryPanel from "./InventoryPanel";
@@ -16,82 +17,55 @@ const MB = (n) => {
   return mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(1)} MB`;
 };
 
-// Archivio file: quanto pesa il volume, quanto il bucket, e la copia dei file
-// dal primo al secondo. La copia va a LOTTI e viene ripetuta finché non resta
-// nulla: niente richieste infinite, e si può interrompere quando si vuole.
+// Archivio file. Due domande diverse, due schede:
+//   Spazio    → quanto occupiamo, di che tipo, e quanto manca al limite
+//   Contenuti → cosa c'è dentro, di chi è, e come liberarlo
+//
+// Il volume Railway non esiste più e la copia dal volume al bucket è finita:
+// erano attrezzi di un trasloco concluso, tenerli in giro sarebbe solo un
+// modo per premere un pulsante che non fa più niente.
 const StorageModal = ({ onClose }) => {
   const [status, setStatus] = useState(null);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [log, setLog] = useState("");
-  const [progress, setProgress] = useState(null);
   const [scheda, setScheda] = useState("spazio");
+  const [prova, setProva] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const load = () =>
+  useEffect(() => {
     api
       .storageStatus()
       .then(setStatus)
-      .catch((e) => setError(e?.response?.data?.error || "Stato non disponibile."));
-
-  useEffect(() => {
-    load();
+      .catch((e) =>
+        setError(e?.response?.data?.error || "Stato non disponibile.")
+      );
   }, []);
 
-  const simulate = async () => {
+  const inviaProva = async () => {
     setBusy(true);
-    setLog("");
+    setProva("");
     try {
-      // limite alto: la simulazione non scrive, quindi può contare tutto
-      const r = await api.migrateMedia({ dryRun: true, limit: 5000 });
-      setLog(
-        `Da copiare: ${r.copied + r.remaining} file, ${MB(r.bytes)} sul volume. ` +
-          `Foto e video dei piani verranno compressi durante la copia, quindi ` +
-          `sul bucket occuperanno meno. Già copiati: ${r.skipped}.` +
-          (r.failed ? ` Problemi: ${r.failed}.` : "")
+      const r = await api.storageAlertTest();
+      setProva(
+        r.inviato
+          ? `Email inviata a ${status.avviso.destinatario}. Controlla la casella.`
+          : r.sotto
+          ? `Lo spazio è sotto la soglia, quindi non c'era niente da segnalare: ` +
+            `l'avviso partirà da solo quando serve.`
+          : r.errore || "Invio non riuscito."
       );
     } catch (e) {
-      setLog(e?.response?.data?.error || "Simulazione non riuscita.");
+      setProva(e?.response?.data?.error || "Invio non riuscito.");
     } finally {
       setBusy(false);
     }
   };
 
-  // Copia vera: un lotto dopo l'altro finché `remaining` non è zero.
-  const copyAll = async () => {
-    setBusy(true);
-    setLog("");
-    let copied = 0;
-    let failed = 0;
-    let bytes = 0;
-    let source = 0;
-    try {
-      for (let round = 0; round < 500; round++) {
-        const r = await api.migrateMedia({ dryRun: false, limit: 25 });
-        copied += r.copied;
-        failed += r.failed;
-        bytes += r.bytes;
-        source += r.sourceBytes || 0;
-        setProgress({ copied, failed, remaining: r.remaining });
-        if (r.errors?.length) setLog(r.errors.join(" · "));
-        // Nessun progresso e niente in coda: è finita (o non si può andare
-        // avanti), meglio fermarsi che girare a vuoto.
-        if (!r.remaining || (!r.copied && !r.failed)) break;
-      }
-      const saved = source > bytes ? Math.round(((source - bytes) / source) * 100) : 0;
-      setLog(
-        `Copiati ${copied} file: ${MB(source)} sul volume → ${MB(bytes)} sul bucket` +
-          (saved ? ` (${saved}% in meno)` : "") +
-          (failed ? ` · ${failed} non riusciti` : "") +
-          ". Il volume non è stato toccato."
-      );
-      await load();
-    } catch (e) {
-      setLog(e?.response?.data?.error || "Copia interrotta.");
-    } finally {
-      setBusy(false);
-      setProgress(null);
-    }
-  };
+  const b = status?.bucket;
+  const usato = b?.totale?.bytes || 0;
+  const limite = status?.avviso?.limiteBytes || 0;
+  const percento = limite ? Math.min(100, (usato / limite) * 100) : 0;
+  const soglia = status?.avviso?.sogliaBytes || 0;
+  const vicino = soglia && usato >= soglia;
 
   return (
     <div className="ep-modal-overlay" onClick={onClose}>
@@ -103,8 +77,6 @@ const StorageModal = ({ onClose }) => {
           </button>
         </div>
         <div className="ep-modal-body">
-          {/* Due domande diverse, due schede: "quanto spazio uso e dove sta"
-              e "cosa c'è dentro, di chi è, cosa non si trova". */}
           <div className="ep-tabs">
             <button
               className={`ep-tab ${scheda === "spazio" ? "is-active" : ""}`}
@@ -122,139 +94,109 @@ const StorageModal = ({ onClose }) => {
 
           {scheda === "contenuti" && <InventoryPanel />}
 
-          {scheda === "spazio" && error && (
-            <div className="ep-share-warning">
-              <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
-            </div>
-          )}
-
-          {scheda === "spazio" && (!status && !error ? (
-            <p className="ep-share-hint">Caricamento…</p>
-          ) : status ? (
+          {scheda === "spazio" && (
             <>
-              <div className="ep-share-admin">
-                <div className="ep-share-admin-head">
-                  <FontAwesomeIcon icon={faHardDrive} /> Volume Railway
-                </div>
-                <ul className="ep-hist-list">
-                  <li className="ep-hist-item">
-                    <div className="ep-hist-line">
-                      <strong>Allegati form</strong>
-                      <span className="ep-hist-date">
-                        {status.disk["uploads"]?.files || 0} file
-                      </span>
-                      <span className="ep-hist-by">
-                        · {MB(status.disk["uploads"]?.bytes)}
-                      </span>
-                    </div>
-                  </li>
-                  <li className="ep-hist-item">
-                    <div className="ep-hist-line">
-                      <strong>Media piani editoriali</strong>
-                      <span className="ep-hist-date">
-                        {status.disk["uploads-ped"]?.files || 0} file
-                      </span>
-                      <span className="ep-hist-by">
-                        · {MB(status.disk["uploads-ped"]?.bytes)}
-                      </span>
-                    </div>
-                  </li>
-                </ul>
-                {/* Composizione dei media: foto e video si comprimono in modo
-                    (e a costi) molto diversi. */}
-                {status.byKind && (
-                  <p className="ep-share-hint">
-                    Di cui foto {status.byKind.image.files} ·{" "}
-                    {MB(status.byKind.image.bytes)} — video{" "}
-                    {status.byKind.video.files} · {MB(status.byKind.video.bytes)}
-                    {status.byKind.other.files
-                      ? ` — altro ${status.byKind.other.files} · ${MB(
-                          status.byKind.other.bytes
-                        )}`
-                      : ""}
-                  </p>
-                )}
-              </div>
-
-              {/* Se la compressione non funziona su questo server è meglio
-                  vederlo subito, non scoprirlo dai file che pesano il doppio. */}
-              {status.compression && !status.compression.images && (
+              {error && (
                 <div className="ep-share-warning">
-                  <FontAwesomeIcon icon={faTriangleExclamation} /> Compressione
-                  delle foto non disponibile su questo server: i file vengono
-                  salvati come sono.
-                  {status.compression.error ? ` (${status.compression.error})` : ""}
+                  <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
+                </div>
+              )}
+              {!status && !error && <p className="ep-share-hint">Caricamento…</p>}
+
+              {status && !status.configured && (
+                <div className="ep-share-warning">
+                  <FontAwesomeIcon icon={faTriangleExclamation} /> Bucket non
+                  configurato: mancano le variabili R2 su Railway.
                 </div>
               )}
 
-              <div className="ep-share-admin">
-                <div className="ep-share-admin-head">
-                  <FontAwesomeIcon icon={faCloudArrowUp} /> Bucket
-                </div>
-                {!status.configured ? (
-                  <div className="ep-share-warning">
-                    <FontAwesomeIcon icon={faTriangleExclamation} /> Bucket non
-                    configurato: mancano le variabili R2 su Railway.
+              {status && status.configured && (
+                <>
+                  {/* Quanto spazio è occupato, in una barra: il numero da solo
+                      non dice se siamo vicini al limite. */}
+                  <div className="ep-spazio">
+                    <div className="ep-spazio-testa">
+                      <strong>
+                        {MB(usato)} <span className="ep-inv-meta">di {MB(limite)}</span>
+                      </strong>
+                      <span className="ep-inv-meta">
+                        {b.totale.files} file · {Math.round(percento)}%
+                      </span>
+                    </div>
+                    <div className="ep-spazio-barra">
+                      <span
+                        className={`ep-spazio-riempimento ${vicino ? "is-alta" : ""}`}
+                        style={{ width: `${Math.max(percento, 1)}%` }}
+                      />
+                    </div>
                   </div>
-                ) : status.bucket?.error ? (
-                  <div className="ep-share-warning">
-                    <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
-                    {status.bucket.error}
-                  </div>
-                ) : (
-                  <p className="ep-share-desc">
-                    {status.bucket?.files || 0} file · {MB(status.bucket?.bytes)}
-                    {" · "}scrittura su{" "}
-                    <strong>{status.mode === "r2" ? "bucket" : "volume"}</strong>
-                  </p>
-                )}
-              </div>
 
-              {status.configured && (
-                <div className="ep-share-admin">
-                  <div className="ep-share-admin-head">Copia sul bucket</div>
-                  <p className="ep-share-desc">
-                    Copia i file dal volume al bucket mantenendo lo stesso nome,
-                    quindi nessun link cambia. Foto e video dei piani vengono
-                    compressi per strada; gli allegati dei clienti no, restano
-                    identici. Non cancella nulla dal volume e si può ripetere:
-                    ciò che è già copiato viene saltato, quindi se si interrompe
-                    basta ripartire.
-                  </p>
+                  {/* Diviso per provenienza: i media dei piani si possono
+                      alleggerire e cancellare, gli allegati delle richieste
+                      sono file dei clienti e non si toccano. */}
+                  <ul className="ep-spazio-tipi">
+                    <li>
+                      <FontAwesomeIcon icon={faImages} />
+                      <div>
+                        <strong>Media dei piani editoriali</strong>
+                        <div className="ep-inv-meta">
+                          {b.ped.files} file · {MB(b.ped.bytes)}
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <FontAwesomeIcon icon={faPaperclip} />
+                      <div>
+                        <strong>Allegati delle richieste dal sito</strong>
+                        <div className="ep-inv-meta">
+                          {b.richieste.files} file · {MB(b.richieste.bytes)}
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
 
-                  {progress && (
-                    <p className="ep-share-hint">
-                      Copiati {progress.copied} · restano {progress.remaining}
-                      {progress.failed ? ` · ${progress.failed} falliti` : ""}
-                    </p>
-                  )}
-                  {log && (
-                    <div className="ep-share-ok">
-                      <FontAwesomeIcon icon={faCheck} /> {log}
+                  {/* Se la compressione smette di funzionare è meglio vederlo
+                      qui che scoprirlo dai file che pesano il doppio. */}
+                  {status.compressione && !status.compressione.images && (
+                    <div className="ep-share-warning">
+                      <FontAwesomeIcon icon={faTriangleExclamation} /> Compressione
+                      delle foto non disponibile su questo server: i file vengono
+                      salvati come sono.
+                      {status.compressione.error
+                        ? ` (${status.compressione.error})`
+                        : ""}
                     </div>
                   )}
 
-                  <div className="ep-foot-right ep-share-actions">
-                    <button
-                      className="ep-btn ep-btn--ghost"
-                      onClick={simulate}
-                      disabled={busy}
-                    >
-                      {busy ? "Attendi…" : "Simula"}
-                    </button>
-                    <button
-                      className="ep-btn ep-btn--primary"
-                      onClick={copyAll}
-                      disabled={busy}
-                    >
-                      <FontAwesomeIcon icon={faCloudArrowUp} />{" "}
-                      {busy ? "Copia in corso…" : "Copia sul bucket"}
-                    </button>
+                  <div className="ep-share-admin">
+                    <div className="ep-share-admin-head">
+                      <FontAwesomeIcon icon={faEnvelope} /> Avviso automatico
+                    </div>
+                    <p className="ep-share-desc">
+                      Sopra {MB(soglia)} parte una email a{" "}
+                      <strong>{status.avviso.destinatario}</strong> con quanto
+                      spazio resta e cosa fare. Al massimo una a settimana, e
+                      riparte da capo se lo spazio torna sotto la soglia.
+                    </p>
+                    {prova && (
+                      <div className="ep-share-ok">
+                        <FontAwesomeIcon icon={faCheck} /> {prova}
+                      </div>
+                    )}
+                    <div className="ep-foot-right ep-share-actions">
+                      <button
+                        className="ep-btn ep-btn--ghost"
+                        onClick={inviaProva}
+                        disabled={busy}
+                      >
+                        {busy ? "Invio…" : "Invia una prova"}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </>
-          ) : null)}
+          )}
         </div>
       </div>
     </div>

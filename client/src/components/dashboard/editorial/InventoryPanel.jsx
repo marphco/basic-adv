@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTriangleExclamation,
-  faImage,
-  faVideo,
+  faPlay,
   faCircleCheck,
   faTrash,
-  faBroom,
+  faCheck,
+  faImage,
 } from "@fortawesome/free-solid-svg-icons";
-import { api } from "./api";
+import { api, API_URL } from "./api";
 
 const MB = (n) => {
   if (!n) return "0 MB";
@@ -16,24 +16,42 @@ const MB = (n) => {
   return mb >= 1024 ? `${(mb / 1024).toFixed(2)} GB` : `${mb.toFixed(1)} MB`;
 };
 
-// Contenuti dell'archivio: cosa occupa spazio, di chi è, cosa non si trova —
-// e come liberarlo.
+// I percorsi arrivano relativi ("/uploads-ped/ped-1.jpg"): li completo qui,
+// così valgono con qualsiasi indirizzo del server.
+const src = (p) => (p ? `${API_URL}${p}` : "");
+
+// Anteprima di un file. Per i video senza poster si usa <video>: un <img>
+// con l'indirizzo di un mp4 darebbe solo un'icona di immagine rotta.
+const Anteprima = ({ file, className = "" }) => {
+  const video = file.kind === "video";
+  return (
+    <div className={`ep-thumb ${className}`}>
+      {video && !file.thumb ? (
+        <video src={`${src(file.path)}#t=0.1`} muted preload="metadata" />
+      ) : (
+        <img src={src(video ? file.thumb : file.path)} alt="" loading="lazy" />
+      )}
+      {video && (
+        <span className="ep-thumb-video">
+          <FontAwesomeIcon icon={faPlay} />
+        </span>
+      )}
+    </div>
+  );
+};
+
+// Contenuti dell'archivio: cosa occupa spazio, di chi è, e come liberarlo.
 //
-// La vista predefinita è per MESE dal più vecchio, perché è così che si
-// ragiona quando si fa pulizia. Ma i mesi vecchi non bastano: se il peso sta
-// in tre video di settembre, cancellare un anno di foto non risolve niente —
-// per quello c'è la vista per peso.
-//
-// La selezione è multipla e i totali si aggiornano mentre scegli: spuntare
-// una riga per volta senza sapere quanto si sta liberando è una perdita di
-// tempo.
+// Regola che guida tutto il pannello: non si cancella al buio. Ogni cosa
+// selezionabile mostra cosa contiene, e la barra in basso dice quanto si sta
+// per liberare PRIMA di premere.
 const InventoryPanel = () => {
   const [data, setData] = useState(null);
-  const [vista, setVista] = useState("mesi"); // mesi | peso | problemi
+  const [vista, setVista] = useState("mesi"); // mesi | file | rotti
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [scelti, setScelti] = useState([]); // chiavi dei mesi o dei file
-  const [conferma, setConferma] = useState(null); // { titolo, testo, azione }
+  const [scelti, setScelti] = useState([]);
+  const [conferma, setConferma] = useState(null);
   const [esito, setEsito] = useState("");
 
   const carica = (ordina) => {
@@ -68,15 +86,14 @@ const InventoryPanel = () => {
     try {
       const r = await api.storageCleanup(body);
       setEsito(
-        `${descrizione}: ${r.rimossi} file rimossi` +
+        `${descrizione}: ${r.rimossi} file eliminati` +
           (r.bytes ? `, ${MB(r.bytes)} liberati` : "") +
-          (r.postToccati ? ` · ${r.postToccati} post aggiornati` : "") +
-          (r.errori?.length ? ` · ${r.errori.length} problemi` : "")
+          (r.postToccati ? ` · ${r.postToccati} post aggiornati` : "")
       );
       setScelti([]);
-      carica(vista === "peso" ? "peso" : undefined);
+      carica(vista === "file" ? "peso" : undefined);
     } catch (e) {
-      setEsito(e?.response?.data?.error || "Cancellazione non riuscita.");
+      setEsito(e?.response?.data?.error || "Eliminazione non riuscita.");
     } finally {
       setBusy(false);
     }
@@ -90,12 +107,10 @@ const InventoryPanel = () => {
     );
   if (!data) return <p className="ep-share-hint">Caricamento…</p>;
 
-  // I totali arrivano in un oggetto a parte: gli elenchi hanno gli stessi nomi
-  // e allo stesso livello si sarebbero sovrascritti a vicenda.
   const t = data.totali || {};
-  const problemi = data.mancanti?.length || 0;
+  const rotti = data.mancanti || [];
+  const orfani = data.orfani || [];
 
-  // Quanto si libera con la selezione attuale: si vede prima di decidere.
   const elenco = vista === "mesi" ? data.mesi || [] : data.pesanti || [];
   const idDi = (x) => (vista === "mesi" ? x.chiave : x.key);
   const selezionati = elenco.filter((x) => scelti.includes(idDi(x)));
@@ -105,16 +120,16 @@ const InventoryPanel = () => {
     0
   );
 
-  const chiediCancellazione = () => {
+  const chiediEliminazione = () => {
     if (vista === "mesi")
       setConferma({
-        titolo: `Cancellare ${selezionati.length} ${
-          selezionati.length === 1 ? "mese" : "mesi"
-        }?`,
+        titolo:
+          selezionati.length === 1
+            ? `Eliminare le foto di ${selezionati[0].cliente} — ${selezionati[0].mese}?`
+            : `Eliminare le foto di ${selezionati.length} mesi?`,
         testo:
-          `Verranno cancellati ${fileScelti} file e liberati ${MB(pesoScelto)}. ` +
-          `I post restano con didascalie, note e storico: perdono solo le ` +
-          `immagini. L'operazione non si può annullare.`,
+          `${fileScelti} file, ${MB(pesoScelto)} liberati. I post restano con ` +
+          `didascalie, note e storico: perdono solo le immagini.`,
         azione: () =>
           esegui(
             {
@@ -125,70 +140,72 @@ const InventoryPanel = () => {
                 month: m.month,
               })),
             },
-            "Mesi cancellati"
+            "Eliminati"
           ),
       });
     else
       setConferma({
-        titolo: `Cancellare ${fileScelti} file?`,
+        titolo: `Eliminare ${fileScelti} file?`,
         testo:
-          `Verranno liberati ${MB(pesoScelto)}. I file spariscono anche dai ` +
-          `post che li mostrano. L'operazione non si può annullare.`,
+          `${MB(pesoScelto)} liberati. I file spariscono anche dai post che li ` +
+          `mostrano.`,
         azione: () =>
-          esegui(
-            { scope: "file", keys: selezionati.map((f) => f.key) },
-            "File cancellati"
-          ),
+          esegui({ scope: "file", keys: selezionati.map((f) => f.key) }, "Eliminati"),
       });
   };
 
   return (
     <>
-      {/* Il riepilogo che risponde alla domanda "va tutto bene?" */}
-      <div className={`ep-inv-summary ${problemi ? "is-bad" : "is-ok"}`}>
-        <FontAwesomeIcon icon={problemi ? faTriangleExclamation : faCircleCheck} />
+      {/* Stato in una riga: si legge in un secondo. */}
+      <div className={`ep-inv-summary ${rotti.length ? "is-bad" : "is-ok"}`}>
+        <FontAwesomeIcon
+          icon={rotti.length ? faTriangleExclamation : faCircleCheck}
+        />
         <div>
-          {problemi ? (
-            <>
-              <strong>{problemi} file non si trovano</strong> — sono le immagini
-              che non si vedono. Sotto c'è l'elenco con cliente e giorno.
-            </>
+          {rotti.length ? (
+            <strong>
+              {rotti.length} immagini non si aprono più
+            </strong>
           ) : (
-            <>
-              <strong>Tutti i {t.citati} file dei piani sono al loro posto.</strong>{" "}
-              Nessuna immagine rotta.
-            </>
+            <strong>Tutte le immagini dei piani sono al loro posto</strong>
           )}
           <div className="ep-inv-sub">
-            {t.citati} file usati nei piani · {MB(t.bytes)}
-            {t.soloDisco ? ` · ${t.soloDisco} ancora solo sul volume` : ""}
+            {t.citati} file in uso · {MB(t.bytes)}
+            {t.soloDisco ? ` · ${t.soloDisco} non ancora sul bucket` : ""}
           </div>
         </div>
       </div>
 
-      {/* Pulizia gratis: file che nessuno vede più. Un tocco, nessuna
-          conseguenza — sta in cima perché è sempre la prima cosa da fare. */}
+      {/* Spazio recuperabile senza conseguenze: sta in cima perché è sempre
+          la prima cosa da fare, e mostra cosa sta per buttare. */}
       {!!t.orfani && (
         <div className="ep-inv-orfani">
-          <div>
-            <strong>{t.orfani} file non più usati</strong> — restano di post
-            cancellati, non li vede nessuno.
-            <div className="ep-inv-sub">{MB(t.bytesOrfani)} da recuperare</div>
+          <div className="ep-inv-orfani-testo">
+            <strong>{t.orfani} file di post eliminati</strong>
+            <div className="ep-inv-sub">
+              Non compaiono in nessun piano · {MB(t.bytesOrfani)} da recuperare
+            </div>
+          </div>
+          <div className="ep-thumb-strip">
+            {orfani.slice(0, 8).map((f) => (
+              <Anteprima key={f.key} file={f} className="ep-thumb--mini" />
+            ))}
+            {orfani.length > 8 && (
+              <span className="ep-thumb-more">+{orfani.length - 8}</span>
+            )}
           </div>
           <button
             className="ep-btn ep-btn--ghost"
             disabled={busy}
             onClick={() =>
               setConferma({
-                titolo: `Eliminare ${t.orfani} file non più usati?`,
-                testo:
-                  `Si liberano ${MB(t.bytesOrfani)}. Non sono mostrati da nessun ` +
-                  `post, quindi non cambia niente in nessun piano.`,
-                azione: () => esegui({ scope: "orfani" }, "Pulizia completata"),
+                titolo: `Eliminare ${t.orfani} file inutilizzati?`,
+                testo: `Si liberano ${MB(t.bytesOrfani)}. Non sono mostrati in nessun piano, quindi non cambia niente per i clienti.`,
+                azione: () => esegui({ scope: "orfani" }, "Eliminati"),
               })
             }
           >
-            <FontAwesomeIcon icon={faBroom} /> Libera {MB(t.bytesOrfani)}
+            <FontAwesomeIcon icon={faTrash} /> Libera {MB(t.bytesOrfani)}
           </button>
         </div>
       )}
@@ -198,20 +215,24 @@ const InventoryPanel = () => {
           className={`ep-tab ${vista === "mesi" ? "is-active" : ""}`}
           onClick={() => cambiaVista("mesi", undefined)}
         >
-          Mesi più vecchi
+          Per mese
         </button>
         <button
-          className={`ep-tab ${vista === "peso" ? "is-active" : ""}`}
-          onClick={() => cambiaVista("peso", "peso")}
+          className={`ep-tab ${vista === "file" ? "is-active" : ""}`}
+          onClick={() => cambiaVista("file", "peso")}
         >
-          Chi pesa di più
+          File più pesanti
         </button>
-        <button
-          className={`ep-tab ${vista === "problemi" ? "is-active" : ""}`}
-          onClick={() => cambiaVista("problemi")}
-        >
-          Problemi{problemi ? ` (${problemi})` : ""}
-        </button>
+        {/* Compare solo se c'è davvero qualcosa da guardare: una scheda
+            sempre vuota è solo una domanda senza risposta. */}
+        {!!rotti.length && (
+          <button
+            className={`ep-tab ${vista === "rotti" ? "is-active" : ""}`}
+            onClick={() => cambiaVista("rotti")}
+          >
+            Da controllare ({rotti.length})
+          </button>
+        )}
       </div>
 
       {busy && <p className="ep-share-hint">Attendi…</p>}
@@ -221,136 +242,108 @@ const InventoryPanel = () => {
         </div>
       )}
 
-      {/* --- per mese: l'unità con cui si fa pulizia --- */}
+      {/* ---- Per mese: la riga mostra un assaggio di cosa contiene ---- */}
       {vista === "mesi" && (
         <ul className="ep-inv-list">
-          {(data.mesi || []).map((m) => (
-            <li
-              key={m.chiave}
-              className={`ep-inv-row ep-inv-row--sel ${
-                scelti.includes(m.chiave) ? "is-selected" : ""
-              }`}
-              onClick={() => toggle(m.chiave)}
-            >
-              <input
-                type="checkbox"
-                checked={scelti.includes(m.chiave)}
-                onChange={() => toggle(m.chiave)}
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`Seleziona ${m.cliente} ${m.mese}`}
-              />
-              <div className="ep-inv-main">
-                <strong>{m.cliente}</strong>
-                <span className="ep-inv-meta">{m.mese}</span>
-              </div>
-              <div className="ep-inv-side">
-                <span className="ep-inv-size">{MB(m.bytes)}</span>
-                <span className="ep-inv-meta">
-                  {m.files} file
-                  {m.video ? ` · ${m.video} video` : ""}
-                  {m.mancanti ? ` · ${m.mancanti} mancanti` : ""}
+          {(data.mesi || []).map((m) => {
+            const sel = scelti.includes(m.chiave);
+            return (
+              <li
+                key={m.chiave}
+                className={`ep-inv-mese ${sel ? "is-selected" : ""}`}
+                onClick={() => toggle(m.chiave)}
+              >
+                <span className={`ep-check ${sel ? "is-on" : ""}`} aria-hidden="true">
+                  {sel && <FontAwesomeIcon icon={faCheck} />}
                 </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* --- per peso: i singoli file più grossi, con tutti i riferimenti --- */}
-      {vista === "peso" && (
-        <ul className="ep-inv-list">
-          {(data.pesanti || []).map((f) => (
-            <li
-              key={f.key}
-              className={`ep-inv-row ep-inv-row--sel ${
-                scelti.includes(f.key) ? "is-selected" : ""
-              }`}
-              onClick={() => toggle(f.key)}
-            >
-              <input
-                type="checkbox"
-                checked={scelti.includes(f.key)}
-                onChange={() => toggle(f.key)}
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`Seleziona ${f.name}`}
-              />
-              <div className="ep-inv-main">
-                <FontAwesomeIcon icon={f.kind === "video" ? faVideo : faImage} />{" "}
-                <strong>{f.cliente}</strong>
-                <span className="ep-inv-meta">
-                  {f.mese} · giorno {f.day}
-                  {f.origine !== "post" ? ` · ${f.origine}` : ""}
-                </span>
-                {f.caption && <div className="ep-inv-cap">{f.caption}</div>}
-              </div>
-              <div className="ep-inv-side">
-                <span className="ep-inv-size">{MB(f.bytes)}</span>
-                <span className="ep-inv-meta">{f.name}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* --- problemi: cosa non si trova, e dove guardare --- */}
-      {vista === "problemi" && (
-        <>
-          {!problemi ? (
-            <p className="ep-share-hint">Nessun file mancante.</p>
-          ) : (
-            <ul className="ep-inv-list">
-              {data.mancanti.map((f) => (
-                <li key={f.key} className="ep-inv-row is-bad">
-                  <div className="ep-inv-main">
-                    <FontAwesomeIcon
-                      icon={f.kind === "video" ? faVideo : faImage}
-                    />{" "}
-                    <strong>{f.cliente}</strong>
-                    <span className="ep-inv-meta">
-                      {f.mese} · giorno {f.day}
-                      {f.origine !== "post" ? ` · ${f.origine}` : ""}
-                    </span>
-                    {f.caption && <div className="ep-inv-cap">{f.caption}</div>}
-                  </div>
-                  <div className="ep-inv-side">
-                    <span className="ep-inv-meta">{f.name}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {!!data.soloDisco?.length && (
-            <>
-              <div className="ep-share-admin-head">
-                Ancora solo sul volume ({data.soloDisco.length})
-              </div>
-              <p className="ep-share-desc">
-                Da copiare sul bucket prima di staccare il volume.
-              </p>
-              <ul className="ep-inv-list">
-                {data.soloDisco.slice(0, 50).map((f) => (
-                  <li key={f.key} className="ep-inv-row">
-                    <div className="ep-inv-main">
-                      <strong>{f.cliente}</strong>
+                <div className="ep-inv-mese-corpo">
+                  <div className="ep-inv-mese-testa">
+                    <div>
+                      <strong>{m.cliente}</strong>
+                      <span className="ep-inv-meta"> {m.mese}</span>
+                    </div>
+                    <div className="ep-inv-peso">
+                      {MB(m.bytes)}
                       <span className="ep-inv-meta">
-                        {f.mese} · giorno {f.day}
+                        {m.files} file{m.video ? ` · ${m.video} video` : ""}
                       </span>
                     </div>
-                    <div className="ep-inv-side">
-                      <span className="ep-inv-meta">{f.name}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
+                  </div>
+                  <div className="ep-thumb-strip">
+                    {(m.anteprime || []).map((a, i) => (
+                      <Anteprima key={i} file={a} className="ep-thumb--mini" />
+                    ))}
+                    {m.files > (m.anteprime || []).length && (
+                      <span className="ep-thumb-more">
+                        +{m.files - (m.anteprime || []).length}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {/* ---- File più pesanti: una galleria, si sceglie guardando ---- */}
+      {vista === "file" && (
+        <div className="ep-inv-griglia">
+          {(data.pesanti || []).map((f) => {
+            const sel = scelti.includes(f.key);
+            return (
+              <button
+                key={f.key}
+                type="button"
+                className={`ep-inv-tile ${sel ? "is-selected" : ""}`}
+                onClick={() => toggle(f.key)}
+              >
+                <Anteprima file={f} />
+                <span className={`ep-check ep-check--tile ${sel ? "is-on" : ""}`}>
+                  {sel && <FontAwesomeIcon icon={faCheck} />}
+                </span>
+                <span className="ep-inv-tile-peso">{MB(f.bytes)}</span>
+                <span className="ep-inv-tile-info">
+                  <strong>{f.cliente}</strong>
+                  <span className="ep-inv-meta">
+                    {f.mese} · {f.day}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ---- Da controllare: cosa non si apre più e in quale post ---- */}
+      {vista === "rotti" && (
+        <>
+          <p className="ep-share-desc">
+            Questi file sono citati da un post ma non esistono più: nel piano si
+            vede uno spazio vuoto. Vai al post indicato e ricarica l'immagine.
+          </p>
+          <ul className="ep-inv-list">
+            {rotti.map((f) => (
+              <li key={f.key} className="ep-inv-rotto">
+                <span className="ep-thumb ep-thumb--mini ep-thumb--vuota">
+                  <FontAwesomeIcon icon={faImage} />
+                </span>
+                <div>
+                  <strong>{f.cliente}</strong>
+                  <div className="ep-inv-meta">
+                    {f.mese} · giorno {f.day}
+                    {f.origine !== "post" ? ` · ${f.origine}` : ""}
+                  </div>
+                  {f.caption && <div className="ep-inv-cap">{f.caption}</div>}
+                </div>
+              </li>
+            ))}
+          </ul>
         </>
       )}
 
-      {/* Barra della selezione: compare solo quando serve e dice sempre
-          quanto si sta per liberare. */}
-      {vista !== "problemi" && selezionati.length > 0 && (
+      {/* Barra della selezione: dice sempre quanto si sta per liberare. */}
+      {vista !== "rotti" && selezionati.length > 0 && (
         <div className="ep-inv-bar">
           <span>
             <strong>{fileScelti} file</strong> · {MB(pesoScelto)}
@@ -362,7 +355,7 @@ const InventoryPanel = () => {
             <button
               className="ep-btn ep-btn--danger"
               disabled={busy}
-              onClick={chiediCancellazione}
+              onClick={chiediEliminazione}
             >
               <FontAwesomeIcon icon={faTrash} /> Elimina
             </button>
@@ -370,8 +363,7 @@ const InventoryPanel = () => {
         </div>
       )}
 
-      {/* Conferma esplicita: è l'unica cosa in tutto il pannello che
-          distrugge qualcosa, e non si può annullare. */}
+      {/* Conferma: è l'unica cosa del pannello che distrugge qualcosa. */}
       {conferma && (
         <div className="ep-modal-overlay" onClick={() => setConferma(null)}>
           <div
@@ -383,6 +375,7 @@ const InventoryPanel = () => {
             </div>
             <div className="ep-modal-body">
               <p className="ep-share-desc">{conferma.testo}</p>
+              <p className="ep-share-hint">Non si può annullare.</p>
             </div>
             <div className="ep-modal-foot">
               <div className="ep-foot-right">
@@ -397,7 +390,7 @@ const InventoryPanel = () => {
                   onClick={conferma.azione}
                   disabled={busy}
                 >
-                  <FontAwesomeIcon icon={faTrash} /> Elimina davvero
+                  <FontAwesomeIcon icon={faTrash} /> Elimina
                 </button>
               </div>
             </div>

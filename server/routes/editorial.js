@@ -22,7 +22,6 @@ const {
   backfillHistory,
 } = require("../services/planHistory");
 const mailLog = require("../services/mailLog");
-const mediaMigration = require("../services/mediaMigration");
 const mediaIntake = require("../services/mediaIntake");
 const mediaInventory = require("../services/mediaInventory");
 const mediaPrune = require("../services/mediaPrune");
@@ -590,13 +589,30 @@ router.get("/mail-log/probe", requireAdmin, async (req, res) => {
 
 /* ===================== ARCHIVIO FILE (BUCKET) ===================== */
 
-// Fotografia dello spazio: quanti file ci sono sul volume e quanti sul bucket.
-// Solo admin: sono dati di infrastruttura.
+// Quanto spazio occupiamo e come è diviso. Il volume Railway non esiste più:
+// resta solo il bucket, e l'unica divisione che conta è tra i media dei piani
+// (si possono alleggerire e cancellare) e gli allegati arrivati dalle
+// richieste del sito (file dei clienti, non si toccano).
 router.get("/storage/status", requireAdmin, async (req, res) => {
   try {
-    res.json(await mediaMigration.status());
+    const configured = require("../services/storage").isR2Configured();
+    const bucket = configured
+      ? await require("../services/storage").usageByFolder()
+      : null;
+    res.json({
+      configured,
+      mode: require("../services/storage").mode(),
+      bucket,
+      compressione: require("../services/mediaCompress").probe(),
+      avviso: {
+        sogliaBytes: storageAlert.SOGLIA(),
+        limiteBytes: storageAlert.LIMITE(),
+        destinatario:
+          process.env.STORAGE_ALERT_TO || "amministrazione@basicadv.com",
+      },
+    });
   } catch (e) {
-    res.status(500).json({ error: e?.message || "Errore nel calcolo dello spazio" });
+    res.status(500).json({ error: e?.message || "Stato non disponibile" });
   }
 });
 
@@ -629,7 +645,7 @@ router.get("/storage/inventory", requireAdmin, async (req, res) => {
       pesanti,
       mancanti: mancanti.slice(0, 200),
       soloDisco: soloDisco.slice(0, 200),
-      orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 100),
+      orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 200),
     });
   } catch (e) {
     res.status(500).json({ error: e?.message || "Inventario non riuscito" });
@@ -654,46 +670,13 @@ router.post("/storage/cleanup", requireAdmin, async (req, res) => {
   }
 });
 
-// Stato dell'avviso spazio, e possibilità di provarlo davvero: un avviso che
-// nessuno ha mai visto arrivare non è un avviso.
-router.get("/storage/alert", requireAdmin, async (req, res) => {
-  try {
-    res.json({
-      sogliaBytes: storageAlert.SOGLIA(),
-      limiteBytes: storageAlert.LIMITE(),
-      destinatario: process.env.STORAGE_ALERT_TO || "amministrazione@basicadv.com",
-    });
-  } catch (e) {
-    res.status(500).json({ error: e?.message || "Stato avviso non disponibile" });
-  }
-});
-
+// Invio di prova dell'avviso spazio: un avviso che nessuno ha mai visto
+// arrivare non è un avviso.
 router.post("/storage/alert/test", requireAdmin, async (req, res) => {
   try {
     res.json(await storageAlert.check({ force: true }));
   } catch (e) {
     res.status(500).json({ error: e?.message || "Invio di prova non riuscito" });
-  }
-});
-
-// Copia un LOTTO di file sul bucket e dice quanti ne restano, così il pannello
-// può ripetere finché non arriva a zero. Non tocca nulla sul disco.
-// `dryRun: true` → conta soltanto, senza caricare niente.
-router.post("/storage/migrate", requireAdmin, async (req, res) => {
-  try {
-    const { dryRun, limit } = req.body || {};
-    // La simulazione non scrive nulla: può scorrere tutto l'archivio e dare il
-    // totale vero. La copia vera resta a lotti piccoli, per non tenere aperta
-    // una richiesta lunghissima.
-    const max = dryRun ? 5000 : 100;
-    res.json(
-      await mediaMigration.migrateBatch({
-        dryRun: !!dryRun,
-        limit: Math.min(Math.max(Number(limit) || 25, 1), max),
-      })
-    );
-  } catch (e) {
-    res.status(400).json({ error: e?.message || "Migrazione non riuscita" });
   }
 });
 

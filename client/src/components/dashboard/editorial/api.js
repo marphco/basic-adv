@@ -4,10 +4,9 @@
 // `clientNotes` (DB) ↔ `notes` (UI) per non cambiare il resto del componente.
 import axios from "axios";
 
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(
-  /\/$/,
-  ""
-);
+export const API_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:8080"
+).replace(/\/$/, "");
 const auth = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
 });

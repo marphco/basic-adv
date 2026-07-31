@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node server.js",
     "backfill:plan-history": "node scripts/backfillPlanHistory.js",
-    "migrate:media": "node scripts/migrateMediaToBucket.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
