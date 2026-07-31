@@ -25,6 +25,7 @@ const mailLog = require("../services/mailLog");
 const mediaMigration = require("../services/mediaMigration");
 const mediaIntake = require("../services/mediaIntake");
 const mediaInventory = require("../services/mediaInventory");
+const mediaPrune = require("../services/mediaPrune");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -754,6 +755,16 @@ router.put("/posts/:id", async (req, res) => {
     if (!canAccessClient(req.dbUser, post.clientId))
       return res.status(403).json({ error: "Accesso negato" });
 
+    // Fotografia di com'era prima: serve a capire quali file l'utente ha tolto.
+    // Copio i valori invece di tenere i riferimenti: il documento sta per
+    // essere modificato e i riferimenti cambierebbero sotto i piedi.
+    const copia = (arr) =>
+      (arr || []).map((m) => ({ url: m.url, thumbUrl: m.thumbUrl }));
+    const prima = {
+      media: copia(post.media),
+      clientNotes: (post.clientNotes || []).map((n) => ({ media: copia(n.media) })),
+    };
+
     const b = req.body || {};
     ["pageId", "caption", "category", "media", "status"].forEach((k) => {
       if (b[k] !== undefined) post[k] = b[k];
@@ -775,6 +786,16 @@ router.put("/posts/:id", async (req, res) => {
     post.updatedAt = new Date();
     await post.save();
     res.json(post);
+
+    // Dopo aver risposto: i file tolti dal post, se non li usa più nessun
+    // altro post, vanno via anche dal bucket. Non deve far aspettare chi
+    // salva, e un problema qui non deve poter rovinare un salvataggio andato
+    // a buon fine.
+    const tolti = mediaPrune.removedUrls(prima, post);
+    if (tolti.length)
+      mediaPrune
+        .prune(tolti, { esclusoPostId: post._id })
+        .catch((e) => console.error("[pulizia] non riuscita:", e?.message));
   } catch (e) {
     res.status(500).json({ error: "Errore nell'aggiornamento del post" });
   }
@@ -787,8 +808,15 @@ router.delete("/posts/:id", async (req, res) => {
     if (!post) return res.status(404).json({ error: "Post non trovato" });
     if (!canAccessClient(req.dbUser, post.clientId))
       return res.status(403).json({ error: "Accesso negato" });
+    const urls = mediaPrune.urlsOf(post);
     await post.deleteOne();
     res.json({ message: "Post eliminato" });
+
+    // Stessa regola: si cancellano solo i file che non mostra più nessuno.
+    if (urls.length)
+      mediaPrune
+        .prune(urls)
+        .catch((e) => console.error("[pulizia] non riuscita:", e?.message));
   } catch (e) {
     res.status(500).json({ error: "Errore nell'eliminazione del post" });
   }

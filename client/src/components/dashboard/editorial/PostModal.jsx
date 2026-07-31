@@ -55,6 +55,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [year, setYear] = useState(Number(draft.year));
   const [media, setMedia] = useState(draft.media || []);
   const [uploading, setUploading] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [notes, setNotes] = useState(draft.notes || []);
   const [lightbox, setLightbox] = useState(null); // { item, source: 'media'|'note' }
   const [captionCopied, setCaptionCopied] = useState(false);
@@ -240,20 +241,32 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   }, []);
 
   // Carica uno o più file (foto/video) sul server → URL persistenti.
+  //
+  // Il caricamento in corso viene tenuto da parte: se si clicca "Salva" mentre
+  // è ancora in volo, il salvataggio lo aspetta. Senza, il post veniva salvato
+  // con l'elenco media di PRIMA — il file finiva comunque sul server, ma nel
+  // post non entrava e restava lì senza che nessuno lo citasse.
+  const inVolo = useRef(null);
+
   const uploadFiles = async (fileList) => {
     const files = Array.from(fileList || []).filter((f) =>
       /^(image|video)\//.test(f.type)
     );
     if (!files.length) return;
     setUploading(true);
-    try {
-      const items = await api.uploadMedia(files);
-      setMedia((prev) => [...prev, ...items]);
-    } catch (err) {
-      toastErr(err?.response?.data?.error || "Caricamento media non riuscito.");
-    } finally {
-      setUploading(false);
-    }
+    const lavoro = api
+      .uploadMedia(files)
+      .then((items) => {
+        setMedia((prev) => [...prev, ...items]);
+        return items;
+      })
+      .catch((err) => {
+        toastErr(err?.response?.data?.error || "Caricamento media non riuscito.");
+        return [];
+      })
+      .finally(() => setUploading(false));
+    inVolo.current = lavoro;
+    await lavoro;
   };
   const handleFiles = (e) => {
     uploadFiles(e.target.files);
@@ -293,7 +306,24 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
     setLightbox(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Stessa filosofia dell'auto-aggiunta della nota: quello che l'utente ha
+    // fatto non si perde per una questione di tempismo. Se un caricamento è
+    // ancora in volo lo aspetto, invece di salvare senza quel file.
+    let mediaFinale = media;
+    if (inVolo.current) {
+      setSalvando(true);
+      const arrivati = await inVolo.current;
+      inVolo.current = null;
+      // Nel frattempo `setMedia` potrebbe già averli aggiunti: unisco senza
+      // creare doppioni.
+      mediaFinale = [...media];
+      (arrivati || []).forEach((it) => {
+        if (!mediaFinale.some((m) => m.url === it.url)) mediaFinale.push(it);
+      });
+      setSalvando(false);
+    }
+
     // Auto-aggiunta: se c'è una nota scritta ma non "aggiunta" col pulsante, la
     // includo comunque → non si perde per il classico errore "Salva senza
     // cliccare Aggiungi nota".
@@ -310,7 +340,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
         day: Number(day),
         month: Number(month),
         year: Number(year),
-        media,
+        media: mediaFinale,
         notes: finalNotes,
       },
       hasChanges() // se true e il post era un duplicato → flag rimosso
@@ -717,8 +747,12 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
             <button className="ep-btn ep-btn--ghost" onClick={requestClose}>
               Annulla
             </button>
-            <button className="ep-btn ep-btn--primary" onClick={handleSave}>
-              Salva
+            <button
+              className="ep-btn ep-btn--primary"
+              onClick={handleSave}
+              disabled={salvando}
+            >
+              {salvando ? "Attendo il caricamento…" : "Salva"}
             </button>
           </div>
         </div>
