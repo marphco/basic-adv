@@ -2576,3 +2576,78 @@
   border-color: var(--foreground-color);
   box-shadow: inset 0 0 0 1px var(--foreground-color);
 }
+
+/* ===== Inventario dei contenuti (Archivio → Contenuti) ===== */
+
+.ep-inv-summary {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  border: 1px solid transparent;
+}
+.ep-inv-summary.is-ok {
+  color: var(--ep-ok);
+  border-color: color-mix(in srgb, var(--ep-ok) 35%, transparent);
+  background: color-mix(in srgb, var(--ep-ok) 10%, transparent);
+}
+.ep-inv-summary.is-bad {
+  color: var(--ep-danger);
+  border-color: color-mix(in srgb, var(--ep-danger) 35%, transparent);
+  background: color-mix(in srgb, var(--ep-danger) 10%, transparent);
+}
+.ep-inv-sub {
+  margin-top: 4px;
+  opacity: 0.8;
+  font-size: 0.82rem;
+}
+
+.ep-inv-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.ep-inv-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--ep-border, rgba(128, 128, 128, 0.22));
+}
+.ep-inv-row.is-bad .ep-inv-main strong { color: var(--ep-danger); }
+.ep-inv-main { min-width: 0; flex: 1 1 auto; }
+.ep-inv-main strong { display: inline; margin-right: 6px; }
+.ep-inv-side {
+  flex: 0 0 auto;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 45%;
+}
+.ep-inv-size { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ep-inv-meta {
+  font-size: 0.8rem;
+  opacity: 0.72;
+  word-break: break-word;
+}
+.ep-inv-cap {
+  font-size: 0.8rem;
+  opacity: 0.66;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .ep-inv-row { flex-direction: column; gap: 2px; }
+  .ep-inv-side { max-width: 100%; text-align: left; flex-direction: row; gap: 8px; }
+}
