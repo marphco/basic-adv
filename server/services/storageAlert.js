@@ -34,8 +34,65 @@ const Stato =
     )
   );
 
-const MB = (n) => `${(n / 1024 / 1024).toFixed(0)} MB`;
 const inGB = (n) => `${(n / GB).toFixed(2)} GB`;
+
+// Il testo dell'avviso, uno solo: la prova deve far vedere ESATTAMENTE la
+// email che arriverà davvero, altrimenti non prova niente.
+const corpo = ({ bytes, files, soglia, limite }) =>
+  `L'archivio dei media ha superato la soglia di ${inGB(soglia)}.\n\n` +
+  `Spazio occupato: ${inGB(bytes)} su ${inGB(limite)} (${files} file).\n` +
+  `Spazio rimasto: ${inGB(Math.max(0, limite - bytes))}.\n\n` +
+  `Quando lo spazio finisce gli operatori non riescono più a caricare ` +
+  `foto e video nei piani editoriali.\n\n` +
+  `Per liberare spazio: dashboard → Piani editoriali → Archivio → ` +
+  `scheda Contenuti.\n` +
+  `Lì si vede cosa occupa di più, diviso per cliente e mese, e si ` +
+  `possono cancellare i file non più usati e i mesi vecchi.\n\n` +
+  `Questo avviso viene ripetuto al massimo una volta a settimana ` +
+  `finché lo spazio resta sopra la soglia.`;
+
+// Invio di PROVA: spedisce sempre, qualunque sia lo spazio occupato.
+//
+// Prima questa funzione era la stessa del controllo automatico, con un flag
+// per saltare il limite settimanale: ma restava il controllo della soglia, e
+// con l'archivio quasi vuoto non partiva niente. Una prova che non spedisce
+// non serve a nulla — proprio quando l'archivio è vuoto è il momento buono
+// per verificare che l'indirizzo funzioni.
+//
+// Non tocca la data dell'ultimo avviso: una prova non deve poter zittire un
+// avviso vero nei giorni successivi.
+async function sendTest() {
+  if (!storage.isR2Configured()) return { errore: "bucket non configurato" };
+  const { files, bytes } = await storage.usage();
+  const destinatario = A();
+  const esito = await sendMailTracked({
+    to: destinatario,
+    subject: `[PROVA] Avviso spazio archivio — ${inGB(bytes)} di ${inGB(LIMITE())}`,
+    text:
+      `Questa è una PROVA richiesta dalla dashboard: serve a verificare che ` +
+      `l'avviso arrivi a questo indirizzo.\n\n` +
+      `Al momento l'archivio occupa ${inGB(bytes)} su ${inGB(LIMITE())} ` +
+      `(${files} file), quindi è sotto la soglia e nessun avviso vero sarebbe ` +
+      `partito.\n\n` +
+      `Quando lo spazio supererà ${inGB(SOGLIA())} arriverà una email come ` +
+      `questa:\n\n` +
+      `--------------------------------------------------\n` +
+      corpo({ bytes: SOGLIA(), files, soglia: SOGLIA(), limite: LIMITE() }) +
+      `\n--------------------------------------------------`,
+  });
+  console.log(
+    `[spazio] email di prova a ${destinatario}: ${esito.ok ? "inviata" : "NON inviata"}` +
+      (esito.error ? ` — ${esito.error}` : "")
+  );
+  return {
+    prova: true,
+    inviato: esito.ok,
+    destinatario,
+    bytes,
+    files,
+    errore: esito.error || "",
+  };
+}
 
 // Controlla lo spazio e, se serve, avvisa. Non solleva mai: è un guardiano,
 // non deve poter disturbare il funzionamento del sito.
@@ -63,22 +120,10 @@ async function check({ force = false } = {}) {
     if (!force && giorni < OGNI_GIORNI)
       return { bytes, files, soglia, giaAvvisato: true };
 
-    const restano = Math.max(0, limite - bytes);
     const esito = await sendMailTracked({
       to: A(),
       subject: `Spazio archivio quasi esaurito — ${inGB(bytes)} di ${inGB(limite)}`,
-      text:
-        `L'archivio dei media ha superato la soglia di ${inGB(soglia)}.\n\n` +
-        `Spazio occupato: ${inGB(bytes)} su ${inGB(limite)} (${files} file).\n` +
-        `Spazio rimasto: ${inGB(restano)}.\n\n` +
-        `Quando lo spazio finisce gli operatori non riescono più a caricare ` +
-        `foto e video nei piani editoriali.\n\n` +
-        `Per liberare spazio: dashboard → Piani editoriali → Archivio → ` +
-        `scheda Contenuti.\n` +
-        `Lì si vede cosa occupa di più, diviso per cliente e mese, e si ` +
-        `possono cancellare i file non più usati e i mesi vecchi.\n\n` +
-        `Questo avviso viene ripetuto al massimo una volta a settimana ` +
-        `finché lo spazio resta sopra la soglia.`,
+      text: corpo({ bytes, files, soglia, limite }),
     });
 
     await Stato.updateOne(
@@ -88,7 +133,9 @@ async function check({ force = false } = {}) {
     );
 
     console.log(
-      `[spazio] avviso inviato a ${A()}: ${inGB(bytes)} occupati (${MB(restano)} liberi)`
+      `[spazio] avviso a ${A()}: ${esito.ok ? "inviato" : "NON inviato"} — ` +
+        `${inGB(bytes)} occupati, ${inGB(Math.max(0, limite - bytes))} liberi` +
+        (esito.error ? ` — ${esito.error}` : "")
     );
     return { bytes, files, soglia, inviato: true, ok: esito.ok, errore: esito.error };
   } catch (e) {
@@ -107,4 +154,4 @@ function schedule() {
   }, 60 * 1000).unref?.();
 }
 
-module.exports = { check, schedule, SOGLIA, LIMITE };
+module.exports = { check, sendTest, schedule, SOGLIA, LIMITE };
