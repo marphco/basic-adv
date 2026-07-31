@@ -578,6 +578,9 @@ app.post("/api/sendEmails", async (req, res) => {
 
     const userEmail = contactInfo.email;
     const adminEmail = process.env.ADMIN_EMAIL;
+    // Indirizzo a cui deve arrivare la risposta di chi ha compilato il form:
+    // la casella dell'agenzia, non quella personale di chi la gestisce.
+    const contattoAgenzia = process.env.CONTACT_REPLY_TO || "info@basicadv.com";
 
     // caratteri invisibili per “rompere” il rilevamento firme di Gmail
     const WJ = "\u2060"; // Word Joiner (invisibile, non va a capo)
@@ -594,7 +597,10 @@ app.post("/api/sendEmails", async (req, res) => {
     const userMsg = {
       subject: "Grazie per averci contattato!", // niente ID nel subject
       text: userText,
-      replyTo: userEmail,
+      // Chi risponde a questa email deve arrivare all'agenzia. Prima qui
+      // c'era l'indirizzo di chi aveva compilato il form: rispondendo si
+      // scriveva da soli.
+      replyTo: contattoAgenzia,
     };
 
     const adminMsg = {
@@ -605,6 +611,8 @@ app.post("/api/sendEmails", async (req, res) => {
         `- Email: ${contactInfo.email}\n` +
         `- Telefono: ${contactInfo.phone || "Non fornito"}\n` +
         `- Session ID: ${sessionId}`,
+      // Qui invece va bene l'indirizzo del contatto: rispondendo alla
+      // notifica si scrive direttamente al potenziale cliente.
       replyTo: userEmail,
     };
 
