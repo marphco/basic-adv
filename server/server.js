@@ -119,13 +119,17 @@ const UPLOAD_DIR =
 
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-// Static serve (ok per anteprime, non forza il download)
-app.use("/uploads", express.static(UPLOAD_DIR));
+// Static serve (ok per anteprime, non forza il download).
+// `bucketFallback` viene DOPO: entra in gioco solo per i file che non stanno
+// (più) sul volume, quindi finché il disco ha il file nulla cambia.
+const bucketFallback = require("./middleware/bucketFallback");
+app.use("/uploads", express.static(UPLOAD_DIR), bucketFallback("uploads"));
 // Media dei piani editoriali (sottocartella dedicata, route separata: NON
 // interferisce con /uploads del form AI). L'X-Robots-Tag globale vale anche qui.
 app.use(
   "/uploads-ped",
-  express.static(require("./services/mediaStore").PED_DIR)
+  express.static(require("./services/mediaStore").PED_DIR),
+  bucketFallback("uploads-ped")
 );
 
 const isDbReady = () => mongoose.connection.readyState === 1;

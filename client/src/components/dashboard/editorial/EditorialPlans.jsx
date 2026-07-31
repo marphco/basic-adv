@@ -19,6 +19,7 @@ import {
   faBroom,
   faUserShield,
   faClockRotateLeft,
+  faHardDrive,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import PostChip from "./PostChip";
@@ -28,6 +29,7 @@ import DuplicateModal from "./DuplicateModal";
 import UserManagementModal from "./UserManagementModal";
 import ImportModal from "./ImportModal";
 import PlanHistoryModal from "./PlanHistoryModal";
+import StorageModal from "./StorageModal";
 import ChannelIcon from "./ChannelIcon";
 import useCalendarDnD from "./useCalendarDnD";
 import { toast, toastErr, confirmDialog } from "./uiNotify";
@@ -118,6 +120,7 @@ const EditorialPlans = () => {
   const [approval, setApproval] = useState(null); // approvazione cliente del mese
   const [history, setHistory] = useState(null); // storico notifiche del mese
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [storageOpen, setStorageOpen] = useState(false); // archivio file (admin)
   const [historyLoading, setHistoryLoading] = useState(false);
 
   const me = useMemo(readToken, []);
@@ -724,6 +727,11 @@ const EditorialPlans = () => {
           {client && (
             <button className="ep-btn ep-btn--ghost" onClick={() => setImportOpen(true)}>
               <FontAwesomeIcon icon={faFileImport} /> Importa Excel
+            </button>
+          )}
+          {isAdmin && (
+            <button className="ep-btn ep-btn--ghost" onClick={() => setStorageOpen(true)}>
+              <FontAwesomeIcon icon={faHardDrive} /> Archivio
             </button>
           )}
         </div>
@@ -1462,6 +1470,9 @@ const EditorialPlans = () => {
         />
       )}
 
+
+      {/* ---- Archivio file: spazio e copia sul bucket (solo admin) ---- */}
+      {storageOpen && <StorageModal onClose={() => setStorageOpen(false)} />}
 
       {/* ---- Ghost del post in trascinamento (segue il puntatore) ---- */}
       {dnd.dragPost && (

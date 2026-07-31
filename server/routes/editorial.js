@@ -22,6 +22,7 @@ const {
   backfillHistory,
 } = require("../services/planHistory");
 const mailLog = require("../services/mailLog");
+const mediaMigration = require("../services/mediaMigration");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -579,6 +580,35 @@ router.get("/mail-log/probe", requireAdmin, async (req, res) => {
       error: e?.message || "Connessione non riuscita",
       attempts: e?.attempts || [],
     });
+  }
+});
+
+/* ===================== ARCHIVIO FILE (BUCKET) ===================== */
+
+// Fotografia dello spazio: quanti file ci sono sul volume e quanti sul bucket.
+// Solo admin: sono dati di infrastruttura.
+router.get("/storage/status", requireAdmin, async (req, res) => {
+  try {
+    res.json(await mediaMigration.status());
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "Errore nel calcolo dello spazio" });
+  }
+});
+
+// Copia un LOTTO di file sul bucket e dice quanti ne restano, così il pannello
+// può ripetere finché non arriva a zero. Non tocca nulla sul disco.
+// `dryRun: true` → conta soltanto, senza caricare niente.
+router.post("/storage/migrate", requireAdmin, async (req, res) => {
+  try {
+    const { dryRun, limit } = req.body || {};
+    res.json(
+      await mediaMigration.migrateBatch({
+        dryRun: !!dryRun,
+        limit: Math.min(Math.max(Number(limit) || 25, 1), 100),
+      })
+    );
+  } catch (e) {
+    res.status(400).json({ error: e?.message || "Migrazione non riuscita" });
   }
 });
 
