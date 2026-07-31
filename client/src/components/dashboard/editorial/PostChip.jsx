@@ -18,7 +18,12 @@ import { categoryColor } from "./mockData";
 const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
   const cover = post.media?.[0];
   const mediaCount = post.media?.length || 0;
+  // `isVideo` riguarda solo la COPERTINA (serve alla miniatura). Per capire se
+  // nel post c'è del video serve guardare tutto il carosello: la copertina può
+  // essere una foto e i video stare in fondo, e in quel caso senza un segno
+  // sulla card si scoprono solo aprendo i post uno per uno.
   const isVideo = cover?.kind === "video";
+  const videoCount = (post.media || []).filter((m) => m.kind === "video").length;
   const notes = post.notes || [];
   // Badge distinti per ORIGINE della nota:
   //  • Cliente = note lasciate DAL cliente (l'operatore ci lavora) → ambra se da
@@ -141,14 +146,17 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
               <FontAwesomeIcon icon={faBullhorn} /> Sponsor
             </span>
           )}
-          {isVideo && compact && (
-            <span className="ep-badge ep-badge--video">
-              <FontAwesomeIcon icon={faPlay} /> Video
-            </span>
-          )}
           {mediaCount > 1 && (
             <span className="ep-badge ep-badge--carousel">
               <FontAwesomeIcon icon={faImages} /> {mediaCount}
+            </span>
+          )}
+          {/* Quanti video ci sono dentro: in un carosello misto è l'unico modo
+              per saperlo senza aprire il post. */}
+          {videoCount > 0 && (
+            <span className="ep-badge ep-badge--video">
+              <FontAwesomeIcon icon={faPlay} />{" "}
+              {mediaCount > 1 ? `${videoCount} video` : "Video"}
             </span>
           )}
           {clientNotes.length > 0 && (

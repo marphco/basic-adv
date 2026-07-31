@@ -29,7 +29,15 @@ const MONTHS_IT = [
 // Etichetta derivata dal contenuto media (foto singola / carosello / video).
 const mediaTypeLabel = (media) => {
   if (!media || media.length === 0) return "Nessun media";
-  if (media.length > 1) return `Carosello · ${media.length} elementi`;
+  if (media.length > 1) {
+    // Quanti sono video: in un carosello misto è l'informazione che serve
+    // davvero, "9 elementi" da solo non dice niente.
+    const video = media.filter((m) => m.kind === "video").length;
+    return (
+      `Carosello · ${media.length} elementi` +
+      (video ? ` · ${video} video` : "")
+    );
+  }
   return media[0].kind === "video" ? "Video" : "Immagine singola";
 };
 
