@@ -670,16 +670,6 @@ router.post("/storage/cleanup", requireAdmin, async (req, res) => {
   }
 });
 
-// Invio di prova dell'avviso spazio: un avviso che nessuno ha mai visto
-// arrivare non è un avviso.
-router.post("/storage/alert/test", requireAdmin, async (req, res) => {
-  try {
-    res.json(await storageAlert.sendTest());
-  } catch (e) {
-    res.status(500).json({ error: e?.message || "Invio di prova non riuscito" });
-  }
-});
-
 // Ricostruzione RETROATTIVA dello storico (solo admin): per i mesi precedenti
 // all'introduzione del log, deduce invii e aperture dalle prove già in archivio
 // (approvazioni del piano e note lasciate dal cliente). Idempotente: non

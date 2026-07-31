@@ -36,8 +36,7 @@ const Stato =
 
 const inGB = (n) => `${(n / GB).toFixed(2)} GB`;
 
-// Il testo dell'avviso, uno solo: la prova deve far vedere ESATTAMENTE la
-// email che arriverà davvero, altrimenti non prova niente.
+// Il testo dell'avviso.
 const corpo = ({ bytes, files, soglia, limite }) =>
   `L'archivio dei media ha superato la soglia di ${inGB(soglia)}.\n\n` +
   `Spazio occupato: ${inGB(bytes)} su ${inGB(limite)} (${files} file).\n` +
@@ -51,52 +50,9 @@ const corpo = ({ bytes, files, soglia, limite }) =>
   `Questo avviso viene ripetuto al massimo una volta a settimana ` +
   `finché lo spazio resta sopra la soglia.`;
 
-// Invio di PROVA: spedisce sempre, qualunque sia lo spazio occupato.
-//
-// Prima questa funzione era la stessa del controllo automatico, con un flag
-// per saltare il limite settimanale: ma restava il controllo della soglia, e
-// con l'archivio quasi vuoto non partiva niente. Una prova che non spedisce
-// non serve a nulla — proprio quando l'archivio è vuoto è il momento buono
-// per verificare che l'indirizzo funzioni.
-//
-// Non tocca la data dell'ultimo avviso: una prova non deve poter zittire un
-// avviso vero nei giorni successivi.
-async function sendTest() {
-  if (!storage.isR2Configured()) return { errore: "bucket non configurato" };
-  const { files, bytes } = await storage.usage();
-  const destinatario = A();
-  const esito = await sendMailTracked({
-    to: destinatario,
-    subject: `[PROVA] Avviso spazio archivio — ${inGB(bytes)} di ${inGB(LIMITE())}`,
-    text:
-      `Questa è una PROVA richiesta dalla dashboard: serve a verificare che ` +
-      `l'avviso arrivi a questo indirizzo.\n\n` +
-      `Al momento l'archivio occupa ${inGB(bytes)} su ${inGB(LIMITE())} ` +
-      `(${files} file), quindi è sotto la soglia e nessun avviso vero sarebbe ` +
-      `partito.\n\n` +
-      `Quando lo spazio supererà ${inGB(SOGLIA())} arriverà una email come ` +
-      `questa:\n\n` +
-      `--------------------------------------------------\n` +
-      corpo({ bytes: SOGLIA(), files, soglia: SOGLIA(), limite: LIMITE() }) +
-      `\n--------------------------------------------------`,
-  });
-  console.log(
-    `[spazio] email di prova a ${destinatario}: ${esito.ok ? "inviata" : "NON inviata"}` +
-      (esito.error ? ` — ${esito.error}` : "")
-  );
-  return {
-    prova: true,
-    inviato: esito.ok,
-    destinatario,
-    bytes,
-    files,
-    errore: esito.error || "",
-  };
-}
-
 // Controlla lo spazio e, se serve, avvisa. Non solleva mai: è un guardiano,
 // non deve poter disturbare il funzionamento del sito.
-async function check({ force = false } = {}) {
+async function check() {
   try {
     if (!storage.isR2Configured()) return { skipped: "bucket non configurato" };
     if (mongoose.connection.readyState !== 1)
@@ -117,7 +73,7 @@ async function check({ force = false } = {}) {
     const giorni = stato?.lastSentAt
       ? (Date.now() - new Date(stato.lastSentAt).getTime()) / 86400000
       : Infinity;
-    if (!force && giorni < OGNI_GIORNI)
+    if (giorni < OGNI_GIORNI)
       return { bytes, files, soglia, giaAvvisato: true };
 
     const esito = await sendMailTracked({
@@ -154,4 +110,4 @@ function schedule() {
   }, 60 * 1000).unref?.();
 }
 
-module.exports = { check, sendTest, schedule, SOGLIA, LIMITE };
+module.exports = { check, schedule, SOGLIA, LIMITE };

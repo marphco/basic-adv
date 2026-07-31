@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTimes,
   faTriangleExclamation,
-  faCheck,
   faImages,
   faPaperclip,
   faEnvelope,
@@ -28,8 +27,6 @@ const StorageModal = ({ onClose }) => {
   const [status, setStatus] = useState(null);
   const [error, setError] = useState("");
   const [scheda, setScheda] = useState("spazio");
-  const [prova, setProva] = useState("");
-  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     api
@@ -39,24 +36,6 @@ const StorageModal = ({ onClose }) => {
         setError(e?.response?.data?.error || "Stato non disponibile.")
       );
   }, []);
-
-  const inviaProva = async () => {
-    setBusy(true);
-    setProva("");
-    try {
-      const r = await api.storageAlertTest();
-      setProva(
-        r.inviato
-          ? `Email di prova inviata a ${r.destinatario}. Controlla la casella ` +
-            `(anche nello spam, la prima volta).`
-          : `Non inviata: ${r.errore || "motivo sconosciuto"}`
-      );
-    } catch (e) {
-      setProva(e?.response?.data?.error || "Invio non riuscito.");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const b = status?.bucket;
   const usato = b?.totale?.bytes || 0;
@@ -176,20 +155,6 @@ const StorageModal = ({ onClose }) => {
                       spazio resta e cosa fare. Al massimo una a settimana, e
                       riparte da capo se lo spazio torna sotto la soglia.
                     </p>
-                    {prova && (
-                      <div className="ep-share-ok">
-                        <FontAwesomeIcon icon={faCheck} /> {prova}
-                      </div>
-                    )}
-                    <div className="ep-foot-right ep-share-actions">
-                      <button
-                        className="ep-btn ep-btn--ghost"
-                        onClick={inviaProva}
-                        disabled={busy}
-                      >
-                        {busy ? "Invio…" : "Invia una prova"}
-                      </button>
-                    </div>
                   </div>
                 </>
               )}
