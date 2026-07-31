@@ -41,6 +41,36 @@ const isVideo = (name) => VIDEO_EXT.test(name);
 
 /* ============================ IMMAGINI ============================ */
 
+// Sceglie il codificatore in base all'estensione di destinazione.
+// null = formato che non ricodifichiamo (lo lasciamo com'è).
+function encoderFor(pipeline, ext, q) {
+  if (/\.jpe?g$/i.test(ext))
+    return pipeline.jpeg({ quality: q, mozjpeg: true, progressive: true });
+  if (/\.png$/i.test(ext)) return pipeline.png({ compressionLevel: 9, palette: true });
+  if (/\.webp$/i.test(ext)) return pipeline.webp({ quality: q });
+  if (/\.avif$/i.test(ext)) return pipeline.avif({ quality: q });
+  return null;
+}
+
+// Il cuore della compressione immagini, in un posto solo: lo usano sia
+// l'upload (che ricodifica sul posto) sia la migrazione (che scrive una copia
+// altrove e non tocca il disco originale). Restituisce i byte scritti, o null
+// se il formato non si ricodifica.
+async function renderImage(src, dest, outExt) {
+  const pipeline = sharp(src, { failOn: "none" })
+    .rotate() // applica l'orientamento EXIF e lo azzera
+    .resize({
+      width: IMG_MAX(),
+      height: IMG_MAX(),
+      fit: "inside",
+      withoutEnlargement: true, // mai ingrandire: si perderebbe solo spazio
+    });
+  const enc = encoderFor(pipeline, outExt, IMG_QUALITY());
+  if (!enc) return null;
+  await enc.toFile(dest);
+  return fs.statSync(dest).size;
+}
+
 // Ricodifica un'immagine al suo posto. Regole:
 //  - ridimensiona solo se supera il lato massimo (mai ingrandire);
 //  - rispetta l'orientamento EXIF, altrimenti le foto da telefono ruotano;
@@ -63,25 +93,8 @@ async function compressImage(file) {
   const outName = path.basename(file.path, ext) + outExt;
   const tmp = path.join(dir, `.tmp-${outName}`);
 
-  let pipeline = sharp(file.path, { failOn: "none" })
-    .rotate() // applica l'orientamento EXIF e lo azzera
-    .resize({
-      width: IMG_MAX(),
-      height: IMG_MAX(),
-      fit: "inside",
-      withoutEnlargement: true,
-    });
-
-  const q = IMG_QUALITY();
-  if (toJpeg || /\.jpe?g$/i.test(ext))
-    pipeline = pipeline.jpeg({ quality: q, mozjpeg: true, progressive: true });
-  else if (/\.png$/i.test(ext))
-    pipeline = pipeline.png({ compressionLevel: 9, palette: true });
-  else if (/\.webp$/i.test(ext)) pipeline = pipeline.webp({ quality: q });
-  else if (/\.avif$/i.test(ext)) pipeline = pipeline.avif({ quality: q });
-
-  await pipeline.toFile(tmp);
-  const after = fs.statSync(tmp).size;
+  const after = await renderImage(file.path, tmp, outExt);
+  if (after == null) return null; // formato che non sappiamo ricodificare
 
   // Non peggiorare mai: se la ricodifica non guadagna nulla, tengo l'originale
   // (a meno che non fosse un formato da convertire per forza).
@@ -95,6 +108,34 @@ async function compressImage(file) {
   if (finalPath !== file.path) fs.unlinkSync(file.path); // era HEIC/TIFF
 
   return { filename: outName, path: finalPath, size: after, before };
+}
+
+// Versione per i file GIÀ ONLINE (migrazione sul bucket): scrive una copia
+// compressa in `dest` e non tocca minimamente l'originale.
+//
+// Differenza sostanziale rispetto all'upload: qui il nome NON può cambiare,
+// perché quel file è già linkato nei piani editoriali. Quindi niente
+// conversione di formato — si ricodifica solo ciò che si può riscrivere
+// nello stesso formato. HEIC, TIFF e GIF restano tali e vengono copiati
+// così come sono.
+// Restituisce i byte scritti, oppure null se non c'è nulla da guadagnare
+// (in quel caso `dest` non esiste e va copiato l'originale).
+async function compressImageTo(src, dest) {
+  const ext = path.extname(src).toLowerCase();
+  if (!/^\.(jpe?g|png|webp|avif)$/.test(ext)) return null;
+
+  const before = fs.statSync(src).size;
+  const after = await renderImage(src, dest, ext);
+  if (after == null || after >= before) {
+    // Nessun guadagno: meglio l'originale, bit per bit.
+    try {
+      fs.unlinkSync(dest);
+    } catch {
+      /* non è stato creato */
+    }
+    return null;
+  }
+  return after;
 }
 
 /* ============================ VIDEO ============================ */
@@ -133,6 +174,45 @@ async function drain() {
   working = false;
 }
 
+// Ricodifica `src` scrivendo in `dest`. Il contenitore lo decide l'estensione
+// di `dest`, che teniamo sempre uguale a quella di partenza: così il nome del
+// file non cambia mai e nessun link si rompe.
+// Restituisce i byte scritti, o null se non c'è guadagno (in quel caso `dest`
+// viene rimosso e va tenuto l'originale).
+async function encodeVideo(src, dest, { preset = "medium", timeoutMs = 20 * 60 * 1000 } = {}) {
+  const bin = ffmpegPath();
+  if (!bin || !fs.existsSync(src)) return null;
+
+  const before = fs.statSync(src).size;
+  await run(
+    bin,
+    [
+      "-y",
+      "-i", src,
+      "-vf", `scale='min(iw,trunc(iw*${VIDEO_MAX_H()}/ih/2)*2)':'min(ih,${VIDEO_MAX_H()})':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2`,
+      "-c:v", "libx264",
+      "-crf", String(VIDEO_CRF()),
+      "-preset", preset,
+      "-pix_fmt", "yuv420p", // massima compatibilità con i browser
+      "-c:a", "aac",
+      "-b:a", "128k",
+      "-movflags", "+faststart", // parte subito senza scaricare tutto
+      dest,
+    ],
+    timeoutMs
+  );
+
+  const after = fs.statSync(dest).size;
+  if (after >= before) {
+    fs.unlinkSync(dest); // era già ben compresso
+    return null;
+  }
+  return after;
+}
+
+// Versione per la migrazione: copia compressa altrove, originale intoccato.
+const transcodeVideoTo = (src, dest, opts) => encodeVideo(src, dest, opts);
+
 // Ricodifica un video SOSTITUENDOLO sul posto: stesso nome, stesso
 // contenitore, quindi l'URL già consegnato continua a funzionare.
 async function transcodeVideo({ path: filePath }) {
@@ -140,33 +220,11 @@ async function transcodeVideo({ path: filePath }) {
   if (!bin || !fs.existsSync(filePath)) return;
 
   const before = fs.statSync(filePath).size;
-  const ext = path.extname(filePath);
   const tmp = path.join(path.dirname(filePath), `.tmp-${path.basename(filePath)}`);
 
-  await run(
-    bin,
-    [
-      "-y",
-      "-i", filePath,
-      "-vf", `scale='min(iw,trunc(iw*${VIDEO_MAX_H()}/ih/2)*2)':'min(ih,${VIDEO_MAX_H()})':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2`,
-      "-c:v", "libx264",
-      "-crf", String(VIDEO_CRF()),
-      "-preset", "medium",
-      "-pix_fmt", "yuv420p", // massima compatibilità con i browser
-      "-c:a", "aac",
-      "-b:a", "128k",
-      "-movflags", "+faststart", // parte subito senza scaricare tutto
-      tmp,
-    ],
-    20 * 60 * 1000
-  );
+  const after = await encodeVideo(filePath, tmp);
+  if (after == null) return; // era già ben compresso: tengo l'originale
 
-  const after = fs.statSync(tmp).size;
-  if (after >= before) {
-    // Era già ben compresso: tengo l'originale.
-    fs.unlinkSync(tmp);
-    return;
-  }
   fs.renameSync(tmp, filePath); // sostituzione atomica: il nome non cambia
   console.log(
     `[media] video ricompresso: ${path.basename(filePath)} ` +
@@ -208,7 +266,9 @@ async function processUploads(files = []) {
 module.exports = {
   processUploads,
   compressImage,
+  compressImageTo,
   transcodeVideo,
+  transcodeVideoTo,
   queueVideo,
   isImage,
   isVideo,
