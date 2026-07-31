@@ -8,6 +8,7 @@ import {
   faHardDrive,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
+import InventoryPanel from "./InventoryPanel";
 
 const MB = (n) => {
   if (!n) return "0 MB";
@@ -24,6 +25,7 @@ const StorageModal = ({ onClose }) => {
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState("");
   const [progress, setProgress] = useState(null);
+  const [scheda, setScheda] = useState("spazio");
 
   const load = () =>
     api
@@ -101,13 +103,32 @@ const StorageModal = ({ onClose }) => {
           </button>
         </div>
         <div className="ep-modal-body">
-          {error && (
+          {/* Due domande diverse, due schede: "quanto spazio uso e dove sta"
+              e "cosa c'è dentro, di chi è, cosa non si trova". */}
+          <div className="ep-tabs">
+            <button
+              className={`ep-tab ${scheda === "spazio" ? "is-active" : ""}`}
+              onClick={() => setScheda("spazio")}
+            >
+              Spazio
+            </button>
+            <button
+              className={`ep-tab ${scheda === "contenuti" ? "is-active" : ""}`}
+              onClick={() => setScheda("contenuti")}
+            >
+              Contenuti
+            </button>
+          </div>
+
+          {scheda === "contenuti" && <InventoryPanel />}
+
+          {scheda === "spazio" && error && (
             <div className="ep-share-warning">
               <FontAwesomeIcon icon={faTriangleExclamation} /> {error}
             </div>
           )}
 
-          {!status && !error ? (
+          {scheda === "spazio" && (!status && !error ? (
             <p className="ep-share-hint">Caricamento…</p>
           ) : status ? (
             <>
@@ -233,7 +254,7 @@ const StorageModal = ({ onClose }) => {
                 </div>
               )}
             </>
-          ) : null}
+          ) : null)}
         </div>
       </div>
     </div>

@@ -24,6 +24,7 @@ const {
 const mailLog = require("../services/mailLog");
 const mediaMigration = require("../services/mediaMigration");
 const mediaIntake = require("../services/mediaIntake");
+const mediaInventory = require("../services/mediaInventory");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -593,6 +594,39 @@ router.get("/storage/status", requireAdmin, async (req, res) => {
     res.json(await mediaMigration.status());
   } catch (e) {
     res.status(500).json({ error: e?.message || "Errore nel calcolo dello spazio" });
+  }
+});
+
+// Inventario: per ogni media citato nei piani, dove si trova davvero e a chi
+// appartiene. Serve sia a capire perché un'immagine non si vede, sia a
+// decidere cosa cancellare quando lo spazio finisce. Solo admin.
+router.get("/storage/inventory", requireAdmin, async (req, res) => {
+  try {
+    const { clientId, year, month, ordina } = req.query || {};
+    const inv = await mediaInventory.build({ clientId, year, month });
+
+    // Due viste degli stessi dati: per mese (predefinita, dal più vecchio) e
+    // per peso (per trovare in fretta ciò che occupa davvero).
+    const mesi = mediaInventory.byMonth(inv.files);
+    mesi.sort((a, b) =>
+      ordina === "peso" ? b.bytes - a.bytes : a.year - b.year || a.month - b.month
+    );
+
+    const pesanti = [...inv.files].sort((a, b) => b.bytes - a.bytes).slice(0, 100);
+    const mancanti = inv.files.filter((f) => f.stato === "mancante");
+    const soloDisco = inv.files.filter((f) => f.stato === "soloDisco");
+
+    res.json({
+      ...inv.totali,
+      bucketLetto: inv.bucketLetto,
+      mesi,
+      pesanti,
+      mancanti: mancanti.slice(0, 200),
+      soloDisco: soloDisco.slice(0, 200),
+      orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 100),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "Inventario non riuscito" });
   }
 });
 

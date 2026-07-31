@@ -85,6 +85,11 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/storage/migrate`, body, auth())
       .then((r) => r.data),
+  // inventario: dove sta ogni media citato nei piani, e quanto pesa
+  storageInventory: (params = {}) =>
+    axios
+      .get(`${API_URL}/api/editorial/storage/inventory`, { ...auth(), params })
+      .then((r) => r.data),
   // ricostruzione retroattiva dello storico dai dati in archivio (solo admin)
   backfillPlanHistory: (body) =>
     axios
