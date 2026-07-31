@@ -15,6 +15,16 @@ const path = require("path");
 const mime = require("mime-types");
 const storage = require("./storage");
 
+// Tipo di file dal nome: serve a distinguere ciò che si comprime in fretta
+// (immagini) da ciò che costa CPU (video) e da ciò che non va toccato
+// (documenti, loghi: sono file dei clienti).
+const kindOf = (name) => {
+  const ext = path.extname(name).toLowerCase();
+  if (/^\.(jpe?g|png|webp|gif|heic|heif|tiff?|avif)$/.test(ext)) return "image";
+  if (/^\.(mp4|mov|m4v|webm|avi|mkv)$/.test(ext)) return "video";
+  return "other";
+};
+
 const BASE = () =>
   process.env.UPLOAD_DIR ||
   process.env.RAILWAY_VOLUME_MOUNT_PATH ||
@@ -46,6 +56,11 @@ function filesIn(dir) {
 // Fotografia della situazione: quanto c'è sul disco, quanto sul bucket.
 async function status() {
   const disk = {};
+  const byKind = {
+    image: { files: 0, bytes: 0 },
+    video: { files: 0, bytes: 0 },
+    other: { files: 0, bytes: 0 },
+  };
   let diskFiles = 0;
   let diskBytes = 0;
   for (const f of folders()) {
@@ -54,6 +69,14 @@ async function status() {
     disk[f.prefix] = { files: files.length, bytes };
     diskFiles += files.length;
     diskBytes += bytes;
+    // La composizione conta solo per i media dei piani: gli allegati del form
+    // sono file dei clienti e non vanno compressi comunque.
+    if (f.prefix === "uploads-ped")
+      files.forEach((x) => {
+        const k = byKind[kindOf(x.name)];
+        k.files += 1;
+        k.bytes += x.size;
+      });
   }
 
   let bucket = null;
@@ -70,6 +93,7 @@ async function status() {
     configured: storage.isR2Configured(),
     base: BASE(),
     disk: { ...disk, files: diskFiles, bytes: diskBytes },
+    byKind,
     bucket,
   };
 }
