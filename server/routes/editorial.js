@@ -26,6 +26,8 @@ const mediaMigration = require("../services/mediaMigration");
 const mediaIntake = require("../services/mediaIntake");
 const mediaInventory = require("../services/mediaInventory");
 const mediaPrune = require("../services/mediaPrune");
+const mediaCleanup = require("../services/mediaCleanup");
+const storageAlert = require("../services/storageAlert");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -631,6 +633,46 @@ router.get("/storage/inventory", requireAdmin, async (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ error: e?.message || "Inventario non riuscito" });
+  }
+});
+
+// Cancellazione in blocco per liberare spazio. Solo admin: è l'unica
+// operazione di tutto il pannello che distrugge qualcosa.
+// `dryRun: true` dice cosa succederebbe senza cancellare niente.
+router.post("/storage/cleanup", requireAdmin, async (req, res) => {
+  try {
+    const { scope, mesi, keys, dryRun } = req.body || {};
+    const opt = { dryRun: !!dryRun };
+    let r;
+    if (scope === "orfani") r = await mediaCleanup.svuotaOrfani(opt);
+    else if (scope === "mesi") r = await mediaCleanup.svuotaMesi(mesi, opt);
+    else if (scope === "file") r = await mediaCleanup.svuotaFile(keys, opt);
+    else return res.status(400).json({ error: "Cosa devo cancellare?" });
+    res.json(r);
+  } catch (e) {
+    res.status(400).json({ error: e?.message || "Cancellazione non riuscita" });
+  }
+});
+
+// Stato dell'avviso spazio, e possibilità di provarlo davvero: un avviso che
+// nessuno ha mai visto arrivare non è un avviso.
+router.get("/storage/alert", requireAdmin, async (req, res) => {
+  try {
+    res.json({
+      sogliaBytes: storageAlert.SOGLIA(),
+      limiteBytes: storageAlert.LIMITE(),
+      destinatario: process.env.STORAGE_ALERT_TO || "amministrazione@basicadv.com",
+    });
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "Stato avviso non disponibile" });
+  }
+});
+
+router.post("/storage/alert/test", requireAdmin, async (req, res) => {
+  try {
+    res.json(await storageAlert.check({ force: true }));
+  } catch (e) {
+    res.status(500).json({ error: e?.message || "Invio di prova non riuscito" });
   }
 });
 

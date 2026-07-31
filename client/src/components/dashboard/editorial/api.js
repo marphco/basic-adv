@@ -85,6 +85,17 @@ export const api = {
     axios
       .post(`${API_URL}/api/editorial/storage/migrate`, body, auth())
       .then((r) => r.data),
+  // cancellazione in blocco per liberare spazio (solo admin)
+  storageCleanup: (body) =>
+    axios
+      .post(`${API_URL}/api/editorial/storage/cleanup`, body, auth())
+      .then((r) => r.data),
+  storageAlert: () =>
+    axios.get(`${API_URL}/api/editorial/storage/alert`, auth()).then((r) => r.data),
+  storageAlertTest: () =>
+    axios
+      .post(`${API_URL}/api/editorial/storage/alert/test`, {}, auth())
+      .then((r) => r.data),
   // inventario: dove sta ogni media citato nei piani, e quanto pesa
   storageInventory: (params = {}) =>
     axios

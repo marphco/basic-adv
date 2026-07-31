@@ -2657,3 +2657,61 @@
   .ep-inv-row { flex-direction: column; gap: 2px; }
   .ep-inv-side { max-width: 100%; text-align: left; flex-direction: row; gap: 8px; }
 }
+
+/* ===== Pulizia dell'archivio ===== */
+
+.ep-inv-orfani {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px dashed var(--ep-border, rgba(128, 128, 128, 0.35));
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+.ep-inv-orfani .ep-btn { flex: 0 0 auto; white-space: nowrap; }
+
+.ep-inv-row--sel { cursor: pointer; align-items: center; }
+.ep-inv-row--sel input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--foreground-color, #ff4003);
+  cursor: pointer;
+}
+.ep-inv-row--sel:hover { background: color-mix(in srgb, currentColor 6%, transparent); }
+.ep-inv-row--sel.is-selected {
+  background: color-mix(in srgb, var(--foreground-color, #ff4003) 12%, transparent);
+}
+
+/* Barra della selezione: sempre visibile mentre si sceglie */
+.ep-inv-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ep-surface, #1b1b1b);
+  border: 1px solid var(--ep-border, rgba(128, 128, 128, 0.3));
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.18);
+}
+.ep-inv-bar-actions { display: flex; gap: 8px; margin-left: auto; }
+
+@media (max-width: 560px) {
+  .ep-inv-orfani { flex-direction: column; align-items: stretch; }
+  .ep-inv-orfani .ep-btn { width: 100%; justify-content: center; }
+  .ep-inv-bar { flex-direction: column; align-items: stretch; }
+  .ep-inv-bar-actions { margin-left: 0; }
+  .ep-inv-bar-actions .ep-btn { flex: 1 1 0; justify-content: center; }
+  /* Nelle liste selezionabili la spunta resta accanto al testo, non sopra */
+  .ep-inv-row--sel { flex-direction: row; align-items: flex-start; }
+  .ep-inv-row--sel .ep-inv-side { flex-direction: column; text-align: right; }
+}
