@@ -42,8 +42,9 @@ const StorageModal = ({ onClose }) => {
       // limite alto: la simulazione non scrive, quindi può contare tutto
       const r = await api.migrateMedia({ dryRun: true, limit: 5000 });
       setLog(
-        `Da copiare: ${r.copied + r.remaining} file, ${MB(r.bytes)} in tutto. ` +
-          `Già sul bucket: ${r.skipped}.` +
+        `Da copiare: ${r.copied + r.remaining} file, ${MB(r.bytes)} sul volume. ` +
+          `Foto e video dei piani verranno compressi durante la copia, quindi ` +
+          `sul bucket occuperanno meno. Già copiati: ${r.skipped}.` +
           (r.failed ? ` Problemi: ${r.failed}.` : "")
       );
     } catch (e) {
@@ -60,18 +61,24 @@ const StorageModal = ({ onClose }) => {
     let copied = 0;
     let failed = 0;
     let bytes = 0;
+    let source = 0;
     try {
       for (let round = 0; round < 500; round++) {
         const r = await api.migrateMedia({ dryRun: false, limit: 25 });
         copied += r.copied;
         failed += r.failed;
         bytes += r.bytes;
+        source += r.sourceBytes || 0;
         setProgress({ copied, failed, remaining: r.remaining });
         if (r.errors?.length) setLog(r.errors.join(" · "));
-        if (!r.remaining) break;
+        // Nessun progresso e niente in coda: è finita (o non si può andare
+        // avanti), meglio fermarsi che girare a vuoto.
+        if (!r.remaining || (!r.copied && !r.failed)) break;
       }
+      const saved = source > bytes ? Math.round(((source - bytes) / source) * 100) : 0;
       setLog(
-        `Copiati ${copied} file (${MB(bytes)})` +
+        `Copiati ${copied} file: ${MB(source)} sul volume → ${MB(bytes)} sul bucket` +
+          (saved ? ` (${saved}% in meno)` : "") +
           (failed ? ` · ${failed} non riusciti` : "") +
           ". Il volume non è stato toccato."
       );
@@ -148,6 +155,17 @@ const StorageModal = ({ onClose }) => {
                 )}
               </div>
 
+              {/* Se la compressione non funziona su questo server è meglio
+                  vederlo subito, non scoprirlo dai file che pesano il doppio. */}
+              {status.compression && !status.compression.images && (
+                <div className="ep-share-warning">
+                  <FontAwesomeIcon icon={faTriangleExclamation} /> Compressione
+                  delle foto non disponibile su questo server: i file vengono
+                  salvati come sono.
+                  {status.compression.error ? ` (${status.compression.error})` : ""}
+                </div>
+              )}
+
               <div className="ep-share-admin">
                 <div className="ep-share-admin-head">
                   <FontAwesomeIcon icon={faCloudArrowUp} /> Bucket
@@ -176,8 +194,11 @@ const StorageModal = ({ onClose }) => {
                   <div className="ep-share-admin-head">Copia sul bucket</div>
                   <p className="ep-share-desc">
                     Copia i file dal volume al bucket mantenendo lo stesso nome,
-                    quindi nessun link cambia. Non cancella nulla dal volume e
-                    si può ripetere: ciò che è già copiato viene saltato.
+                    quindi nessun link cambia. Foto e video dei piani vengono
+                    compressi per strada; gli allegati dei clienti no, restano
+                    identici. Non cancella nulla dal volume e si può ripetere:
+                    ciò che è già copiato viene saltato, quindi se si interrompe
+                    basta ripartire.
                   </p>
 
                   {progress && (

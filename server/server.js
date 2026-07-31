@@ -986,6 +986,20 @@ if (!global.serverRunning) {
   global.serverRunning = true;
   const server = app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
+    // Diagnosi della compressione, DOPO che il server è già in ascolto: se
+    // qualcosa non va lo si legge nei log, ma il sito è già in piedi e ci
+    // resta comunque. (Il 31/07/2026 un controllo del genere fatto all'avvio
+    // ha tolto il sito per un'ora: da allora si fa qui, e protetto.)
+    try {
+      const c = require("./services/mediaCompress").probe();
+      console.log(
+        `[media] compressione — immagini: ${c.images ? "attiva" : "NON disponibile"}, ` +
+          `video: ${c.video ? "attiva" : "NON disponibile"} (Node ${c.node})` +
+          (c.error ? ` — ${c.error}` : "")
+      );
+    } catch (e) {
+      console.error("[media] diagnosi compressione non riuscita:", e?.message);
+    }
   });
 
   server.on("error", (err) => {
