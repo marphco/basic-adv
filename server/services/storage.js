@@ -185,6 +185,29 @@ async function usage(prefix = "") {
   };
 }
 
+// Lo stesso conto, ma diviso per provenienza: i media dei piani editoriali e
+// gli allegati arrivati dalle richieste del sito. Sono due cose che si
+// gestiscono in modo diverso — i primi si possono alleggerire e cancellare, i
+// secondi sono file dei clienti — quindi vederli separati serve davvero.
+// Una sola lettura del bucket, non due.
+async function usageByFolder() {
+  const vuoto = () => ({ files: 0, bytes: 0 });
+  const out = { ped: vuoto(), richieste: vuoto(), totale: vuoto() };
+  for (const o of await listObjects("")) {
+    const dove = o.key.startsWith("uploads-ped/")
+      ? out.ped
+      : o.key.startsWith("uploads/")
+      ? out.richieste
+      : null;
+    out.totale.files += 1;
+    out.totale.bytes += o.size || 0;
+    if (!dove) continue;
+    dove.files += 1;
+    dove.bytes += o.size || 0;
+  }
+  return out;
+}
+
 module.exports = {
   mode,
   isR2Configured,
@@ -196,4 +219,5 @@ module.exports = {
   listObjects,
   deleteObject,
   usage,
+  usageByFolder,
 };

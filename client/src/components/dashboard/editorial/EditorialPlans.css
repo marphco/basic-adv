@@ -2836,3 +2836,39 @@
   .ep-inv-bar-actions { margin-left: 0; }
   .ep-inv-bar-actions .ep-btn { flex: 1 1 0; justify-content: center; }
 }
+
+/* ---- Archivio → Spazio ---- */
+.ep-spazio { margin-bottom: 14px; }
+.ep-spazio-testa {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ep-spazio-testa strong { font-size: 1.1rem; }
+.ep-spazio-barra {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+.ep-spazio-riempimento {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ep-ok);
+  transition: width 0.3s ease;
+}
+.ep-spazio-riempimento.is-alta { background: var(--ep-danger); }
+
+.ep-spazio-tipi { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 8px; }
+.ep-spazio-tipi li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 13px;
+  border: 1px solid var(--ep-border, rgba(128, 128, 128, 0.22));
+  border-radius: 10px;
+}
+.ep-spazio-tipi svg { opacity: 0.6; }
