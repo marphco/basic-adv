@@ -8,7 +8,6 @@ const PlanApproval = require("../models/PlanApproval");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
 const { recordAccess } = require("../services/planHistory");
-const mediaCompress = require("../services/mediaCompress");
 const {
   mediaUpload,
   handleUpload,
@@ -284,7 +283,6 @@ router.post(
         await removeFiles(req.files);
         return res.status(403).json({ error: "Accesso negato." });
       }
-      await mediaCompress.processUploads(req.files);
       res.json({ media: toMedia(req, req.files) });
     } catch (e) {
       await removeFiles(req.files);

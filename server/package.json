@@ -21,12 +21,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "ffmpeg-static": "^5.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.0",
-    "sharp": "^0.35.3",
     "uuid": "^11.1.0"
   }
 }

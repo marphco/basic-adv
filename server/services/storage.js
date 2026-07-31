@@ -70,13 +70,7 @@ const safeName = (filename) => path.basename(String(filename || ""));
 
 // Carica un file locale sul bucket. Non cancella l'originale: la cancellazione
 // è una decisione separata, presa solo a migrazione verificata.
-//
-// `metadata` sono etichette libere che restano attaccate all'oggetto e
-// tornano indietro con headObject. Servono alla migrazione per riconoscere
-// ciò che ha già copiato: dopo la compressione il file sul bucket non pesa
-// più come quello sul disco, quindi il confronto delle dimensioni non basta
-// più e serve un riferimento all'originale.
-async function putFile({ localPath, key, contentType, metadata }) {
+async function putFile({ localPath, key, contentType }) {
   const c = cfg();
   if (!isR2Configured()) throw new Error("Bucket non configurato");
   if (!S3) S3 = require("@aws-sdk/client-s3");
@@ -87,7 +81,6 @@ async function putFile({ localPath, key, contentType, metadata }) {
       Body: fs.createReadStream(localPath),
       ContentType: contentType || "application/octet-stream",
       ContentLength: fs.statSync(localPath).size,
-      Metadata: metadata || undefined,
     })
   );
   return key;
@@ -110,7 +103,6 @@ async function headObject(key) {
       size: r.ContentLength,
       contentType: r.ContentType,
       lastModified: r.LastModified,
-      metadata: r.Metadata || {},
     };
   } catch (e) {
     if (e?.$metadata?.httpStatusCode === 404 || e?.name === "NotFound") return null;
