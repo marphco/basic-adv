@@ -188,25 +188,6 @@ const run = (bin, args, timeoutMs) =>
     );
   });
 
-// Coda seriale: un video alla volta. Con più ricodifiche in parallelo la CPU
-// finirebbe tutta lì e il sito rallenterebbe per tutti.
-const queue = [];
-let working = false;
-
-async function drain() {
-  if (working) return;
-  working = true;
-  while (queue.length) {
-    const job = queue.shift();
-    try {
-      await transcodeVideo(job);
-    } catch (e) {
-      console.error("[media] ricodifica video fallita:", job.path, e?.message);
-    }
-  }
-  working = false;
-}
-
 // Ricodifica `src` scrivendo in `dest`. Il contenitore lo decide l'estensione
 // di `dest`, che teniamo sempre uguale a quella di partenza: così il nome del
 // file non cambia mai e nessun link si rompe.
@@ -246,56 +227,6 @@ async function encodeVideo(src, dest, { preset = "medium", timeoutMs = 20 * 60 *
 // Versione per la migrazione: copia compressa altrove, originale intoccato.
 const transcodeVideoTo = (src, dest, opts) => encodeVideo(src, dest, opts);
 
-// Ricodifica un video SOSTITUENDOLO sul posto: stesso nome, stesso
-// contenitore, quindi l'URL già consegnato continua a funzionare.
-async function transcodeVideo({ path: filePath }) {
-  const bin = ffmpegPath();
-  if (!bin || !fs.existsSync(filePath)) return;
-
-  const before = fs.statSync(filePath).size;
-  const tmp = path.join(path.dirname(filePath), `.tmp-${path.basename(filePath)}`);
-
-  const after = await encodeVideo(filePath, tmp);
-  if (after == null) return; // era già ben compresso: tengo l'originale
-
-  fs.renameSync(tmp, filePath); // sostituzione atomica: il nome non cambia
-  console.log(
-    `[media] video ricompresso: ${path.basename(filePath)} ` +
-      `${(before / 1048576).toFixed(1)} → ${(after / 1048576).toFixed(1)} MB`
-  );
-}
-
-function queueVideo(file) {
-  queue.push({ path: file.path });
-  setImmediate(drain); // parte dopo che la risposta è già stata inviata
-}
-
-/* ============================ INGRESSO ============================ */
-
-// Elabora i file appena caricati. Le immagini vengono compresse subito e i
-// campi del file aggiornati (il nome può cambiare solo per HEIC/TIFF, prima
-// che l'URL venga costruito); i video vengono messi in coda.
-// Non solleva mai: se la compressione fallisce, il file originale resta valido.
-async function processUploads(files = []) {
-  for (const file of files) {
-    try {
-      if (isImage(file.filename)) {
-        const r = await compressImage(file);
-        if (r) {
-          file.filename = r.filename;
-          file.path = r.path;
-          file.size = r.size;
-        }
-      } else if (isVideo(file.filename)) {
-        queueVideo(file);
-      }
-    } catch (e) {
-      console.error("[media] compressione fallita:", file?.filename, e?.message);
-    }
-  }
-  return files;
-}
-
 /* ==================== DIAGNOSI ==================== */
 
 // Dice se la compressione è utilizzabile su QUESTO server. Serve a due cose:
@@ -326,12 +257,9 @@ function probe() {
 }
 
 module.exports = {
-  processUploads,
   compressImage,
   compressImageTo,
-  transcodeVideo,
   transcodeVideoTo,
-  queueVideo,
   isImage,
   isVideo,
   probe,
