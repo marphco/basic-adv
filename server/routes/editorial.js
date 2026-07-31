@@ -23,7 +23,6 @@ const {
 } = require("../services/planHistory");
 const mailLog = require("../services/mailLog");
 const mediaMigration = require("../services/mediaMigration");
-const mediaCompress = require("../services/mediaCompress");
 
 const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
@@ -642,9 +641,6 @@ router.post(
   handleUpload(mediaUpload.array("files", 10)),
   async (req, res) => {
     try {
-      // Compressione automatica: immagini subito, video in coda (l'URL è già
-      // valido, il file viene sostituito sul posto quando è pronto).
-      await mediaCompress.processUploads(req.files);
       res.json({ media: toMedia(req, req.files) });
     } catch (e) {
       res.status(500).json({ error: "Errore nel caricamento dei media" });
