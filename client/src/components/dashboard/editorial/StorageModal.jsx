@@ -39,9 +39,10 @@ const StorageModal = ({ onClose }) => {
     setBusy(true);
     setLog("");
     try {
-      const r = await api.migrateMedia({ dryRun: true, limit: 100 });
+      // limite alto: la simulazione non scrive, quindi può contare tutto
+      const r = await api.migrateMedia({ dryRun: true, limit: 5000 });
       setLog(
-        `Da copiare: ${r.copied + r.remaining} file (${MB(r.bytes)} nel primo lotto). ` +
+        `Da copiare: ${r.copied + r.remaining} file, ${MB(r.bytes)} in tutto. ` +
           `Già sul bucket: ${r.skipped}.` +
           (r.failed ? ` Problemi: ${r.failed}.` : "")
       );

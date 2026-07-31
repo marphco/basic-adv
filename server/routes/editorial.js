@@ -601,10 +601,14 @@ router.get("/storage/status", requireAdmin, async (req, res) => {
 router.post("/storage/migrate", requireAdmin, async (req, res) => {
   try {
     const { dryRun, limit } = req.body || {};
+    // La simulazione non scrive nulla: può scorrere tutto l'archivio e dare il
+    // totale vero. La copia vera resta a lotti piccoli, per non tenere aperta
+    // una richiesta lunghissima.
+    const max = dryRun ? 5000 : 100;
     res.json(
       await mediaMigration.migrateBatch({
         dryRun: !!dryRun,
-        limit: Math.min(Math.max(Number(limit) || 25, 1), 100),
+        limit: Math.min(Math.max(Number(limit) || 25, 1), max),
       })
     );
   } catch (e) {
