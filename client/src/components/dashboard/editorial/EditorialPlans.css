@@ -75,8 +75,14 @@
 }
 @media (min-width: 900px) {
   .ep-header {
-    grid-template-columns: minmax(180px, 260px) 1fr auto;
+    grid-template-columns: minmax(200px, 320px) 1fr auto;
     align-items: center;
+  }
+  /* Il selettore deve stare DENTRO la sua colonna: con un min-width più largo
+     della colonna sfonderebbe e finirebbe sotto ai pulsanti accanto. */
+  .ep-client-select {
+    min-width: 0;
+    width: 100%;
   }
   .ep-header-actions {
     grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
