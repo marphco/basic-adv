@@ -10,6 +10,10 @@
   --ep-surface-2: #f4f4f4;
   --ep-muted: rgba(22, 22, 22, 0.55);
   --ep-note: #f5a623;
+  /* Nota risolta = niente più da fare: colore che si spegne, non che festeggia.
+     Il verde è riservato allo stato "pubblicato", altrimenti i due si
+     confondono (segnalato dall'uso reale: "molto simile a pubblicato"). */
+  --ep-done: #64748b;
   /* note interne (solo agenzia): BLU — distinto dal giallo cliente e dal viola
      dei duplicati ("da rivedere"), così non si confondono */
   --ep-internal: #2563eb;
@@ -37,6 +41,7 @@
   --ep-surface: #1e1e1e;
   --ep-surface-2: #262626;
   --ep-muted: rgba(246, 246, 246, 0.55);
+  --ep-done: #94a3b8;
   --ep-ok: #4ade80;
   --ep-todo: #a78bfa;
   --ep-danger: #f87171;
@@ -497,11 +502,15 @@
 .ep-post--agency-note:hover {
   background: rgba(255, 64, 3, 0.16);
 }
-/* Note presenti ma tutte risolte: sfondo verde tenue (handled). */
+/* Note presenti ma tutte risolte: NESSUNO sfondo.
+   Prima era verde tenue, cioè lo stesso colore di "pubblicato": due cose
+   diverse rese indistinguibili, e mesi interi tinti di verde senza che ci
+   fosse niente di pubblicato. Ma il punto non è cambiare tinta: una nota
+   risolta non ha più niente da dire, quindi deve LASCIARE lo sfondo a chi
+   ne ha bisogno — lo stato di lavorazione. Resta la barretta a sinistra e
+   il badge, che ricordano che una nota c'è stata. */
 .ep-post--note-done {
-  background: rgba(34, 197, 94, 0.12);
-  border-color: rgba(34, 197, 94, 0.4);
-  border-left-color: #22c55e;
+  border-left-color: var(--ep-done);
 }
 .ep-post--sponsored.ep-post--note {
   /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
@@ -604,13 +613,15 @@
   color: #3a2a00;
 }
 .ep-badge--note-done {
-  background: rgba(34, 197, 94, 0.16);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.45);
+  background: rgba(100, 116, 139, 0.16);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.45);
 }
 [data-theme="dark"] .ep-badge--note-done,
 .pp-wrap .ep-badge--note-done {
-  color: #4ade80;
+  background: rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.45);
 }
 /* badge nota dell'AGENZIA per il cliente: arancione brand, contorno (distinto
    dal pieno arancione di "Sponsor") */
