@@ -2554,14 +2554,27 @@
   outline: 2px solid #16a34a;
   outline-offset: -2px;
 }
-/* Sfondo dello stato: applicato SOLO sui post senza sfondo-nota/duplicato
-   (vedi PostChip → statusBgClass), così non si confonde con ocra/verde delle
-   note. Intensità in linea con gli altri sfondi (~0.16). */
+/* Sfondo dello stato: applicato sui post senza sfondo-nota/duplicato — e
+   anche su quelli con note tutte RISOLTE, che gli cedono il posto (vedi
+   PostChip). Intensità in linea con gli altri sfondi (~0.16). */
 .ep-post--sched-bg {
   background: rgba(250, 204, 21, 0.16);
 }
 .ep-post--pub-bg {
   background: rgba(22, 163, 74, 0.16);
+}
+/* Stato + note risolte: vince lo stato. Serve dirlo esplicitamente perché la
+   regola del grigio per il tema scuro è più specifica e altrimenti avrebbe la
+   meglio sul verde. */
+.ep-post--note-done.ep-post--pub-bg,
+[data-theme="dark"] .ep-post--note-done.ep-post--pub-bg,
+.pp-wrap .ep-post--note-done.ep-post--pub-bg {
+  background: rgba(22, 163, 74, 0.16);
+}
+.ep-post--note-done.ep-post--sched-bg,
+[data-theme="dark"] .ep-post--note-done.ep-post--sched-bg,
+.pp-wrap .ep-post--note-done.ep-post--sched-bg {
+  background: rgba(250, 204, 21, 0.16);
 }
 
 /* Selettore stato nel modale post (segmented) */

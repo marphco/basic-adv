@@ -63,7 +63,14 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
       : ps === "schedulato"
       ? "ep-post--sched"
       : "";
-  const noOtherBg = !bgClass && !post.isDuplicate;
+  // Lo sfondo può raccontare UNA cosa sola, quindi va a quella che conta di
+  // più. Una nota già risolta non chiede niente a nessuno: cede lo sfondo
+  // allo stato di lavorazione (il verde di "pubblicato" è l'informazione che
+  // l'operatore cerca a colpo d'occhio) e resta segnalata dalla barretta
+  // grigia e dal badge. Se invece non c'è nessuno stato, lo sfondo grigio
+  // resta suo — altrimenti la nota risolta sparirebbe.
+  const risolteCedono = bgClass === "ep-post--note-done";
+  const noOtherBg = (!bgClass || risolteCedono) && !post.isDuplicate;
   const statusBgClass =
     noOtherBg && ps === "pubblicato"
       ? "ep-post--pub-bg"
