@@ -2955,3 +2955,111 @@
   .ep-bozza-azioni { margin-left: 0; }
   .ep-bozza-azioni .ep-btn { flex: 1 1 0; justify-content: center; }
 }
+
+/* ==================== STORICO DELLE VERSIONI ====================
+   Una lista di momenti: quando, chi, e un assaggio del contenuto. Toccando
+   una voce si apre il confronto con il post di adesso — è quello che serve
+   per decidere se ripristinare, e senza si andrebbe a memoria. */
+.ep-ver-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ep-ver {
+  border: 1px solid var(--ep-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ep-surface-2);
+}
+.ep-ver.is-aperta {
+  border-color: color-mix(in srgb, var(--ep-todo) 55%, transparent);
+}
+.ep-ver-testa {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 11px 13px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ep-ver-testa:hover {
+  background: color-mix(in srgb, var(--ep-todo) 10%, transparent);
+}
+.ep-ver-quando {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-weight: 600;
+}
+.ep-ver-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--ep-surface);
+  background: var(--ep-done);
+}
+.ep-ver-anteprima {
+  font-size: 0.88rem;
+  opacity: 0.82;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ep-ver-dettaglio {
+  padding: 0 13px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* Il confronto, un campo per riga: sopra com'è adesso (barrato), sotto come
+   tornerebbe. Le tre colonne affiancate sembravano una buona idea finché la
+   didascalia non le ha strette al punto da spezzare le parole a metà: dentro
+   una modale stretta non c'è spazio per due testi lunghi fianco a fianco. */
+.ep-ver-diff {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+.ep-ver-diff th,
+.ep-ver-diff td {
+  padding: 6px 8px;
+  border-top: 1px solid var(--ep-border);
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+.ep-ver-diff th,
+.ep-ver-diff td {
+  display: block;
+  width: auto;
+}
+.ep-ver-diff th {
+  font-weight: 600;
+  opacity: 0.75;
+}
+.ep-ver-diff td {
+  border-top: 0;
+  padding-top: 0;
+}
+.ep-ver-prima {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.ep-ver-dopo {
+  font-weight: 600;
+  color: var(--ep-ok);
+}
+@media (max-width: 560px) {
+  .ep-ver-dettaglio .ep-btn { justify-content: center; }
+}

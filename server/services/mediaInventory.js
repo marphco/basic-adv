@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const Post = require("../models/Post");
+const PostVersion = require("../models/PostVersion");
 const Client = require("../models/Client");
 const storage = require("./storage");
 
@@ -67,6 +68,29 @@ function refsOfPost(post) {
   return out;
 }
 
+// Gli stessi riferimenti, ma dentro le fotografie dello storico delle
+// versioni. Un file può non essere più in nessun post e servire lo stesso: se
+// una versione di tre mesi fa lo mostra, ripristinandola deve tornare al suo
+// posto. Per questo non è un file "orfano" — cancellarlo lascerebbe un buco.
+async function citatiDalloStorico() {
+  const out = new Set();
+  const versioni = await PostVersion.find({})
+    .select("snapshot.media snapshot.clientNotes")
+    .lean();
+
+  const push = (m) => {
+    for (const u of [m?.url, m?.thumbUrl]) {
+      const loc = locate(u);
+      if (loc) out.add(`${loc.folder}/${loc.name}`);
+    }
+  };
+  for (const v of versioni) {
+    (v.snapshot?.media || []).forEach(push);
+    (v.snapshot?.clientNotes || []).forEach((n) => (n?.media || []).forEach(push));
+  }
+  return out;
+}
+
 /* ==================== INVENTARIO ==================== */
 
 // Restituisce, per ogni file citato: dove si trova, quanto pesa, e a quale
@@ -82,11 +106,12 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
   if (year) filtro.year = Number(year);
   if (month) filtro.month = Number(month);
 
-  const [posts, clients] = await Promise.all([
+  const [posts, clients, storico] = await Promise.all([
     Post.find(filtro)
       .select("clientId year month day caption media clientNotes")
       .lean(),
     Client.find({}).select("name").lean(),
+    citatiDalloStorico(),
   ]);
   const nomeCliente = new Map(clients.map((c) => [String(c._id), c.name || "—"]));
 
@@ -154,23 +179,32 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
   // qui: nessun post li cita per definizione — appartengono alle richieste dei
   // clienti — e finirebbero nell'elenco di ciò che si può cancellare. Sono
   // loghi ed esecutivi altrui: non devono nemmeno essere proposti.
+  //
+  // ⚠️ E nemmeno i file trattenuti dallo storico delle versioni: nessun post
+  // li mostra più, ma una versione sì, e cancellarli vorrebbe dire
+  // ripristinarla con un buco al posto della foto. Finiscono in un elenco a
+  // parte: si possono comunque buttare, ma sapendo cosa si perde.
   const orfani = [];
+  const trattenuti = [];
   if (bucketLetto)
     for (const [key, bytes] of suBucket)
-      if (key.startsWith("uploads-ped/") && !citati.has(key))
-        orfani.push({
+      if (key.startsWith("uploads-ped/") && !citati.has(key)) {
+        const voce = {
           key,
           name: path.basename(key),
           path: `/${key}`, // serve l'anteprima anche qui: non si cancella al buio
           kind: /\.(mp4|mov|m4v|webm)$/i.test(key) ? "video" : "image",
           bytes,
-        });
+        };
+        (storico.has(key) ? trattenuti : orfani).push(voce);
+      }
 
   const somma = (arr) => arr.reduce((n, f) => n + (f.bytes || 0), 0);
   return {
     bucketLetto,
     files,
     orfani,
+    trattenuti,
     totali: {
       citati: files.length,
       mancanti: files.filter((f) => f.stato === "mancante").length,
@@ -178,6 +212,8 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
       bytes: somma(files),
       orfani: orfani.length,
       bytesOrfani: somma(orfani),
+      trattenuti: trattenuti.length,
+      bytesTrattenuti: somma(trattenuti),
     },
   };
 }

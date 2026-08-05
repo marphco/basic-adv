@@ -16,6 +16,7 @@
 // ⚠️ Gli allegati del form (uploads/) non si toccano MAI da qui: sono file
 // dei clienti e se ne va solo insieme alla loro richiesta.
 const Post = require("../models/Post");
+const PostVersion = require("../models/PostVersion");
 const storage = require("./storage");
 const inventory = require("./mediaInventory");
 
@@ -41,22 +42,29 @@ async function cancellaChiavi(keys) {
   return out;
 }
 
+// Dato un elenco di nomi cancellati, la funzione che ripulisce una lista di
+// media da quelli che non esistono più.
+const ripulitore = (nomi) => (arr) =>
+  (arr || []).filter((m) => {
+    const a = inventory.locate(m?.url);
+    const b = inventory.locate(m?.thumbUrl);
+    // Se sparisce solo l'anteprima il media resta (senza poster); se
+    // sparisce il file vero, il media non ha più senso.
+    if (a && nomi.has(a.name)) return false;
+    if (!a && b && nomi.has(b.name)) return false;
+    return true;
+  });
+
+const nomiDi = (keys) =>
+  new Set(soloNostri(keys).map((k) => k.slice(PREFISSO.length)));
+
 // Toglie dai post i riferimenti alle chiavi cancellate, così non restano
 // immagini rotte in giro.
 async function staccaDaiPost(keys) {
-  const nomi = new Set(soloNostri(keys).map((k) => k.slice(PREFISSO.length)));
+  const nomi = nomiDi(keys);
   if (!nomi.size) return 0;
 
-  const daRipulire = (arr) =>
-    (arr || []).filter((m) => {
-      const a = inventory.locate(m?.url);
-      const b = inventory.locate(m?.thumbUrl);
-      // Se sparisce solo l'anteprima il media resta (senza poster); se
-      // sparisce il file vero, il media non ha più senso.
-      if (a && nomi.has(a.name)) return false;
-      if (!a && b && nomi.has(b.name)) return false;
-      return true;
-    });
+  const daRipulire = ripulitore(nomi);
 
   const posts = await Post.find({
     $or: [
@@ -82,6 +90,43 @@ async function staccaDaiPost(keys) {
     }
   }
   return toccati;
+}
+
+// Stessa cosa nelle fotografie dello storico. Cancellare un file a mano è una
+// scelta consapevole di chi vuole spazio, ma la versione che lo mostrava non
+// deve restare a puntare nel vuoto: ripristinandola si vedrebbe un'immagine
+// rotta invece di un post semplicemente senza quella foto.
+async function staccaDalleVersioni(keys) {
+  const nomi = nomiDi(keys);
+  if (!nomi.size) return 0;
+  const daRipulire = ripulitore(nomi);
+
+  const versioni = await PostVersion.find({
+    $or: [
+      { "snapshot.media.url": { $regex: PREFISSO } },
+      { "snapshot.clientNotes.media.url": { $regex: PREFISSO } },
+    ],
+  });
+
+  let toccate = 0;
+  for (const v of versioni) {
+    const s = v.snapshot || {};
+    const primaN = (s.media || []).length;
+    s.media = daRipulire(s.media);
+    let cambiato = s.media.length !== primaN;
+    (s.clientNotes || []).forEach((n) => {
+      const q = (n.media || []).length;
+      n.media = daRipulire(n.media);
+      if (n.media.length !== q) cambiato = true;
+    });
+    if (cambiato) {
+      v.snapshot = s;
+      v.markModified("snapshot");
+      await v.save();
+      toccate += 1;
+    }
+  }
+  return toccate;
 }
 
 /* ==================== OPERAZIONI ==================== */
@@ -128,8 +173,9 @@ async function svuotaMesi(mesi = [], { dryRun = false } = {}) {
   // metà strada è meglio avere file orfani (recuperabili con un giro di
   // pulizia) che post che puntano nel vuoto.
   const postToccati = await staccaDaiPost(keys);
+  const versioniToccate = await staccaDalleVersioni(keys);
   const r = await cancellaChiavi(keys);
-  return { ...r, postToccati };
+  return { ...r, postToccati, versioniToccate };
 }
 
 // Cancella singoli file scelti a mano dalla vista "chi pesa di più".
@@ -138,8 +184,9 @@ async function svuotaFile(keys = [], { dryRun = false } = {}) {
   if (!nostre.length) throw new Error("Nessun file selezionato.");
   if (dryRun) return { dryRun: true, rimossi: nostre.length, bytes: 0, postToccati: 0 };
   const postToccati = await staccaDaiPost(nostre);
+  const versioniToccate = await staccaDalleVersioni(nostre);
   const r = await cancellaChiavi(nostre);
-  return { ...r, postToccati };
+  return { ...r, postToccati, versioniToccate };
 }
 
 module.exports = { svuotaOrfani, svuotaMesi, svuotaFile };

@@ -316,6 +316,16 @@ const EditorialPlans = () => {
     }
   };
 
+  // Dopo un ripristino il post sul server è già cambiato: qui si tratta solo
+  // di rileggerlo, e di seguirlo se la versione ripristinata lo riporta in un
+  // altro mese (altrimenti sparirebbe dalla vista senza spiegazioni).
+  const restoredPost = (p) => {
+    setModal(null);
+    if (Number(p.year) !== view.year || Number(p.month) !== view.month)
+      setView({ year: Number(p.year), month: Number(p.month) });
+    else reloadPosts();
+  };
+
   const deletePost = async (id) => {
     try {
       await api.deletePost(id);
@@ -1122,6 +1132,7 @@ const EditorialPlans = () => {
           onClose={() => setModal(null)}
           onSave={savePost}
           onDelete={deletePost}
+          onRestored={restoredPost}
         />
       )}
 

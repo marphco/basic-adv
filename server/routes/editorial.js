@@ -26,6 +26,7 @@ const mediaIntake = require("../services/mediaIntake");
 const mediaInventory = require("../services/mediaInventory");
 const mediaPrune = require("../services/mediaPrune");
 const mediaCleanup = require("../services/mediaCleanup");
+const postVersions = require("../services/postVersions");
 const storageAlert = require("../services/storageAlert");
 
 const MONTHS_IT = [
@@ -646,6 +647,11 @@ router.get("/storage/inventory", requireAdmin, async (req, res) => {
       mancanti: mancanti.slice(0, 200),
       soloDisco: soloDisco.slice(0, 200),
       orfani: inv.orfani.sort((a, b) => b.bytes - a.bytes).slice(0, 200),
+      // Nessun post li mostra più, ma una versione sì: si possono cancellare,
+      // sapendo che quel ripristino perderà la foto.
+      trattenuti: (inv.trattenuti || [])
+        .sort((a, b) => b.bytes - a.bytes)
+        .slice(0, 200),
     });
   } catch (e) {
     res.status(500).json({ error: e?.message || "Inventario non riuscito" });
@@ -756,6 +762,8 @@ router.post("/posts", async (req, res) => {
       clientNotes: Array.isArray(b.clientNotes) ? b.clientNotes : [],
       createdBy: req.dbUser._id,
     });
+    // Prima riga della storia: com'era il post appena nato.
+    await postVersions.registra(post, { user: req.dbUser, origine: "iniziale" });
     res.status(201).json(post);
   } catch (e) {
     res.status(500).json({ error: "Errore nella creazione del post" });
@@ -780,6 +788,13 @@ router.put("/posts/:id", async (req, res) => {
       clientNotes: (post.clientNotes || []).map((n) => ({ media: copia(n.media) })),
     };
 
+    // Com'era PRIMA di questa modifica. Per i post più vecchi dello storico è
+    // l'unico momento in cui si può ancora fotografare il loro stato di
+    // partenza: dopo il salvataggio sarebbe perso per sempre. Se la storia è
+    // già aggiornata questa chiamata non scrive niente (stesso contenuto,
+    // stessa impronta).
+    await postVersions.registra(post);
+
     const b = req.body || {};
     ["pageId", "caption", "category", "media", "status"].forEach((k) => {
       if (b[k] !== undefined) post[k] = b[k];
@@ -800,6 +815,8 @@ router.put("/posts/:id", async (req, res) => {
     if (b.clientNotes !== undefined) post.clientNotes = b.clientNotes;
     post.updatedAt = new Date();
     await post.save();
+    // E com'è adesso: è questa la voce che porta il nome di chi ha salvato.
+    await postVersions.registra(post, { user: req.dbUser });
     res.json(post);
 
     // Dopo aver risposto: i file tolti dal post, se non li usa più nessun
@@ -825,6 +842,12 @@ router.delete("/posts/:id", async (req, res) => {
       return res.status(403).json({ error: "Accesso negato" });
     const urls = mediaPrune.urlsOf(post);
     await post.deleteOne();
+    // Senza il post la sua storia non si potrebbe nemmeno aprire: via anche
+    // quella. E deve andarsene PRIMA della pulizia, altrimenti sarebbe lei a
+    // trattenere i file di un post che non esiste più.
+    await postVersions
+      .dimenticaPost(post._id)
+      .catch((e) => console.error("[versioni] non rimosse:", e?.message));
     res.json({ message: "Post eliminato" });
 
     // Stessa regola: si cancellano solo i file che non mostra più nessuno.
@@ -834,6 +857,72 @@ router.delete("/posts/:id", async (req, res) => {
         .catch((e) => console.error("[pulizia] non riuscita:", e?.message));
   } catch (e) {
     res.status(500).json({ error: "Errore nell'eliminazione del post" });
+  }
+});
+
+/* ===================== VERSIONI DEL POST ===================== */
+//
+// Non sono riservate agli admin: chi può modificare un post deve poter anche
+// rimediare a una modifica sbagliata, altrimenti l'errore resta lì fino a
+// quando non passa qualcuno con più permessi.
+
+// Elenco delle versioni, dalla più recente.
+router.get("/posts/:id/versions", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).select("clientId").lean();
+    if (!post) return res.status(404).json({ error: "Post non trovato" });
+    if (!canAccessClient(req.dbUser, post.clientId))
+      return res.status(403).json({ error: "Accesso negato" });
+    res.json(await postVersions.elenco(post._id));
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel recupero delle versioni" });
+  }
+});
+
+// Una singola versione: cosa conteneva, cosa cambierebbe ripristinandola e
+// quali dei suoi file non ci sono più.
+router.get("/posts/:id/versions/:vid", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post non trovato" });
+    if (!canAccessClient(req.dbUser, post.clientId))
+      return res.status(403).json({ error: "Accesso negato" });
+
+    const v = await postVersions.leggi(req.params.vid);
+    if (!v || String(v.postId) !== String(post._id))
+      return res.status(404).json({ error: "Versione non trovata" });
+
+    res.json({
+      id: String(v._id),
+      at: v.at,
+      by: v.byName || "—",
+      origine: v.origine,
+      snapshot: v.snapshot,
+      differenze: postVersions.differenze(v.snapshot, post),
+      mancanti: await postVersions.filesMancanti(v.snapshot),
+    });
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel recupero della versione" });
+  }
+});
+
+// Ripristino. Lo stato attuale viene registrato prima di essere sostituito:
+// anche un ripristino sbagliato si annulla.
+router.post("/posts/:id/versions/:vid/restore", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ error: "Post non trovato" });
+    if (!canAccessClient(req.dbUser, post.clientId))
+      return res.status(403).json({ error: "Accesso negato" });
+
+    const v = await postVersions.leggi(req.params.vid);
+    if (!v || String(v.postId) !== String(post._id))
+      return res.status(404).json({ error: "Versione non trovata" });
+
+    await postVersions.ripristina(post, v, { user: req.dbUser });
+    res.json(post);
+  } catch (e) {
+    res.status(500).json({ error: "Errore nel ripristino della versione" });
   }
 });
 

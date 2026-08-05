@@ -30,6 +30,7 @@ import {
 } from "./cronologia";
 import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
+import VersionsPanel from "./VersionsPanel";
 
 const MONTHS_IT = [
   "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -52,7 +53,7 @@ const mediaTypeLabel = (media) => {
 };
 
 // Modale per creare / modificare un singolo post del calendario.
-const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
+const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => {
   const [caption, setCaption] = useState(draft.caption || "");
   const [category, setCategory] = useState(draft.category || "");
   const [sponsored, setSponsored] = useState(!!draft.sponsored);
@@ -74,6 +75,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [agencyNoteText, setAgencyNoteText] = useState("");
   const [agencyNoteNeedsReply, setAgencyNoteNeedsReply] = useState(false);
   const [agencyNoteInternal, setAgencyNoteInternal] = useState(false);
+  const [versioniAperte, setVersioniAperte] = useState(false);
   const fileRef = useRef(null);
 
   /* ============ ANNULLA / RIPRISTINA ============
@@ -482,6 +484,18 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
             >
               <FontAwesomeIcon icon={faRotateRight} />
             </button>
+            {/* Lo storico esiste solo per un post già salvato: su uno nuovo
+                non ci sarebbe niente da mostrare. */}
+            {!isNew && (
+              <button
+                className="ep-icon-btn"
+                onClick={() => setVersioniAperte(true)}
+                title="Versioni precedenti"
+                aria-label="Versioni precedenti del post"
+              >
+                <FontAwesomeIcon icon={faClockRotateLeft} />
+              </button>
+            )}
             <button className="ep-icon-btn" onClick={requestClose} aria-label="Chiudi">
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -1006,6 +1020,21 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
             );
           })()}
       </div>
+
+      {/* Storico delle versioni: si apre sopra al post, e se si ripristina il
+          calendario lo rilegge dal server (il post è già cambiato lì). */}
+      {versioniAperte && (
+        <VersionsPanel
+          postId={draft.id}
+          modificato={hasChanges()}
+          onClose={() => setVersioniAperte(false)}
+          onRestored={(post) => {
+            setVersioniAperte(false);
+            scartaBozza(draft.id); // la bozza locale è di un'altra storia ormai
+            (onRestored || onClose)(post);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -1016,6 +1045,9 @@ PostModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  // chiamata dopo il ripristino di una versione: il post è già cambiato sul
+  // server, il calendario deve rileggerlo
+  onRestored: PropTypes.func,
 };
 
 export default PostModal;
