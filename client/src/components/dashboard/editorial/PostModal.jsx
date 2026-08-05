@@ -870,7 +870,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                   }`}
                   onClick={() => setAgencyNoteInternal(true)}
                 >
-                  <FontAwesomeIcon icon={faLock} /> Interna (solo Basic)
+                  <FontAwesomeIcon icon={faLock} /> Interna
                 </button>
               </div>
               <textarea

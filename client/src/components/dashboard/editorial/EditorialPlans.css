@@ -1058,12 +1058,14 @@
   gap: 6px;
 }
 .ep-note-target-btn {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 8px 6px;
   font-size: 0.78rem;
   font-weight: 600;
   border-radius: 8px;
@@ -1082,6 +1084,14 @@
   border-color: var(--ep-internal);
   color: var(--ep-internal);
   background: rgba(37, 99, 235, 0.12);
+}
+@media (max-width: 430px) {
+  .ep-note-target { gap: 4px; }
+  .ep-note-target-btn { font-size: 0.72rem; gap: 4px; padding: 8px 4px; }
+}
+@media (max-width: 370px) {
+  .ep-note-target-btn svg { display: none; }
+  .ep-note-target-btn { gap: 0; }
 }
 /* Quando il form è in modalità interna, lo si veste di viola */
 .ep-agency-note-form.is-internal .ep-textarea:focus {
@@ -2588,18 +2598,24 @@
   color: var(--primary-text-color);
   margin-bottom: 6px;
 }
+/* Tre scelte, tre colonne uguali: a mandarle a capo restava "Pubblicato" da
+   solo sotto le altre due, storto e con un vuoto a destra. Le colonne uguali
+   tengono la riga anche quando le parole hanno lunghezze diverse. */
 .ep-status-seg {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  flex-wrap: wrap;
 }
 .ep-status-opt {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
   font-size: 0.8rem;
   font-weight: 600;
-  padding: 7px 12px;
+  padding: 8px 6px;
   border-radius: 8px;
   background: var(--ep-surface-2);
   border: 1px solid var(--ep-border);
@@ -2624,6 +2640,19 @@
 .ep-status-opt.is-on:not(.ep-status-opt--sched):not(.ep-status-opt--pub) {
   border-color: var(--foreground-color);
   box-shadow: inset 0 0 0 1px var(--foreground-color);
+}
+/* Sul telefono le stesse parole non ci stanno alla stessa misura: si stringe
+   il testo, non si spezza la riga. */
+@media (max-width: 430px) {
+  .ep-status-seg { gap: 4px; }
+  .ep-status-opt { font-size: 0.72rem; padding: 8px 3px; gap: 4px; }
+}
+/* Sui telefoni piccoli le parole arrivano a filo del bordo: l'icona è un di
+   più (a stato scelto parla il colore), la parola no. Via l'icona, resta la
+   parola intera. */
+@media (max-width: 370px) {
+  .ep-status-opt svg { display: none; }
+  .ep-status-opt { gap: 0; }
 }
 
 /* ============ Archivio → Contenuti ============
