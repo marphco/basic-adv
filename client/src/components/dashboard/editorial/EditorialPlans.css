@@ -2957,9 +2957,11 @@
 }
 
 /* ==================== STORICO DELLE VERSIONI ====================
-   Una lista di momenti: quando, chi, e un assaggio del contenuto. Toccando
-   una voce si apre il confronto con il post di adesso — è quello che serve
-   per decidere se ripristinare, e senza si andrebbe a memoria. */
+   Stesso linguaggio delle altre liste della piattaforma (l'elenco per mese
+   dell'Archivio, le note): scheda con bordo e niente fondo, selezione in
+   arancione, etichette minuscole in maiuscoletto invece di pastiglie piene.
+   La prima versione aveva fondi propri e una pastiglia grigia per ogni
+   etichetta: da sola sembrava un pezzo di un'altra applicazione. */
 .ep-ver-lista {
   list-style: none;
   margin: 0;
@@ -2970,19 +2972,22 @@
 }
 .ep-ver {
   border: 1px solid var(--ep-border);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  background: var(--ep-surface-2);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
+/* La versione aperta è "quella che sto guardando": stessa segnalazione della
+   riga selezionata nell'Archivio, arancione di brand. */
 .ep-ver.is-aperta {
-  border-color: color-mix(in srgb, var(--ep-todo) 55%, transparent);
+  border-color: var(--foreground-color, #ff4003);
+  background: color-mix(in srgb, var(--foreground-color, #ff4003) 8%, transparent);
 }
 .ep-ver-testa {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   width: 100%;
-  padding: 11px 13px;
+  padding: 12px;
   border: 0;
   background: none;
   color: inherit;
@@ -2990,34 +2995,47 @@
   text-align: left;
   cursor: pointer;
 }
-.ep-ver-testa:hover {
-  background: color-mix(in srgb, var(--ep-todo) 10%, transparent);
+/* Solo dove il passaggio del mouse esiste davvero: su un telefono lo stato
+   :hover resta appiccicato dopo il tocco, e la riga toccata restava colorata
+   come se fosse selezionata. */
+@media (hover: hover) {
+  .ep-ver:not(.is-aperta):hover {
+    border-color: color-mix(in srgb, currentColor 40%, transparent);
+  }
 }
 .ep-ver-quando {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  align-items: baseline;
+  gap: 8px;
   flex-wrap: wrap;
   font-weight: 600;
 }
+/* Etichetta come quelle delle note: piccola, maiuscoletto, senza fondo. In
+   grigio anche "versione attuale": scritta in arancione finiva sopra il fondo
+   arancione della scheda aperta e si leggeva peggio di qualsiasi altra
+   etichetta della piattaforma. Il bordo dice già qual è la scheda scelta. */
 .ep-ver-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ep-muted);
+}
+.ep-ver-data {
   font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 2px 7px;
-  border-radius: 999px;
-  color: var(--ep-surface);
-  background: var(--ep-done);
+  color: var(--ep-muted);
 }
 .ep-ver-anteprima {
-  font-size: 0.88rem;
-  opacity: 0.82;
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.ep-ver-testa .ep-thumb-strip { margin-top: 2px; }
 .ep-ver-dettaglio {
-  padding: 0 13px 13px;
+  padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3029,35 +3047,33 @@
 .ep-ver-diff {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.86rem;
-}
-.ep-ver-diff th,
-.ep-ver-diff td {
-  padding: 6px 8px;
-  border-top: 1px solid var(--ep-border);
-  text-align: left;
-  vertical-align: top;
-  word-break: break-word;
+  font-size: 0.85rem;
 }
 .ep-ver-diff th,
 .ep-ver-diff td {
   display: block;
   width: auto;
+  padding: 5px 0;
+  text-align: left;
+  word-break: break-word;
 }
 .ep-ver-diff th {
-  font-weight: 600;
-  opacity: 0.75;
+  padding-top: 9px;
+  border-top: 1px solid var(--ep-border);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ep-muted);
 }
-.ep-ver-diff td {
-  border-top: 0;
-  padding-top: 0;
-}
+.ep-ver-diff tr:first-child th { border-top: 0; padding-top: 0; }
+.ep-ver-diff td { padding-top: 0; font-weight: 300; }
 .ep-ver-prima {
-  opacity: 0.6;
+  color: var(--ep-muted);
   text-decoration: line-through;
 }
 .ep-ver-dopo {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ep-ok);
 }
 @media (max-width: 560px) {
