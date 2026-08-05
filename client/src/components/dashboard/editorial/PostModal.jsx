@@ -16,8 +16,18 @@ import {
   faChevronLeft,
   faChevronRight,
   faClock,
+  faRotateLeft,
+  faRotateRight,
+  faClockRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
+import {
+  creaCronologia,
+  salvaBozza,
+  leggiBozza,
+  scartaBozza,
+  quandoTempo,
+} from "./cronologia";
 import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
 
@@ -65,6 +75,106 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
   const [agencyNoteNeedsReply, setAgencyNoteNeedsReply] = useState(false);
   const [agencyNoteInternal, setAgencyNoteInternal] = useState(false);
   const fileRef = useRef(null);
+
+  /* ============ ANNULLA / RIPRISTINA ============
+     Tutto ciò che l'operatore può cambiare a mano sta in un unico oggetto:
+     è quello che viene registrato a ogni passo e rimesso a posto tornando
+     indietro. Fuori restano le cose che non sono "modifiche" (il riquadro
+     foto aperto, l'indicatore di caricamento). */
+  const modificabile = {
+    caption, category, sponsored, publishStatus, pageId,
+    day, month, year, media, notes,
+    agencyNoteText, agencyNoteNeedsReply, agencyNoteInternal,
+  };
+  const serie = JSON.stringify(modificabile);
+
+  const applica = (s) => {
+    const v = JSON.parse(s);
+    setCaption(v.caption);
+    setCategory(v.category);
+    setSponsored(v.sponsored);
+    setPublishStatus(v.publishStatus);
+    setPageId(v.pageId);
+    setDay(v.day);
+    setMonth(v.month);
+    setYear(v.year);
+    setMedia(v.media);
+    setNotes(v.notes);
+    setAgencyNoteText(v.agencyNoteText);
+    setAgencyNoteNeedsReply(v.agencyNoteNeedsReply);
+    setAgencyNoteInternal(v.agencyNoteInternal);
+  };
+
+  const cronologia = useRef(creaCronologia());
+  const daCronologia = useRef(false); // un annulla non deve creare un passo
+  const attesa = useRef(null);
+  const [passi, setPassi] = useState(0); // solo per ridisegnare i pulsanti
+  const [bozza, setBozza] = useState(null); // modifiche non salvate ritrovate
+
+  // Alla prima apertura: registro lo stato di partenza e guardo se c'è del
+  // lavoro non salvato rimasto da una sessione precedente.
+  useEffect(() => {
+    cronologia.current.registra(serie);
+    const b = leggiBozza(draft.id);
+    if (b && b.stato !== serie) setBozza(b);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Un passo per ogni modifica, ma non uno per ogni tasto premuto: si aspetta
+  // mezzo secondo di pausa, così "scrivo una frase" resta un solo annulla.
+  useEffect(() => {
+    if (daCronologia.current) {
+      daCronologia.current = false;
+      return;
+    }
+    clearTimeout(attesa.current);
+    attesa.current = setTimeout(() => {
+      if (cronologia.current.registra(serie)) {
+        setPassi((n) => n + 1);
+        salvaBozza(draft.id, serie); // sopravvive a chiusura e crash
+      }
+    }, 500);
+    return () => clearTimeout(attesa.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serie]);
+
+  // Quello che si sta scrivendo in questo momento non è ancora un passo:
+  // aspetta la pausa di mezzo secondo. Se si preme annulla PRIMA della pausa,
+  // va fissato subito, altrimenti l'ultima frase scritta verrebbe saltata e
+  // l'annulla sembrerebbe non fare niente.
+  const fissaPassoInCorso = () => {
+    clearTimeout(attesa.current);
+    if (cronologia.current.registra(serie)) salvaBozza(draft.id, serie);
+  };
+
+  const vaiA = (s) => {
+    if (s == null) return;
+    daCronologia.current = true;
+    applica(s);
+    setPassi((n) => n + 1);
+  };
+  const annulla = () => {
+    fissaPassoInCorso();
+    vaiA(cronologia.current.indietro());
+  };
+  const ripristina = () => {
+    clearTimeout(attesa.current);
+    vaiA(cronologia.current.avanti());
+  };
+
+  // Scorciatoie da tastiera: chi scrive tutto il giorno usa quelle.
+  useEffect(() => {
+    const suTasto = (e) => {
+      const tasto = e.key?.toLowerCase();
+      if (!(e.metaKey || e.ctrlKey) || tasto !== "z") return;
+      e.preventDefault();
+      if (e.shiftKey) ripristina();
+      else annulla();
+    };
+    window.addEventListener("keydown", suTasto);
+    return () => window.removeEventListener("keydown", suTasto);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const copyCaption = () => {
     navigator.clipboard?.writeText(caption).catch(() => {});
@@ -345,6 +455,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
       },
       hasChanges() // se true e il post era un duplicato → flag rimosso
     );
+    scartaBozza(draft.id); // salvato: il lavoro non salvato non esiste più
   };
 
   return (
@@ -352,12 +463,67 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete }) => {
       <div className="ep-modal" onClick={(e) => e.stopPropagation()}>
         <div className="ep-modal-head">
           <h3>{isNew ? "Nuovo post" : "Modifica post"}</h3>
-          <button className="ep-icon-btn" onClick={requestClose} aria-label="Chiudi">
-            <FontAwesomeIcon icon={faTimes} />
-          </button>
+          <div className="ep-head-tools">
+            <button
+              className="ep-icon-btn"
+              onClick={annulla}
+              disabled={!cronologia.current.puoIndietro()}
+              title="Annulla (Ctrl+Z)"
+              aria-label="Annulla l'ultima modifica"
+            >
+              <FontAwesomeIcon icon={faRotateLeft} />
+            </button>
+            <button
+              className="ep-icon-btn"
+              onClick={ripristina}
+              disabled={!cronologia.current.puoAvanti()}
+              title="Ripristina (Ctrl+Shift+Z)"
+              aria-label="Ripristina la modifica annullata"
+            >
+              <FontAwesomeIcon icon={faRotateRight} />
+            </button>
+            <button className="ep-icon-btn" onClick={requestClose} aria-label="Chiudi">
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          </div>
         </div>
 
         <div className="ep-modal-body">
+          {/* Lavoro rimasto da una sessione chiusa male: si offre di
+              riprenderlo, non lo si rimette da soli — potrebbe essere roba
+              vecchia che non interessa più. */}
+          {bozza && (
+            <div className="ep-bozza">
+              <div>
+                <strong>Modifiche non salvate</strong> di {quandoTempo(bozza.at)}
+                <div className="ep-inv-sub">
+                  Sono rimaste su questo dispositivo quando il post è stato
+                  chiuso senza salvare.
+                </div>
+              </div>
+              <div className="ep-bozza-azioni">
+                <button
+                  className="ep-btn ep-btn--ghost"
+                  onClick={() => {
+                    scartaBozza(draft.id);
+                    setBozza(null);
+                  }}
+                >
+                  Ignora
+                </button>
+                <button
+                  className="ep-btn ep-btn--primary"
+                  onClick={() => {
+                    applica(bozza.stato);
+                    setBozza(null);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faClockRotateLeft} /> Riprendi
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Media: foto singola, carosello (più foto/video) o video */}
           <div className="ep-field-head">
             <label className="ep-field-label">Media</label>

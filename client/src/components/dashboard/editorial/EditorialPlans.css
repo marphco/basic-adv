@@ -2915,3 +2915,43 @@
   border-radius: 10px;
 }
 .ep-spazio-tipi svg { opacity: 0.6; }
+
+/* ---- Annulla/ripristina e recupero del lavoro non salvato ---- */
+.ep-head-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.ep-icon-btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+.ep-icon-btn:disabled:hover {
+  background: none;
+}
+
+/* Barra del lavoro ritrovato: si vede, ma non spaventa — non è un errore,
+   è una possibilità in più. */
+.ep-bozza {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 11px 13px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--ep-note) 45%, transparent);
+  background: color-mix(in srgb, var(--ep-note) 12%, transparent);
+}
+.ep-bozza-azioni {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+@media (max-width: 560px) {
+  .ep-bozza { flex-direction: column; align-items: stretch; }
+  .ep-bozza-azioni { margin-left: 0; }
+  .ep-bozza-azioni .ep-btn { flex: 1 1 0; justify-content: center; }
+}
