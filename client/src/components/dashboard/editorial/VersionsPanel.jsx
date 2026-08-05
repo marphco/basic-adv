@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTimes,
-  faClockRotateLeft,
   faTriangleExclamation,
   faRotateLeft,
   faSpinner,
@@ -31,8 +30,8 @@ const quando = (d) =>
   });
 
 const ETICHETTA = {
-  iniziale: "Come era all'inizio",
-  ripristino: "Ripristino",
+  iniziale: "stato iniziale",
+  ripristino: "ripristino",
   salvataggio: "",
 };
 
@@ -155,9 +154,7 @@ const VersionsPanel = ({ postId, modificato, onClose, onRestored }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="ep-modal-head">
-          <h3>
-            <FontAwesomeIcon icon={faClockRotateLeft} /> Versioni del post
-          </h3>
+          <h3>Versioni del post</h3>
           <button className="ep-icon-btn" onClick={onClose} aria-label="Chiudi">
             <FontAwesomeIcon icon={faTimes} />
           </button>
@@ -202,13 +199,13 @@ const VersionsPanel = ({ postId, modificato, onClose, onRestored }) => {
                       <span className="ep-ver-tag">{ETICHETTA[v.origine]}</span>
                     )}
                   </span>
-                  <span className="ep-inv-meta">
+                  <span className="ep-ver-data">
                     {quando(v.at)} · {v.by}
                   </span>
                   <span className="ep-ver-anteprima">
                     {v.anteprima || "(senza didascalia)"}
                   </span>
-                  <span className="ep-inv-meta">
+                  <span className="ep-ver-data">
                     {v.media} media · {v.note} note
                   </span>
                   <Miniature foto={v.foto} totale={v.media} />
