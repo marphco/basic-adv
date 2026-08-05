@@ -114,6 +114,25 @@ export const api = {
       .then((r) => normPost(r.data)),
   deletePost: (id) =>
     axios.delete(`${API_URL}/api/editorial/posts/${id}`, auth()).then((r) => r.data),
+  // --- storico delle versioni di un post ---
+  listVersions: (postId) =>
+    axios
+      .get(`${API_URL}/api/editorial/posts/${postId}/versions`, auth())
+      .then((r) => r.data),
+  // una versione: contenuto, cosa cambierebbe ripristinandola, file mancanti
+  getVersion: (postId, vid) =>
+    axios
+      .get(`${API_URL}/api/editorial/posts/${postId}/versions/${vid}`, auth())
+      .then((r) => r.data),
+  restoreVersion: (postId, vid) =>
+    axios
+      .post(
+        `${API_URL}/api/editorial/posts/${postId}/versions/${vid}/restore`,
+        {},
+        auth()
+      )
+      .then((r) => normPost(r.data)),
+
   // carica foto/video dei post → ritorna [{kind,url,thumbUrl}] con URL assoluti
   uploadMedia: (files) => {
     const fd = new FormData();

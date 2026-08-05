@@ -110,8 +110,17 @@ const InventoryPanel = () => {
   const t = data.totali || {};
   const rotti = data.mancanti || [];
   const orfani = data.orfani || [];
+  // File che nessun post mostra più, ma che una vecchia versione cita: la
+  // pulizia automatica non li tocca apposta, e da qui si possono buttare
+  // sapendo che quel ripristino perderà la foto.
+  const trattenuti = data.trattenuti || [];
 
-  const elenco = vista === "mesi" ? data.mesi || [] : data.pesanti || [];
+  const elenco =
+    vista === "mesi"
+      ? data.mesi || []
+      : vista === "storico"
+      ? trattenuti
+      : data.pesanti || [];
   const idDi = (x) => (vista === "mesi" ? x.chiave : x.key);
   const selezionati = elenco.filter((x) => scelti.includes(idDi(x)));
   const pesoScelto = selezionati.reduce((n, x) => n + (x.bytes || 0), 0);
@@ -142,6 +151,16 @@ const InventoryPanel = () => {
             },
             "Eliminati"
           ),
+      });
+    else if (vista === "storico")
+      setConferma({
+        titolo: `Eliminare ${fileScelti} file dallo storico?`,
+        testo:
+          `${MB(pesoScelto)} liberati. Nessun piano li mostra oggi: li tiene ` +
+          `solo lo storico delle versioni. Ripristinando una vecchia versione ` +
+          `che li conteneva, quelle foto non torneranno.`,
+        azione: () =>
+          esegui({ scope: "file", keys: selezionati.map((f) => f.key) }, "Eliminati"),
       });
     else
       setConferma({
@@ -233,6 +252,14 @@ const InventoryPanel = () => {
             Da controllare ({rotti.length})
           </button>
         )}
+        {!!trattenuti.length && (
+          <button
+            className={`ep-tab ${vista === "storico" ? "active" : ""}`}
+            onClick={() => cambiaVista("storico")}
+          >
+            Nello storico ({trattenuti.length})
+          </button>
+        )}
       </div>
 
       {busy && <p className="ep-share-hint">Attendi…</p>}
@@ -313,6 +340,40 @@ const InventoryPanel = () => {
             );
           })}
         </div>
+      )}
+
+      {/* ---- Nello storico: nessun post li mostra, ma una versione sì ---- */}
+      {vista === "storico" && (
+        <>
+          <p className="ep-share-desc">
+            Foto che nessun piano mostra più, tenute perché compaiono in una
+            versione precedente di un post: servono a far tornare indietro un
+            post senza buchi. Si possono eliminare, ma quel ripristino perderà
+            le immagini.
+          </p>
+          <div className="ep-inv-griglia">
+            {trattenuti.map((f) => {
+              const sel = scelti.includes(f.key);
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  className={`ep-inv-tile ${sel ? "is-selected" : ""}`}
+                  onClick={() => toggle(f.key)}
+                >
+                  <Anteprima file={f} />
+                  <span className={`ep-check ep-check--tile ${sel ? "is-on" : ""}`}>
+                    {sel && <FontAwesomeIcon icon={faCheck} />}
+                  </span>
+                  <span className="ep-inv-tile-peso">{MB(f.bytes)}</span>
+                  <span className="ep-inv-tile-info">
+                    <span className="ep-inv-meta">{f.name}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {/* ---- Da controllare: cosa non si apre più e in quale post ---- */}

@@ -9,6 +9,7 @@
 // romperemmo tutti gli altri che lo mostrano ancora. Quindi la regola è una
 // sola: si cancella solo ciò che NESSUN post cita più.
 const Post = require("../models/Post");
+const PostVersion = require("../models/PostVersion");
 const storage = require("./storage");
 const { locate } = require("./mediaInventory");
 
@@ -27,17 +28,30 @@ function urlsOf(post) {
 
 // Qualcuno cita ancora questo file? Cerco sia tra i media dei post sia tra
 // quelli delle note, e sia come immagine sia come anteprima.
+//
+// ⚠️ E anche nello STORICO DELLE VERSIONI. È la garanzia su cui si regge il
+// ripristino: se una versione di tre mesi fa mostra quella foto, la foto non
+// si tocca, altrimenti ripristinando si troverebbe un buco. Le versioni non
+// si escludono mai — nemmeno quelle del post che stiamo modificando: è
+// proprio la sua storia a doverla trattenere.
+//
+// Resta una sola via per cancellare davvero: il pannello Archivio, dove è una
+// scelta esplicita di chi vuole liberare spazio.
 async function ancoraUsato(url, esclusoPostId) {
-  const filtro = {
-    $or: [
-      { "media.url": url },
-      { "media.thumbUrl": url },
-      { "clientNotes.media.url": url },
-      { "clientNotes.media.thumbUrl": url },
-    ],
-  };
+  const condizioni = (prefisso) => [
+    { [`${prefisso}media.url`]: url },
+    { [`${prefisso}media.thumbUrl`]: url },
+    { [`${prefisso}clientNotes.media.url`]: url },
+    { [`${prefisso}clientNotes.media.thumbUrl`]: url },
+  ];
+
+  const filtro = { $or: condizioni("") };
   if (esclusoPostId) filtro._id = { $ne: esclusoPostId };
-  return (await Post.countDocuments(filtro)) > 0;
+  if ((await Post.countDocuments(filtro)) > 0) return true;
+
+  return (
+    (await PostVersion.countDocuments({ $or: condizioni("snapshot.") })) > 0
+  );
 }
 
 // Cancella dal bucket i file di `urls` che non sono più citati da nessuno.
