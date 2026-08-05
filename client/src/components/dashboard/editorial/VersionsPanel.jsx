@@ -7,6 +7,7 @@ import {
   faTriangleExclamation,
   faRotateLeft,
   faSpinner,
+  faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import { quandoTempo } from "./cronologia";
@@ -42,6 +43,43 @@ const leggibile = (v) => {
   if (v === "" || v === null || v === undefined) return "—";
   if (v === "none") return "nessuno";
   return String(v);
+};
+
+// Le foto di una versione, in miniatura. Gli indirizzi sono già assoluti
+// (arrivano dal post così come erano salvati). Per un video senza poster serve
+// <video>: un <img> con un mp4 dentro mostrerebbe solo un'icona rotta.
+const Miniature = ({ foto = [], totale = 0 }) => {
+  if (!foto.length) return null;
+  return (
+    <span className="ep-thumb-strip">
+      {foto.map((m, i) => (
+        <span key={i} className="ep-thumb ep-thumb--mini">
+          {m.kind === "video" && !m.thumbUrl ? (
+            <video src={`${m.url}#t=0.1`} muted preload="metadata" />
+          ) : (
+            <img
+              src={m.kind === "video" ? m.thumbUrl : m.url}
+              alt=""
+              loading="lazy"
+            />
+          )}
+          {m.kind === "video" && (
+            <span className="ep-thumb-video">
+              <FontAwesomeIcon icon={faPlay} />
+            </span>
+          )}
+        </span>
+      ))}
+      {totale > foto.length && (
+        <span className="ep-thumb-more">+{totale - foto.length}</span>
+      )}
+    </span>
+  );
+};
+
+Miniature.propTypes = {
+  foto: PropTypes.array,
+  totale: PropTypes.number,
 };
 
 const VersionsPanel = ({ postId, modificato, onClose, onRestored }) => {
@@ -173,13 +211,15 @@ const VersionsPanel = ({ postId, modificato, onClose, onRestored }) => {
                   <span className="ep-inv-meta">
                     {v.media} media · {v.note} note
                   </span>
+                  <Miniature foto={v.foto} totale={v.media} />
                 </button>
 
                 {aperta?.id === v.id && (
                   <div className="ep-ver-dettaglio">
                     {!aperta.differenze.length ? (
                       <p className="ep-share-hint">
-                        Identica al post di adesso: non cambierebbe niente.
+                        È il post così com'è adesso: non c'è niente da
+                        ripristinare.
                       </p>
                     ) : (
                       <table className="ep-ver-diff">
@@ -210,17 +250,32 @@ const VersionsPanel = ({ postId, modificato, onClose, onRestored }) => {
                       </div>
                     )}
 
-                    <button
-                      className="ep-btn ep-btn--primary"
-                      onClick={() => ripristina(aperta)}
-                      disabled={ripristinando || !aperta.differenze.length}
-                    >
-                      <FontAwesomeIcon
-                        icon={ripristinando ? faSpinner : faRotateLeft}
-                        spin={ripristinando}
-                      />{" "}
-                      Ripristina questa versione
-                    </button>
+                    {/* Le foto per intero solo se in elenco non ci stavano
+                        tutte: ripeterle sotto quelle già visibili sopra non
+                        aggiunge niente. */}
+                    {aperta.snapshot?.media?.length > 4 && (
+                      <Miniature
+                        foto={aperta.snapshot.media}
+                        totale={aperta.snapshot.media.length}
+                      />
+                    )}
+
+                    {/* Nessun pulsante se non cambierebbe niente: offrire di
+                        ripristinare il post che si sta già guardando è solo un
+                        modo per far dubitare di aver capito male. */}
+                    {!!aperta.differenze.length && (
+                      <button
+                        className="ep-btn ep-btn--primary"
+                        onClick={() => ripristina(aperta)}
+                        disabled={ripristinando}
+                      >
+                        <FontAwesomeIcon
+                          icon={ripristinando ? faSpinner : faRotateLeft}
+                          spin={ripristinando}
+                        />{" "}
+                        Ripristina questa versione
+                      </button>
+                    )}
                   </div>
                 )}
               </li>

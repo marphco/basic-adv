@@ -27,6 +27,7 @@ import {
   leggiBozza,
   scartaBozza,
   quandoTempo,
+  idBozza,
 } from "./cronologia";
 import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
@@ -76,6 +77,9 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   const [agencyNoteNeedsReply, setAgencyNoteNeedsReply] = useState(false);
   const [agencyNoteInternal, setAgencyNoteInternal] = useState(false);
   const [versioniAperte, setVersioniAperte] = useState(false);
+  // La bozza segue il post, non il modale: un post nuovo del 2 agosto e uno
+  // dell'8 non si scambiano le modifiche lasciate a metà.
+  const bozzaId = idBozza(draft);
   const fileRef = useRef(null);
 
   /* ============ ANNULLA / RIPRISTINA ============
@@ -117,7 +121,10 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   // lavoro non salvato rimasto da una sessione precedente.
   useEffect(() => {
     cronologia.current.registra(serie);
-    const b = leggiBozza(draft.id);
+    // Ripulisce la vecchia bozza che tutti i post nuovi si scambiavano: se è
+    // rimasta lì da prima, ricomparirebbe per sempre su ogni giorno vuoto.
+    if (!draft.id) scartaBozza(null);
+    const b = leggiBozza(bozzaId);
     if (b && b.stato !== serie) setBozza(b);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -133,7 +140,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
     attesa.current = setTimeout(() => {
       if (cronologia.current.registra(serie)) {
         setPassi((n) => n + 1);
-        salvaBozza(draft.id, serie); // sopravvive a chiusura e crash
+        salvaBozza(bozzaId, serie); // sopravvive a chiusura e crash
       }
     }, 500);
     return () => clearTimeout(attesa.current);
@@ -146,7 +153,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   // l'annulla sembrerebbe non fare niente.
   const fissaPassoInCorso = () => {
     clearTimeout(attesa.current);
-    if (cronologia.current.registra(serie)) salvaBozza(draft.id, serie);
+    if (cronologia.current.registra(serie)) salvaBozza(bozzaId, serie);
   };
 
   const vaiA = (s) => {
@@ -457,7 +464,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
       },
       hasChanges() // se true e il post era un duplicato → flag rimosso
     );
-    scartaBozza(draft.id); // salvato: il lavoro non salvato non esiste più
+    scartaBozza(bozzaId); // salvato: il lavoro non salvato non esiste più
   };
 
   return (
@@ -519,7 +526,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                 <button
                   className="ep-btn ep-btn--ghost"
                   onClick={() => {
-                    scartaBozza(draft.id);
+                    scartaBozza(bozzaId);
                     setBozza(null);
                   }}
                 >
@@ -1030,7 +1037,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
           onClose={() => setVersioniAperte(false)}
           onRestored={(post) => {
             setVersioniAperte(false);
-            scartaBozza(draft.id); // la bozza locale è di un'altra storia ormai
+            scartaBozza(bozzaId); // la bozza locale è di un'altra storia ormai
             (onRestored || onClose)(post);
           }}
         />

@@ -135,6 +135,14 @@ async function elenco(postId, { limit = 100 } = {}) {
     anteprima: (v.snapshot?.caption || "").slice(0, 90),
     media: (v.snapshot?.media || []).length,
     note: (v.snapshot?.clientNotes || []).length,
+    // Le foto di allora, in miniatura: una didascalia non basta a riconoscere
+    // una versione, e chi ripristina lo fa quasi sempre per le immagini.
+    // Sono indirizzi, non copie: non pesano niente.
+    foto: (v.snapshot?.media || []).slice(0, 4).map((m) => ({
+      kind: m.kind || "image",
+      url: m.url,
+      thumbUrl: m.thumbUrl || "",
+    })),
   }));
 }
 

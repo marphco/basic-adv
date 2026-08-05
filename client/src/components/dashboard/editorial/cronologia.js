@@ -53,7 +53,24 @@ export function creaCronologia({ max = MAX } = {}) {
 // Il lavoro non salvato sopravvive alla chiusura del browser e ai crash.
 // Resta sul dispositivo: non passa dal server, quindi non crea bozze che due
 // persone sullo stesso post si contendono.
-const chiaveBozza = (postId) => `ped-bozza-${postId || "nuovo"}`;
+const chiaveBozza = (id) => `ped-bozza-${id || "nuovo"}`;
+
+// Di CHI è una bozza. Per un post già salvato è il suo id, e non c'è dubbio.
+// Per un post ancora da creare non c'è un id, e usare "nuovo" per tutti faceva
+// ricomparire le modifiche lasciate a metà sul 2 agosto anche aprendo il posto
+// vuoto dell'8: sono due cose diverse, e la bozza deve tornare solo dove è
+// stata lasciata. Quindi il "nome" è il posto nel calendario: cliente, pagina,
+// giorno.
+export const idBozza = (draft) =>
+  draft?.id ||
+  [
+    "nuovo",
+    draft?.clientId || "",
+    draft?.pageId || "",
+    draft?.year || "",
+    draft?.month || "",
+    draft?.day || "",
+  ].join("-");
 
 export function salvaBozza(postId, stato) {
   try {
