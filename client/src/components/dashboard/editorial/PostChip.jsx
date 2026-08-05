@@ -63,7 +63,11 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
       : ps === "schedulato"
       ? "ep-post--sched"
       : "";
-  const noOtherBg = !bgClass && !post.isDuplicate;
+  // Le note risolte non occupano più lo sfondo (vedi CSS): quindi un post
+  // pubblicato con note già sistemate deve poter mostrare il verde dello
+  // stato, invece di sembrare non pubblicato.
+  const bgLibero = !bgClass || bgClass === "ep-post--note-done";
+  const noOtherBg = bgLibero && !post.isDuplicate;
   const statusBgClass =
     noOtherBg && ps === "pubblicato"
       ? "ep-post--pub-bg"
