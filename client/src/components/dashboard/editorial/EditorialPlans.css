@@ -502,15 +502,28 @@
 .ep-post--agency-note:hover {
   background: rgba(255, 64, 3, 0.16);
 }
-/* Note presenti ma tutte risolte: NESSUNO sfondo.
-   Prima era verde tenue, cioè lo stesso colore di "pubblicato": due cose
-   diverse rese indistinguibili, e mesi interi tinti di verde senza che ci
-   fosse niente di pubblicato. Ma il punto non è cambiare tinta: una nota
-   risolta non ha più niente da dire, quindi deve LASCIARE lo sfondo a chi
-   ne ha bisogno — lo stato di lavorazione. Resta la barretta a sinistra e
-   il badge, che ricordano che una nota c'è stata. */
+/* Note presenti ma tutte risolte: GRIGIO, non verde.
+   Il verde era lo stesso di "pubblicato" e i due si confondevano. Ma anche
+   toglierlo del tutto è sbagliato: una nota risolta resta una cosa segnalata
+   sul post e deve vedersi a colpo d'occhio come tutte le altre. Quindi
+   sfondo grigio pieno quanto gli altri stati — l'intensità è calibrata sulla
+   stessa distanza percettiva di verde e ambra, non a occhio. */
 .ep-post--note-done {
+  background: rgba(100, 116, 139, 0.25);
+  border-color: rgba(100, 116, 139, 0.5);
   border-left-color: var(--ep-done);
+}
+.ep-post--note-done:hover {
+  background: rgba(100, 116, 139, 0.32);
+}
+[data-theme="dark"] .ep-post--note-done,
+.pp-wrap .ep-post--note-done {
+  background: rgba(148, 163, 184, 0.34);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+[data-theme="dark"] .ep-post--note-done:hover,
+.pp-wrap .ep-post--note-done:hover {
+  background: rgba(148, 163, 184, 0.42);
 }
 .ep-post--sponsored.ep-post--note {
   /* sponsorizzato + note: bordo sinistro arancione, indicatore note resta visibile via badge */
