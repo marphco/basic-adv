@@ -19,6 +19,7 @@ const {
   generateQuestionForService,
   domandaSuccessiva,
 } = require("./services/generaDomanda");
+const { domandaSicura } = require("./services/reteSicurezza");
 const normalizeLang = require("./middleware/lang");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
@@ -1084,12 +1085,13 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
 
     // genera prima domanda
     const firstService = servicesSelected[0];
-    const aiQuestion = await generateQuestionForService(
-      firstService,
-      formData,
-      {},
-      []
-    );
+    // La rete di sicurezza: se l'AI sbaglia, domanda di riserva, mai errore.
+    const aiQuestion = await domandaSicura({
+      servizio: firstService,
+      lingua: formData.lang === "en" ? "en" : "it",
+      genera: () => generateQuestionForService(firstService, formData, {}, []),
+    });
+    if (!aiQuestion) throw new Error("nessuna domanda per " + firstService);
     // console.log(`[QGEN][${aiQuestion.__provider}] first:`, aiQuestion.question);
 
     // salva in DB
@@ -1180,21 +1182,24 @@ app.post("/api/nextQuestion", async (req, res) => {
       (q) => q && q.type === "font_selection"
     );
 
-    let aiQuestion;
-    try {
-      aiQuestion = await domandaSuccessiva({
-        nextService,
-        logEntry,
-        askedQuestionsForNextService,
-        hasFontQuestion,
-      });
-    } catch (e) {
-      // Propaga errore: il client riproverà /nextQuestion (niente domande fasulle)
-      if (e?.stato !== 502) throw e;
-      return res.status(502).json({
-        error: "GENERATION_FAILED",
-        details: e.message,
-      });
+    // La rete di sicurezza: se l'AI sbaglia, domanda di riserva, mai errore.
+    // Se anche la riserva è finita, le domande sono finite: si passa ai
+    // contatti come a fine sessione.
+    const aiQuestion = await domandaSicura({
+      servizio: nextService,
+      lingua: logEntry.formData?.lang === "en" ? "en" : "it",
+      giaChieste: (logEntry.questions || []).map((q) => q?.question).filter(Boolean),
+      genera: () =>
+        domandaSuccessiva({
+          nextService,
+          logEntry,
+          askedQuestionsForNextService,
+          hasFontQuestion,
+        }),
+    });
+    if (!aiQuestion) {
+      await logEntry.save();
+      return res.json({ question: null });
     }
 
     // --- aggiorna stato sessione

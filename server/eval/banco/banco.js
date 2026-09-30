@@ -15,6 +15,8 @@
 //   npm run eval:banco -- --giro A-llm --exploit 0     solo il ramo con l'LLM
 //   npm run eval:banco -- --giro A-riciclo --exploit 1 solo il ramo del riciclo
 //
+// Con la rete di sicurezza (come in server.js; --senza-rete per com'era):
+// r domanda di riserva, - riserva finita (il sito passa ai contatti).
 // Legenda per ogni domanda: ✓ va bene, x viola un requisito, ! il cliente
 // ha visto un errore ma riprovando è arrivata, X entrambe, E tre errori di
 // fila (sessione abbandonata).
@@ -28,6 +30,7 @@ const net = require("net");
 const { spawn } = require("child_process");
 const contatore = require("./contatoreSpesa");
 const { verifica, verificaSessione, OBBLIGATORIE } = require("../../services/requisitiDomande");
+const { domandaSicura } = require("../../services/reteSicurezza");
 
 const EVAL = path.join(__dirname, "..");
 const RISULTATI = path.join(EVAL, "risultati");
@@ -45,6 +48,7 @@ function argomenti() {
     solo: val("--solo") ? val("--solo").split(",") : null,
     exploit: val("--exploit"), // se manca, resta quello del backend (0.35)
     modello: val("--modello") || process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+    conRete: !a.includes("--senza-rete"),
   };
 }
 
@@ -113,7 +117,7 @@ const TENTATIVI_CLIENTE = 3;
 
 // Riproduce /api/generate e poi /api/nextQuestion, senza database: la
 // sessione vive in memoria, con gli stessi campi di ProjectLog.
-async function giocaScenario(s, quante, gd, chiamate) {
+async function giocaScenario(s, quante, gd, chiamate, conRete = true) {
   const formData = { ...s.formData };
   formData.brandName = formData.brandName || "";
   formData.projectType = formData.projectType || "non specificato";
@@ -136,15 +140,29 @@ async function giocaScenario(s, quante, gd, chiamate) {
     }
     for (let t = 0; t < TENTATIVI_CLIENTE && !q; t++) {
       try {
-        q =
+        const genera = () =>
           i === 0
-            ? await gd.generateQuestionForService(s.servizio, formData, {}, [])
-            : await gd.domandaSuccessiva({
+            ? gd.generateQuestionForService(s.servizio, formData, {}, [])
+            : gd.domandaSuccessiva({
                 nextService: s.servizio,
                 logEntry,
                 askedQuestionsForNextService: asked,
                 hasFontQuestion: logEntry.questions.some((x) => x && x.type === "font_selection"),
               });
+        // Come le rotte di server.js: con la rete di sicurezza, salvo
+        // --senza-rete per misurare com'era prima.
+        q = conRete
+          ? await domandaSicura({
+              servizio: s.servizio,
+              lingua: s.lingua,
+              giaChieste: logEntry.questions.map((x) => x.question),
+              genera,
+            })
+          : await genera();
+        if (!q) {
+          passo.riservaEsaurita = true; // il sito passerebbe ai contatti
+          break;
+        }
       } catch (e) {
         // In produzione qui il cliente vede un errore (500 o 502).
         passo.errori.push({ messaggio: e.message, stato: e.stato || 500 });
@@ -153,6 +171,7 @@ async function giocaScenario(s, quante, gd, chiamate) {
     passo.chiamateLlm = chiamate() - prima;
     passo.ms = Date.now() - inizio;
     passi.push(passo);
+    if (passo.riservaEsaurita) break;
     if (!q) {
       passo.abbandonato = true; // tre errori di fila: il cliente se ne va
       break;
@@ -177,7 +196,7 @@ async function giocaScenario(s, quante, gd, chiamate) {
   };
 }
 
-const segno = (p) => (p.abbandonato ? "E" : p.violazioni.length ? (p.errori.length ? "X" : "x") : p.errori.length ? "!" : "✓");
+const segno = (p) => (p.abbandonato ? "E" : p.riservaEsaurita ? "-" : p.domanda.__provider === "riserva" ? "r" : p.violazioni.length ? (p.errori.length ? "X" : "x") : p.errori.length ? "!" : "✓");
 
 function riassunto(esiti) {
   const passi = esiti.flatMap((e) => e.passi);
@@ -189,7 +208,8 @@ function riassunto(esiti) {
   const perServizio = {};
   for (const e of esiti) {
     const k = `${e.servizio} (${e.lingua})`;
-    const r = (perServizio[k] ||= { sessioni: 0, domandeMostrate: 0, erroriVisti: 0, abbandonate: 0 });
+    const r = (perServizio[k] ||= { sessioni: 0, domandeMostrate: 0, erroriVisti: 0, abbandonate: 0, riserva: 0 });
+    r.riserva += e.passi.filter((p) => p.domanda?.__provider === "riserva").length;
     r.sessioni++;
     r.domandeMostrate += e.passi.filter((p) => p.domanda).length;
     r.erroriVisti += e.passi.reduce((n, p) => n + p.errori.length, 0);
@@ -217,6 +237,20 @@ function riassunto(esiti) {
     domandeConViolazioni: domande.filter((p) => p.violazioni.length).length,
     violazioniPerTipo: perCodice,
     senzaLlm: domande.filter((p) => p.chiamateLlm === 0).length,
+    riserva: domande.filter((p) => p.domanda.__provider === "riserva").length,
+    // Quanto aspetta il cliente per una domanda (millisecondi).
+    attesa: (() => {
+      const ms = passi.map((p) => p.ms).sort((a, b) => a - b);
+      return { mediana: ms[Math.floor(ms.length / 2)] || 0, p90: ms[Math.floor(ms.length * 0.9)] || 0, massimo: ms.at(-1) || 0 };
+    })(),
+    riservaEsaurita: passi.filter((p) => p.riservaEsaurita).length,
+    motiviRiserva: domande
+      .filter((p) => p.domanda.__provider === "riserva")
+      .reduce((m, p) => {
+        const k = String(p.domanda.__motivoRiserva).replace(/"[^"]*"/g, "…").slice(0, 70);
+        m[k] = (m[k] || 0) + 1;
+        return m;
+      }, {}),
     perServizio,
     sessione,
   };
@@ -235,7 +269,7 @@ async function main() {
   const log = fs.createWriteStream(path.join(RISULTATI, `${nome}.log`));
 
   const spesa = await contatore.avvia({ giro: arg.giro, modello: arg.modello });
-  console.log(`Giro ${arg.giro}: ${scelti.length} scenari, modello ${arg.modello}, riciclo ${arg.exploit ?? "0.35 (come in produzione)"}`);
+  console.log(`Giro ${arg.giro}: ${scelti.length} scenari, modello ${arg.modello}, riciclo ${arg.exploit ?? "0.35 (come in produzione)"}, rete ${arg.conRete ? "sì" : "no"}`);
   console.log(`Spesa finora ${spesa.totale().toFixed(4)} $ su un tetto di ${spesa.tetto} $`);
 
   let rl;
@@ -251,7 +285,7 @@ async function main() {
       const quante = s.domande || domandePerScenario;
       const volte = s.ripetizioni || 1;
       for (let v = 1; v <= volte && !spesa.stato.fermo; v++) {
-        const g = await giocaScenario(s, quante, gd, () => spesa.stato.chiamate);
+        const g = await giocaScenario(s, quante, gd, () => spesa.stato.chiamate, arg.conRete);
         esiti.push({ id: s.id, ripetizione: v, lingua: s.lingua, servizio: s.servizio, formData: s.formData, ...g });
         const nota = g.sessione?.length ? "  " + g.sessione.map((x) => x.messaggio).join("; ") : "";
         console.log(`  ${(s.id + (volte > 1 ? "#" + v : "")).padEnd(8)} ${s.servizio.padEnd(26)} ${g.passi.map(segno).join("")}${nota}`);
@@ -263,12 +297,18 @@ async function main() {
     const completo = !spesa.stato.fermo && esiti.length === attese;
     fs.writeFileSync(
       path.join(RISULTATI, `${nome}.json`),
-      JSON.stringify({ giro: arg.giro, modello: arg.modello, exploit: arg.exploit ?? null, completo, riassunto: r, spesa: spesa.stato.voce, esiti }, null, 2)
+      JSON.stringify({ giro: arg.giro, modello: arg.modello, exploit: arg.exploit ?? null, rete: arg.conRete, completo, riassunto: r, spesa: spesa.stato.voce, esiti }, null, 2)
     );
     console.log(`\n${completo ? "Giro completo" : "GIRO INTERROTTO dal tetto di spesa"}.`);
     console.log(`Sessioni ${r.sessioni}, domande mostrate ${r.domande}, errori visti dal cliente ${r.erroriVisti}, sessioni abbandonate ${r.sessioniAbbandonate}`);
     console.log(`Domande con violazioni ${r.domandeConViolazioni}, riciclate senza LLM ${r.senzaLlm}`);
     console.log("Violazioni per tipo:", r.violazioniPerTipo);
+    console.log(`Attesa del cliente per domanda: mediana ${(r.attesa.mediana / 1000).toFixed(1)} s, 9 su 10 entro ${(r.attesa.p90 / 1000).toFixed(1)} s, massimo ${(r.attesa.massimo / 1000).toFixed(1)} s`);
+    if (arg.conRete) {
+      console.log(`\nDomande di riserva ${r.riserva} su ${r.domande} (${((100 * r.riserva) / (r.domande || 1)).toFixed(1)}%), riserva esaurita ${r.riservaEsaurita}`);
+      console.log("Perché è scattata la riserva:", r.motiviRiserva);
+      for (const [k, v] of Object.entries(r.perServizio)) if (v.riserva) console.log(`  ${k.padEnd(34)} ${v.riserva} su ${v.domandeMostrate}`);
+    }
     console.log("\nErrori visti dal cliente, per servizio:");
     if (!r.erroriVisti) console.log("  nessuno");
     for (const [k, v] of Object.entries(r.perServizio))

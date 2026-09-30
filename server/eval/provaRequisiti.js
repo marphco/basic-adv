@@ -186,4 +186,63 @@ assert.deepStrictEqual(verificaSessione(sessione(coloriEn, { ...fontLogo, questi
 assert.deepStrictEqual(verificaSessione(sessione(altra("Qual è l'obiettivo della pagina?")), { servizio: "Landing Page" }), [], "gli altri servizi non hanno obblighi");
 console.log("✓ sessione Logo: colori e font obbligatori, una volta sola, in qualunque ordine (anche in inglese)");
 
-console.log("\nREQUISITI OK");
+/* ---------- domande di riserva e rete di sicurezza ---------- */
+const { RISERVA } = require("../services/domandeRiserva");
+const { domandaSicura, domandaDiRiserva } = require("../services/reteSicurezza");
+// Gli stessi servizi del form (client/.../DynamicForm.jsx).
+const SERVIZI_DEL_FORM = [
+  "Logo", "Brand Identity", "Packaging",
+  "Content Creation", "Social Media Management", "Advertising",
+  "Product Photography", "Fashion Photography", "Event Photography",
+  "Promo Video", "Corporate Video", "Motion Graphics",
+  "Website Design", "E-commerce", "Landing Page",
+  "Mobile App", "Web App", "UI/UX Design",
+];
+const TEMI_OBBLIGATORI = /\b(colou?rs?|colori|colore|palette|font|tipograf\w*|typograph\w*)\b/i;
+for (const servizio of SERVIZI_DEL_FORM)
+  for (const lingua of ["it", "en"]) {
+    const elenco = RISERVA[servizio]?.[lingua] || [];
+    assert.ok(elenco.length >= 10, `${servizio} (${lingua}): servono almeno 10 domande di riserva`);
+    for (const r of elenco) {
+      assert.strictEqual(rilevaLingua(r.question), lingua, `${servizio}: "${r.question}" non è riconosciuta come ${lingua}`);
+      assert.ok(!r.question.includes("."), `${servizio}: "${r.question}" ha un punto`);
+      if (servizio === "Logo") assert.ok(!TEMI_OBBLIGATORI.test(r.question), `Logo: colori e font hanno la loro domanda fissa`);
+    }
+    // Una sessione intera servita solo dalla riserva: dieci domande, tutte
+    // valide e nessuna ripetuta.
+    const giaChieste = [];
+    for (let i = 0; i < 10; i++) {
+      const q = domandaDiRiserva({ servizio, lingua, giaChieste });
+      assert.ok(q, `${servizio} (${lingua}): riserva finita alla domanda ${i + 1}`);
+      assert.deepStrictEqual(verifica(q, { lingua, servizio, giaChieste }), [], `${servizio} (${lingua}): "${q.question}"`);
+      giaChieste.push(q.question);
+    }
+  }
+console.log("✓ riserva: dieci domande valide per ogni servizio e lingua, abbastanza per una sessione intera");
+
+(async () => {
+  const buona = multipla("Quale formato preferisci per le foto del catalogo?", ["Verticale", "Orizzontale", "Quadrato", "Non saprei, consigliatemi voi"]);
+  const ctx = { servizio: "Product Photography", lingua: "it" };
+  const zitto = console.warn;
+  console.warn = () => {};
+  try {
+    assert.strictEqual(await domandaSicura({ ...ctx, genera: async () => buona }), buona, "se l'AI va bene, passa la sua");
+    const dopoErrore = await domandaSicura({ ...ctx, genera: async () => { throw new Error("500"); } });
+    assert.strictEqual(dopoErrore.__provider, "riserva", "errore dell'AI: riserva, non errore");
+    const dopoSegnaposto = await domandaSicura({ ...ctx, genera: async () => multipla(buona.question, ["Verticale", "Orizzontale", "Opzione 3", "Opzione 4"]) });
+    assert.strictEqual(dopoSegnaposto.__provider, "riserva", "requisiti violati: riserva");
+    const inglese = await domandaSicura({ ...ctx, genera: async () => multipla("Which format do you prefer for the catalog photos?", ["Portrait", "Landscape", "Square", "Not sure"]) });
+    assert.strictEqual(inglese.__provider, "riserva", "lingua sbagliata: riserva");
+    const lenta = await domandaSicura({ ...ctx, tempoMassimo: 50, genera: () => new Promise((ok) => setTimeout(() => ok(buona), 500)) });
+    assert.strictEqual(lenta.__provider, "riserva", "troppo lenta: riserva");
+    const nonRipete = await domandaSicura({ ...ctx, giaChieste: [dopoErrore.question], genera: async () => { throw new Error("x"); } });
+    assert.notStrictEqual(nonRipete.question, dopoErrore.question, "la riserva non ripete una domanda già fatta");
+  } finally {
+    console.warn = zitto;
+  }
+  console.log("✓ rete di sicurezza: errore, requisiti violati, lingua sbagliata o lentezza → domanda di riserva");
+  console.log("\nREQUISITI OK");
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

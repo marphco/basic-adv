@@ -236,6 +236,28 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
    sempre rimisurare dal codice vecchio). Fatta e provata: su 34 scenari non
    Logo col riciclo sempre acceso, errori visti da 48 a 0. Per la
    produzione, da sola su `main`: PR `marphco/basic-adv#129`.
+   **Marco NON vuole unirla ancora**: prima errori ridotti a zero e training.
+
+## Dopo il 30 settembre: la strada verso il merge (decisa con Marco)
+
+1. **Rete di sicurezza** (`services/reteSicurezza.js`): ogni domanda passa
+   da `verifica()` prima del cliente; se l'AI sbaglia, non risponde o ci
+   mette più di 20 s, esce una **domanda di riserva** scritta a mano
+   (`services/domandeRiserva.js`, 10 per servizio e lingua, verificate da
+   `eval:requisiti`). Se anche la riserva è finita, il form passa ai
+   contatti come a fine sessione: mai un errore. Il banco misura quanto
+   spesso scatta la riserva (`r` nella riga dello scenario; `--senza-rete`
+   per com'era).
+2. Correzione dei difetti che fanno scattare la riserva ("Opzione N",
+   lingua, font a 4, colori del Logo garantiti dal codice).
+3. **Training** in una **raccolta separata**, mai nel database vero: ogni
+   voto dice da chi viene (`marco` o `ai`). I 274 voti di oggi sono tutti di
+   Marco. Le domande votate dall'AI servono **solo come ispirazione** (esempi
+   nel prompt), **mai riciclate** tali e quali: nel riciclo solo i voti di
+   Marco. Dopo, Marco decide se unire la raccolta o sostituire i voti
+   vecchi; i suoi voti non si cancellano mai (al massimo si mettono da
+   parte).
+4. Tutto sul banco, poi merge con l'ok di Marco.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
