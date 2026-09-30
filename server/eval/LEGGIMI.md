@@ -330,8 +330,13 @@ Fatto dopo i voti:
 - giudice tarato: esame sulle 40 di Marco (che non vede) 33 su 40 d'accordo,
   37 su 40 su promossa sì/no (`npm run eval:giudice -- --taratura`);
 - il banco aggiunge la raccolta alla fotografia (i voti di Marco diventano
-  esempi e blacklist del backend). Scelta sull'anticipo (A/B/C) ancora da
-  Marco; per ora resta A (anticipo acceso).
+  esempi e blacklist del backend).
+- **Deciso da Marco: A**, domanda preparata in anticipo (attesa zero, costo
+  normale). **Si fida delle domande di riserva** (non le rivede). Non vuole
+  votare altro: il confronto vecchio/nuovo su 20 domande è superato dal
+  giudice tarato sui suoi voti.
+- Giro `regole-marco`, stesso giudice tarato su prima/dopo: nessun criterio
+  in calo, bocciate da 10 a 2. Spesa totale 3,33 $ su 4 $.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
