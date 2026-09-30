@@ -17,7 +17,7 @@ const DIFETTI_OPZIONI = new Set(["uscite", "segnaposto", "lingua"]);
 // Quante domande chiedere all'AI per volta. Erano 6, e se ne usava una:
 // scriverle tutte costava circa 3 secondi di attesa al cliente. Con la rete
 // di sicurezza non serve una scorta così grande.
-const DOMANDE_PER_CHIAMATA = 2;
+const DOMANDE_PER_CHIAMATA = 3;
 
 // Ogni chiamata al backend RL porta il servizio in `state.service`. Fino a
 // settembre 2026 non lo portava, e il backend credeva che ogni servizio
