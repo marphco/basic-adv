@@ -26,6 +26,8 @@ const PREZZI = {
   // Il giudice. Listino: 2 $ e 8 $; qui arrotondati per eccesso, così il
   // tetto scatta prima, mai dopo.
   "gpt-4.1": { ingresso: 2.5, uscita: 10 },
+  // Candidato per il sito (giro C). Listino: 0,40 $ e 1,60 $; arrotondati.
+  "gpt-4.1-mini": { ingresso: 0.5, uscita: 2 },
 };
 
 function prezzoDi(modello) {

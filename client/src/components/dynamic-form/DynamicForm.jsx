@@ -20,6 +20,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 import PropTypes from "prop-types";
 
 // const useIsomorphicLayoutEffect =
@@ -79,30 +80,25 @@ const api = axios.create({
   baseURL: `${API_BASE}/api`, // sempre verso il dominio API
 });
 
-// Invia sempre la lingua in header (oltre che nel body, dove già c'è)
-const guessLang = () =>
-  (navigator.language || "").toLowerCase().startsWith("it") ? "it" : "en";
+// La lingua del form è SEMPRE quella che il cliente vede sul sito (i18n:
+// tasti EN/IT, cookie, paese). Prima si prendeva dal browser o da una
+// sessione vecchia salvata: con il browser in inglese e il sito in italiano
+// le domande uscivano tutte in inglese (visto da Marco, 30/09/2026).
+const linguaDelSito = () =>
+  String(i18n.resolvedLanguage || i18n.language || "")
+    .toLowerCase()
+    .startsWith("it")
+    ? "it"
+    : "en";
 
+// Invia sempre la lingua in header (oltre che nel body)
 api.interceptors.request.use((config) => {
-  try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const bodyLang =
-      stored?.formData?.lang || localStorage.getItem("lang") || guessLang();
-    const lang = (bodyLang || "en").toLowerCase();
-    config.headers = {
-      ...(config.headers || {}),
-      "X-Lang": lang,
-      "Accept-Language": lang,
-    };
-  } catch {
-    // fallback minimale
-    const lang = (localStorage.getItem("lang") || guessLang()).toLowerCase();
-    config.headers = {
-      ...(config.headers || {}),
-      "X-Lang": lang,
-      "Accept-Language": lang,
-    };
-  }
+  const lang = linguaDelSito();
+  config.headers = {
+    ...(config.headers || {}),
+    "X-Lang": lang,
+    "Accept-Language": lang,
+  };
   return config;
 });
 
@@ -125,7 +121,7 @@ const defaultFormData = {
   projectObjectives: "",
   contactInfo: { name: "", email: "", phone: "" },
   budget: "",
-  lang: localStorage.getItem("lang") || guessLang(),
+  lang: linguaDelSito(),
   websiteUrl: "",
   instagramUrl: "",
   facebookUrl: "",
@@ -288,7 +284,11 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
       setShowThankYou(!!saved.showThankYou);
       setFormData(
         saved.formData
-          ? { ...defaultFormData, ...normalizePlaceholders(saved.formData) }
+          ? {
+              ...defaultFormData,
+              ...normalizePlaceholders(saved.formData),
+              lang: linguaDelSito(), // non quella salvata: quella che si vede
+            }
           : defaultFormData
       );
 
@@ -378,7 +378,7 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
       projectObjectives: "",
       contactInfo: { name: "", email: "", phone: "" },
       budget: "",
-      lang: localStorage.getItem("lang") || guessLang(),
+      lang: linguaDelSito(),
     });
 
     setAnswers({});
@@ -637,11 +637,14 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
             JSON.stringify(selectedServices)
           );
           formDataToSend.append("sessionId", sessionId);
+          const lingua = linguaDelSito();
           for (const key in formData) {
             if (!Object.prototype.hasOwnProperty.call(formData, key)) continue;
             const val = formData[key];
 
-            if (key === "currentLogo" && val) {
+            if (key === "lang") {
+              formDataToSend.append(key, lingua);
+            } else if (key === "currentLogo" && val) {
               formDataToSend.append(key, val); // File
             } else if (key === "contactInfo") {
               formDataToSend.append(key, JSON.stringify(val));
@@ -839,7 +842,13 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
       setFormData((prev) => ({ ...prev, lang: lng }));
     };
     window.addEventListener("basic:lang", onLang);
-    return () => window.removeEventListener("basic:lang", onLang);
+    // Anche quando la lingua cambia da sola (paese, cookie), non solo dai tasti.
+    const onI18n = () => setFormData((prev) => ({ ...prev, lang: linguaDelSito() }));
+    i18n.on("languageChanged", onI18n);
+    return () => {
+      window.removeEventListener("basic:lang", onLang);
+      i18n.off("languageChanged", onI18n);
+    };
   }, []);
 
   return (
