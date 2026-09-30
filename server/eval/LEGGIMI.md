@@ -342,3 +342,16 @@ Fatto dopo i voti:
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
    codice**, come quella del font.
 6. Solo con il suo ok: PR e deploy nell'ordine sicuro.
+
+## Giro C: gpt-4.1-mini (30 settembre 2026)
+
+Stesso banco e stesso giudice tarato, sulle stesse sessioni (tutti i servizi
+più la prima sessione Logo per lingua; `eval:giudice -- <giro> --prime`):
+chiarezza 4,81 → 4,95; utilità 4,35 → 4,65; opzioni 4,62 → 4,96; profilo
+4,50 → 4,78; brevità, tono, lingua ~5; via d'uscita 4,97 → 4,96 (pari).
+Giro completo: 0 errori, riserva 1,5% (doppioni), attesa come prima. Costo
+simile a gpt-3.5 (listino 0,40 $ e 1,60 $ per milione di token). Accetta
+`max_tokens` e `temperature`, quindi il backend RL funziona senza modifiche.
+Per la produzione basta `OPENAI_MODEL=gpt-4.1-mini` sul servizio del backend
+RL su Railway (per tornare indietro: `gpt-3.5-turbo`). Spesa totale delle
+prove: 3,81 $ su 4 $, il tetto è quasi raggiunto.

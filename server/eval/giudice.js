@@ -167,6 +167,9 @@ async function main() {
   if (!nome) throw new Error("quale giro? es. npm run eval:giudice -- giro-anticipo-2026-09-30-04-14");
   const file = path.join(RISULTATI, nome.endsWith(".json") ? nome : `${nome}.json`);
   const giro = JSON.parse(fs.readFileSync(file, "utf8"));
+  // --prime: solo la prima ripetizione delle sessioni ripetute (per spendere
+  // meno quando il confronto non ha bisogno di tutte).
+  if (process.argv.includes("--prime")) giro.esiti = giro.esiti.filter((e) => (e.ripetizione || 1) === 1);
 
   const spesa = await contatore.avvia({ giro: `giudice ${giro.giro}`, modello: MODELLO });
   console.log(`Giudice ${MODELLO} sul giro ${giro.giro}: ${giro.esiti.length} sessioni. Spesa finora ${spesa.totale().toFixed(4)} $ su ${spesa.tetto} $`);
@@ -208,7 +211,7 @@ async function main() {
     riserva: medie(voci.filter((v) => v.provenienza === "riserva")),
     codice: medie(voci.filter((v) => v.provenienza === "codice")),
   };
-  const uscita = path.join(RISULTATI, `giudizio-${giro.giro}.json`);
+  const uscita = path.join(RISULTATI, `giudizio-${giro.giro}${process.argv.includes("--prime") ? "-prime" : ""}.json`);
   fs.writeFileSync(uscita, JSON.stringify({ giro: giro.giro, modello: MODELLO, anticipo: giro.anticipo, riassunto, voci }, null, 2));
 
   console.log(`\n\nMedie (1-5) delle domande dell'AI, ${riassunto.ai.domande} domande:`);
