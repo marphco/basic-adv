@@ -87,6 +87,20 @@ privata `marphco/rl-question-generator`, Railway,
 `rilevaLingua()`. Nessuna dipendenza, compatibile con Node 18. Prova:
 `npm run eval:requisiti` dalla cartella `server/`.
 
+**Di sessione**: `verificaSessione()` nello stesso modulo. Scegliendo **Logo**
+la sessione deve contenere **una domanda sui colori e una sullo stile del
+font**, in qualunque ordine, una volta sola (deciso con Marco). Oggi il
+**font è garantito dal codice** (`buildFontQuestion` in `server.js`: per il
+servizio "Logo" la seconda domanda è sempre quella, testo fisso e sei
+categorie). I **colori NON sono garantiti da niente**: il prompt dice solo
+come formulare la domanda se il modello decide di farla. Il 100% lo dà solo
+il codice, quindi la correzione è una garanzia scritta come quella del font
+(una `buildColorQuestion`, domanda aperta come prevede il prompt). Negli
+scenari i servizi con domande obbligatorie simulano la **sessione completa
+(10 domande) ripetuta 5 volte** (campi `domande` e `ripetizioni`): il banco
+deve applicare `verificaSessione()` a ogni sessione e riportare quante volte
+manca una domanda obbligatoria.
+
 **Qualità**, da valutare con un giudice LLM (voto da 1 a 5 più il motivo):
 chiarezza per chi non fa il mestiere, utilità per il preventivo, opzioni che
 coprono le possibilità senza sovrapporsi, adatta al profilo (budget e
@@ -110,7 +124,9 @@ delle correzioni.
   casi veri, e i test falliscono se si rompe il modulo.
 - `server/eval/scenari.json`: 36 scenari **congelati** (ogni servizio nelle
   due lingue; ogni budget, settore e tipo di progetto). Tre domande di fila
-  per scenario, rispondendo sempre con la prima opzione.
+  per scenario, rispondendo sempre con la prima opzione; il Logo invece fa
+  la sessione completa di 10 domande, 5 volte per lingua. In tutto 202
+  domande per giro.
 - `server/eval/controllaSerbatoio.js`: scarica i dati votati **solo in
   lettura** (GET dal backend RL con la sua chiave), li congela in
   `eval/risultati/fotografia-serbatoio.json` (ignorato da git) e misura
@@ -201,7 +217,15 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
    - tetto di spesa;
    - i rami del riciclo misurati anche separatamente (`RL_EXPLOIT_P` a 0 e a 1).
 3. **Giudice** di qualità, fissato prima delle correzioni.
+3b. **Prima del giro A, il banco va adattato ai requisiti di sessione**
+   (aggiunti dopo che il banco era già scritto): leggere da ogni scenario
+   `domande` (se c'è, al posto di `domandePerScenario`) e `ripetizioni` (se
+   c'è, giocare lo scenario quel numero di volte), e applicare
+   `verificaSessione()` alle domande di ogni sessione completa. Nel rapporto:
+   quante sessioni Logo non hanno la domanda sui colori, quante non hanno
+   quella sul font, quante li chiedono due volte.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
-   Marco.
+   Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
+   codice**, come quella del font.
 6. Solo con il suo ok: PR e deploy nell'ordine sicuro.

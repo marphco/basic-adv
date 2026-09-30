@@ -154,4 +154,36 @@ scarta({ question: "  ", options: [] }, IT, "formato", "testo vuoto");
 scarta({ question: "Ciao?", options: "text-area" }, IT, "formato", "opzioni non in elenco");
 console.log("✓ formato rotto: preso prima di tutto il resto");
 
+/* ---------- requisiti di sessione: Logo = colori + font, in qualunque ordine ---------- */
+const { verificaSessione } = require("../services/requisitiDomande");
+const colori = { question: "Hai già dei colori in mente per il logo?", options: [], type: "multiple", requiresInput: true };
+const fontLogo = font(6);
+const altra = (t) => multipla(t, ["Uno", "Due", "Tre", "Non saprei, consigliatemi voi"]);
+const sessione = (...qs) => qs;
+
+assert.deepStrictEqual(
+  verificaSessione(sessione(altra("Che sensazione deve trasmettere?"), fontLogo, altra("Dove userai il logo?"), colori), { servizio: "Logo" }),
+  [],
+  "colori e font presenti"
+);
+assert.deepStrictEqual(
+  verificaSessione(sessione(colori, altra("Che sensazione deve trasmettere?"), fontLogo), { servizio: "Logo" }),
+  [],
+  "l'ordine non conta"
+);
+const senzaColori = verificaSessione(sessione(altra("Che sensazione deve trasmettere?"), fontLogo), { servizio: "Logo" });
+assert.deepStrictEqual(senzaColori.map((v) => v.codice), ["mancaObbligatoria"], "manca i colori");
+assert.ok(senzaColori[0].messaggio.includes("colori"));
+const dueColori = verificaSessione(sessione(colori, fontLogo, { ...colori, question: "Quale palette di colori preferisci?" }), { servizio: "Logo" });
+assert.deepStrictEqual(dueColori.map((v) => v.codice), ["obbligatoriaRipetuta"], "colori chiesti due volte");
+assert.deepStrictEqual(
+  verificaSessione(sessione(colori), { servizio: "Logo" }).map((v) => v.codice),
+  ["mancaObbligatoria"],
+  "manca il font"
+);
+const coloriEn = { question: "Do you already have any colors in mind for the logo?", options: [], type: "multiple", requiresInput: true };
+assert.deepStrictEqual(verificaSessione(sessione(coloriEn, { ...fontLogo, question: "Which typographic style do you prefer for the logo?" }), { servizio: "Logo" }), [], "anche in inglese");
+assert.deepStrictEqual(verificaSessione(sessione(altra("Qual è l'obiettivo della pagina?")), { servizio: "Landing Page" }), [], "gli altri servizi non hanno obblighi");
+console.log("✓ sessione Logo: colori e font obbligatori, una volta sola, in qualunque ordine (anche in inglese)");
+
 console.log("\nREQUISITI OK");

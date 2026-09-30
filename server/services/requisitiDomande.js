@@ -225,8 +225,43 @@ function verifica(q, { lingua = "it", servizio = "", giaChieste = [] } = {}) {
   return out;
 }
 
+/* ==================== REQUISITI DI SESSIONE ==================== */
+
+// Alcune domande devono esserci SEMPRE per certi servizi, in qualunque
+// punto della sessione. Un modello non garantisce mai il "sempre": il 100%
+// lo dà solo il codice, come fa già buildFontQuestion per il font del Logo.
+// Qui si verifica che la sessione intera le contenga, una volta sola.
+const TEMI = {
+  colori: (q) =>
+    /\b(colou?rs?|colori|colore|palette|tint[ae])\b/i.test(q?.question || ""),
+  font: (q) =>
+    q?.type === "font_selection" ||
+    /\b(font|tipograf\w*|typograph\w*)\b/i.test(q?.question || ""),
+};
+
+// Deciso con Marco: scegliendo Logo, la sessione deve avere una domanda sui
+// colori e una sullo stile del font, in qualunque ordine.
+const OBBLIGATORIE = {
+  logo: ["colori", "font"],
+};
+
+function verificaSessione(domande = [], { servizio = "" } = {}) {
+  const out = [];
+  const temi = OBBLIGATORIE[String(servizio).trim().toLowerCase()] || [];
+  for (const tema of temi) {
+    const quante = domande.filter(TEMI[tema]).length;
+    if (quante === 0)
+      out.push({ codice: "mancaObbligatoria", messaggio: `manca la domanda su: ${tema}` });
+    if (quante > 1)
+      out.push({ codice: "obbligatoriaRipetuta", messaggio: `${quante} domande su: ${tema}, ne basta una` });
+  }
+  return out;
+}
+
 module.exports = {
   verifica,
+  verificaSessione,
+  OBBLIGATORIE,
   rilevaLingua,
   somiglianza,
   isBranding,

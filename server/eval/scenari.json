@@ -1,5 +1,5 @@
 {
-  "nota": "Scenari di prova CONGELATI: non si modificano tra la misura di partenza e quella dopo le correzioni, altrimenti i numeri non sono confrontabili. Ogni servizio del form in entrambe le lingue; budget, settore, tipo di progetto e nome del brand a rotazione, cosi ogni valore del form compare almeno una volta. Per ogni scenario si simulano domandePerScenario domande di fila, rispondendo sempre con la prima opzione.",
+  "nota": "Scenari di prova CONGELATI: non si modificano tra la misura di partenza e quella dopo le correzioni, altrimenti i numeri non sono confrontabili. Ogni servizio del form in entrambe le lingue; budget, settore, tipo di progetto e nome del brand a rotazione, cosi ogni valore del form compare almeno una volta. Per ogni scenario si simulano domandePerScenario domande di fila, rispondendo sempre con la prima opzione. I servizi con domande obbligatorie (per ora il Logo: colori e font) simulano invece la sessione COMPLETA di 10 domande, come fa il sito quando si sceglie un solo servizio: solo cosi si puo verificare che le domande obbligatorie ci siano tutte. Aggiornato il 30/09, prima del primo giro di misura. Quelle sessioni si ripetono 5 volte (campo ripetizioni): il modello cambia risposta da un giro all altro, e con una sola sessione per lingua non si misura quanto spesso una domanda obbligatoria manca.",
   "creati": "2026-09-30",
   "domandePerScenario": 3,
   "scenari": [
@@ -14,7 +14,9 @@
         "projectType": "new",
         "businessField": "Tech",
         "budget": "unknown"
-      }
+      },
+      "domande": 10,
+      "ripetizioni": 5
     },
     {
       "id": "it-02",
@@ -248,7 +250,9 @@
         "projectType": "new",
         "businessField": "Production",
         "budget": "0-1000"
-      }
+      },
+      "domande": 10,
+      "ripetizioni": 5
     },
     {
       "id": "en-20",
