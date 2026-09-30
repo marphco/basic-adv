@@ -7,7 +7,7 @@
 // L'unico ritocco è in domandaSuccessiva: la risposta 502 della rotta ora è
 // un errore con `stato: 502`, che la rotta trasforma nella stessa risposta.
 const { rlGenerateQuestions } = require("./rlClient");
-const { TEMI, temaFisso, verifica } = require("./requisitiDomande");
+const { TEMI, OBBLIGATORIE, temaFisso, verifica } = require("./requisitiDomande");
 
 // Difetti delle opzioni per cui una proposta dell'AI si scarta subito, a
 // favore della seconda proposta, invece di finire alla rete di sicurezza.
@@ -278,7 +278,11 @@ Domande già poste per questo servizio:
 ${askedListForPrompt}
 
 Ora, fai una nuova domanda pertinente al servizio selezionato (${service}), assicurandoti che non sia simile a nessuna delle domande già poste.
-
+${
+  OBBLIGATORIE[String(service).trim().toLowerCase()]
+    ? "\nNon chiedere dei colori né del font: il form li chiede già con domande sue.\n"
+    : ""
+}
 Per ogni domanda:
 
 - Se stai per chiedere "Hai preferenze di colori per il tuo logo?" o una domanda sulle preferenze di colore, **non** generare opzioni e imposta "requiresInput": true.

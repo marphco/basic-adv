@@ -50,6 +50,7 @@ function argomenti() {
     exploit: val("--exploit"), // se manca, resta quello del backend (0.35)
     modello: val("--modello") || process.env.OPENAI_MODEL || "gpt-3.5-turbo",
     anticipo: !a.includes("--senza-anticipo"),
+    raccolta: !a.includes("--senza-raccolta"), // i voti del training come esempi
     pensa: Number(val("--pensa") ?? 2000),
   };
 }
@@ -65,7 +66,7 @@ const portaLibera = () =>
 
 // Avvia il backend RL della repo così com'è. L'ambiente è costruito da zero:
 // niente MONGO_URI vera, niente chiave OpenAI, niente chiave di produzione.
-async function avviaBackendRl({ urlOpenAi, modello, exploit, log }) {
+async function avviaBackendRl({ urlOpenAi, modello, exploit, log, conRaccolta }) {
   const server = path.join(RL_DIR, "backend", "server.js");
   if (!fs.existsSync(server)) throw new Error(`backend RL non trovato in ${RL_DIR} (BANCO_RL_DIR)`);
   const porta = await portaLibera();
@@ -77,6 +78,7 @@ async function avviaBackendRl({ urlOpenAi, modello, exploit, log }) {
     PORT: String(porta),
     MONGO_URI: "fotografia://solo-lettura",
     BANCO_FOTOGRAFIA: FOTOGRAFIA,
+    ...(conRaccolta ? { BANCO_RACCOLTA: path.join(EVAL, "training", "raccolta.json") } : {}),
     RL_API_KEY: chiave,
     OPENAI_API_URL: urlOpenAi,
     OPENAI_API_KEY: "la-mette-il-contatore",
@@ -299,7 +301,7 @@ async function main() {
 
   let rl;
   try {
-    rl = await avviaBackendRl({ urlOpenAi: spesa.url, modello: arg.modello, exploit: arg.exploit, log });
+    rl = await avviaBackendRl({ urlOpenAi: spesa.url, modello: arg.modello, exploit: arg.exploit, log, conRaccolta: arg.raccolta });
     // Da qui in poi basic-adv parla SOLO con il backend locale.
     process.env.RL_API_BASE = rl.base;
     process.env.RL_API_KEY = rl.chiave;

@@ -23,6 +23,14 @@ const RIGHE = JSON.parse(fs.readFileSync(FILE, "utf8")).righe.map((r) => ({
   ...(r.timestamp ? { timestamp: new Date(r.timestamp) } : {}),
 }));
 
+// La raccolta del training (eval/training/raccolta.json): i voti nuovi,
+// di Marco e dell'AI, separati dal database vero. Il banco li aggiunge alla
+// fotografia per vedere cosa cambia quando il backend li usa come esempi.
+const RACCOLTA = process.env.BANCO_RACCOLTA;
+if (RACCOLTA && fs.existsSync(RACCOLTA))
+  for (const r of JSON.parse(fs.readFileSync(RACCOLTA, "utf8")).righe)
+    RIGHE.push({ ...r, ...(r.timestamp ? { timestamp: new Date(r.timestamp) } : {}) });
+
 const valoreDi = (doc, percorso) =>
   percorso.split(".").reduce((v, k) => (v == null ? undefined : v[k]), doc);
 

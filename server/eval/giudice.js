@@ -48,6 +48,13 @@ Poi, come farebbe il titolare dell'agenzia nella sua dashboard:
 - votoOpzioni: +1 opzioni buone, 0 neutre, -1 da evitare (0 se è aperta)
 - motivo: una frase, in italiano, sul punto più importante
 
+Chi risponde NON è del mestiere: spesso non sa niente né di comunicazione né di grafica (parole del titolare dell'agenzia). Vota come lui:
+- +1 alle domande utili per il preventivo che un profano capisce e sa rispondere, anche se sono migliorabili. Parole comuni (stile, tono, video, foto, grafiche, 2D/3D, minimal) vanno bene, anche in inglese sul sito inglese.
+- 0 alle domande generiche che aggiungono poco al preventivo, o con UN termine da addetti ai lavori ("hero image", "landing page", "user research", "UX").
+- -1 solo alle domande a cui il cliente non saprebbe proprio cosa rispondere: astratte ("che forma deve avere il simbolo", "stile stilizzato o realistico", "che livello di complessità") o piene di gergo.
+- Opzioni: -1 se vaghe o incomprensibili per un profano ("organica") o quasi uguali tra loro; 0 se limitate; +1 se chiare e distinte.
+Il sito aggiunge da solo a ogni domanda a scelta multipla la voce "Altro" con un campo per scrivere: non contarla tra le quattro opzioni.
+
 Sii severo e coerente: 5 solo se non c'è niente da migliorare.
 Rispondi SOLO con JSON: {"domande": [{"n": 1, "chiarezza": 4, "utilita": 5, "opzioni": 4, "profilo": 3, "brevita": 5, "tono": 5, "uscita": 4, "lingua": 5, "votoDomanda": 1, "votoOpzioni": 1, "motivo": "..."}]}`;
 
@@ -116,7 +123,46 @@ function medie(voci) {
   return out;
 }
 
+// Taratura: il giudice vota le stesse domande che ha votato Marco (ognuna
+// con le domande che la precedevano nella sessione), e si conta su quante
+// sono d'accordo. Marco non gli viene mostrato: non è un esempio, è l'esame.
+async function taratura() {
+  const raccolta = JSON.parse(fs.readFileSync(path.join(__dirname, "training", "raccolta.json"), "utf8"));
+  const marco = raccolta.righe.filter((r) => r.fonte === "marco");
+  const giri = {};
+  const spesa = await contatore.avvia({ giro: "taratura del giudice", modello: MODELLO });
+  const esito = [];
+  try {
+    for (const r of marco) {
+      if (spesa.stato.fermo) break;
+      const nomeGiro = r.origine.giro;
+      if (!giri[nomeGiro]) {
+        const file = fs.readdirSync(RISULTATI).find((f) => f.startsWith(`giro-${nomeGiro}-`) && f.endsWith(".json"));
+        giri[nomeGiro] = JSON.parse(fs.readFileSync(path.join(RISULTATI, file), "utf8"));
+      }
+      const [id, rip] = r.origine.sessione.split("#");
+      const e = giri[nomeGiro].esiti.find((x) => x.id === id && String(x.ripetizione || "") === String(rip || x.ripetizione || ""));
+      const fino = { ...e, passi: e.passi.filter((p) => p.domanda && p.n <= r.origine.n) };
+      const voti = await giudica(fino, spesa.url);
+      const v = voti.get(r.origine.n) || {};
+      esito.push({ id: r.id, domanda: r.question, marco: [r.questionReward, r.optionsReward], giudice: [v.votoDomanda, v.votoOpzioni], motivo: v.motivo });
+      process.stdout.write(".");
+    }
+  } finally {
+    spesa.chiudi();
+  }
+  const uguali = (i) => esito.filter((x) => x.marco[i] === x.giudice[i]).length;
+  const piuBuono = esito.filter((x) => x.giudice[0] > x.marco[0]).length;
+  console.log(`\n\nD'accordo con Marco: domanda ${uguali(0)} su ${esito.length}, opzioni ${uguali(1)} su ${esito.length}`);
+  console.log(`Il giudice è più buono di Marco su ${piuBuono} domande, più severo su ${esito.filter((x) => x.giudice[0] < x.marco[0]).length}`);
+  for (const x of esito.filter((x) => x.marco[0] !== x.giudice[0]))
+    console.log(`  Marco ${x.marco[0]}, giudice ${x.giudice[0]}: ${x.domanda} — ${x.motivo}`);
+  fs.writeFileSync(path.join(RISULTATI, "taratura-giudice.json"), JSON.stringify(esito, null, 2));
+  console.log(`Spesa ${spesa.stato.voce.spesa.toFixed(4)} $ — totale ${spesa.totale().toFixed(4)} $ su ${spesa.tetto} $`);
+}
+
 async function main() {
+  if (process.argv[2] === "--taratura") return taratura();
   const nome = process.argv[2];
   if (!nome) throw new Error("quale giro? es. npm run eval:giudice -- giro-anticipo-2026-09-30-04-14");
   const file = path.join(RISULTATI, nome.endsWith(".json") ? nome : `${nome}.json`);
