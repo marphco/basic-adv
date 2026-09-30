@@ -103,7 +103,7 @@ const SEGNAPOSTO = /^(opzione|option|scelta|choice|risposta|answer)\s*\d+$/i;
 // sceglie a caso, e "consigliatemi voi" è un'informazione commerciale), due
 // sono quattro opzioni di cui solo due dicono qualcosa.
 const USCITA =
-  /\b(non (lo )?so|non saprei|consigliatemi|consigliateci|decidete voi|nessuna preferenza|indifferente|not sure|don'?t know|no preference|you decide|recommend|advise)\b/i;
+  /\b(non (lo )?so|non saprei|consigliatemi|consigliateci|decidete voi|decidi tu|scegli tu|fai tu|scegliete voi|mi puoi aiutare|aiutami|aiutatemi|mi fido|mi lascio consigliare|non sono sicur\w*|non ho ancora deciso|decider\w* (in seguito|dopo)|deciso in seguito|nessuna preferenza|non ho (particolari |nessuna )?preferenz\w*|indifferente|not sure|don'?t know|no (particular )?preferences?|you decide|you choose|up to you|help me|i trust you|i'?m not sure|not decided yet|recommend|advise)\b/i;
 
 const FONT_ATTESI = 6;
 const OPZIONI_ATTESE = 4;

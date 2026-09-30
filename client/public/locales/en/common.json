@@ -298,8 +298,7 @@
       },
       "fontOrName": "Pick at least one font or type a name",
       "inputRequired": "Please enter a response",
-      "answerOrComment": "Pick at least one option, or choose “Other” and write your answer",
-      "otherRequired": "Write your answer under “Other”",
+      "answerOrComment": "Pick at least one option or write your answer",
       "url": "Please enter a valid URL (e.g., https://…)",
       "urlList": "One or more URLs are invalid.",
       "appPlatforms": "Pick at least one platform"
@@ -526,9 +525,7 @@
   },
   "questionForm": {
     "answerPlaceholder": "Enter your answer here...",
-    "detailsPlaceholder": "Add more details if you like...",
-    "other": "Other",
-    "otherPlaceholder": "Write your answer here..."
+    "detailsPlaceholder": "A different answer, or something to add? Write it here..."
   },
   "thankyou": {
     "line1": "Thanks for trusting us.",
