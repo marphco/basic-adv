@@ -13,6 +13,10 @@ const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
 const mime = require("mime-types");
+// Ogni chiamata al backend RL porta il servizio in `state.service`. Fino a
+// settembre 2026 non lo portava, e il backend credeva che ogni servizio
+// fosse "Logo": ai clienti di Content Creation, Siti web ecc. riciclava
+// domande sul logo, la policy le scartava e il cliente vedeva un errore.
 const { rlGenerateQuestions } = require("./services/rlClient");
 const normalizeLang = require("./middleware/lang");
 const bcrypt = require("bcryptjs");
@@ -549,7 +553,12 @@ ${
     ? "- Evita anche queste formulazioni: " + extraExclude.join(" | ")
     : ""
 }`,
-      { askedQuestions: askedSanitized, n: extraAskCount, language },
+      {
+        state: { service, language },
+        askedQuestions: askedSanitized,
+        n: extraAskCount,
+        language,
+      },
       { base: baseUrl }
     );
     const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
@@ -1248,6 +1257,7 @@ Per ogni domanda:
       const rawList = await rlGenerateQuestions(
         promptBase,
         {
+          state: { service, language },
           askedQuestions: askedSanitized.concat(exclusionBag),
           n: 6,
           language,
@@ -1282,7 +1292,12 @@ Per ogni domanda:
 
           const retry = await rlGenerateQuestions(
             promptBase,
-            { askedQuestions: askedSanitized, n: 6, language },
+            {
+              state: { service, language },
+              askedQuestions: askedSanitized,
+              n: 6,
+              language,
+            },
             { base: process.env.RL_API_BASE }
           );
           const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
