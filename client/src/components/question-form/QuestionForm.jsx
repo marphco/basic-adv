@@ -11,6 +11,7 @@ const QuestionForm = ({
   handleAnswerSubmit,
   handleInputChange,
   handleAnswerChange,
+  handleOtherToggle,
   loading,
   errors = {},
   formData,
@@ -68,6 +69,19 @@ const QuestionForm = ({
                     <span>{option}</span>
                   </label>
                 ))}
+                {/* "Altro": la voce fissa del sito, non dell'AI. Quattro
+                    risposte non coprono mai tutto: chi non trova la sua la
+                    scrive qui (voluto da Marco, settembre 2026). */}
+                <label className="service-item">
+                  <input
+                    type="checkbox"
+                    id="option_altro"
+                    name={`answer_${questionNumber}_altro`}
+                    checked={!!answers[currentQuestion.question]?.altro}
+                    onChange={handleOtherToggle}
+                  />
+                  <span>{t("questionForm.other")}</span>
+                </label>
                 {errors[currentQuestion.question] && (
                   <span className="error-message">
                     <FaExclamationCircle className="error-icon" />
@@ -77,15 +91,18 @@ const QuestionForm = ({
               </div>
             )}
 
-            <div className="form-group">
-              <textarea
-                name="inputAnswer"
-                placeholder={t("questionForm.detailsPlaceholder")}
-                value={answers[currentQuestion.question]?.input || ""}
-                onChange={handleInputChange}
-                className="form-textarea"
-              />
-            </div>
+            {answers[currentQuestion.question]?.altro && (
+              <div className="form-group">
+                <textarea
+                  name="inputAnswer"
+                  placeholder={t("questionForm.otherPlaceholder")}
+                  value={answers[currentQuestion.question]?.input || ""}
+                  onChange={handleInputChange}
+                  className="form-textarea"
+                  autoFocus
+                />
+              </div>
+            )}
           </>
         )}
 
@@ -117,6 +134,7 @@ QuestionForm.propTypes = {
   handleAnswerSubmit: PropTypes.func.isRequired,
   handleInputChange: PropTypes.func.isRequired,
   handleAnswerChange: PropTypes.func.isRequired,
+  handleOtherToggle: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   errors: PropTypes.object,
   formData: PropTypes.object.isRequired,
