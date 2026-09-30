@@ -1,6 +1,6 @@
 {
   "nota": "Spesa OpenAI di tutte le prove del banco. Il tetto è 4 $ in tutto.",
-  "totale": 3.925519,
+  "totale": 4.502135,
   "giri": [
     {
       "giro": "collaudo-riciclo",
@@ -319,6 +319,116 @@
       "tokenUscita": 93,
       "spesa": 0.001955,
       "fine": "2026-09-30T06:30:29.354Z"
+    },
+    {
+      "giro": "doppioni doppioni-logo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:05:51.291Z",
+      "chiamate": 10,
+      "rifiutate": 0,
+      "tokenIngresso": 3534,
+      "tokenUscita": 99,
+      "spesa": 0.009827,
+      "fine": "2026-09-30T14:06:02.588Z"
+    },
+    {
+      "giro": "doppioni C-gpt41mini",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:06:10.873Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 11544,
+      "tokenUscita": 409,
+      "spesa": 0.032956,
+      "fine": "2026-09-30T14:06:49.091Z"
+    },
+    {
+      "giro": "aspetti-logo",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T14:07:02.984Z",
+      "chiamate": 192,
+      "rifiutate": 0,
+      "tokenIngresso": 220497,
+      "tokenUscita": 15139,
+      "spesa": 0.140559,
+      "fine": "2026-09-30T14:12:13.485Z"
+    },
+    {
+      "giro": "doppioni aspetti-logo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:12:13.863Z",
+      "chiamate": 10,
+      "rifiutate": 0,
+      "tokenIngresso": 3526,
+      "tokenUscita": 83,
+      "spesa": 0.009646,
+      "fine": "2026-09-30T14:12:21.661Z"
+    },
+    {
+      "giro": "aspetti-prompt",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T14:12:42.884Z",
+      "chiamate": 153,
+      "rifiutate": 0,
+      "tokenIngresso": 165813,
+      "tokenUscita": 12149,
+      "spesa": 0.10723,
+      "fine": "2026-09-30T14:16:56.130Z"
+    },
+    {
+      "giro": "doppioni aspetti-prompt",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:16:56.459Z",
+      "chiamate": 10,
+      "rifiutate": 0,
+      "tokenIngresso": 3512,
+      "tokenUscita": 95,
+      "spesa": 0.009731,
+      "fine": "2026-09-30T14:17:04.416Z"
+    },
+    {
+      "giro": "severo-n3",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T14:17:26.386Z",
+      "chiamate": 160,
+      "rifiutate": 0,
+      "tokenIngresso": 182073,
+      "tokenUscita": 18224,
+      "spesa": 0.127511,
+      "fine": "2026-09-30T14:22:44.706Z"
+    },
+    {
+      "giro": "doppioni severo-n3",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:22:45.074Z",
+      "chiamate": 10,
+      "rifiutate": 0,
+      "tokenIngresso": 3460,
+      "tokenUscita": 83,
+      "spesa": 0.009481,
+      "fine": "2026-09-30T14:22:52.921Z"
+    },
+    {
+      "giro": "severo-n3-servizi",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T14:23:14.494Z",
+      "chiamate": 171,
+      "rifiutate": 0,
+      "tokenIngresso": 126277,
+      "tokenUscita": 22033,
+      "spesa": 0.107239,
+      "fine": "2026-09-30T14:28:13.743Z"
+    },
+    {
+      "giro": "doppioni severo-n3-servizi",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T14:28:14.066Z",
+      "chiamate": 34,
+      "rifiutate": 0,
+      "tokenIngresso": 8030,
+      "tokenUscita": 238,
+      "spesa": 0.02246,
+      "fine": "2026-09-30T14:28:41.470Z"
     }
   ]
 }

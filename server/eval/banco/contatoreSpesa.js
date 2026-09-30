@@ -10,13 +10,15 @@
 //   - tiene il totale in eval/spesa.json, versionato: il tetto vale per
 //     TUTTE le prove insieme, anche tra una sessione e l'altra.
 //
-// Il tetto è 4 $ e non si alza da fuori: BANCO_TETTO può solo abbassarlo.
+// Il tetto (TETTO_MASSIMO) non si alza da fuori: BANCO_TETTO può solo abbassarlo.
 // La chiave resta in questo processo: il backend RL del banco non la vede.
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const TETTO_MASSIMO = 4;
+// 4 $ decisi all'inizio, più 2 € concessi da Marco il 30/09/2026 per i
+// doppioni di significato.
+const TETTO_MASSIMO = 6;
 const REGISTRO = path.join(__dirname, "..", "spesa.json");
 
 // Dollari per milione di token (ingresso, uscita). Un modello che non è qui

@@ -9,7 +9,9 @@ const fs = require("fs");
 const path = require("path");
 const contatore = require("./banco/contatoreSpesa");
 
-const MODELLO = "gpt-4.1-mini";
+// Arbitro diverso dal modello che fa il controllo sul sito (gpt-4.1-mini):
+// altrimenti si darebbe ragione da solo.
+const MODELLO = process.env.DOPPIONI_MODELLO || "gpt-4.1";
 const ISTRUZIONI = `Ti do le domande di un questionario per un preventivo, in ordine, numerate.
 Trova le coppie che chiedono in sostanza LA STESSA COSA al cliente, anche con parole diverse
 (es. "Dove userai il logo?" e "In che modo vuoi che il logo sia usato più spesso?"; oppure
@@ -49,7 +51,7 @@ async function main() {
       if (qs.length < 2) continue;
       sessioni++;
       for (const [i, j] of await doppioni(qs, spesa.url))
-        if (qs[i - 1] && qs[j - 1]) trovati.push({ sessione: `${e.id}#${e.ripetizione || 1}`, servizio: e.servizio, domande: qs.length, a: qs[i - 1], b: qs[j - 1] });
+        if (i !== j && qs[i - 1] && qs[j - 1]) trovati.push({ sessione: `${e.id}#${e.ripetizione || 1}`, servizio: e.servizio, domande: qs.length, a: qs[i - 1], b: qs[j - 1] });
     }
   } finally {
     spesa.chiudi();

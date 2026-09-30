@@ -355,3 +355,32 @@ simile a gpt-3.5 (listino 0,40 $ e 1,60 $ per milione di token). Accetta
 Per la produzione basta `OPENAI_MODEL=gpt-4.1-mini` sul servizio del backend
 RL su Railway (per tornare indietro: `gpt-3.5-turbo`). Spesa totale delle
 prove: 3,81 $ su 4 $, il tetto è quasi raggiunto.
+
+## Doppioni di significato (30 settembre 2026, dopo il merge)
+
+Marco ha visto sul sito domande quasi uguali nella stessa sessione ("Where
+will you mostly use your logo" dopo "How do you want your logo to be used
+most often"). Il controllo per parole non le vedeva, e nemmeno il banco:
+i numeri sui doppioni dati prima erano sbagliati per difetto.
+- Misura: `npm run eval:doppioni -- <giro>` chiede a gpt-4.1 (arbitro
+  diverso dal modello del sito) quali coppie chiedono la stessa cosa. La
+  chiave del sito non può usare gli embeddings (403).
+- Correzione: `/api/check-repeats` nel backend RL (il modello dice quali
+  proposte ripetono una domanda già fatta, contando come ripetizione anche
+  lo stesso aspetto: stile/sensazione/messaggio, uso del logo, testo o
+  simbolo) e `rlDomandeRipetute` in basic-adv, usato sulle proposte e sulle
+  riserve; se non risponde, non blocca niente. Istruzioni: ogni domanda deve
+  toccare un aspetto nuovo. L'AI propone 3 domande per chiamata (erano 2),
+  così uno scarto di solito non costringe a rigenerare.
+- Risultati, stesso arbitro (sessioni Logo, 10 per giro, numeri che
+  ballano): prima del controllo 9 su 10; controllo semplice 2 su 10;
+  versione finale 2 su 10 ma con doppioni al limite. Altri servizi: 6 su 34
+  → 0 su 34. Attesa con cliente che risponde in 5 s: zero in 9 casi su 10,
+  massimo 3,6 s; prima domanda circa 2 s.
+- Marco ha concesso 2 € in più: tetto del banco portato a 6 $. Speso in
+  tutto 4,50 $.
+- Voti nella dashboard: una domanda ripetuta si vota come se fosse da sola
+  (un voto negativo insegnerebbe a non farla mai); le ripetizioni le blocca
+  il codice.
+- **Sul sito** il modello è ora gpt-4.1-mini (cambiato da Marco su Railway,
+  `OPENAI_MODEL` del backend RL).
