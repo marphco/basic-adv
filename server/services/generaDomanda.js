@@ -7,6 +7,12 @@
 // L'unico ritocco è in domandaSuccessiva: la risposta 502 della rotta ora è
 // un errore con `stato: 502`, che la rotta trasforma nella stessa risposta.
 const { rlGenerateQuestions } = require("./rlClient");
+const { TEMI, temaFisso } = require("./requisitiDomande");
+
+// Quante domande chiedere all'AI per volta. Erano 6, e se ne usava una:
+// scriverle tutte costava circa 3 secondi di attesa al cliente. Con la rete
+// di sicurezza non serve una scorta così grande.
+const DOMANDE_PER_CHIAMATA = 2;
 
 // Ogni chiamata al backend RL porta il servizio in `state.service`. Fino a
 // settembre 2026 non lo portava, e il backend credeva che ogni servizio
@@ -70,7 +76,9 @@ function normKey(s = "") {
 // Se una domanda parla di "font" la forzo nel formato corretto
 function hardNormalizeFont(q, lang) {
   if (!q) return q;
-  if (/(font|tipograf|typograf)/i.test(q.question)) {
+  // Anche quando l'AI la marca "font_selection" senza nominare il font:
+  // prima usciva con le sue quattro opzioni invece delle sei categorie.
+  if (q.type === "font_selection" || /(font|tipograf|typograf)/i.test(q.question)) {
     q.type = "font_selection";
     q.requiresInput = false;
     q.options =
@@ -137,7 +145,7 @@ async function regenerateWithPolicy({
   service,
   baseUrl,
   extraExclude = [],
-  extraAskCount = 6,
+  extraAskCount = DOMANDE_PER_CHIAMATA,
   maxTries = 3,
 }) {
   let lastCandidate = null;
@@ -308,7 +316,7 @@ Per ogni domanda:
         {
           state: { service, language },
           askedQuestions: askedSanitized.concat(exclusionBag),
-          n: 6,
+          n: DOMANDE_PER_CHIAMATA,
           language,
         },
         { base: process.env.RL_API_BASE }
@@ -319,6 +327,10 @@ Per ogni domanda:
 
       // 1) lingua corretta
       let candidates = normalized.filter((q) => inRightLang(q.question));
+
+      // Colori e font del Logo li chiede il codice: se li propone anche
+      // l'AI si scartano, altrimenti uscirebbero due volte.
+      candidates = candidates.filter((q) => !temaFisso(q, service));
 
       // 2) dedup contro askedSet (usiamo chiave sanitizzata)
       candidates = candidates.filter(
@@ -344,7 +356,7 @@ Per ogni domanda:
             {
               state: { service, language },
               askedQuestions: askedSanitized,
-              n: 6,
+              n: DOMANDE_PER_CHIAMATA,
               language,
             },
             { base: process.env.RL_API_BASE }
@@ -449,9 +461,29 @@ const buildFontQuestion = (formData = {}) => {
   };
 };
 
+// Deciso con Marco: scegliendo Logo la sessione ha sempre una domanda sui
+// colori, come quella sul font. Il 100% lo dà solo il codice: l'AI la
+// faceva quando capitava (sul banco mancava in 4 sessioni su 10, in altre 4
+// era ripetuta). Domanda aperta, come prevedeva il prompt.
+const buildColorQuestion = (formData = {}) => {
+  const isEn = formData?.lang === "en";
+  return {
+    question: sanitizeKey(
+      isEn
+        ? "Do you already have any colors in mind for your logo?"
+        : "Hai già dei colori in mente per il tuo logo?"
+    ),
+    options: [],
+    type: "multiple",
+    requiresInput: true,
+    __provider: "rule",
+  };
+};
+
 // Il cuore di /api/nextQuestion: sceglie la domanda successiva per il
 // servizio (per il Logo: la prima dall'RL, la seconda è sempre quella del
-// font) e la fa passare dall'ultimo controllo della policy.
+// font, la terza quella dei colori) e la fa passare dall'ultimo controllo
+// della policy.
 async function domandaSuccessiva({
   nextService,
   logEntry,
@@ -469,6 +501,8 @@ async function domandaSuccessiva({
       );
     } else if (!hasFontQuestion) {
       aiQuestion = buildFontQuestion(logEntry.formData);
+    } else if (!(logEntry.questions || []).some(TEMI.colori)) {
+      aiQuestion = buildColorQuestion(logEntry.formData);
     } else {
       aiQuestion = await generateQuestionForService(
         nextService,
@@ -509,7 +543,7 @@ async function domandaSuccessiva({
           "Quale stile tipografico preferisci per il logo",
           "What typographic style do you prefer for the logo",
         ],
-        extraAskCount: 8,
+        extraAskCount: DOMANDE_PER_CHIAMATA,
         maxTries: 3,
       });
       if (
@@ -545,6 +579,7 @@ module.exports = {
   regenerateWithPolicy,
   generateQuestionForService,
   buildFontQuestion,
+  buildColorQuestion,
   domandaSuccessiva,
   // usate solo dal banco di prova
   isEnglish,

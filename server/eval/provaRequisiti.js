@@ -77,6 +77,7 @@ ok(
     options: ["Serif", "Sans-serif", "Script", "Monospaziato", "Manoscritto", "Decorativo"],
     type: "font_selection",
     requiresInput: false,
+    __provider: "rule",
   },
   { lingua: "it", servizio: "Logo" },
   "font in italiano"
@@ -97,13 +98,23 @@ const font = (n) => ({
   options: ["Serif", "Sans-serif", "Script", "Monospaziato", "Manoscritto", "Decorativo"].slice(0, n),
   type: "font_selection",
   requiresInput: false,
+  __provider: "rule", // come buildFontQuestion
 });
 scarta(font(4), { lingua: "it", servizio: "Logo" }, "opzioni", "font tagliati a quattro");
 ok(font(6), { lingua: "it", servizio: "Logo" }, "sei font");
 console.log("✓ font: sei categorie, come deciso (il taglio a quattro viene scartato)");
 
+// Colori e font del Logo li fa il codice: se li propone l'AI, uscirebbero
+// due volte.
+const LOGO = { lingua: "it", servizio: "Logo" };
+scarta({ ...font(6), __provider: "RL" }, LOGO, "temaFisso", "font proposto dall'AI");
+scarta({ question: "Hai già dei colori in mente per il logo?", options: [], type: "multiple", requiresInput: true, __provider: "RL" }, LOGO, "temaFisso", "colori proposti dall'AI");
+ok({ question: "Hai già dei colori in mente per il tuo logo?", options: [], type: "multiple", requiresInput: true, __provider: "rule" }, LOGO, "colori dal codice");
+ok(multipla("Che colori preferisci per le foto dei prodotti?", ["Caldi", "Freddi", "Neutri", "Non saprei, consigliatemi voi"]), IT, "fuori dal Logo i colori sono una domanda come le altre");
+console.log("✓ Logo: colori e font dall'AI scartati, li fa il codice");
+
 const aperta = { question: "Hai già dei colori in mente?", options: [], type: "multiple", requiresInput: true };
-ok(aperta, { lingua: "it", servizio: "Logo" }, "aperta sul branding");
+ok(aperta, { lingua: "it", servizio: "Brand Identity" }, "aperta sul branding");
 scarta(aperta, { lingua: "it", servizio: "Landing Page" }, "aperta", "aperta fuori dal branding");
 console.log("✓ domande aperte solo per il branding");
 
@@ -116,7 +127,7 @@ scarta(
 );
 ok(
   multipla("Quali colori vuoi evitare?", ["Nessuno", "I colori accesi", "I toni scuri", "Non saprei, consigliatemi voi"]),
-  { lingua: "it", servizio: "Logo", giaChieste: ["Quale stile preferisci per il logo?"] },
+  { lingua: "it", servizio: "Brand Identity", giaChieste: ["Quale stile preferisci per il logo?"] },
   "domanda diversa"
 );
 console.log("✓ parafrasi di una domanda già fatta: presa, domande diverse: passano");

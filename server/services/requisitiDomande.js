@@ -154,6 +154,36 @@ const GIA_CHIESTO = [
 
 const TEMI_BRANDING = /\b(logo|loghi|font|tipograf\w*|typograph\w*|marchio)\b/i;
 
+/* ==================== REQUISITI DI SESSIONE ==================== */
+
+// Alcune domande devono esserci SEMPRE per certi servizi, in qualunque
+// punto della sessione. Un modello non garantisce mai il "sempre": il 100%
+// lo dà solo il codice, come fa già buildFontQuestion per il font del Logo.
+// Qui si verifica che la sessione intera le contenga, una volta sola.
+const TEMI = {
+  colori: (q) =>
+    /\b(colou?rs?|colori|colore|palette|tint[ae])\b/i.test(q?.question || ""),
+  font: (q) =>
+    q?.type === "font_selection" ||
+    /\b(font|tipograf\w*|typograph\w*)\b/i.test(q?.question || ""),
+};
+
+// Deciso con Marco: scegliendo Logo, la sessione deve avere una domanda sui
+// colori e una sullo stile del font, in qualunque ordine.
+const OBBLIGATORIE = {
+  logo: ["colori", "font"],
+};
+
+// Le domande obbligatorie le fa il codice (buildFontQuestion,
+// buildColorQuestion, __provider "rule"): se le proponesse anche l'AI,
+// uscirebbero due volte. Restituisce il tema, o null.
+function temaFisso(q, servizio = "") {
+  if (q?.__provider === "rule") return null;
+  const temi = OBBLIGATORIE[String(servizio).trim().toLowerCase()] || [];
+  return temi.find((t) => TEMI[t](q)) || null;
+}
+
+
 /* ==================== VERIFICA ==================== */
 
 // Controlla una domanda contro tutti i requisiti bloccanti.
@@ -218,32 +248,16 @@ function verifica(q, { lingua = "it", servizio = "", giaChieste = [] } = {}) {
   if (GIA_CHIESTO.some((re) => re.test(testo)))
     viola("giaChiesto", "chiede un dato già inserito nel form");
 
+  // 5b. Colori e font del Logo li chiede il codice, non l'AI.
+  const fisso = temaFisso(q, servizio);
+  if (fisso) viola("temaFisso", `la domanda su ${fisso} del ${servizio} la fa già il codice`);
+
   // 5. Pertinenza: logo e font solo per i servizi di branding.
   if (!branding && (font || TEMI_BRANDING.test(testo)))
     viola("pertinenza", "parla di logo o font su un servizio che non è di branding");
 
   return out;
 }
-
-/* ==================== REQUISITI DI SESSIONE ==================== */
-
-// Alcune domande devono esserci SEMPRE per certi servizi, in qualunque
-// punto della sessione. Un modello non garantisce mai il "sempre": il 100%
-// lo dà solo il codice, come fa già buildFontQuestion per il font del Logo.
-// Qui si verifica che la sessione intera le contenga, una volta sola.
-const TEMI = {
-  colori: (q) =>
-    /\b(colou?rs?|colori|colore|palette|tint[ae])\b/i.test(q?.question || ""),
-  font: (q) =>
-    q?.type === "font_selection" ||
-    /\b(font|tipograf\w*|typograph\w*)\b/i.test(q?.question || ""),
-};
-
-// Deciso con Marco: scegliendo Logo, la sessione deve avere una domanda sui
-// colori e una sullo stile del font, in qualunque ordine.
-const OBBLIGATORIE = {
-  logo: ["colori", "font"],
-};
 
 function verificaSessione(domande = [], { servizio = "" } = {}) {
   const out = [];
@@ -262,6 +276,8 @@ module.exports = {
   verifica,
   verificaSessione,
   OBBLIGATORIE,
+  TEMI,
+  temaFisso,
   rilevaLingua,
   somiglianza,
   isBranding,

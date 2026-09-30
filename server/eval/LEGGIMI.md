@@ -252,12 +252,30 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
    lingua, font a 4, colori del Logo garantiti dal codice).
 3. **Training** in una **raccolta separata**, mai nel database vero: ogni
    voto dice da chi viene (`marco` o `ai`). I 274 voti di oggi sono tutti di
-   Marco. Le domande votate dall'AI servono **solo come ispirazione** (esempi
-   nel prompt), **mai riciclate** tali e quali: nel riciclo solo i voti di
-   Marco. Dopo, Marco decide se unire la raccolta o sostituire i voti
+   Marco. **Nessuna domanda votata si mostra tale e quale**, nemmeno quelle
+   votate da Marco: il suo voto dice "la direzione è giusta", non "usa
+   questa frase". Tutti i voti servono **solo come ispirazione** (esempi nel
+   prompt). Il riciclo (ramo ε-greedy, `RL_EXPLOIT_P`) è tolto dal backend
+   RL, ramo `claude/requisiti-domande` della sua repo. Dopo, Marco decide se unire la raccolta o sostituire i voti
    vecchi; i suoi voti non si cancellano mai (al massimo si mettono da
    parte).
-4. Tutto sul banco, poi merge con l'ok di Marco.
+4. Tutto sul banco, poi merge con l'ok di Marco. Prima del merge Marco vede
+   un campione delle **domande di riserva**: anche quelle sono scritte da
+   un'AI e si mostrano tali e quali.
+
+**Tempi** (Marco: anche 3 secondi sono troppi). Sul banco una chiamata
+all'AI costa circa 3 s perché scrive 6 domande e se ne usa una; i tentativi
+ripetuti arrivano a 5-11 s. Fatto: 2 domande per chiamata
+(`DOMANDE_PER_CHIAMATA`) e meno scarti. Se non basta: preparare la domanda
+mentre il cliente risponde alla precedente (una per ogni risposta possibile,
+più veloce ma circa 4 volte il costo; oppure senza l'ultima risposta, stesso
+costo), o un modello più veloce (giro C).
+
+**Punto 2, fatto sul ramo**: backend RL senza riciclo e senza "Opzione N"
+(scarta invece di riempire; font non tagliato a 4). In basic-adv:
+`buildColorQuestion` (Logo: prima domanda AI, poi font, poi colori);
+`temaFisso()` in `requisitiDomande.js` scarta colori e font del Logo se li
+propone l'AI; `hardNormalizeFont` scatta anche su `type: "font_selection"`.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
