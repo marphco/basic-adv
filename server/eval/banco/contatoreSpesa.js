@@ -23,6 +23,9 @@ const REGISTRO = path.join(__dirname, "..", "spesa.json");
 // non parte: prima si scrive il suo prezzo, controllato sul listino.
 const PREZZI = {
   "gpt-3.5-turbo": { ingresso: 0.5, uscita: 1.5 },
+  // Il giudice. Listino: 2 $ e 8 $; qui arrotondati per eccesso, così il
+  // tetto scatta prima, mai dopo.
+  "gpt-4.1": { ingresso: 2.5, uscita: 10 },
 };
 
 function prezzoDi(modello) {
