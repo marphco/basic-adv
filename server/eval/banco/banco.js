@@ -15,6 +15,10 @@
 //   npm run eval:banco -- --giro A-llm --exploit 0     solo il ramo con l'LLM
 //   npm run eval:banco -- --giro A-riciclo --exploit 1 solo il ramo del riciclo
 //
+// Legenda per ogni domanda: ✓ va bene, x viola un requisito, ! il cliente
+// ha visto un errore ma riprovando è arrivata, X entrambe, E tre errori di
+// fila (sessione abbandonata).
+//
 // Il backend RL si cerca accanto a basic-adv (../rl-question-generator) o
 // dove dice BANCO_RL_DIR; le sue dipendenze: `npm ci` nella sua backend/.
 const fs = require("fs");
@@ -23,7 +27,7 @@ const crypto = require("crypto");
 const net = require("net");
 const { spawn } = require("child_process");
 const contatore = require("./contatoreSpesa");
-const { verifica } = require("../../services/requisitiDomande");
+const { verifica, verificaSessione, OBBLIGATORIE } = require("../../services/requisitiDomande");
 
 const EVAL = path.join(__dirname, "..");
 const RISULTATI = path.join(EVAL, "risultati");
@@ -102,6 +106,11 @@ function rispostaA(q, lingua) {
   return { options: [q.options[0]] };
 }
 
+// Il form non riprova da solo: se il server risponde con un errore, il
+// cliente vede un messaggio e deve premere di nuovo. Il banco fa come un
+// cliente paziente: riprova fino a 3 volte, e conta OGNI errore visto.
+const TENTATIVI_CLIENTE = 3;
+
 // Riproduce /api/generate e poi /api/nextQuestion, senza database: la
 // sessione vive in memoria, con gli stessi campi di ProjectLog.
 async function giocaScenario(s, quante, gd, chiamate) {
@@ -117,52 +126,99 @@ async function giocaScenario(s, quante, gd, chiamate) {
   const passi = [];
 
   for (let i = 0; i < quante; i++) {
+    const passo = { n: i + 1, errori: [] };
     const prima = chiamate();
     const inizio = Date.now();
-    let q;
-    try {
-      if (i === 0) {
-        q = await gd.generateQuestionForService(s.servizio, formData, {}, []);
-      } else {
-        const precedente = logEntry.questions[i - 1];
-        logEntry.answers.set(gd.sanitizeKey(precedente.question), rispostaA(precedente, s.lingua));
-        q = await gd.domandaSuccessiva({
-          nextService: s.servizio,
-          logEntry,
-          askedQuestionsForNextService: asked,
-          hasFontQuestion: logEntry.questions.some((x) => x && x.type === "font_selection"),
-        });
+    let q = null;
+    if (i > 0) {
+      const precedente = logEntry.questions[i - 1];
+      logEntry.answers.set(gd.sanitizeKey(precedente.question), rispostaA(precedente, s.lingua));
+    }
+    for (let t = 0; t < TENTATIVI_CLIENTE && !q; t++) {
+      try {
+        q =
+          i === 0
+            ? await gd.generateQuestionForService(s.servizio, formData, {}, [])
+            : await gd.domandaSuccessiva({
+                nextService: s.servizio,
+                logEntry,
+                askedQuestionsForNextService: asked,
+                hasFontQuestion: logEntry.questions.some((x) => x && x.type === "font_selection"),
+              });
+      } catch (e) {
+        // In produzione qui il cliente vede un errore (500 o 502).
+        passo.errori.push({ messaggio: e.message, stato: e.stato || 500 });
       }
-    } catch (e) {
-      // In produzione qui il cliente vede un errore (500 o 502).
-      passi.push({ n: i + 1, errore: e.message, stato: e.stato || 500, chiamateLlm: chiamate() - prima, ms: Date.now() - inizio });
+    }
+    passo.chiamateLlm = chiamate() - prima;
+    passo.ms = Date.now() - inizio;
+    passi.push(passo);
+    if (!q) {
+      passo.abbandonato = true; // tre errori di fila: il cliente se ne va
       break;
     }
-    const violazioni = verifica(q, {
+    passo.domanda = q;
+    passo.violazioni = verifica(q, {
       lingua: s.lingua,
       servizio: s.servizio,
       giaChieste: logEntry.questions.map((x) => x.question),
     });
-    passi.push({ n: i + 1, domanda: q, violazioni, chiamateLlm: chiamate() - prima, ms: Date.now() - inizio });
     logEntry.questions.push(q);
     const chiaveQ = gd.sanitizeKey(q.question);
     if (!asked.includes(chiaveQ) && !asked.map(gd.normKey).includes(gd.normKey(q.question))) asked = asked.concat([chiaveQ]);
   }
-  return passi;
+
+  const completa = logEntry.questions.length === quante;
+  return {
+    passi,
+    completa,
+    // I requisiti di sessione hanno senso solo sulla sessione intera.
+    sessione: completa ? verificaSessione(logEntry.questions, { servizio: s.servizio }) : null,
+  };
 }
+
+const segno = (p) => (p.abbandonato ? "E" : p.violazioni.length ? (p.errori.length ? "X" : "x") : p.errori.length ? "!" : "✓");
 
 function riassunto(esiti) {
   const passi = esiti.flatMap((e) => e.passi);
   const domande = passi.filter((p) => p.domanda);
   const perCodice = {};
   for (const p of domande) for (const v of p.violazioni) perCodice[v.codice] = (perCodice[v.codice] || 0) + 1;
+
+  // Quante volte il cliente vede un errore, servizio per servizio (e lingua).
+  const perServizio = {};
+  for (const e of esiti) {
+    const k = `${e.servizio} (${e.lingua})`;
+    const r = (perServizio[k] ||= { sessioni: 0, domandeMostrate: 0, erroriVisti: 0, abbandonate: 0 });
+    r.sessioni++;
+    r.domandeMostrate += e.passi.filter((p) => p.domanda).length;
+    r.erroriVisti += e.passi.reduce((n, p) => n + p.errori.length, 0);
+    if (e.passi.some((p) => p.abbandonato)) r.abbandonate++;
+  }
+
+  // Requisiti di sessione (oggi: il Logo deve avere colori e font).
+  const conObblighi = esiti.filter((e) => OBBLIGATORIE[e.servizio.trim().toLowerCase()]);
+  const quante = (codice, tema) =>
+    conObblighi.filter((e) => e.sessione?.some((v) => v.codice === codice && v.messaggio.includes(`su: ${tema}`))).length;
+  const sessione = {
+    sessioni: conObblighi.length,
+    complete: conObblighi.filter((e) => e.completa).length,
+    senzaColori: quante("mancaObbligatoria", "colori"),
+    senzaFont: quante("mancaObbligatoria", "font"),
+    coloriRipetuti: quante("obbligatoriaRipetuta", "colori"),
+    fontRipetuti: quante("obbligatoriaRipetuta", "font"),
+  };
+
   return {
-    scenari: esiti.length,
+    sessioni: esiti.length,
     domande: domande.length,
-    errori: passi.filter((p) => p.errore).length,
+    erroriVisti: passi.reduce((n, p) => n + p.errori.length, 0),
+    sessioniAbbandonate: esiti.filter((e) => e.passi.some((p) => p.abbandonato)).length,
     domandeConViolazioni: domande.filter((p) => p.violazioni.length).length,
     violazioniPerTipo: perCodice,
     senzaLlm: domande.filter((p) => p.chiamateLlm === 0).length,
+    perServizio,
+    sessione,
   };
 }
 
@@ -192,22 +248,34 @@ async function main() {
 
     const esiti = [];
     for (const s of scelti) {
+      const quante = s.domande || domandePerScenario;
+      const volte = s.ripetizioni || 1;
+      for (let v = 1; v <= volte && !spesa.stato.fermo; v++) {
+        const g = await giocaScenario(s, quante, gd, () => spesa.stato.chiamate);
+        esiti.push({ id: s.id, ripetizione: v, lingua: s.lingua, servizio: s.servizio, formData: s.formData, ...g });
+        const nota = g.sessione?.length ? "  " + g.sessione.map((x) => x.messaggio).join("; ") : "";
+        console.log(`  ${(s.id + (volte > 1 ? "#" + v : "")).padEnd(8)} ${s.servizio.padEnd(26)} ${g.passi.map(segno).join("")}${nota}`);
+      }
       if (spesa.stato.fermo) break;
-      const passi = await giocaScenario(s, domandePerScenario, gd, () => spesa.stato.chiamate);
-      esiti.push({ id: s.id, lingua: s.lingua, servizio: s.servizio, formData: s.formData, passi });
-      const segni = passi.map((p) => (p.errore ? "E" : p.violazioni.length ? "x" : "✓")).join("");
-      console.log(`  ${s.id.padEnd(6)} ${s.servizio.padEnd(26)} ${segni}`);
     }
-
     const r = riassunto(esiti);
-    const completo = !spesa.stato.fermo && esiti.length === scelti.length;
+    const attese = scelti.reduce((n, s) => n + (s.ripetizioni || 1), 0);
+    const completo = !spesa.stato.fermo && esiti.length === attese;
     fs.writeFileSync(
       path.join(RISULTATI, `${nome}.json`),
       JSON.stringify({ giro: arg.giro, modello: arg.modello, exploit: arg.exploit ?? null, completo, riassunto: r, spesa: spesa.stato.voce, esiti }, null, 2)
     );
     console.log(`\n${completo ? "Giro completo" : "GIRO INTERROTTO dal tetto di spesa"}.`);
-    console.log(`Domande ${r.domande}, errori ${r.errori}, domande con violazioni ${r.domandeConViolazioni}, senza LLM (riciclate) ${r.senzaLlm}`);
+    console.log(`Sessioni ${r.sessioni}, domande mostrate ${r.domande}, errori visti dal cliente ${r.erroriVisti}, sessioni abbandonate ${r.sessioniAbbandonate}`);
+    console.log(`Domande con violazioni ${r.domandeConViolazioni}, riciclate senza LLM ${r.senzaLlm}`);
     console.log("Violazioni per tipo:", r.violazioniPerTipo);
+    console.log("\nErrori visti dal cliente, per servizio:");
+    if (!r.erroriVisti) console.log("  nessuno");
+    for (const [k, v] of Object.entries(r.perServizio))
+      if (v.erroriVisti) console.log(`  ${k.padEnd(34)} ${v.erroriVisti} errori su ${v.domandeMostrate + v.abbandonate} domande, ${v.abbandonate} sessioni abbandonate su ${v.sessioni}`);
+    const o = r.sessione;
+    if (o.sessioni)
+      console.log(`\nLogo, sessioni complete ${o.complete} su ${o.sessioni}: senza colori ${o.senzaColori}, senza font ${o.senzaFont}, colori due volte ${o.coloriRipetuti}, font due volte ${o.fontRipetuti}`);
     console.log(`Spesa del giro ${spesa.stato.voce.spesa.toFixed(4)} $ — totale ${spesa.totale().toFixed(4)} $ su ${spesa.tetto} $`);
     console.log(`Dettaglio: eval/risultati/${nome}.json`);
   } finally {
@@ -222,4 +290,4 @@ if (require.main === module)
     process.exit(1);
   });
 
-module.exports = { giocaScenario, riassunto, rispostaA };
+module.exports = { giocaScenario, riassunto, rispostaA, segno };

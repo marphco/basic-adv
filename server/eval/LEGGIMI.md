@@ -217,13 +217,21 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
    - tetto di spesa;
    - i rami del riciclo misurati anche separatamente (`RL_EXPLOIT_P` a 0 e a 1).
 3. **Giudice** di qualità, fissato prima delle correzioni.
-3b. **Prima del giro A, il banco va adattato ai requisiti di sessione**
+3b. ✅ **Prima del giro A, il banco va adattato ai requisiti di sessione**
    (aggiunti dopo che il banco era già scritto): leggere da ogni scenario
    `domande` (se c'è, al posto di `domandePerScenario`) e `ripetizioni` (se
    c'è, giocare lo scenario quel numero di volte), e applicare
    `verificaSessione()` alle domande di ogni sessione completa. Nel rapporto:
    quante sessioni Logo non hanno la domanda sui colori, quante non hanno
    quella sul font, quante li chiedono due volte.
+   Fatto: il banco gioca `domande` × `ripetizioni` e applica
+   `verificaSessione()` alle sessioni complete. Come il sito, il form non
+   riprova da solo: il banco fa il cliente paziente (fino a 3 tentativi per
+   domanda) e conta **ogni errore visto**, servizio per servizio; tre errori
+   di fila = sessione abbandonata.
+4a. **Subito dopo il giro A, da sola e prima delle altre correzioni** (voluto
+   da Marco): mandare il servizio al backend RL (`state.service`), provarla
+   sul banco e portarla in produzione appena provata.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
