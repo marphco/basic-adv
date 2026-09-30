@@ -518,6 +518,22 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
     });
   };
 
+  // "Altro": spuntandolo si apre il campo per scrivere la propria risposta;
+  // togliendo la spunta, quello che c'era scritto si cancella.
+  const handleOtherToggle = (e) => {
+    const { checked } = e.target;
+    const questionText = currentQuestion.question;
+    setAnswers((prev) => ({
+      ...prev,
+      [questionText]: {
+        ...prev[questionText],
+        altro: checked,
+        input: checked ? prev[questionText]?.input || "" : "",
+      },
+    }));
+    setErrors({});
+  };
+
   const handleInputChange = (e) => {
     const { value } = e.target;
     const questionText = currentQuestion.question;
@@ -756,8 +772,11 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
       if (inputAnswer === "") {
         newErrors[questionText] = "form.errors.inputRequired";
       }
+    } else if (userAnswer.altro && inputAnswer === "") {
+      // ha scelto "Altro": deve scrivere cosa
+      newErrors[questionText] = "form.errors.otherRequired";
     } else {
-      // serve almeno un'opzione OPPURE un commento
+      // serve almeno un'opzione OPPURE "Altro" con la risposta scritta
       if (selectedOptions.length === 0 && inputAnswer === "") {
         newErrors[questionText] = "form.errors.answerOrComment";
       }
@@ -879,6 +898,7 @@ const DynamicForm = ({ scrollTween = null, isMobile = false }) => {
                     handleAnswerSubmit={handleAnswerSubmit}
                     handleInputChange={handleInputChange}
                     handleAnswerChange={handleAnswerChange}
+                    handleOtherToggle={handleOtherToggle}
                     loading={loading}
                     errors={i18nErrors}
                     formData={formData}

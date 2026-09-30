@@ -1,0 +1,247 @@
+{
+  "nota": "Spesa OpenAI di tutte le prove del banco. Il tetto è 4 $ in tutto.",
+  "totale": 3.329419,
+  "giri": [
+    {
+      "giro": "collaudo-riciclo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T02:38:36.876Z",
+      "chiamate": 0,
+      "rifiutate": 0,
+      "tokenIngresso": 0,
+      "tokenUscita": 0,
+      "spesa": 0,
+      "fine": "2026-09-30T02:38:37.531Z"
+    },
+    {
+      "giro": "collaudo-llm",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T02:38:51.090Z",
+      "chiamate": 15,
+      "rifiutate": 0,
+      "tokenIngresso": 20980,
+      "tokenUscita": 5846,
+      "spesa": 0.019262,
+      "fine": "2026-09-30T02:39:50.324Z"
+    },
+    {
+      "giro": "collaudo-sessione",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T02:49:22.954Z",
+      "chiamate": 0,
+      "rifiutate": 0,
+      "tokenIngresso": 0,
+      "tokenUscita": 0,
+      "spesa": 0,
+      "fine": "2026-09-30T02:49:25.623Z"
+    },
+    {
+      "giro": "collaudo-sessione",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T02:49:32.868Z",
+      "chiamate": 45,
+      "rifiutate": 0,
+      "tokenIngresso": 49356,
+      "tokenUscita": 15534,
+      "spesa": 0.047991,
+      "fine": "2026-09-30T02:52:06.926Z"
+    },
+    {
+      "giro": "prima-servizio-riciclo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T02:57:51.748Z",
+      "chiamate": 76,
+      "rifiutate": 0,
+      "tokenIngresso": 77756,
+      "tokenUscita": 25747,
+      "spesa": 0.077508,
+      "fine": "2026-09-30T03:01:55.108Z"
+    },
+    {
+      "giro": "prova",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T03:02:02.694Z",
+      "chiamate": 3,
+      "rifiutate": 0,
+      "tokenIngresso": 4805,
+      "tokenUscita": 1163,
+      "spesa": 0.004148
+    },
+    {
+      "giro": "dopo-servizio-riciclo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T03:02:16.722Z",
+      "chiamate": 135,
+      "rifiutate": 0,
+      "tokenIngresso": 102104,
+      "tokenUscita": 47725,
+      "spesa": 0.122665,
+      "fine": "2026-09-30T03:09:00.909Z"
+    },
+    {
+      "giro": "rete",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T03:25:01.875Z",
+      "chiamate": 217,
+      "rifiutate": 0,
+      "tokenIngresso": 212585,
+      "tokenUscita": 77748,
+      "spesa": 0.222959,
+      "fine": "2026-09-30T03:36:17.445Z"
+    },
+    {
+      "giro": "punto2",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T03:46:54.692Z",
+      "chiamate": 201,
+      "rifiutate": 0,
+      "tokenIngresso": 208778,
+      "tokenUscita": 25903,
+      "spesa": 0.143284,
+      "fine": "2026-09-30T03:52:09.398Z"
+    },
+    {
+      "giro": "vie-uscita",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T03:58:01.531Z",
+      "chiamate": 195,
+      "rifiutate": 0,
+      "tokenIngresso": 212836,
+      "tokenUscita": 25898,
+      "spesa": 0.145302,
+      "fine": "2026-09-30T04:03:10.794Z"
+    },
+    {
+      "giro": "collaudo-anticipo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T04:12:16.947Z",
+      "chiamate": 46,
+      "rifiutate": 0,
+      "tokenIngresso": 82144,
+      "tokenUscita": 6449,
+      "spesa": 0.050754,
+      "fine": "2026-09-30T04:14:07.676Z"
+    },
+    {
+      "giro": "anticipo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T04:14:32.032Z",
+      "chiamate": 203,
+      "rifiutate": 0,
+      "tokenIngresso": 218324,
+      "tokenUscita": 27575,
+      "spesa": 0.150563,
+      "fine": "2026-09-30T04:21:20.619Z"
+    },
+    {
+      "giro": "giudice collaudo-anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T04:24:07.415Z",
+      "chiamate": 6,
+      "rifiutate": 0,
+      "tokenIngresso": 5873,
+      "tokenUscita": 6505,
+      "spesa": 0.079734,
+      "fine": "2026-09-30T04:24:40.984Z"
+    },
+    {
+      "giro": "senza-anticipo",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T04:24:48.229Z",
+      "chiamate": 189,
+      "rifiutate": 0,
+      "tokenIngresso": 204534,
+      "tokenUscita": 25369,
+      "spesa": 0.14036,
+      "fine": "2026-09-30T04:29:29.178Z"
+    },
+    {
+      "giro": "giudice anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T04:29:29.517Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 33775,
+      "tokenUscita": 25150,
+      "spesa": 0.335943,
+      "fine": "2026-09-30T04:31:42.225Z"
+    },
+    {
+      "giro": "giudice senza-anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T04:31:42.606Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 33687,
+      "tokenUscita": 25301,
+      "spesa": 0.337236,
+      "fine": "2026-09-30T04:33:51.546Z"
+    },
+    {
+      "giro": "logo-dopo-doppioni",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T04:34:49.443Z",
+      "chiamate": 83,
+      "rifiutate": 0,
+      "tokenIngresso": 125098,
+      "tokenUscita": 11459,
+      "spesa": 0.079755,
+      "fine": "2026-09-30T04:38:11.971Z"
+    },
+    {
+      "giro": "taratura del giudice",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T05:18:07.522Z",
+      "chiamate": 40,
+      "rifiutate": 0,
+      "tokenIngresso": 36397,
+      "tokenUscita": 13459,
+      "spesa": 0.225589,
+      "fine": "2026-09-30T05:19:39.139Z"
+    },
+    {
+      "giro": "taratura del giudice",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T05:19:56.868Z",
+      "chiamate": 40,
+      "rifiutate": 0,
+      "tokenIngresso": 38397,
+      "tokenUscita": 13017,
+      "spesa": 0.22617,
+      "fine": "2026-09-30T05:21:24.129Z"
+    },
+    {
+      "giro": "regole-marco",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T05:21:55.529Z",
+      "chiamate": 195,
+      "rifiutate": 0,
+      "tokenIngresso": 268007,
+      "tokenUscita": 28815,
+      "spesa": 0.177265,
+      "fine": "2026-09-30T05:28:46.981Z"
+    },
+    {
+      "giro": "giudice regole-marco",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T05:28:47.294Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 46621,
+      "tokenUscita": 25507,
+      "spesa": 0.371632,
+      "fine": "2026-09-30T05:31:19.542Z"
+    },
+    {
+      "giro": "giudice anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T05:31:19.936Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 46139,
+      "tokenUscita": 25595,
+      "spesa": 0.371305,
+      "fine": "2026-09-30T05:33:50.600Z"
+    }
+  ]
+}
