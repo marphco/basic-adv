@@ -11,7 +11,8 @@
     "eval:requisiti": "node eval/provaRequisiti.js",
     "eval:serbatoio": "NODE_USE_ENV_PROXY=1 node eval/controllaSerbatoio.js",
     "eval:banco": "NODE_USE_ENV_PROXY=1 node eval/banco/banco.js",
-    "eval:giudice": "NODE_USE_ENV_PROXY=1 node eval/giudice.js"
+    "eval:giudice": "NODE_USE_ENV_PROXY=1 node eval/giudice.js",
+    "eval:doppioni": "NODE_USE_ENV_PROXY=1 node eval/doppioniSemantici.js"
   },
   "keywords": [],
   "author": "",
