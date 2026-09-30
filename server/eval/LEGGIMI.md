@@ -290,6 +290,10 @@ dalla risposta). Tenuta in memoria per sessione e punto della sessione; se
 non c'è (riavvio, più copie del server) si genera come prima. Il banco lo
 simula (`--pensa MS`, il cliente risponde in 2 s di base; `--senza-anticipo`
 per confronto). Da misurare col giudice: la qualità con e senza anticipo.
+Giro `anticipo` (202 domande, cliente che risponde in 2 s): 0 errori, 0
+riserve; domande successive alla prima: 135 su 158 immediate (sotto 0,1 s),
+9 su 10 entro 0,3 s; la prima domanda resta 1,6 s di mediana (non si può
+preparare: arriva dal modulo iniziale). Spesa totale 0,98 $.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
