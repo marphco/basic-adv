@@ -1,0 +1,475 @@
+{
+  "nota": "Scenari di prova CONGELATI: non si modificano tra la misura di partenza e quella dopo le correzioni, altrimenti i numeri non sono confrontabili. Ogni servizio del form in entrambe le lingue; budget, settore, tipo di progetto e nome del brand a rotazione, cosi ogni valore del form compare almeno una volta. Per ogni scenario si simulano domandePerScenario domande di fila, rispondendo sempre con la prima opzione.",
+  "creati": "2026-09-30",
+  "domandePerScenario": 3,
+  "scenari": [
+    {
+      "id": "it-01",
+      "lingua": "it",
+      "categoria": "Branding",
+      "servizio": "Logo",
+      "formData": {
+        "lang": "it",
+        "brandName": "Forno Aurora",
+        "projectType": "new",
+        "businessField": "Tech",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "it-02",
+      "lingua": "it",
+      "categoria": "Branding",
+      "servizio": "Brand Identity",
+      "formData": {
+        "lang": "it",
+        "brandName": "",
+        "projectType": "restyling",
+        "businessField": "Events",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "it-03",
+      "lingua": "it",
+      "categoria": "Branding",
+      "servizio": "Packaging",
+      "formData": {
+        "lang": "it",
+        "brandName": "Nordvik",
+        "projectType": "new",
+        "businessField": "Other",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "it-04",
+      "lingua": "it",
+      "categoria": "Social",
+      "servizio": "Content Creation",
+      "formData": {
+        "lang": "it",
+        "brandName": "Studio Leva",
+        "projectType": "restyling",
+        "businessField": "Shop",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "it-05",
+      "lingua": "it",
+      "categoria": "Social",
+      "servizio": "Social Media Management",
+      "formData": {
+        "lang": "it",
+        "brandName": "",
+        "projectType": "new",
+        "businessField": "Production",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "it-06",
+      "lingua": "it",
+      "categoria": "Social",
+      "servizio": "Advertising",
+      "formData": {
+        "lang": "it",
+        "brandName": "Mareluce",
+        "projectType": "restyling",
+        "businessField": "Food",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "it-07",
+      "lingua": "it",
+      "categoria": "Photo",
+      "servizio": "Product Photography",
+      "formData": {
+        "lang": "it",
+        "brandName": "Bottega Pini",
+        "projectType": "new",
+        "businessField": "Services",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "it-08",
+      "lingua": "it",
+      "categoria": "Photo",
+      "servizio": "Fashion Photography",
+      "formData": {
+        "lang": "it",
+        "brandName": "Forno Aurora",
+        "projectType": "restyling",
+        "businessField": "Tech",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "it-09",
+      "lingua": "it",
+      "categoria": "Photo",
+      "servizio": "Event Photography",
+      "formData": {
+        "lang": "it",
+        "brandName": "",
+        "projectType": "new",
+        "businessField": "Events",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "it-10",
+      "lingua": "it",
+      "categoria": "Video",
+      "servizio": "Promo Video",
+      "formData": {
+        "lang": "it",
+        "brandName": "Nordvik",
+        "projectType": "restyling",
+        "businessField": "Other",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "it-11",
+      "lingua": "it",
+      "categoria": "Video",
+      "servizio": "Corporate Video",
+      "formData": {
+        "lang": "it",
+        "brandName": "Studio Leva",
+        "projectType": "new",
+        "businessField": "Shop",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "it-12",
+      "lingua": "it",
+      "categoria": "Video",
+      "servizio": "Motion Graphics",
+      "formData": {
+        "lang": "it",
+        "brandName": "",
+        "projectType": "restyling",
+        "businessField": "Production",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "it-13",
+      "lingua": "it",
+      "categoria": "Web",
+      "servizio": "Website Design",
+      "formData": {
+        "lang": "it",
+        "brandName": "Mareluce",
+        "projectType": "new",
+        "businessField": "Food",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "it-14",
+      "lingua": "it",
+      "categoria": "Web",
+      "servizio": "E-commerce",
+      "formData": {
+        "lang": "it",
+        "brandName": "Bottega Pini",
+        "projectType": "restyling",
+        "businessField": "Services",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "it-15",
+      "lingua": "it",
+      "categoria": "Web",
+      "servizio": "Landing Page",
+      "formData": {
+        "lang": "it",
+        "brandName": "Forno Aurora",
+        "projectType": "new",
+        "businessField": "Tech",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "it-16",
+      "lingua": "it",
+      "categoria": "App",
+      "servizio": "Mobile App",
+      "formData": {
+        "lang": "it",
+        "brandName": "",
+        "projectType": "restyling",
+        "businessField": "Events",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "it-17",
+      "lingua": "it",
+      "categoria": "App",
+      "servizio": "Web App",
+      "formData": {
+        "lang": "it",
+        "brandName": "Nordvik",
+        "projectType": "new",
+        "businessField": "Other",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "it-18",
+      "lingua": "it",
+      "categoria": "App",
+      "servizio": "UI/UX Design",
+      "formData": {
+        "lang": "it",
+        "brandName": "Studio Leva",
+        "projectType": "restyling",
+        "businessField": "Shop",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "en-19",
+      "lingua": "en",
+      "categoria": "Branding",
+      "servizio": "Logo",
+      "formData": {
+        "lang": "en",
+        "brandName": "",
+        "projectType": "new",
+        "businessField": "Production",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "en-20",
+      "lingua": "en",
+      "categoria": "Branding",
+      "servizio": "Brand Identity",
+      "formData": {
+        "lang": "en",
+        "brandName": "Mareluce",
+        "projectType": "restyling",
+        "businessField": "Food",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "en-21",
+      "lingua": "en",
+      "categoria": "Branding",
+      "servizio": "Packaging",
+      "formData": {
+        "lang": "en",
+        "brandName": "Bottega Pini",
+        "projectType": "new",
+        "businessField": "Services",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "en-22",
+      "lingua": "en",
+      "categoria": "Social",
+      "servizio": "Content Creation",
+      "formData": {
+        "lang": "en",
+        "brandName": "Forno Aurora",
+        "projectType": "restyling",
+        "businessField": "Tech",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "en-23",
+      "lingua": "en",
+      "categoria": "Social",
+      "servizio": "Social Media Management",
+      "formData": {
+        "lang": "en",
+        "brandName": "",
+        "projectType": "new",
+        "businessField": "Events",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "en-24",
+      "lingua": "en",
+      "categoria": "Social",
+      "servizio": "Advertising",
+      "formData": {
+        "lang": "en",
+        "brandName": "Nordvik",
+        "projectType": "restyling",
+        "businessField": "Other",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "en-25",
+      "lingua": "en",
+      "categoria": "Photo",
+      "servizio": "Product Photography",
+      "formData": {
+        "lang": "en",
+        "brandName": "Studio Leva",
+        "projectType": "new",
+        "businessField": "Shop",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "en-26",
+      "lingua": "en",
+      "categoria": "Photo",
+      "servizio": "Fashion Photography",
+      "formData": {
+        "lang": "en",
+        "brandName": "",
+        "projectType": "restyling",
+        "businessField": "Production",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "en-27",
+      "lingua": "en",
+      "categoria": "Photo",
+      "servizio": "Event Photography",
+      "formData": {
+        "lang": "en",
+        "brandName": "Mareluce",
+        "projectType": "new",
+        "businessField": "Food",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "en-28",
+      "lingua": "en",
+      "categoria": "Video",
+      "servizio": "Promo Video",
+      "formData": {
+        "lang": "en",
+        "brandName": "Bottega Pini",
+        "projectType": "restyling",
+        "businessField": "Services",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "en-29",
+      "lingua": "en",
+      "categoria": "Video",
+      "servizio": "Corporate Video",
+      "formData": {
+        "lang": "en",
+        "brandName": "Forno Aurora",
+        "projectType": "new",
+        "businessField": "Tech",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "en-30",
+      "lingua": "en",
+      "categoria": "Video",
+      "servizio": "Motion Graphics",
+      "formData": {
+        "lang": "en",
+        "brandName": "",
+        "projectType": "restyling",
+        "businessField": "Events",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "en-31",
+      "lingua": "en",
+      "categoria": "Web",
+      "servizio": "Website Design",
+      "formData": {
+        "lang": "en",
+        "brandName": "Nordvik",
+        "projectType": "new",
+        "businessField": "Other",
+        "budget": "unknown"
+      }
+    },
+    {
+      "id": "en-32",
+      "lingua": "en",
+      "categoria": "Web",
+      "servizio": "E-commerce",
+      "formData": {
+        "lang": "en",
+        "brandName": "Studio Leva",
+        "projectType": "restyling",
+        "businessField": "Shop",
+        "budget": "1000-5000"
+      }
+    },
+    {
+      "id": "en-33",
+      "lingua": "en",
+      "categoria": "Web",
+      "servizio": "Landing Page",
+      "formData": {
+        "lang": "en",
+        "brandName": "",
+        "projectType": "new",
+        "businessField": "Production",
+        "budget": "10000+"
+      }
+    },
+    {
+      "id": "en-34",
+      "lingua": "en",
+      "categoria": "App",
+      "servizio": "Mobile App",
+      "formData": {
+        "lang": "en",
+        "brandName": "Mareluce",
+        "projectType": "restyling",
+        "businessField": "Food",
+        "budget": "0-1000"
+      }
+    },
+    {
+      "id": "en-35",
+      "lingua": "en",
+      "categoria": "App",
+      "servizio": "Web App",
+      "formData": {
+        "lang": "en",
+        "brandName": "Bottega Pini",
+        "projectType": "new",
+        "businessField": "Services",
+        "budget": "5000-10000"
+      }
+    },
+    {
+      "id": "en-36",
+      "lingua": "en",
+      "categoria": "App",
+      "servizio": "UI/UX Design",
+      "formData": {
+        "lang": "en",
+        "brandName": "Forno Aurora",
+        "projectType": "restyling",
+        "businessField": "Tech",
+        "budget": "unknown"
+      }
+    }
+  ]
+}

@@ -159,3 +159,5 @@ node_modules
 .env
 .DS_Store
 dist
+# Esiti delle prove del form dinamico: si rigenerano, non si versionano.
+eval/risultati/
