@@ -1,6 +1,6 @@
 {
   "nota": "Spesa OpenAI di tutte le prove del banco. Il tetto è 4 $ in tutto.",
-  "totale": 0.505392,
+  "totale": 0.513215,
   "giri": [
     {
       "giro": "collaudo-riciclo",
@@ -93,11 +93,11 @@
       "giro": "punto2",
       "modello": "gpt-3.5-turbo",
       "inizio": "2026-09-30T03:46:54.692Z",
-      "chiamate": 10,
+      "chiamate": 17,
       "rifiutate": 0,
-      "tokenIngresso": 17766,
-      "tokenUscita": 1314,
-      "spesa": 0.010855
+      "tokenIngresso": 30488,
+      "tokenUscita": 2288,
+      "spesa": 0.018679
     }
   ]
 }
