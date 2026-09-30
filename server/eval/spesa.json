@@ -1,6 +1,6 @@
 {
   "nota": "Spesa OpenAI di tutte le prove del banco. Il tetto è 4 $ in tutto.",
-  "totale": 3.807155,
+  "totale": 3.925519,
   "giri": [
     {
       "giro": "collaudo-riciclo",
@@ -275,6 +275,50 @@
       "tokenUscita": 15677,
       "spesa": 0.249792,
       "fine": "2026-09-30T06:03:23.105Z"
+    },
+    {
+      "giro": "doppioni C-gpt41mini",
+      "modello": "text-embedding-3-small",
+      "inizio": "2026-09-30T06:24:04.467Z",
+      "chiamate": 1,
+      "rifiutate": 0,
+      "tokenIngresso": 0,
+      "tokenUscita": 0,
+      "spesa": 0,
+      "fine": "2026-09-30T06:24:04.879Z"
+    },
+    {
+      "giro": "doppioni C-gpt41mini",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T06:24:25.716Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 11544,
+      "tokenUscita": 382,
+      "spesa": 0.006541,
+      "fine": "2026-09-30T06:24:59.994Z"
+    },
+    {
+      "giro": "doppioni-logo",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T06:26:17.674Z",
+      "chiamate": 161,
+      "rifiutate": 0,
+      "tokenIngresso": 169692,
+      "tokenUscita": 12497,
+      "spesa": 0.109864,
+      "fine": "2026-09-30T06:30:18.959Z"
+    },
+    {
+      "giro": "doppioni doppioni-logo",
+      "modello": "gpt-4.1-mini",
+      "inizio": "2026-09-30T06:30:19.378Z",
+      "chiamate": 10,
+      "rifiutate": 0,
+      "tokenIngresso": 3534,
+      "tokenUscita": 93,
+      "spesa": 0.001955,
+      "fine": "2026-09-30T06:30:29.354Z"
     }
   ]
 }

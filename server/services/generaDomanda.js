@@ -6,7 +6,7 @@
 // database e il resto. Il comportamento non cambia: server.js la usa da qui.
 // L'unico ritocco è in domandaSuccessiva: la risposta 502 della rotta ora è
 // un errore con `stato: 502`, che la rotta trasforma nella stessa risposta.
-const { rlGenerateQuestions } = require("./rlClient");
+const { rlGenerateQuestions, rlDomandeRipetute } = require("./rlClient");
 const { TEMI, OBBLIGATORIE, temaFisso, verifica } = require("./requisitiDomande");
 
 // Difetti delle opzioni per cui una proposta dell'AI si scarta subito, a
@@ -355,6 +355,21 @@ Per ogni domanda:
       candidates = candidates.filter(
         (q) => !askedSet.has(sanitizeKey(q.question))
       );
+
+      // 2b) doppioni di significato: stessa domanda con parole diverse
+      //     ("Dove userai il logo?" / "Come vuoi che il logo sia usato più
+      //     spesso?"). Il controllo per parole non li vede; li vede il
+      //     modello. Visti da Marco sul sito, 30/09/2026.
+      if (candidates.length && askedSanitized.length) {
+        const ripetute = await rlDomandeRipetute(
+          candidates.map((q) => q.question),
+          askedSanitized,
+          { base: process.env.RL_API_BASE }
+        );
+        const scartate = candidates.filter((_, i) => ripetute.has(i));
+        exclusionBag.push(...scartate.map((q) => q.question));
+        candidates = candidates.filter((_, i) => !ripetute.has(i));
+      }
 
       // 3) prendi il primo valido
       if (candidates.length) {

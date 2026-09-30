@@ -13,6 +13,7 @@
 const { verifica } = require("./requisitiDomande");
 const { RISERVA } = require("./domandeRiserva");
 const { sanitizeKey } = require("./generaDomanda");
+const { rlDomandeRipetute } = require("./rlClient");
 
 // Oltre questo tempo il cliente aspetta troppo: si passa alla riserva. Sul
 // banco una domanda richiede di solito 2-6 secondi, al massimo una decina.
@@ -26,9 +27,10 @@ function entroIlTempo(promessa, ms) {
   return Promise.race([promessa, scaduto]).finally(() => clearTimeout(timer));
 }
 
-// La prima domanda di riserva del servizio che rispetta i requisiti in
-// questa sessione (cioè che non ripete una domanda già fatta).
-function domandaDiRiserva({ servizio, lingua, giaChieste = [] }) {
+// Le domande di riserva del servizio che rispettano i requisiti in questa
+// sessione (cioè che non ripetono le parole di una domanda già fatta).
+function riserveValide({ servizio, lingua, giaChieste = [] }) {
+  const out = [];
   for (const r of RISERVA[servizio]?.[lingua] || []) {
     const q = {
       question: sanitizeKey(r.question),
@@ -37,9 +39,21 @@ function domandaDiRiserva({ servizio, lingua, giaChieste = [] }) {
       requiresInput: false,
       __provider: "riserva",
     };
-    if (!verifica(q, { lingua, servizio, giaChieste }).length) return q;
+    if (!verifica(q, { lingua, servizio, giaChieste }).length) out.push(q);
   }
-  return null;
+  return out;
+}
+
+const domandaDiRiserva = (ctx) => riserveValide(ctx)[0] || null;
+
+// Come sopra, ma scarta anche quelle che chiedono la stessa cosa di una già
+// fatta con parole diverse (controllo del modello; se non risponde, vale la
+// prima valida).
+async function domandaDiRiservaNuova(ctx) {
+  const valide = riserveValide(ctx).slice(0, 4);
+  if (valide.length < 2 || !ctx.giaChieste?.length) return valide[0] || null;
+  const ripetute = await rlDomandeRipetute(valide.map((q) => q.question), ctx.giaChieste);
+  return valide.find((_, i) => !ripetute.has(i)) || valide[0];
 }
 
 // `genera` è la solita generazione con l'AI. Restituisce la domanda da
@@ -61,7 +75,7 @@ async function domandaSicura({ servizio, lingua, giaChieste = [], genera, tempoM
     motivo = "errore: " + (e?.message || e);
   }
 
-  const riserva = domandaDiRiserva({ servizio, lingua, giaChieste });
+  const riserva = await domandaDiRiservaNuova({ servizio, lingua, giaChieste });
   console.warn(`[rete] ${servizio} (${lingua}): ${riserva ? "domanda di riserva" : "riserva esaurita"} — ${motivo}`);
   if (riserva) riserva.__motivoRiserva = motivo;
   return riserva;

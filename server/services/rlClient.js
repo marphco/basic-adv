@@ -92,4 +92,28 @@ async function rlGenerateQuestions(
   return [];
 }
 
-module.exports = { rlSaveTraining, rlGenerateQuestions };
+/**
+ * Quali domande candidate chiedono la stessa cosa di una già fatta, anche
+ * con parole diverse. Chiede al backend RL (/api/check-repeats). Se il
+ * controllo non risponde, non blocca niente: restituisce un insieme vuoto.
+ */
+async function rlDomandeRipetute(candidates, asked, { base, token } = {}) {
+  const RL_BASE = trim(base || process.env.RL_API_BASE || "");
+  if (!RL_BASE || !candidates?.length || !asked?.length) return new Set();
+  const headers = { "Content-Type": "application/json" };
+  const key = token || process.env.RL_API_KEY;
+  if (key) headers.Authorization = `Bearer ${key}`;
+  try {
+    const { data } = await axios.post(
+      `${RL_BASE}/api/check-repeats`,
+      { candidates, asked },
+      { headers, timeout: 8000 }
+    );
+    return new Set(Array.isArray(data?.repeated) ? data.repeated : []);
+  } catch (e) {
+    console.warn("[ripetute] controllo non riuscito:", e?.response?.status || e.message);
+    return new Set();
+  }
+}
+
+module.exports = { rlSaveTraining, rlGenerateQuestions, rlDomandeRipetute };
