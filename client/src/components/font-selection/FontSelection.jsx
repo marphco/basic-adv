@@ -86,7 +86,11 @@ const FontSelection = ({
             type="button"
           >
             <span className="font-example" style={fontStyles[option] || {}}>
-              {customText || t("fontSelection.sampleText")}
+              {/* Al massimo due righe, centrate: un testo lungo va a capo
+                  e non esce dal riquadro. */}
+              <span className="font-example-testo">
+                {customText || t("fontSelection.sampleText")}
+              </span>
             </span>
             <span className="font-name">{option}</span>
           </button>

@@ -75,14 +75,17 @@
   .font-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
+    gap: 1rem 0.75rem;
     width: 100%;
     padding: 0 0.5rem;
+    box-sizing: border-box;
   }
   
   .font-button {
     background: transparent;
     border: none;
+    padding: 0;
+    min-width: 0;
 
     transition: all 0.5s ease;
     width: 100%;
@@ -102,8 +105,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 120px;
+    /* Riempie la sua colonna: con una larghezza fissa, su mobile i
+       riquadri erano più larghi delle colonne e si toccavano. */
+    width: 100%;
+    max-width: 160px;
     height: 60px;
+    box-sizing: border-box;
+    overflow: hidden;
     border: 1px solid #d1d1d1;
     border-radius: 4px;
     font-size: 0.9rem;
@@ -111,9 +119,21 @@
     transition: all 0.5s ease;
     background: transparent;
     text-align: center;
-    padding: 0 0.25rem;
+    padding: 0 0.5rem;
     white-space: normal;
-    overflow-wrap: break-word;
+  }
+
+  .font-example-testo {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    max-width: 100%;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   
   .font-button:hover .font-example {
@@ -170,8 +190,8 @@
     }
   
     .font-example {
-      width: 133px;
-      height: 50px;
+      max-width: none;
+      height: 56px;
       font-size: 0.8rem;
     }
   }
