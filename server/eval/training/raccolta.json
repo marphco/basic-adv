@@ -1,0 +1,1607 @@
+{
+  "nota": "Raccolta del training, separata dal database vero (deciso con Marco). Ogni voto dice da chi viene: fonte marco o ai. Il voto di Marco vince sempre. Voti da -1 a +1 come la dashboard. Si porta nel database solo con il suo ok.",
+  "righe": [
+    {
+      "id": "marco-q01",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "it"
+      },
+      "question": "Quale forma preferisci per il simbolo nel logo",
+      "options": [
+        "Geometrica",
+        "Organica",
+        "Astratta",
+        "Lettera iniziale del brand"
+      ],
+      "questionReward": 0,
+      "optionsReward": 0,
+      "nota": "la domanda non è male anche se non mi convince al 100% perchè mi sembra troppo generica, ad esempio un logo che è fatto da un monogram oppure delle iniziali conctenate, per dirne una, come definisci la forma in quel caso? Mettiamo in difficoltà l'utente che non sa cosa rispondere secondo me con una domanda cosi generica. Anche le risposte non mi convincono, organica... ma che vuol dire? Dobbiamo immaginare che spesso chi riceve queste domande non capisce nulla nè di comunicazione nè di grafica...",
+      "timestamp": "2026-09-30T04:57:05.247Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-01#1",
+        "n": 1,
+        "profilo": "Settore: Tech · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni ben distinte e adatte al contesto logo tech, manca solo una via d'uscita.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 5,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q02",
+      "fonte": "marco",
+      "state": {
+        "service": "Brand Identity",
+        "language": "it"
+      },
+      "question": "Quale stile tipografico preferisci per il logo?",
+      "options": [
+        "Serif",
+        "Sans-serif",
+        "Script",
+        "Monospaziato",
+        "Manoscritto",
+        "Decorativo"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:08.510Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-02#1",
+        "n": 2,
+        "profilo": "Settore: Events · Progetto: restyling · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e opzioni complete, manca solo l'opzione 'Non saprei' per chi non ha preferenze.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 5,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q03",
+      "fonte": "marco",
+      "state": {
+        "service": "Packaging",
+        "language": "it"
+      },
+      "question": "Quale tipo di materiale preferisci per il packaging",
+      "options": [
+        "Carta riciclata",
+        "Plastica biodegradabile",
+        "Cartone",
+        "Vetro"
+      ],
+      "questionReward": 1,
+      "optionsReward": 0,
+      "nota": "Non so se la risposta \"Altro\" con il campo di risposta aperta è sempre presente oppure no, dove l'utente può espandere... per una domanda del genere ad esempio ci vorrebbe perchè questi 4 palesemente non sono gli unici materiali possibili con cui costruire un packaging ed è limitante permettergli di scegliere solo tra questi.",
+      "timestamp": "2026-09-30T04:57:11.626Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-03#1",
+        "n": 3,
+        "profilo": "Settore: Other · Progetto: nuovo · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, ma manca l'opzione per chi non sa scegliere il materiale.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q04",
+      "fonte": "marco",
+      "state": {
+        "service": "Content Creation",
+        "language": "it"
+      },
+      "question": "Quali tipi di contenuti visivi preferisci per la tua attività",
+      "options": [
+        "Immagini fotografiche",
+        "Grafiche vettoriali",
+        "Infografiche",
+        "Illustrazioni"
+      ],
+      "questionReward": 1,
+      "optionsReward": 0,
+      "nota": "ci potrebbero essere molte altre scelte, video, reels, caroselli... insomma anche in questo caso il campo altro aiuterebbe.",
+      "timestamp": "2026-09-30T04:57:14.978Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-04#1",
+        "n": 1,
+        "profilo": "Settore: Shop · Progetto: restyling · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni ben distinte ma manca 'Altro' o 'Non saprei' come uscita.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q05",
+      "fonte": "marco",
+      "state": {
+        "service": "Social Media Management",
+        "language": "it"
+      },
+      "question": "Qual è la tua strategia attuale per coinvolgere il pubblico sui social media",
+      "options": [
+        "Concorsi e giveaways",
+        "Collaborazioni con influencer",
+        "Contenuti user-generated",
+        "Live streaming di eventi"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:18.027Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-05#1",
+        "n": 2,
+        "profilo": "Settore: Production · Progetto: nuovo · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e ben profilata, ma manca l'opzione 'Non saprei/Consigliatemi voi'.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q06",
+      "fonte": "marco",
+      "state": {
+        "service": "Advertising",
+        "language": "it"
+      },
+      "question": "Hai considerato l'utilizzo di influencer nel tuo piano pubblicitario",
+      "options": [
+        "Sì, già coinvolgiamo influencer",
+        "No, non abbiamo ancora valutato questa opzione",
+        "Stiamo pensando di farlo",
+        "Non saprei, cosa ne pensate?"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:21.560Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-06#1",
+        "n": 3,
+        "profilo": "Settore: Food · Progetto: restyling · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda molto utile per il preventivo, opzioni chiare e complete, inclusa la via d'uscita.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q07",
+      "fonte": "marco",
+      "state": {
+        "service": "Product Photography",
+        "language": "it"
+      },
+      "question": "Quali tipi di prodotti saranno oggetto delle fotografie",
+      "options": [
+        "Abbigliamento",
+        "Accessori",
+        "Prodotti alimentari",
+        "Elettronica"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:24.631Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-07#1",
+        "n": 1,
+        "profilo": "Settore: Services · Progetto: nuovo · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni pertinenti e complete, uscita presente.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q08",
+      "fonte": "marco",
+      "state": {
+        "service": "Fashion Photography",
+        "language": "it"
+      },
+      "question": "Quale tipo di abiti o outfit desideri siano indossati durante lo shooting fotografico",
+      "options": [
+        "Casual",
+        "Formale",
+        "Sportivo",
+        "Elegante"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:28.129Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-08#1",
+        "n": 2,
+        "profilo": "Settore: Tech · Progetto: restyling · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 0,
+        "motivo": "Domanda utile ma le opzioni non coprono tutte le possibilità (es. 'Streetwear', 'Business casual', manca 'Non saprei').",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 3,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q09",
+      "fonte": "marco",
+      "state": {
+        "service": "Event Photography",
+        "language": "it"
+      },
+      "question": "Quali sono gli elementi chiave che desideri vengano catturati nelle fotografie degli eventi",
+      "options": [
+        "Dettagli decorativi",
+        "Momenti emozionanti",
+        "Interazioni spontanee",
+        "Atmosfera generale"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:31.651Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-09#1",
+        "n": 3,
+        "profilo": "Settore: Events · Progetto: nuovo · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda perfetta per capire le priorità del cliente, opzioni complete e ben formulate.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q10",
+      "fonte": "marco",
+      "state": {
+        "service": "Promo Video",
+        "language": "it"
+      },
+      "question": "Quale mood vorresti trasmettere nel video promozionale",
+      "options": [
+        "Elegante",
+        "Divertente",
+        "Professionale",
+        "Minimalista"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:34.836Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-10#1",
+        "n": 1,
+        "profilo": "Settore: Other · Progetto: restyling · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni pertinenti e tono corretto.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q11",
+      "fonte": "marco",
+      "state": {
+        "service": "Corporate Video",
+        "language": "it"
+      },
+      "question": "Hai un concept o uno storyboard già definito per il video aziendale",
+      "options": [
+        "Sì, ho un concept dettagliato",
+        "Ho delle idee ma nulla di definitivo",
+        "Non ancora, ma sono aperto a suggerimenti",
+        "No, preferirei ricevere supporto creativo"
+      ],
+      "questionReward": 1,
+      "optionsReward": 0,
+      "nota": "le ultime due risposte proposte sono troppo simili secondo me. Sei d'accordo?",
+      "timestamp": "2026-09-30T04:57:37.894Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-11#1",
+        "n": 2,
+        "profilo": "Settore: Shop · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda fondamentale per capire il punto di partenza creativo, opzioni esaustive e ben formulate.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q12",
+      "fonte": "marco",
+      "state": {
+        "service": "Motion Graphics",
+        "language": "it"
+      },
+      "question": "Quanto tempo medio dovrebbe durare un video di Motion Graphics per il tuo progetto",
+      "options": [
+        "15 secondi",
+        "30 secondi",
+        "1 minuto",
+        "2 minuti"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:40.898Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-12#1",
+        "n": 3,
+        "profilo": "Settore: Production · Progetto: restyling · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e chiara, ma manca l'opzione 'Non saprei' che sarebbe utile per chi non ha ancora deciso la durata.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 2,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q13",
+      "fonte": "marco",
+      "state": {
+        "service": "Website Design",
+        "language": "it"
+      },
+      "question": "Quale stile preferisci per il design del tuo sito web",
+      "options": [
+        "Minimalista",
+        "Vintage",
+        "Moderno",
+        "Artistico"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:44.014Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-13#1",
+        "n": 1,
+        "profilo": "Settore: Food · Progetto: nuovo · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni ben scelte ma manca 'Non saprei, consigliatemi voi' per chi non ha preferenze.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q14",
+      "fonte": "marco",
+      "state": {
+        "service": "E-commerce",
+        "language": "it"
+      },
+      "question": "Hai considerato l'implementazione di un sistema di raccomandazioni personalizzate per i tuoi clienti",
+      "options": [
+        "Sì, sto valutando questa opzione",
+        "No, non l'ho ancora presa in considerazione",
+        "Non sono sicuro, vorrei saperne di più",
+        "Preferirei altri miglioramenti prima di questo"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:47.389Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-14#1",
+        "n": 2,
+        "profilo": "Settore: Services · Progetto: restyling · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda avanzata ma spiegata bene, opzioni complete e con via d'uscita.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 5,
+          "profilo": 4,
+          "brevita": 4,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q15",
+      "fonte": "marco",
+      "state": {
+        "service": "Landing Page",
+        "language": "it"
+      },
+      "question": "Quale tipo di hero image preferisci per la tua Landing Page",
+      "options": [
+        "Immagine di un team al lavoro",
+        "Immagine di un prodotto in primo piano",
+        "Immagine di un cliente soddisfatto",
+        "Immagine di un panorama tecnologico"
+      ],
+      "questionReward": 0,
+      "optionsReward": 1,
+      "nota": "la domanda non è male ma forse usiamo troppo linguaggio tecnico? Non tutti sanno cos'è una hero section e una landing page.",
+      "timestamp": "2026-09-30T04:57:50.551Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-15#1",
+        "n": 3,
+        "profilo": "Settore: Tech · Progetto: nuovo · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e ben formulata, opzioni pertinenti e chiare, buona personalizzazione sul tipo di progetto.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 5,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q16",
+      "fonte": "marco",
+      "state": {
+        "service": "Mobile App",
+        "language": "it"
+      },
+      "question": "Quali funzionalità aggiuntive vorresti implementare nella tua app",
+      "options": [
+        "Chat in tempo reale",
+        "Notifiche push personalizzate",
+        "Integrazione con i social media",
+        "Sistema di prenotazione online"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:57:54.061Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-16#1",
+        "n": 1,
+        "profilo": "Settore: Events · Progetto: restyling · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni rilevanti ma manca 'Altro' per coprire esigenze specifiche.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q17",
+      "fonte": "marco",
+      "state": {
+        "service": "Web App",
+        "language": "it"
+      },
+      "question": "Quale tipo di notifiche preferiresti ricevere sulla tua Web App",
+      "options": [
+        "Notifiche push",
+        "Notifiche email",
+        "Notifiche in-app",
+        "Notifiche SMS"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "dici che la vede ripetitiva ma io vedo domande che arrivano da tutte le categorie, per cui non so a cosa ti riferisci come domanda precedente.",
+      "timestamp": "2026-09-30T04:57:57.233Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-17#1",
+        "n": 2,
+        "profilo": "Settore: Other · Progetto: nuovo · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 0,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara ma ripetitiva rispetto alla precedente, utile solo se si vuole approfondire la preferenza.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 3,
+          "opzioni": 5,
+          "profilo": 3,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q18",
+      "fonte": "marco",
+      "state": {
+        "service": "UI/UX Design",
+        "language": "it"
+      },
+      "question": "Quale stile di navigazione preferisci per il tuo sito web",
+      "options": [
+        "Barra di navigazione fisso in alto",
+        "Menu a tendina",
+        "Navigazione a schede",
+        "Menu a icone"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:58:04.231Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-18#1",
+        "n": 3,
+        "profilo": "Settore: Shop · Progetto: restyling · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e adatta al contesto, opzioni complete ma manca una via d'uscita esplicita.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q19",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "en"
+      },
+      "question": "What visual elements would you like to see incorporated into the logo",
+      "options": [
+        "Nature-inspired",
+        "Geometric shapes",
+        "Abstract forms",
+        "Industrial elements"
+      ],
+      "questionReward": 0,
+      "optionsReward": 0,
+      "nota": "domanda molto generica, secondo me non aggiunge valore all'analisi del pre-briefing con il cliente. ANche le risposte secondo me non molto utili",
+      "timestamp": "2026-09-30T04:59:11.507Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-19#3",
+        "n": 5,
+        "profilo": "Settore: Production · Progetto: nuovo · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile, opzioni buone, ma alcune sovrapposizioni tra 'abstract' e 'geometric'.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q20",
+      "fonte": "marco",
+      "state": {
+        "service": "Brand Identity",
+        "language": "en"
+      },
+      "question": "Would you like the logo to include a symbol or icon",
+      "options": [
+        "Yes, I prefer a symbol/icon",
+        "No, I prefer a text-only logo",
+        "I'm open to either",
+        "Not sure, please advise"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T04:59:25.837Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-20#1",
+        "n": 2,
+        "profilo": "Settore: Food · Progetto: restyling · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda perfetta per chiarezza, utilità e completezza delle opzioni.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q21",
+      "fonte": "marco",
+      "state": {
+        "service": "Packaging",
+        "language": "en"
+      },
+      "question": "What type of packaging materials do you prefer",
+      "options": [
+        "Cardboard",
+        "Plastic",
+        "Paper",
+        "Metal"
+      ],
+      "questionReward": 1,
+      "optionsReward": 0,
+      "nota": "anche qui, la voce altro è necessaria (forse potrebbe esserlo nella maggior parte delle domande, se non addirittura tutte, tranne quella sui colori che già presenta un campo in cui scrivere liberamente).",
+      "timestamp": "2026-09-30T05:00:34.136Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-21#1",
+        "n": 3,
+        "profilo": "Settore: Services · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile, ma le opzioni potrebbero includere 'Not sure' o 'Other' per maggiore flessibilità.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q22",
+      "fonte": "marco",
+      "state": {
+        "service": "Content Creation",
+        "language": "en"
+      },
+      "question": "What type of imagery do you envision accompanying your content? (e_g_, photography, illustrations, graphics)",
+      "options": [
+        "Photography",
+        "Illustrations",
+        "Graphics",
+        "Mixture of all"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:00:49.930Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-22#1",
+        "n": 1,
+        "profilo": "Settore: Tech · Progetto: restyling · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara, utile e ben profilata; opzioni complete e senza sovrapposizioni.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q23",
+      "fonte": "marco",
+      "state": {
+        "service": "Social Media Management",
+        "language": "en"
+      },
+      "question": "Do you have a preferred theme for your social media content",
+      "options": [
+        "Minimalistic",
+        "Vibrant",
+        "Elegant",
+        "Playful"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:01:00.123Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-23#1",
+        "n": 2,
+        "profilo": "Settore: Events · Progetto: nuovo · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda pertinente e ben formulata, opzioni buone ma manca 'Not sure, suggest me'.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q24",
+      "fonte": "marco",
+      "state": {
+        "service": "Advertising",
+        "language": "en"
+      },
+      "question": "What is the main goal you wish to achieve with your advertising campaign",
+      "options": [
+        "Brand awareness",
+        "Lead generation",
+        "Increase sales",
+        "Drive website traffic"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:01:14.421Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-24#1",
+        "n": 3,
+        "profilo": "Settore: Other · Progetto: restyling · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda e opzioni complete, chiare e perfettamente in target.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q25",
+      "fonte": "marco",
+      "state": {
+        "service": "Product Photography",
+        "language": "en"
+      },
+      "question": "Do you have specific preferences regarding the background for the product photos",
+      "options": [
+        "White background",
+        "Wooden surface",
+        "Marble backdrop",
+        "Customized backdrop"
+      ],
+      "questionReward": 1,
+      "optionsReward": 0,
+      "nota": "le risposte non sono sicuro mi convincano al 100%, la voce altro anche qui è fondamentale secondo me",
+      "timestamp": "2026-09-30T05:01:53.246Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-25#1",
+        "n": 1,
+        "profilo": "Settore: Shop · Progetto: nuovo · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni quasi complete ma manca 'No preference'.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q26",
+      "fonte": "marco",
+      "state": {
+        "service": "Fashion Photography",
+        "language": "en"
+      },
+      "question": "What is your preferred style for fashion photography",
+      "options": [
+        "Editorial",
+        "High Fashion",
+        "Street Style",
+        "Vintage"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:02:16.014Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-26#1",
+        "n": 2,
+        "profilo": "Settore: Production · Progetto: restyling · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e ben posta, ma manca l'opzione 'Not sure, open to suggestions'.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q27",
+      "fonte": "marco",
+      "state": {
+        "service": "Event Photography",
+        "language": "en"
+      },
+      "question": "Would you prefer capturing more spontaneous candid moments or setting up specific posed shots during the event",
+      "options": [
+        "Spontaneous candid moments",
+        "Posed shots",
+        "Mix of both",
+        "Not sure, photographer's choice"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "anche qui, non so le domande precedenti quali fossero, non avendo visibility io sto giudicando le domande e le risposte in valore assoluto.",
+      "timestamp": "2026-09-30T05:03:17.261Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-27#1",
+        "n": 3,
+        "profilo": "Settore: Food · Progetto: nuovo · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": -1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda ripetitiva e ridondante rispetto alle precedenti, non aggiunge valore.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 2,
+          "opzioni": 4,
+          "profilo": 2,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q28",
+      "fonte": "marco",
+      "state": {
+        "service": "Promo Video",
+        "language": "en"
+      },
+      "question": "What tone or mood would you like the promo video to convey",
+      "options": [
+        "Energetic",
+        "Elegant",
+        "Playful",
+        "Professional"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:03:28.958Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-28#1",
+        "n": 1,
+        "profilo": "Settore: Services · Progetto: restyling · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile per definire la creatività, opzioni ben scelte e tono adatto.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q29",
+      "fonte": "marco",
+      "state": {
+        "service": "Corporate Video",
+        "language": "en"
+      },
+      "question": "What tone or mood would you like the corporate video to convey",
+      "options": [
+        "Professional and formal",
+        "Innovative and modern",
+        "Friendly and approachable",
+        "Elegant and sophisticated"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:03:47.060Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-29#1",
+        "n": 2,
+        "profilo": "Settore: Tech · Progetto: nuovo · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda molto utile per capire lo stile, opzioni ben pensate; manca solo l'opzione 'Not sure, please advise'.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 5,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q30",
+      "fonte": "marco",
+      "state": {
+        "service": "Motion Graphics",
+        "language": "en"
+      },
+      "question": "What type of animation style are you envisioning for the motion graphics",
+      "options": [
+        "2D Animation",
+        "3D Animation",
+        "Stop Motion",
+        "Vector Animation"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:04:10.482Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-30#1",
+        "n": 3,
+        "profilo": "Settore: Events · Progetto: restyling · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda molto utile, ma 'Vector Animation' può sovrapporsi a 2D; meglio chiarire o accorpare.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q31",
+      "fonte": "marco",
+      "state": {
+        "service": "Website Design",
+        "language": "en"
+      },
+      "question": "Do you have any specific preferences for the layout structure of your website",
+      "options": [
+        "Minimalistic design",
+        "Grid layout",
+        "Full-screen images",
+        "Card-based design"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:04:22.407Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-31#1",
+        "n": 1,
+        "profilo": "Settore: Other · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni rilevanti e ben distinte, manca solo una breve spiegazione per chi non conosce i termini.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q32",
+      "fonte": "marco",
+      "state": {
+        "service": "E-commerce",
+        "language": "en"
+      },
+      "question": "What payment methods would you like to offer on your E-commerce platform",
+      "options": [
+        "Credit Card",
+        "PayPal",
+        "Bank Transfer",
+        "Apple Pay"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "Apple Pay potrebbe diventare anche Apple Pay / Google Pay",
+      "timestamp": "2026-09-30T05:04:57.958Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-32#1",
+        "n": 2,
+        "profilo": "Settore: Shop · Progetto: restyling · Budget: 1.000-5.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 0,
+        "motivo": "Domanda utile e chiara, ma manca l'opzione 'Other' e 'Not sure', e alcune opzioni diffuse (es. Google Pay) non sono presenti.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 3,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 2,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q33",
+      "fonte": "marco",
+      "state": {
+        "service": "Landing Page",
+        "language": "en"
+      },
+      "question": "Do you have specific preferences for the layout style of the landing page",
+      "options": [
+        "Minimalist design",
+        "Bold and colorful layout",
+        "Clean and modern look",
+        "Interactive design elements"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:05:15.586Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-33#1",
+        "n": 3,
+        "profilo": "Settore: Production · Progetto: nuovo · Budget: oltre 10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e ben posta, ma manca l'opzione 'Not sure, please advise'.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q34",
+      "fonte": "marco",
+      "state": {
+        "service": "Mobile App",
+        "language": "en"
+      },
+      "question": "What type of user authentication method would you prefer to implement in the mobile app",
+      "options": [
+        "Email/Password",
+        "Social Media Login",
+        "Biometric (e.g., fingerprint, face ID)",
+        "PIN/Pattern"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:05:25.902Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-34#1",
+        "n": 1,
+        "profilo": "Settore: Food · Progetto: restyling · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni complete e ben distinte, ma forse troppo tecnica per un cliente con budget basso.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 5,
+          "profilo": 3,
+          "brevita": 4,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q35",
+      "fonte": "marco",
+      "state": {
+        "service": "Web App",
+        "language": "en"
+      },
+      "question": "What type of push notifications would you like to implement in the web app",
+      "options": [
+        "In-app notifications",
+        "Push notifications with sound",
+        "Silent push notifications",
+        "Rich push notifications"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:05:39.041Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-35#1",
+        "n": 2,
+        "profilo": "Settore: Services · Progetto: nuovo · Budget: 5.000-10.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e opzioni pertinenti, ma la differenza tra alcune opzioni potrebbe non essere immediata per tutti.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q36",
+      "fonte": "marco",
+      "state": {
+        "service": "UI/UX Design",
+        "language": "en"
+      },
+      "question": "What is your preferred approach to conducting user research for UI/UX projects",
+      "options": [
+        "User interviews",
+        "Surveys",
+        "Usability testing",
+        "Persona development"
+      ],
+      "questionReward": 0,
+      "optionsReward": 0,
+      "nota": "Domanda molto molto tecnica secondo me e anche le risposte. Non sono male ma credo che possiamo fare di meglio",
+      "timestamp": "2026-09-30T05:06:44.879Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-36#1",
+        "n": 3,
+        "profilo": "Settore: Tech · Progetto: restyling · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda utile e chiara, ma ancora troppo tecnica per molti clienti non esperti.",
+        "criteri": {
+          "chiarezza": 4,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 3,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 2,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q37",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "it"
+      },
+      "question": "Preferisci un logo con un simbolo stilizzato o realistico",
+      "options": [
+        "Stilizzato",
+        "Realistico",
+        "Non saprei",
+        "Mi fido del tuo giudizio"
+      ],
+      "questionReward": -1,
+      "optionsReward": -1,
+      "nota": "non mi piace la domanda. Che intendi per stile realistico? In un logo? Che fai metti una fotografia? Secondo me brutta la domanda e di conseguenza le risposte.",
+      "timestamp": "2026-09-30T05:07:53.313Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-01#1",
+        "n": 7,
+        "profilo": "Settore: Tech · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 0,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara ma un po' ridondante rispetto alle precedenti.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 3,
+          "opzioni": 5,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 5,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q38",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "it"
+      },
+      "question": "Quale atmosfera preferisci che il tuo logo trasmetta",
+      "options": [
+        "Professionale",
+        "Gioviale",
+        "Moderno",
+        "Elegante"
+      ],
+      "questionReward": 0,
+      "optionsReward": 1,
+      "nota": "non mi piace la parola atmosfera associata ad un logo.",
+      "timestamp": "2026-09-30T05:08:25.487Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "it-01#2",
+        "n": 1,
+        "profilo": "Settore: Tech · Progetto: nuovo · Budget: non sa"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni buone ma manca 'Non saprei' come uscita.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 5,
+          "opzioni": 4,
+          "profilo": 5,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 3,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q39",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "en"
+      },
+      "question": "What emotions or feelings should the logo evoke",
+      "options": [
+        "Elegance",
+        "Innovation",
+        "Trust",
+        "Simplicity"
+      ],
+      "questionReward": 1,
+      "optionsReward": 1,
+      "nota": "",
+      "timestamp": "2026-09-30T05:08:35.904Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-19#1",
+        "n": 6,
+        "profilo": "Settore: Production · Progetto: nuovo · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara e utile, opzioni rilevanti ma non esaustive.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    },
+    {
+      "id": "marco-q40",
+      "fonte": "marco",
+      "state": {
+        "service": "Logo",
+        "language": "en"
+      },
+      "question": "What level of complexity would you prefer in the logo design",
+      "options": [
+        "Minimalistic",
+        "Intricate",
+        "Balanced",
+        "Dynamic"
+      ],
+      "questionReward": -1,
+      "optionsReward": 0,
+      "nota": "",
+      "timestamp": "2026-09-30T05:08:50.901Z",
+      "origine": {
+        "giro": "anticipo",
+        "sessione": "en-19#1",
+        "n": 10,
+        "profilo": "Settore: Production · Progetto: nuovo · Budget: fino a 1.000 €"
+      },
+      "votoAi": {
+        "votoDomanda": 1,
+        "votoOpzioni": 1,
+        "motivo": "Domanda chiara, opzioni buone ma 'Balanced' e 'Dynamic' poco definite.",
+        "criteri": {
+          "chiarezza": 5,
+          "utilita": 4,
+          "opzioni": 4,
+          "profilo": 4,
+          "brevita": 5,
+          "tono": 5,
+          "uscita": 4,
+          "lingua": 5
+        }
+      }
+    }
+  ]
+}
