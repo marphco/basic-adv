@@ -116,6 +116,17 @@ delle correzioni.
   `eval/risultati/fotografia-serbatoio.json` (ignorato da git) e misura
   quante domande hanno la lingua sbagliata e dove il riciclo le può servire.
 
+**Prima misura (passo 1, 30 settembre 2026)** — fotografia di 274 righe,
+dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
+- Tutte le righe sono del servizio **Logo**: per gli altri servizi il
+  serbatoio è vuoto, quindi niente esempi né riciclo.
+- 258 righe su 274 **senza lingua**: metà italiane (128), metà inglesi (129).
+- 130 domande trattate da italiane ma **in inglese** (129 senza lingua, 1
+  etichettata "it"); 43 hanno voto positivo.
+- Logo italiano: 3 dei 6 esempi del prompt sono inglesi, e il riciclo li
+  può servire tali e quali (circa una volta su tre). Confermata la causa 1.
+- Logo inglese: solo 5 positive, quindi niente riciclo; esempi tutti inglesi.
+
 ## Ambiente cloud delle prove
 
 - Variabili già impostate: `OPENAI_API_KEY`, `OPENAI_API_URL`,
