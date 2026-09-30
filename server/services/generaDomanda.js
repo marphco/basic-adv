@@ -8,6 +8,12 @@
 // un errore con `stato: 502`, che la rotta trasforma nella stessa risposta.
 const { rlGenerateQuestions } = require("./rlClient");
 
+// Ogni chiamata al backend RL porta il servizio in `state.service`. Fino a
+// settembre 2026 non lo portava, e il backend credeva che ogni servizio
+// fosse "Logo": ai clienti di Content Creation, Siti web ecc. riciclava
+// domande sul logo, la policy le scartava e il cliente vedeva un errore
+// (sul banco: 16 servizi italiani su 17, tre errori di fila).
+
 function normalizeFontOption(lang, v) {
   if (lang === "it") {
     if (/^monospac(ed|e|ato)/i.test(v)) return "Monospaziato";
@@ -146,7 +152,12 @@ ${
     ? "- Evita anche queste formulazioni: " + extraExclude.join(" | ")
     : ""
 }`,
-      { askedQuestions: askedSanitized, n: extraAskCount, language },
+      {
+        state: { service, language },
+        askedQuestions: askedSanitized,
+        n: extraAskCount,
+        language,
+      },
       { base: baseUrl }
     );
     const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
@@ -295,6 +306,7 @@ Per ogni domanda:
       const rawList = await rlGenerateQuestions(
         promptBase,
         {
+          state: { service, language },
           askedQuestions: askedSanitized.concat(exclusionBag),
           n: 6,
           language,
@@ -329,7 +341,12 @@ Per ogni domanda:
 
           const retry = await rlGenerateQuestions(
             promptBase,
-            { askedQuestions: askedSanitized, n: 6, language },
+            {
+              state: { service, language },
+              askedQuestions: askedSanitized,
+              n: 6,
+              language,
+            },
             { base: process.env.RL_API_BASE }
           );
           const reNorm = (retry || []).map(normalizeFromRl).filter(Boolean);
