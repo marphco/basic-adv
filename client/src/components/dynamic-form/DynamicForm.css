@@ -427,9 +427,15 @@ input:-webkit-autofill:active {
 }
 
 /* ===== FORCE MOBILE ON iPAD ===== */
+/* La sezione occupa almeno lo schermo: così una domanda breve (es. i colori)
+   sta al centro dello spazio sotto la banda, invece che in alto con il vuoto
+   sotto. Le domande lunghe fanno crescere la sezione e restano leggibili
+   dall'alto (voluto da Marco, 30/09/2026). */
 .App.is-mobile .form-rail-section {
-  display: block;
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
 }
 .App.is-mobile .form-rail {
   width: 100%;
@@ -443,7 +449,8 @@ input:-webkit-autofill:active {
 .App.is-mobile .dynamic-form {
   min-height: auto !important; /* <-- sblocca l'altezza */
   height: auto !important;
-  justify-content: flex-start; /* niente centratura verticale fissa */
+  flex: 1 0 auto; /* riempie lo spazio sotto la banda */
+  justify-content: center; /* e ci centra la domanda */
   padding-top: 50px; /* come su mobile */
   padding-bottom: 50px; /* un minimo respiro sotto */
   overflow: visible; /* evita tagli di elementi espansi */

@@ -23,16 +23,27 @@ const Login = ({ isDark }) => {
   ).replace(/\/$/, "");
   const loginUrl = `${API_URL}/api/login`;
 
+  // Dove tornare dopo il login (es. la richiesta aperta dalla email). Solo
+  // pagine della dashboard: niente redirect verso altri siti.
+  const dopo = (() => {
+    try {
+      const n = new URLSearchParams(window.location.search).get("next") || "";
+      return n.startsWith("/dashboard") ? n : "/dashboard";
+    } catch {
+      return "/dashboard";
+    }
+  })();
+
   useEffect(() => {
     document.body.style.overflowX = "hidden";
     const token = localStorage.getItem("token");
     if (token) {
-      navigate("/dashboard");
+      navigate(dopo);
     }
     return () => {
       document.body.style.overflowX = "auto";
     };
-  }, [navigate]);
+  }, [navigate, dopo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +51,7 @@ const Login = ({ isDark }) => {
     try {
       const response = await axios.post(loginUrl, { username, password });
       localStorage.setItem("token", response.data.token);
-      window.location.href = "/dashboard"; // Usa un refresh completo invece di navigate
+      window.location.href = dopo; // Usa un refresh completo invece di navigate
       // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setError("Credenziali non valide");

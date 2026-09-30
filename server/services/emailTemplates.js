@@ -64,10 +64,13 @@ function quote(text) {
   </table>`;
 }
 
+const PIEDE_EDITORIALE =
+  "Basic Adv · Piani editoriali. Ricevi questa email perché coinvolto in un piano editoriale.";
+
 // Scocca comune: header brand + corpo + footer.
-function wrap({ title, preheader = "", bodyHtml }) {
+function wrap({ title, preheader = "", bodyHtml, footer = PIEDE_EDITORIALE, lang = "it" }) {
   return `<!doctype html>
-<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>${esc(
+<html lang="${lang === "en" ? "en" : "it"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>${esc(
     title
   )}</title></head>
 <body style="margin:0;padding:0;background:${BG};">
@@ -80,7 +83,7 @@ function wrap({ title, preheader = "", bodyHtml }) {
         </td></tr>
         <tr><td style="padding:32px 28px;">${bodyHtml}</td></tr>
         <tr><td style="padding:18px 28px;border-top:1px solid ${BORDER};font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUTED};">
-          Basic Adv · Piani editoriali. Ricevi questa email perché coinvolto in un piano editoriale.
+          ${esc(footer)}
         </td></tr>
       </table>
     </td></tr>
@@ -304,7 +307,102 @@ function accountWelcome({ name, username, role, loginUrl }) {
   };
 }
 
+/* ==================== FORM DEL SITO ==================== */
+
+// Riga "etichetta: valore" per il riepilogo di una richiesta.
+function riga(etichetta, valore) {
+  if (!valore) return "";
+  return `
+      <tr>
+        <td style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${MUTED};width:120px;vertical-align:top;">${esc(etichetta)}</td>
+        <td style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:${INK};">${valore}</td>
+      </tr>`;
+}
+
+const TIPO_PROGETTO = { new: "Nuovo progetto", restyling: "Restyling" };
+const BUDGET = {
+  unknown: "Non lo sa ancora",
+  "0-1000": "Fino a 1.000 €",
+  "1000-5000": "1.000 – 5.000 €",
+  "5000-10000": "5.000 – 10.000 €",
+  "10000+": "Oltre 10.000 €",
+};
+
+// → a NOI: un cliente ha completato il form. Il pulsante apre la richiesta
+//   nella dashboard (se non si è loggati, passa dal login e poi ci torna).
+function nuovaRichiesta({ name, email, phone, brandName, servizi = [], projectType, businessField, budget, lingua, requestUrl }) {
+  const telefono = phone ? `<a href="tel:${esc(phone)}" style="color:${INK};text-decoration:none;">${esc(phone)}</a>` : "";
+  const posta = `<a href="mailto:${esc(email)}" style="color:${BRAND};text-decoration:none;">${esc(email)}</a>`;
+  const box = `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 6px;border:1px solid ${BORDER};border-radius:8px;">
+      <tr><td style="padding:10px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${riga("Nome", esc(name))}
+          ${riga("Email", posta)}
+          ${riga("Telefono", telefono)}
+          ${riga("Brand", esc(brandName || ""))}
+          ${riga("Servizi", esc(servizi.join(", ")))}
+          ${riga("Progetto", esc(TIPO_PROGETTO[projectType] || ""))}
+          ${riga("Settore", esc(businessField && businessField !== "non specificato" ? businessField : ""))}
+          ${riga("Budget", esc(BUDGET[budget] || budget || ""))}
+          ${riga("Lingua", lingua === "en" ? "Inglese" : lingua === "it" ? "Italiano" : "")}
+        </table>
+      </td></tr>
+    </table>`;
+  const cosa = servizi.length ? servizi.join(", ") : "un progetto";
+  const body =
+    banner("Sito · nuova richiesta", BRAND) +
+    h("Nuova richiesta dal sito") +
+    p(`<strong>${esc(name)}</strong> ha completato il form per <strong>${esc(cosa)}</strong>.`) +
+    box +
+    p("Rispondendo a questa email scrivi direttamente al cliente.") +
+    button("Apri la richiesta", requestUrl);
+  return {
+    subject: `Nuova richiesta dal sito · ${name}${servizi.length ? ` (${servizi.join(", ")})` : ""}`,
+    text:
+      `Nuova richiesta dal sito\n` +
+      `- Nome: ${name}\n- Email: ${email}\n- Telefono: ${phone || "non indicato"}\n` +
+      (servizi.length ? `- Servizi: ${servizi.join(", ")}\n` : "") +
+      `Apri la richiesta: ${requestUrl}`,
+    html: wrap({
+      title: "Nuova richiesta dal sito",
+      preheader: `${name} · ${cosa}`,
+      bodyHtml: body,
+      footer: "Basic Adv · Notifica interna del form del sito.",
+    }),
+  };
+}
+
+// → al CLIENTE: grazie, ti ricontattiamo. Nella lingua in cui ha compilato.
+function grazieRichiesta({ name, lingua = "it", servizi = [] }) {
+  const en = lingua === "en";
+  const cosa = servizi.length ? servizi.join(", ") : "";
+  const body = en
+    ? h("Thank you, we've got your request") +
+      p(`Hi ${esc(name)},`) +
+      p(`thanks for telling us about your project${cosa ? ` (<strong>${esc(cosa)}</strong>)` : ""}. We are reading your answers and will get back to you soon.`) +
+      p("If you want to add something in the meantime, just reply to this email.")
+    : h("Grazie, abbiamo ricevuto la tua richiesta") +
+      p(`Ciao ${esc(name)},`) +
+      p(`grazie per averci raccontato il tuo progetto${cosa ? ` (<strong>${esc(cosa)}</strong>)` : ""}. Stiamo leggendo le tue risposte e ti ricontatteremo presto.`) +
+      p("Se nel frattempo vuoi aggiungere qualcosa, rispondi pure a questa email.");
+  return {
+    subject: en ? "Thank you for contacting us!" : "Grazie per averci contattato!",
+    html: wrap({
+      title: en ? "Thank you" : "Grazie",
+      preheader: en ? "We'll get back to you soon." : "Ti ricontatteremo presto.",
+      bodyHtml: body,
+      footer: en
+        ? "Basic Adv · You receive this email because you filled in the form on basicadv.com."
+        : "Basic Adv · Ricevi questa email perché hai compilato il form su basicadv.com.",
+      lang: lingua,
+    }),
+  };
+}
+
 module.exports = {
+  nuovaRichiesta,
+  grazieRichiesta,
   clientNotesNotification,
   revisionsDoneNotification,
   shareEditorialPlan,

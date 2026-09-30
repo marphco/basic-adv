@@ -26,6 +26,20 @@ function readRole() {
   }
 }
 
+// Link diretto a una richiesta (dal pulsante della email "Nuova richiesta
+// dal sito"): /dashboard?richiesta=<sessionId>.
+const richiestaDalLink = () => {
+  try {
+    return new URLSearchParams(window.location.search).get("richiesta");
+  } catch {
+    return null;
+  }
+};
+
+// Al login, e poi di nuovo qui: il link della email non si perde.
+const vaiAlLogin = (navigate) =>
+  navigate(`/login?next=${encodeURIComponent("/dashboard" + window.location.search)}`);
+
 const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
   // Gli operatori (member) usano solo i Piani Editoriali: niente accesso alle
   // richieste/allegati, e atterrano direttamente sull'editoriale.
@@ -96,17 +110,27 @@ const Dashboard = ({ isDark, toggleSidebar, isSidebarOpen }) => {
         }))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setRequests(sortedRequests);
+      // Aperta dal link della email: si mostra subito quella richiesta.
+      const daAprire = richiestaDalLink();
+      if (daAprire) {
+        const req = sortedRequests.find((r) => r.sessionId === daAprire);
+        if (req) {
+          setSelectedSection("completed");
+          setSelectedRequest(req);
+        }
+        window.history.replaceState(null, "", "/dashboard");
+      }
     } catch (err) {
       console.error("Errore nel caricamento delle richieste:", err);
       localStorage.removeItem("token");
-      navigate("/login");
+      vaiAlLogin(navigate);
     }
   };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login");
+      vaiAlLogin(navigate);
       return;
     }
     // Le richieste sono dati admin: l'operatore non le carica (l'endpoint è

@@ -19,6 +19,7 @@ const {
   generateQuestionForService,
 } = require("./services/generaDomanda");
 const { domandaSicura } = require("./services/reteSicurezza");
+const emailTemplates = require("./services/emailTemplates");
 const {
   pianoProssimaDomanda,
   preparaInAnticipo,
@@ -220,7 +221,7 @@ if (process.env.SENDGRID_REGION === "eu") {
   } catch {}
 }
 
-const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
+const sendViaSendGrid = async ({ to, subject, text, html, replyTo }) => {
   if (!process.env.SENDGRID_API_KEY)
     throw new Error("SENDGRID_API_KEY missing");
   const msg = {
@@ -228,6 +229,7 @@ const sendViaSendGrid = async ({ to, subject, text, replyTo }) => {
     from: { email: process.env.SENDER_EMAIL, name: "Basic Adv" },
     subject,
     text,
+    ...(html ? { html } : {}),
     replyTo,
   };
   const [res] = await sgMail.send(msg);
@@ -257,7 +259,7 @@ const createKeliTransport = (port = 587, secure = false) =>
     },
   });
 
-const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
+const sendViaKeliSMTP = async ({ to, subject, text, html, replyTo }) => {
   try {
     const t587 = createKeliTransport(587, false);
     await t587.verify();
@@ -265,7 +267,8 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
       from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
       to,
       subject,
-      text, // solo testo
+      text,
+      ...(html ? { html } : {}),
       replyTo,
       envelope: { from: process.env.SENDER_EMAIL, to },
     });
@@ -278,7 +281,8 @@ const sendViaKeliSMTP = async ({ to, subject, text, replyTo }) => {
         from: { name: "Basic Adv", address: process.env.SENDER_EMAIL },
         to,
         subject,
-        text, // solo testo
+        text,
+        ...(html ? { html } : {}),
         replyTo,
         envelope: { from: process.env.SENDER_EMAIL, to },
       });
@@ -361,11 +365,13 @@ const sendViaResendApi = async (mailOptions) => {
 };
 
 // --- Relay HTTPS su mailer.basicadv.com (match con send.php) ---
-async function sendViaKeliWebhook({ to, subject, text, replyTo }) {
+async function sendViaKeliWebhook({ to, subject, text, html, replyTo }) {
   if (!process.env.KELI_WEBHOOK_URL || !process.env.KELI_WEBHOOK_SECRET) {
     throw new Error("KELI_WEBHOOK_URL o KELI_WEBHOOK_SECRET mancanti");
   }
-  const payload = { to, subject, text, replyTo }; // niente html
+  // Il relay accetta anche l'html (lo usano già le email dei piani
+  // editoriali, services/mailer.js); il testo resta come alternativa.
+  const payload = { to, subject, text, html: html || "", replyTo };
 
   const raw = JSON.stringify(payload);
   const ts = Math.floor(Date.now() / 1000).toString();
@@ -452,29 +458,60 @@ app.post("/api/sendEmails", async (req, res) => {
 
     const brandLine = `Basi${WJ}c${NBSP}A${WJ}dv`; // rende “Basic Adv” ma non come firma
 
-    const userText =
-      `Ciao ${contactInfo.name},\n\n` +
-      `Grazie per aver compilato il form sul nostro sito.\n` +
-      `Ti contatteremo presto!\n\n` +
-      `${brandLine}`;
+    // Dalla sessione: lingua del cliente e cosa ha chiesto, per le email.
+    let sessione = null;
+    try {
+      if (isDbReady()) sessione = await ProjectLog.findOne({ sessionId }).lean();
+    } catch (e) {
+      console.warn("[email] sessione non letta:", e?.message);
+    }
+    const fd = sessione?.formData || {};
+    const lingua = fd.lang === "en" ? "en" : "it";
+    const servizi = Array.isArray(sessione?.servicesQueue) ? sessione.servicesQueue : [];
 
+    const userText =
+      lingua === "en"
+        ? `Hi ${contactInfo.name},\n\n` +
+          `Thanks for filling in the form on our website.\n` +
+          `We'll get back to you soon!\n\n` +
+          `${brandLine}`
+        : `Ciao ${contactInfo.name},\n\n` +
+          `Grazie per aver compilato il form sul nostro sito.\n` +
+          `Ti contatteremo presto!\n\n` +
+          `${brandLine}`;
+
+    // Email con lo stesso stile di quelle dei piani editoriali
+    // (services/emailTemplates.js); il testo semplice resta come alternativa.
+    const grazie = emailTemplates.grazieRichiesta({ name: contactInfo.name, lingua, servizi });
     const userMsg = {
-      subject: "Grazie per averci contattato!", // niente ID nel subject
+      subject: grazie.subject, // niente ID nel subject
       text: userText,
+      html: grazie.html,
       // Chi risponde a questa email deve arrivare all'agenzia. Prima qui
       // c'era l'indirizzo di chi aveva compilato il form: rispondendo si
       // scriveva da soli.
       replyTo: contattoAgenzia,
     };
 
+    // Al posto del codice di sessione, un pulsante che apre la richiesta
+    // nella dashboard (se non si è loggati, passa dal login e poi ci torna).
+    const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
+    const nuova = emailTemplates.nuovaRichiesta({
+      name: contactInfo.name,
+      email: contactInfo.email,
+      phone: contactInfo.phone,
+      brandName: fd.brandName,
+      servizi,
+      projectType: fd.projectType,
+      businessField: fd.businessField === "Other" ? fd.otherBusinessField : fd.businessField,
+      budget: fd.budget,
+      lingua: sessione ? lingua : "",
+      requestUrl: `${base}/dashboard?richiesta=${encodeURIComponent(sessionId)}`,
+    });
     const adminMsg = {
-      subject: "Nuova richiesta sul sito",
-      text:
-        `Nuova richiesta:\n` +
-        `- Nome: ${contactInfo.name}\n` +
-        `- Email: ${contactInfo.email}\n` +
-        `- Telefono: ${contactInfo.phone || "Non fornito"}\n` +
-        `- Session ID: ${sessionId}`,
+      subject: nuova.subject,
+      text: nuova.text,
+      html: nuova.html,
       // Qui invece va bene l'indirizzo del contatto: rispondendo alla
       // notifica si scrive direttamente al potenziale cliente.
       replyTo: userEmail,
