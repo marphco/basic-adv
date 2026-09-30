@@ -8,11 +8,12 @@
 // escono sul sito italiano. Questo script misura quanto è grande il
 // problema PRIMA di toccare qualsiasi cosa.
 //
-// SOLO LETTURA, e non per buona volontà: legge MONGO_URI_READONLY e rifiuta
-// di partire con qualsiasi altra variabile, così non può finire per sbaglio
-// sulle credenziali di produzione. Usa solo find().
+// SOLO LETTURA, e non per buona volontà: dal database legge con
+// MONGO_URI_READONLY (mai con MONGO_URI, le credenziali di produzione) e usa
+// solo find(); dal backend RL fa solo GET. I dati scaricati vengono
+// congelati in risultati/fotografia-serbatoio.json e riusati.
 //
-//   MONGO_URI_READONLY=... node server/eval/controllaSerbatoio.js
+//   npm run eval:serbatoio            (dalla cartella server/)
 const fs = require("fs");
 const path = require("path");
 const { rilevaLingua } = require("../services/requisitiDomande");
@@ -127,35 +128,72 @@ function stampa(r) {
     );
 }
 
+const DIR_RISULTATI = path.join(__dirname, "risultati");
+// La fotografia dei dati: si scarica UNA volta e poi si riusa, così il giro
+// di partenza e quelli dopo le correzioni lavorano sugli stessi identici
+// dati. Per riscaricarla apposta: --aggiorna.
+const FOTOGRAFIA = path.join(DIR_RISULTATI, "fotografia-serbatoio.json");
+
+// Da dove leggere, in ordine. In nessun caso si scrive: dal database solo
+// find(), dal backend RL solo GET.
+async function scarica() {
+  // 1. Il database, con un utente in sola lettura (non con MONGO_URI: sono
+  //    le credenziali di produzione).
+  if (process.env.MONGO_URI_READONLY) {
+    const mongoose = require("mongoose");
+    await mongoose.connect(process.env.MONGO_URI_READONLY, {
+      dbName: process.env.RL_DB_NAME || "basic",
+      serverSelectionTimeoutMS: 15000,
+    });
+    try {
+      return await mongoose.connection.db
+        .collection(process.env.RL_COLLECTION || "appuser")
+        .find({}, { projection: { state: 1, question: 1, options: 1, questionReward: 1, optionsReward: 1, timestamp: 1 } })
+        .toArray();
+    } finally {
+      await mongoose.disconnect();
+    }
+  }
+
+  // 2. Il backend RL, con la sua chiave. Serve dove il database non si
+  //    raggiunge (l'ambiente cloud delle prove ha la porta di MongoDB chiusa).
+  const base = String(process.env.RL_API_BASE || "").replace(/\/+$/, "");
+  const chiave = process.env.RL_API_KEY;
+  if (base && chiave) {
+    const r = await fetch(`${base}/api/get-training-data`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${chiave}` },
+    });
+    if (!r.ok) throw new Error(`il backend RL ha risposto ${r.status}`);
+    const corpo = await r.json();
+    return Array.isArray(corpo?.data) ? corpo.data : [];
+  }
+
+  throw new Error(
+    "Non so da dove leggere i dati. Serve MONGO_URI_READONLY (utente Atlas in sola lettura) " +
+      "oppure RL_API_BASE + RL_API_KEY. MONGO_URI non lo uso apposta: sono le credenziali di produzione."
+  );
+}
+
 async function main() {
-  const uri = process.env.MONGO_URI_READONLY;
-  if (!uri) {
-    console.error(
-      "Serve MONGO_URI_READONLY: un utente Atlas in SOLA LETTURA.\n" +
-        "Non uso MONGO_URI apposta: sono le credenziali di produzione."
-    );
-    process.exit(1);
+  fs.mkdirSync(DIR_RISULTATI, { recursive: true });
+
+  let righe;
+  if (fs.existsSync(FOTOGRAFIA) && !process.argv.includes("--aggiorna")) {
+    const f = JSON.parse(fs.readFileSync(FOTOGRAFIA, "utf8"));
+    righe = f.righe;
+    console.log(`Uso la fotografia del ${f.scattata} (${righe.length} righe). Per riscaricarla: --aggiorna`);
+  } else {
+    righe = await scarica();
+    fs.writeFileSync(FOTOGRAFIA, JSON.stringify({ scattata: new Date().toISOString(), righe }, null, 2));
+    console.log(`Fotografia scattata: ${righe.length} righe → ${path.relative(process.cwd(), FOTOGRAFIA)}`);
   }
-  const mongoose = require("mongoose");
-  await mongoose.connect(uri, {
-    dbName: process.env.RL_DB_NAME || "basic",
-    serverSelectionTimeoutMS: 15000,
-  });
-  try {
-    const righe = await mongoose.connection.db
-      .collection(process.env.RL_COLLECTION || "appuser")
-      .find({}, { projection: { state: 1, question: 1, options: 1, questionReward: 1, optionsReward: 1, timestamp: 1 } })
-      .toArray();
-    const r = analizza(righe);
-    stampa(r);
-    const dir = path.join(__dirname, "risultati");
-    fs.mkdirSync(dir, { recursive: true });
-    const file = path.join(dir, `serbatoio-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.json`);
-    fs.writeFileSync(file, JSON.stringify(r, null, 2));
-    console.log(`\nDettaglio completo: ${path.relative(process.cwd(), file)}`);
-  } finally {
-    await mongoose.disconnect();
-  }
+
+  const r = analizza(righe);
+  stampa(r);
+  const file = path.join(DIR_RISULTATI, `serbatoio-${new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-")}.json`);
+  fs.writeFileSync(file, JSON.stringify(r, null, 2));
+  console.log(`\nDettaglio completo: ${path.relative(process.cwd(), file)}`);
 }
 
 if (require.main === module)
@@ -164,4 +202,4 @@ if (require.main === module)
     process.exit(1);
   });
 
-module.exports = { analizza, semiPer };
+module.exports = { analizza, semiPer, scarica };

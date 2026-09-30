@@ -9,7 +9,7 @@
     "backfill:plan-history": "node scripts/backfillPlanHistory.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "eval:requisiti": "node eval/provaRequisiti.js",
-    "eval:serbatoio": "node eval/controllaSerbatoio.js"
+    "eval:serbatoio": "NODE_USE_ENV_PROXY=1 node eval/controllaSerbatoio.js"
   },
   "keywords": [],
   "author": "",
