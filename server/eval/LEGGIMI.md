@@ -127,6 +127,35 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
   può servire tali e quali (circa una volta su tre). Confermata la causa 1.
 - Logo inglese: solo 5 positive, quindi niente riciclo; esempi tutti inglesi.
 
+**Banco (passo 2, 30 settembre 2026)** — `npm run eval:banco` in `server/`.
+- `services/generaDomanda.js`: la generazione delle domande spostata da
+  `server.js` **tale e quale** (verificato riga per riga). Anche il cuore di
+  `/api/nextQuestion` è ora `domandaSuccessiva()`; l'unico ritocco: il 502
+  diventa un errore con `stato: 502` che la rotta trasforma nella stessa
+  risposta.
+- `eval/banco/`: avvia il backend RL **della repo, senza cambiarne una riga**,
+  con `mongooseFinto.mjs` al posto di mongoose (legge la fotografia; le
+  scritture lanciano un errore). Ambiente del backend costruito da zero:
+  niente Mongo vero, niente chiavi di produzione.
+- `eval/banco/contatoreSpesa.js`: tutte le chiamate a OpenAI passano da lì.
+  Prenota il caso peggiore prima di ogni chiamata e rifiuta se si sfora.
+  Tetto **4 $ in tutto**, non per giro: il totale sta in `eval/spesa.json`,
+  **versionato**, così vale anche tra sessioni diverse. Solo modelli col
+  prezzo scritto in `PREZZI`.
+- Opzioni: `--giro NOME`, `--solo it-01,en-19`, `--exploit 0|1` (i due rami
+  separati; senza, 0.35 come in produzione), `--modello`.
+- Collaudi fatti: riciclo al 100% (gratis) e LLM su 3 scenari (0,02 $).
+
+**Scoperte del banco (da confermare col giro A)**
+- `rlClient` non manda mai `state`: il backend RL crede che **ogni servizio
+  sia "Logo"**. Esempi, blacklist e riciclo sono sempre quelli del Logo; col
+  riciclo, Content Creation fallisce (riceve domande sul logo, la policy le
+  scarta, errore 500).
+- Nel serbatoio 3 righe hanno servizio `logo-design`: il backend non le usa.
+- Font: se l'LLM mette `type: "font_selection"` senza la parola
+  font/tipograf nel testo, `hardNormalizeFont` non sostituisce le opzioni e
+  la domanda esce con 4 font invece di 6.
+
 ## Ambiente cloud delle prove
 
 - Variabili già impostate: `OPENAI_API_KEY`, `OPENAI_API_URL`,
@@ -143,7 +172,9 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
   risponde.
 - `server/node_modules` può essere vuoto: `npm ci` in `server/`.
 - La repo RL va agganciata con permesso di scrittura
-  (`marphco/rl-question-generator`).
+  (`marphco/rl-question-generator`) e clonata accanto a basic-adv
+  (`/home/user/rl-question-generator`), poi `npm ci` in `backend/`. Al banco
+  non serve l'axios recente: il backend parla col contatore in locale.
 
 ## Regole da non rompere
 
@@ -158,11 +189,11 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
 
 ## Prossimi passi, in ordine
 
-1. **Prima misura**: `npm ci && npm run eval:serbatoio` in `server/`.
+1. ✅ **Prima misura**: `npm ci && npm run eval:serbatoio` in `server/`.
    Spiegare a Marco il risultato in parole semplici: quante domande votate
    hanno la lingua sbagliata, e in quali servizi il riciclo le mostra così
    come sono.
-2. **Banco**: far girare in locale la catena **vera**:
+2. ✅ **Banco**: far girare in locale la catena **vera**:
    - backend RL con una sorgente dati dalla fotografia al posto di Mongo,
      senza cambiare il comportamento;
    - post-elaborazione di basic-adv: estrarre `generateQuestionForService`
