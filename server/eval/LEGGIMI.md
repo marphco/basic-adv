@@ -315,6 +315,23 @@ e le domande fisse non si sostituiscono mai per un doppione.
 due Logo per lingua) nella collezione `domande`; i voti di Marco finiscono in
 `voti` (`fonte: "marco"`, -1/0/+1 come la dashboard, più una nota). Il voto
 dell'AI si vede solo dopo il suo. Si leggono con ArtifactData.
+**Marco ha votato le 40 e NON vuole votarne altre** ("hai elementi a
+sufficienza"). Voti e note sono in `eval/training/raccolta.json` (fonte
+marco). Le sue note, in breve: serve "Altro" con campo libero su quasi tutte
+le domande; niente termini tecnici (hero image, landing page, user research);
+niente domande astratte o generiche, soprattutto nel Logo (forma del simbolo,
+"organica", atmosfera, stilizzato/realistico, complessità); opzioni non
+quasi uguali; nella pagina mancava il contesto delle domande precedenti.
+Fatto dopo i voti:
+- form: voce fissa "Altro" sotto ogni domanda a scelta multipla (client
+  `QuestionForm.jsx`, `DynamicForm.jsx`, traduzioni); il campo libero si apre
+  spuntandola e diventa obbligatorio;
+- istruzioni all'AI con le sue regole (backend RL e `promptBase`);
+- giudice tarato: esame sulle 40 di Marco (che non vede) 33 su 40 d'accordo,
+  37 su 40 su promossa sì/no (`npm run eval:giudice -- --taratura`);
+- il banco aggiunge la raccolta alla fotografia (i voti di Marco diventano
+  esempi e blacklist del backend). Scelta sull'anticipo (A/B/C) ancora da
+  Marco; per ora resta A (anticipo acceso).
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
