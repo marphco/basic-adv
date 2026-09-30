@@ -281,6 +281,15 @@ Poi: al massimo una via d'uscita anche nel prompt del backend, e in
 d'uscita, segnaposto, lingua) si scartano per la seconda proposta.
 Giro `vie-uscita` (202 domande): 0 errori, riserva 1% (2 doppioni), attesa
 mediana 1,4 s, 9 su 10 entro 2,4 s, massimo 4,6 s. Spesa totale 0,78 $.
+
+**Domanda preparata in anticipo** (`services/prossimaDomanda.js`, voluto da
+Marco): appena il server mostra una domanda, prepara già la successiva
+mentre il cliente risponde. Conosce tutte le domande e tutte le risposte
+tranne l'ultima (il piano, cioè servizio e regole del Logo, non dipende
+dalla risposta). Tenuta in memoria per sessione e punto della sessione; se
+non c'è (riavvio, più copie del server) si genera come prima. Il banco lo
+simula (`--pensa MS`, il cliente risponde in 2 s di base; `--senza-anticipo`
+per confronto). Da misurare col giudice: la qualità con e senza anticipo.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal

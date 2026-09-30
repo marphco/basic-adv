@@ -252,6 +252,31 @@ console.log("✓ riserva: dieci domande valide per ogni servizio e lingua, abbas
     console.warn = zitto;
   }
   console.log("✓ rete di sicurezza: errore, requisiti violati, lingua sbagliata o lentezza → domanda di riserva");
+
+  // Domanda preparata in anticipo: stesso piano della rotta, e si usa solo
+  // se è per lo stesso punto della sessione.
+  const pd = require("../services/prossimaDomanda");
+  const sessione = (n, servizi = ["Web App"]) => ({
+    formData: { lang: "it" },
+    questions: Array.from({ length: n }, (_, i) => ({ question: `Domanda ${i}` })),
+    answers: new Map(),
+    questionCount: n,
+    servicesQueue: servizi,
+    currentServiceIndex: 0,
+    serviceQuestionCount: new Map([[servizi[0], n]]),
+    maxQuestionsPerService: servizi.length === 1 ? 10 : 8,
+    totalQuestions: servizi.length === 1 ? 10 : 8 * servizi.length,
+    askedQuestions: new Map(),
+  });
+  assert.deepStrictEqual(pd.pianoProssimaDomanda(sessione(10)), { fine: true }, "dieci domande: fine");
+  assert.strictEqual(pd.pianoProssimaDomanda(sessione(3)).nextService, "Web App");
+  const cambio = pd.pianoProssimaDomanda(sessione(8, ["Web App", "Landing Page"]));
+  assert.ok(cambio.cambiaServizio && cambio.nextService === "Landing Page", "finite le 8 del primo servizio si passa al secondo");
+  const piano = pd.pianoProssimaDomanda(sessione(3));
+  pd._pronte.set("s1:3", { promessa: Promise.resolve(buona), nextService: "Web App", creata: Date.now() });
+  assert.strictEqual(await pd.prossimaDomanda("s1", sessione(3), piano), buona, "usa la domanda preparata");
+  assert.strictEqual(pd._pronte.size, 0, "e la toglie");
+  console.log("✓ domanda preparata in anticipo: stesso piano della rotta, usata una volta sola");
   console.log("\nREQUISITI OK");
 })().catch((e) => {
   console.error(e);

@@ -15,7 +15,9 @@
 //   npm run eval:banco -- --giro A-llm --exploit 0     solo il ramo con l'LLM
 //   npm run eval:banco -- --giro A-riciclo --exploit 1 solo il ramo del riciclo
 //
-// Con la rete di sicurezza (come in server.js; --senza-rete per com'era):
+// Come il sito: rete di sicurezza e domanda preparata in anticipo mentre il
+// cliente risponde (--pensa MS, quanto ci mette il cliente: 2000 di base;
+// --senza-anticipo per generarla solo dopo la risposta).
 // r domanda di riserva, - riserva finita (il sito passa ai contatti).
 // Legenda per ogni domanda: ✓ va bene, x viola un requisito, ! il cliente
 // ha visto un errore ma riprovando è arrivata, X entrambe, E tre errori di
@@ -30,7 +32,6 @@ const net = require("net");
 const { spawn } = require("child_process");
 const contatore = require("./contatoreSpesa");
 const { verifica, verificaSessione, OBBLIGATORIE } = require("../../services/requisitiDomande");
-const { domandaSicura } = require("../../services/reteSicurezza");
 
 const EVAL = path.join(__dirname, "..");
 const RISULTATI = path.join(EVAL, "risultati");
@@ -48,7 +49,8 @@ function argomenti() {
     solo: val("--solo") ? val("--solo").split(",") : null,
     exploit: val("--exploit"), // se manca, resta quello del backend (0.35)
     modello: val("--modello") || process.env.OPENAI_MODEL || "gpt-3.5-turbo",
-    conRete: !a.includes("--senza-rete"),
+    anticipo: !a.includes("--senza-anticipo"),
+    pensa: Number(val("--pensa") ?? 2000),
   };
 }
 
@@ -115,76 +117,98 @@ function rispostaA(q, lingua) {
 // cliente paziente: riprova fino a 3 volte, e conta OGNI errore visto.
 const TENTATIVI_CLIENTE = 3;
 
-// Riproduce /api/generate e poi /api/nextQuestion, senza database: la
-// sessione vive in memoria, con gli stessi campi di ProjectLog.
-async function giocaScenario(s, quante, gd, chiamate, conRete = true) {
+const pausa = (ms) => new Promise((ok) => setTimeout(ok, ms));
+
+// Riproduce /api/generate e poi /api/nextQuestion con gli stessi moduli
+// delle rotte (rete di sicurezza, preparazione in anticipo), senza database:
+// la sessione vive in memoria, con gli stessi campi di ProjectLog.
+//   pensa: quanto ci mette il cliente a leggere e rispondere (ms). Intanto
+//          il server prepara la domanda successiva, come sul sito.
+async function giocaScenario(s, quante, moduli, chiamate, { pensa = 2000, anticipo = true } = {}) {
+  const { gd, rete, pd } = moduli;
   const formData = { ...s.formData };
   formData.brandName = formData.brandName || "";
   formData.projectType = formData.projectType || "non specificato";
   formData.businessField = formData.businessField || "non specificato";
   formData.otherBusinessField = formData.otherBusinessField || "";
   formData.contactInfo = {};
+  const lingua = s.lingua;
+  const sessionId = crypto.randomUUID();
 
-  const logEntry = { formData, answers: new Map(), questions: [] };
-  let asked = [];
+  // Come ProjectLog con un solo servizio scelto.
+  const logEntry = {
+    formData,
+    questions: [],
+    answers: new Map(),
+    questionCount: 0,
+    servicesQueue: [s.servizio],
+    currentServiceIndex: 0,
+    serviceQuestionCount: new Map(),
+    maxQuestionsPerService: 10,
+    totalQuestions: 10,
+    askedQuestions: new Map(),
+  };
   const passi = [];
 
   for (let i = 0; i < quante; i++) {
     const passo = { n: i + 1, errori: [] };
     const prima = chiamate();
-    const inizio = Date.now();
-    let q = null;
     if (i > 0) {
+      // Il cliente legge e risponde; intanto il server prepara la prossima.
+      if (anticipo) pd.preparaInAnticipo(sessionId, logEntry);
+      await pausa(pensa);
       const precedente = logEntry.questions[i - 1];
-      logEntry.answers.set(gd.sanitizeKey(precedente.question), rispostaA(precedente, s.lingua));
+      logEntry.answers.set(gd.sanitizeKey(precedente.question), rispostaA(precedente, lingua));
     }
-    for (let t = 0; t < TENTATIVI_CLIENTE && !q; t++) {
+    const inizio = Date.now(); // da qui aspetta il cliente
+    let q;
+    let piano;
+    for (let t = 0; t < TENTATIVI_CLIENTE && q === undefined; t++) {
       try {
-        const genera = () =>
-          i === 0
-            ? gd.generateQuestionForService(s.servizio, formData, {}, [])
-            : gd.domandaSuccessiva({
-                nextService: s.servizio,
-                logEntry,
-                askedQuestionsForNextService: asked,
-                hasFontQuestion: logEntry.questions.some((x) => x && x.type === "font_selection"),
-              });
-        // Come le rotte di server.js: con la rete di sicurezza, salvo
-        // --senza-rete per misurare com'era prima.
-        q = conRete
-          ? await domandaSicura({
-              servizio: s.servizio,
-              lingua: s.lingua,
-              giaChieste: logEntry.questions.map((x) => x.question),
-              genera,
-            })
-          : await genera();
-        if (!q) {
-          passo.riservaEsaurita = true; // il sito passerebbe ai contatti
-          break;
+        if (i === 0) {
+          q = await rete.domandaSicura({
+            servizio: s.servizio,
+            lingua,
+            genera: () => gd.generateQuestionForService(s.servizio, formData, {}, []),
+          });
+        } else {
+          piano = pd.pianoProssimaDomanda(logEntry);
+          if (piano.fine) q = null;
+          else q = await pd.prossimaDomanda(sessionId, logEntry, piano);
         }
       } catch (e) {
-        // In produzione qui il cliente vede un errore (500 o 502).
+        // In produzione qui il cliente vede un errore (500).
         passo.errori.push({ messaggio: e.message, stato: e.stato || 500 });
       }
     }
     passo.chiamateLlm = chiamate() - prima;
     passo.ms = Date.now() - inizio;
     passi.push(passo);
-    if (passo.riservaEsaurita) break;
-    if (!q) {
+    if (q === null) {
+      passo.riservaEsaurita = true; // il sito passa ai contatti
+      break;
+    }
+    if (q === undefined) {
       passo.abbandonato = true; // tre errori di fila: il cliente se ne va
       break;
     }
     passo.domanda = q;
     passo.violazioni = verifica(q, {
-      lingua: s.lingua,
+      lingua,
       servizio: s.servizio,
       giaChieste: logEntry.questions.map((x) => x.question),
     });
+
+    // Aggiorna la sessione come le rotte.
+    const servizio = piano ? piano.nextService : s.servizio;
+    if (piano?.cambiaServizio) logEntry.currentServiceIndex += 1;
     logEntry.questions.push(q);
+    logEntry.questionCount += 1;
+    logEntry.serviceQuestionCount.set(servizio, (logEntry.serviceQuestionCount.get(servizio) || 0) + 1);
+    const asked = logEntry.askedQuestions.get(servizio) || [];
     const chiaveQ = gd.sanitizeKey(q.question);
-    if (!asked.includes(chiaveQ) && !asked.map(gd.normKey).includes(gd.normKey(q.question))) asked = asked.concat([chiaveQ]);
+    if (!asked.includes(chiaveQ) && !asked.map(gd.normKey).includes(gd.normKey(q.question))) asked.push(chiaveQ);
+    logEntry.askedQuestions.set(servizio, asked);
   }
 
   const completa = logEntry.questions.length === quante;
@@ -269,7 +293,7 @@ async function main() {
   const log = fs.createWriteStream(path.join(RISULTATI, `${nome}.log`));
 
   const spesa = await contatore.avvia({ giro: arg.giro, modello: arg.modello });
-  console.log(`Giro ${arg.giro}: ${scelti.length} scenari, modello ${arg.modello}, riciclo ${arg.exploit ?? "0.35 (come in produzione)"}, rete ${arg.conRete ? "sì" : "no"}`);
+  console.log(`Giro ${arg.giro}: ${scelti.length} scenari, modello ${arg.modello}, riciclo ${arg.exploit ?? "0.35 (come in produzione)"}, anticipo ${arg.anticipo ? `sì, il cliente risponde in ${arg.pensa / 1000} s` : "no"}`);
   console.log(`Spesa finora ${spesa.totale().toFixed(4)} $ su un tetto di ${spesa.tetto} $`);
 
   let rl;
@@ -278,14 +302,18 @@ async function main() {
     // Da qui in poi basic-adv parla SOLO con il backend locale.
     process.env.RL_API_BASE = rl.base;
     process.env.RL_API_KEY = rl.chiave;
-    const gd = require("../../services/generaDomanda");
+    const moduli = {
+      gd: require("../../services/generaDomanda"),
+      rete: require("../../services/reteSicurezza"),
+      pd: require("../../services/prossimaDomanda"),
+    };
 
     const esiti = [];
     for (const s of scelti) {
       const quante = s.domande || domandePerScenario;
       const volte = s.ripetizioni || 1;
       for (let v = 1; v <= volte && !spesa.stato.fermo; v++) {
-        const g = await giocaScenario(s, quante, gd, () => spesa.stato.chiamate, arg.conRete);
+        const g = await giocaScenario(s, quante, moduli, () => spesa.stato.chiamate, arg);
         esiti.push({ id: s.id, ripetizione: v, lingua: s.lingua, servizio: s.servizio, formData: s.formData, ...g });
         const nota = g.sessione?.length ? "  " + g.sessione.map((x) => x.messaggio).join("; ") : "";
         console.log(`  ${(s.id + (volte > 1 ? "#" + v : "")).padEnd(8)} ${s.servizio.padEnd(26)} ${g.passi.map(segno).join("")}${nota}`);
@@ -297,14 +325,14 @@ async function main() {
     const completo = !spesa.stato.fermo && esiti.length === attese;
     fs.writeFileSync(
       path.join(RISULTATI, `${nome}.json`),
-      JSON.stringify({ giro: arg.giro, modello: arg.modello, exploit: arg.exploit ?? null, rete: arg.conRete, completo, riassunto: r, spesa: spesa.stato.voce, esiti }, null, 2)
+      JSON.stringify({ giro: arg.giro, modello: arg.modello, exploit: arg.exploit ?? null, anticipo: arg.anticipo, pensa: arg.pensa, completo, riassunto: r, spesa: spesa.stato.voce, esiti }, null, 2)
     );
     console.log(`\n${completo ? "Giro completo" : "GIRO INTERROTTO dal tetto di spesa"}.`);
     console.log(`Sessioni ${r.sessioni}, domande mostrate ${r.domande}, errori visti dal cliente ${r.erroriVisti}, sessioni abbandonate ${r.sessioniAbbandonate}`);
-    console.log(`Domande con violazioni ${r.domandeConViolazioni}, riciclate senza LLM ${r.senzaLlm}`);
+    console.log(`Domande con violazioni ${r.domandeConViolazioni}, fatte dal codice senza AI (font, colori) ${r.senzaLlm}`);
     console.log("Violazioni per tipo:", r.violazioniPerTipo);
     console.log(`Attesa del cliente per domanda: mediana ${(r.attesa.mediana / 1000).toFixed(1)} s, 9 su 10 entro ${(r.attesa.p90 / 1000).toFixed(1)} s, massimo ${(r.attesa.massimo / 1000).toFixed(1)} s`);
-    if (arg.conRete) {
+    {
       console.log(`\nDomande di riserva ${r.riserva} su ${r.domande} (${((100 * r.riserva) / (r.domande || 1)).toFixed(1)}%), riserva esaurita ${r.riservaEsaurita}`);
       console.log("Perché è scattata la riserva:", r.motiviRiserva);
       for (const [k, v] of Object.entries(r.perServizio)) if (v.riserva) console.log(`  ${k.padEnd(34)} ${v.riserva} su ${v.domandeMostrate}`);

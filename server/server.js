@@ -17,9 +17,13 @@ const {
   sanitizeKey,
   normKey,
   generateQuestionForService,
-  domandaSuccessiva,
 } = require("./services/generaDomanda");
 const { domandaSicura } = require("./services/reteSicurezza");
+const {
+  pianoProssimaDomanda,
+  preparaInAnticipo,
+  prossimaDomanda,
+} = require("./services/prossimaDomanda");
 const normalizeLang = require("./middleware/lang");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
@@ -1118,7 +1122,9 @@ app.post("/api/generate", upload.single("currentLogo"), async (req, res) => {
     });
 
     await newLogEntry.save();
-    return res.json({ sessionId, question: aiQuestion });
+    res.json({ sessionId, question: aiQuestion });
+    // Mentre il cliente risponde, si prepara già la seconda domanda.
+    return preparaInAnticipo(sessionId, newLogEntry);
   } catch (error) {
     console.error("Errore in /api/generate:", error?.response?.data || error);
     res.status(500).json({
@@ -1157,46 +1163,23 @@ app.post("/api/nextQuestion", async (req, res) => {
     //   askedCurr.push(sanitizedQuestionText);
     // }
 
-    // --- stop se abbiamo raggiunto il totale
-    if (logEntry.questionCount >= logEntry.totalQuestions) {
+    // --- cosa viene dopo: fine, oppure il servizio della prossima domanda
+    // (se il servizio corrente ha già tutte le sue domande, si passa al
+    // successivo). Non dipende dalla risposta: per questo la domanda si può
+    // preparare in anticipo (services/prossimaDomanda.js).
+    const piano = pianoProssimaDomanda(logEntry);
+    if (piano.fine) {
       await logEntry.save();
       return res.json({ question: null });
     }
+    if (piano.cambiaServizio) logEntry.currentServiceIndex += 1;
+    const nextService = piano.nextService;
 
-    // --- se superato max del servizio, passa al successivo
-    const serviceCount = logEntry.serviceQuestionCount.get(currentService) || 0;
-    if (serviceCount >= logEntry.maxQuestionsPerService) {
-      logEntry.currentServiceIndex += 1;
-
-      if (logEntry.currentServiceIndex >= logEntry.servicesQueue.length) {
-        await logEntry.save();
-        return res.json({ question: null });
-      }
-    }
-
-    const nextService = logEntry.servicesQueue[logEntry.currentServiceIndex];
-    const askedQuestionsForNextService =
-      logEntry.askedQuestions.get(nextService) || [];
-
-    const hasFontQuestion = (logEntry.questions || []).some(
-      (q) => q && q.type === "font_selection"
-    );
-
-    // La rete di sicurezza: se l'AI sbaglia, domanda di riserva, mai errore.
-    // Se anche la riserva è finita, le domande sono finite: si passa ai
-    // contatti come a fine sessione.
-    const aiQuestion = await domandaSicura({
-      servizio: nextService,
-      lingua: logEntry.formData?.lang === "en" ? "en" : "it",
-      giaChieste: (logEntry.questions || []).map((q) => q?.question).filter(Boolean),
-      genera: () =>
-        domandaSuccessiva({
-          nextService,
-          logEntry,
-          askedQuestionsForNextService,
-          hasFontQuestion,
-        }),
-    });
+    // La domanda preparata mentre il cliente rispondeva, oppure generata
+    // adesso. Passa sempre dalla rete di sicurezza: se l'AI sbaglia, domanda
+    // di riserva, mai errore. Se anche la riserva è finita, le domande sono
+    // finite: si passa ai contatti come a fine sessione.
+    const aiQuestion = await prossimaDomanda(sessionId, logEntry, piano);
     if (!aiQuestion) {
       await logEntry.save();
       return res.json({ question: null });
@@ -1226,6 +1209,8 @@ app.post("/api/nextQuestion", async (req, res) => {
 
     await logEntry.save();
     res.json({ question: aiQuestion });
+    // Mentre il cliente risponde, si prepara già la prossima.
+    preparaInAnticipo(sessionId, logEntry);
   } catch (error) {
     res.status(500).json({ error: "Errore nella generazione della domanda" });
   }
