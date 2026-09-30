@@ -232,6 +232,10 @@ dal 12/06/2025 al 31/07/2026, congelata in `eval/risultati/`.
 4a. **Subito dopo il giro A, da sola e prima delle altre correzioni** (voluto
    da Marco): mandare il servizio al backend RL (`state.service`), provarla
    sul banco e portarla in produzione appena provata.
+   Deciso con Marco: la correzione PRIMA del giro A (il "prima" si può
+   sempre rimisurare dal codice vecchio). Fatta e provata: su 34 scenari non
+   Logo col riciclo sempre acceso, errori visti da 48 a 0. Per la
+   produzione, da sola su `main`: PR `marphco/basic-adv#129`.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal
