@@ -7,7 +7,12 @@
 // L'unico ritocco è in domandaSuccessiva: la risposta 502 della rotta ora è
 // un errore con `stato: 502`, che la rotta trasforma nella stessa risposta.
 const { rlGenerateQuestions } = require("./rlClient");
-const { TEMI, temaFisso } = require("./requisitiDomande");
+const { TEMI, temaFisso, verifica } = require("./requisitiDomande");
+
+// Difetti delle opzioni per cui una proposta dell'AI si scarta subito, a
+// favore della seconda proposta, invece di finire alla rete di sicurezza.
+// (Il numero di opzioni no: la scelta del font la sistema hardNormalizeFont.)
+const DIFETTI_OPZIONI = new Set(["uscite", "segnaposto", "lingua"]);
 
 // Quante domande chiedere all'AI per volta. Erano 6, e se ne usava una:
 // scriverle tutte costava circa 3 secondi di attesa al cliente. Con la rete
@@ -331,6 +336,15 @@ Per ogni domanda:
       // Colori e font del Logo li chiede il codice: se li propone anche
       // l'AI si scartano, altrimenti uscirebbero due volte.
       candidates = candidates.filter((q) => !temaFisso(q, service));
+
+      // Due vie d'uscita, "Opzione 3", opzioni nell'altra lingua: si passa
+      // alla proposta successiva.
+      candidates = candidates.filter(
+        (q) =>
+          !verifica(q, { lingua: language, servizio: service }).some((v) =>
+            DIFETTI_OPZIONI.has(v.codice)
+          )
+      );
 
       // 2) dedup contro askedSet (usiamo chiave sanitizzata)
       candidates = candidates.filter(
