@@ -1,6 +1,6 @@
 {
   "nota": "Spesa OpenAI di tutte le prove del banco. Il tetto è 4 $ in tutto.",
-  "totale": 1.127491,
+  "totale": 1.957457,
   "giri": [
     {
       "giro": "collaudo-riciclo",
@@ -148,11 +148,45 @@
       "giro": "senza-anticipo",
       "modello": "gpt-3.5-turbo",
       "inizio": "2026-09-30T04:24:48.229Z",
-      "chiamate": 68,
+      "chiamate": 189,
       "rifiutate": 0,
-      "tokenIngresso": 96949,
-      "tokenUscita": 9892,
-      "spesa": 0.063328
+      "tokenIngresso": 204534,
+      "tokenUscita": 25369,
+      "spesa": 0.14036,
+      "fine": "2026-09-30T04:29:29.178Z"
+    },
+    {
+      "giro": "giudice anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T04:29:29.517Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 33775,
+      "tokenUscita": 25150,
+      "spesa": 0.335943,
+      "fine": "2026-09-30T04:31:42.225Z"
+    },
+    {
+      "giro": "giudice senza-anticipo",
+      "modello": "gpt-4.1",
+      "inizio": "2026-09-30T04:31:42.606Z",
+      "chiamate": 44,
+      "rifiutate": 0,
+      "tokenIngresso": 33687,
+      "tokenUscita": 25301,
+      "spesa": 0.337236,
+      "fine": "2026-09-30T04:33:51.546Z"
+    },
+    {
+      "giro": "logo-dopo-doppioni",
+      "modello": "gpt-3.5-turbo",
+      "inizio": "2026-09-30T04:34:49.443Z",
+      "chiamate": 83,
+      "rifiutate": 0,
+      "tokenIngresso": 125098,
+      "tokenUscita": 11459,
+      "spesa": 0.079755,
+      "fine": "2026-09-30T04:38:11.971Z"
     }
   ]
 }

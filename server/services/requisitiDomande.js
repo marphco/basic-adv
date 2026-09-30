@@ -118,9 +118,14 @@ const contenuto = (testo) =>
     parole(testo).filter((p) => !PAROLE_IT.has(p) && !PAROLE_EN.has(p) && p.length > 2)
   );
 
-function somiglianza(a, b) {
-  const A = contenuto(a);
-  const B = contenuto(b);
+// `ignora`: parole da non contare, di solito quelle del nome del servizio.
+// In una sessione del Logo "logo" c'è in quasi ogni domanda: contarla faceva
+// sembrare doppioni "Che tipo di logo preferisci?" e "Quale tipo di stile
+// preferisci per il logo?".
+function somiglianza(a, b, ignora = new Set()) {
+  const togli = (x) => new Set([...x].filter((p) => !ignora.has(p)));
+  const A = togli(contenuto(a));
+  const B = togli(contenuto(b));
   if (A.size < 2 || B.size < 2) return 0; // troppo poco per dire
   let comuni = 0;
   for (const x of A) if (B.has(x)) comuni += 1;
@@ -236,9 +241,12 @@ function verifica(q, { lingua = "it", servizio = "", giaChieste = [] } = {}) {
       viola("uscite", `${uscite.length} vie d'uscita, al massimo una`);
   }
 
-  // 3. Doppioni nella stessa sessione.
+  // 3. Doppioni nella stessa sessione. Le parole del nome del servizio non
+  // contano: ci sono quasi sempre (logo, loghi, video, app…).
+  const paroleServizio = new Set(parole(servizio));
+  if (paroleServizio.has("logo")) paroleServizio.add("loghi");
   for (const prima of giaChieste) {
-    if (confronto(prima) === confronto(testo) || somiglianza(prima, testo) >= SOGLIA_DOPPIONE) {
+    if (confronto(prima) === confronto(testo) || somiglianza(prima, testo, paroleServizio) >= SOGLIA_DOPPIONE) {
       viola("doppione", `ripete "${prima}"`);
       break;
     }

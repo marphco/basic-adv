@@ -294,6 +294,27 @@ Giro `anticipo` (202 domande, cliente che risponde in 2 s): 0 errori, 0
 riserve; domande successive alla prima: 135 su 158 immediate (sotto 0,1 s),
 9 su 10 entro 0,3 s; la prima domanda resta 1,6 s di mediana (non si può
 preparare: arriva dal modulo iniziale). Spesa totale 0,98 $.
+
+**Giudice** (`eval/giudice.js`, `npm run eval:giudice -- <giro>`): gpt-4.1,
+8 criteri da 1 a 5 col motivo + i due voti della dashboard. Confronto sulle
+domande dell'AI (medie 1-5, anticipo / senza anticipo): chiarezza 4,68 /
+4,76; utilità 4,19 / 4,21; opzioni 4,23 / 4,34; profilo 4,23 / 4,34;
+uscita 4,18 / 4,13; brevità, tono e lingua ~5. Bocciate 8 / 4. Con
+l'anticipo le domande tengono un po' meno conto del profilo e delle
+risposte (atteso: manca l'ultima risposta). **Decisione di Marco da
+prendere.**
+
+Difetto trovato dal confronto e corretto: nel Logo "logo" c'è in quasi ogni
+domanda e il controllo dei doppioni scambiava per ripetizioni domande
+diverse, compresa quella fissa del font (sostituita dalla riserva: sessione
+senza font). Ora le parole del nome del servizio non contano per i doppioni,
+e le domande fisse non si sostituiscono mai per un doppione.
+
+**Voti di Marco**: pagina https://claude.ai/artifact/CkGSPcMU1tLWTohjV2tR6F
+(privata). 40 domande del giro `anticipo` (una per servizio e lingua, più
+due Logo per lingua) nella collezione `domande`; i voti di Marco finiscono in
+`voti` (`fonte: "marco"`, -1/0/+1 come la dashboard, più una nota). Il voto
+dell'AI si vede solo dopo il suo. Si leggono con ArtifactData.
 4. **Giro A** e rapporto.
 5. **Correzioni**, poi giri B e C, rapporto di confronto e campione di 20 per
    Marco. Tra le correzioni: la domanda sui colori del Logo **garantita dal

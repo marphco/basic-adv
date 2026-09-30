@@ -112,6 +112,14 @@ scarta({ question: "Hai già dei colori in mente per il logo?", options: [], typ
 ok({ question: "Hai già dei colori in mente per il tuo logo?", options: [], type: "multiple", requiresInput: true, __provider: "rule" }, LOGO, "colori dal codice");
 ok(multipla("Che colori preferisci per le foto dei prodotti?", ["Caldi", "Freddi", "Neutri", "Non saprei, consigliatemi voi"]), IT, "fuori dal Logo i colori sono una domanda come le altre");
 console.log("✓ Logo: colori e font dall'AI scartati, li fa il codice");
+// Il nome del servizio non conta per i doppioni: in una sessione del Logo
+// "logo" c'è quasi sempre.
+ok(
+  multipla("Che tipo di logo preferisci?", ["Solo testo", "Solo simbolo", "Testo e simbolo", "Non saprei, consigliatemi voi"]),
+  { lingua: "it", servizio: "Logo", giaChieste: ["Quale tipo di stile preferisci per il logo?"] },
+  "tipo di logo e stile del logo sono domande diverse"
+);
+console.log("✓ doppioni: le parole del nome del servizio non contano");
 
 const aperta = { question: "Hai già dei colori in mente?", options: [], type: "multiple", requiresInput: true };
 ok(aperta, { lingua: "it", servizio: "Brand Identity" }, "aperta sul branding");
@@ -251,6 +259,9 @@ console.log("✓ riserva: dieci domande valide per ogni servizio e lingua, abbas
   } finally {
     console.warn = zitto;
   }
+    const fontFisso = { question: "Quale stile tipografico preferisci per il logo", options: ["Serif", "Sans-serif", "Script", "Monospaziato", "Manoscritto", "Decorativo"], type: "font_selection", requiresInput: false, __provider: "rule" };
+    const fontPassa = await domandaSicura({ servizio: "Logo", lingua: "it", giaChieste: ["Quale stile preferisci per il logo"], genera: async () => fontFisso });
+    assert.strictEqual(fontPassa, fontFisso, "la domanda fissa sul font non si sostituisce per un doppione");
   console.log("✓ rete di sicurezza: errore, requisiti violati, lingua sbagliata o lentezza → domanda di riserva");
 
   // Domanda preparata in anticipo: stesso piano della rotta, e si usa solo

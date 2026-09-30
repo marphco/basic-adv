@@ -193,11 +193,12 @@ async function giocaScenario(s, quante, moduli, chiamate, { pensa = 2000, antici
       break;
     }
     passo.domanda = q;
+    // Come la rete di sicurezza: le domande fisse non sono doppioni.
     passo.violazioni = verifica(q, {
       lingua,
       servizio: s.servizio,
       giaChieste: logEntry.questions.map((x) => x.question),
-    });
+    }).filter((v) => !(q.__provider === "rule" && v.codice === "doppione"));
 
     // Aggiorna la sessione come le rotte.
     const servizio = piano ? piano.nextService : s.servizio;

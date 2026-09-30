@@ -49,7 +49,12 @@ async function domandaSicura({ servizio, lingua, giaChieste = [], genera, tempoM
   let motivo;
   try {
     const q = await entroIlTempo(Promise.resolve().then(genera), tempoMassimo);
-    const violazioni = verifica(q, { lingua, servizio, giaChieste });
+    // Le domande fisse del codice (font e colori del Logo) sono obbligatorie:
+    // non si sostituiscono per un doppione. Se somigliano a una domanda
+    // dell'AI già fatta, il doppione è quella dell'AI.
+    const violazioni = verifica(q, { lingua, servizio, giaChieste }).filter(
+      (v) => !(q?.__provider === "rule" && v.codice === "doppione")
+    );
     if (!violazioni.length) return q;
     motivo = "requisiti: " + violazioni.map((v) => v.messaggio).join("; ");
   } catch (e) {
