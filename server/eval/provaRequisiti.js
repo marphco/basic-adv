@@ -121,6 +121,27 @@ ok(
 );
 console.log("✓ doppioni: le parole del nome del servizio non contano");
 
+// Due vie d'uscita dette in altro modo (dal sito vero, 30 settembre 2026).
+scarta(
+  multipla("Ti piacerebbe che il logo includa un simbolo?", ["Sì, con un simbolo", "No, solo testo", "Non ho preferenze, decidi tu", "Non saprei, mi puoi aiutare?"]),
+  { lingua: "it", servizio: "Logo" },
+  "uscite",
+  "\"decidi tu\" e \"mi puoi aiutare\" sono due vie d'uscita"
+);
+scarta(
+  multipla("Would you like a symbol in the logo?", ["Yes, with a symbol", "No, text only", "No preference, up to you", "Not sure, can you help me?"]),
+  { lingua: "en", servizio: "Logo" },
+  "uscite",
+  "anche in inglese"
+);
+scarta(
+  multipla("Preferisci un logo tradizionale o moderno?", ["Tradizionale", "Moderno", "Non sono sicuro/a", "Mi fido del tuo consiglio"]),
+  { lingua: "it", servizio: "Logo" },
+  "uscite",
+  "\"non sono sicuro\" e \"mi fido\" sono due vie d'uscita"
+);
+console.log("✓ vie d'uscita riconosciute anche come \"decidi tu\", \"non ho preferenze\", \"up to you\"");
+
 const aperta = { question: "Hai già dei colori in mente?", options: [], type: "multiple", requiresInput: true };
 ok(aperta, { lingua: "it", servizio: "Brand Identity" }, "aperta sul branding");
 scarta(aperta, { lingua: "it", servizio: "Landing Page" }, "aperta", "aperta fuori dal branding");

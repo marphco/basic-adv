@@ -306,8 +306,7 @@
       },
       "fontOrName": "Seleziona almeno un font o indica un nome",
       "inputRequired": "Inserisci una risposta",
-      "answerOrComment": "Seleziona almeno un’opzione o scegli «Altro» e scrivi la tua risposta",
-      "otherRequired": "Scrivi la tua risposta in «Altro»",
+      "answerOrComment": "Seleziona almeno un’opzione o scrivi la tua risposta",
       "url": "Inserisci un URL valido (es. https://…)",
       "urlList": "Uno o più URL non sono validi.",
       "appPlatforms": "Seleziona almeno una piattaforma"
@@ -534,9 +533,7 @@
   },
   "questionForm": {
     "answerPlaceholder": "Inserisci la tua risposta qui...",
-    "detailsPlaceholder": "Aggiungi altri dettagli, se vuoi...",
-    "other": "Altro",
-    "otherPlaceholder": "Scrivi qui la tua risposta..."
+    "detailsPlaceholder": "Un’altra risposta o qualcosa da aggiungere? Scrivilo qui..."
   },
   "thankyou": {
     "line1": "Grazie per la fiducia riposta in noi.",

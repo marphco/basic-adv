@@ -280,7 +280,8 @@ ${askedListForPrompt}
 Ora, fai una nuova domanda pertinente al servizio selezionato (${service}), assicurandoti che non sia simile a nessuna delle domande già poste.
 ${
   OBBLIGATORIE[String(service).trim().toLowerCase()]
-    ? "\nNon chiedere dei colori né del font: il form li chiede già con domande sue.\n"
+    ? "\nNon chiedere dei colori né del font: il form li chiede già con domande sue.\n" +
+      "Un logo non contiene foto o immagini: è una scritta, un simbolo, o una scritta con un simbolo. Non chiedere se vuole un'immagine nel logo.\n"
     : ""
 }
 Per ogni domanda:
