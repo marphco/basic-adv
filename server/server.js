@@ -1342,7 +1342,9 @@ ${formattedAnswers}
       const aiResponse = await axios.post(
         "https://api.openai.com/v1/chat/completions",
         {
-          model: "gpt-3.5-turbo",
+          // gpt-3.5-turbo viene spento da OpenAI il 23/10/2026: lo stesso
+          // modello delle domande del form. Cambiabile da Railway.
+          model: process.env.PROJECT_PLAN_MODEL || "gpt-4.1-mini",
           messages: [
             {
               role: "user",
