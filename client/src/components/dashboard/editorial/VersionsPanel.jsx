@@ -7,6 +7,7 @@ import {
   faRotateLeft,
   faSpinner,
   faPlay,
+  faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 import { api } from "./api";
 import { quandoTempo } from "./cronologia";
@@ -53,7 +54,16 @@ const Miniature = ({ foto = [], totale = 0 }) => {
     <span className="ep-thumb-strip">
       {foto.map((m, i) => (
         <span key={i} className="ep-thumb ep-thumb--mini">
-          {m.kind === "video" && !m.thumbUrl ? (
+          {m.kind === "pdf" ? (
+            // la prima pagina del PDF, o l'icona se manca
+            m.thumbUrl ? (
+              <img src={m.thumbUrl} alt="" loading="lazy" />
+            ) : (
+              <span className="ep-pdf-icon">
+                <FontAwesomeIcon icon={faFilePdf} />
+              </span>
+            )
+          ) : m.kind === "video" && !m.thumbUrl ? (
             <video src={`${m.url}#t=0.1`} muted preload="metadata" />
           ) : (
             <img

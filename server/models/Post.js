@@ -1,11 +1,15 @@
 const mongoose = require("mongoose");
 
-// Un elemento media (foto/video). Riusato sia dai post sia dalle note cliente.
-// L'array ordinato copre tutti i casi: foto singola, carosello (anche misto), video.
+// Un elemento media (foto/video/PDF). Riusato sia dai post sia dalle note cliente.
+// L'array ordinato copre tutti i casi: foto singola, carosello (anche misto), video,
+// documento PDF (i caroselli di LinkedIn). Il PDF lo carica solo l'agenzia nei
+// post: le note dei clienti accettano ancora solo foto e video (mediaStore.js).
 const MediaSchema = new mongoose.Schema({
-  kind: { type: String, enum: ["image", "video"], default: "image" },
+  kind: { type: String, enum: ["image", "video", "pdf"], default: "image" },
   url: { type: String, required: true }, // filename/URL del file
-  thumbUrl: { type: String, default: "" }, // poster/anteprima (utile per i video)
+  // poster/anteprima: per i video facoltativa, per i PDF è la prima pagina
+  // (la disegna il browser al caricamento)
+  thumbUrl: { type: String, default: "" },
 });
 
 // Nota lasciata dal cliente sulla vista pubblica (punto 5). Può includere

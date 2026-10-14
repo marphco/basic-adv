@@ -19,6 +19,8 @@ import {
   faRotateLeft,
   faRotateRight,
   faClockRotateLeft,
+  faFilePdf,
+  faUpRightFromSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { PLATFORMS, COMMON_CATEGORIES } from "./mockData";
 import {
@@ -32,24 +34,28 @@ import {
 import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
 import VersionsPanel from "./VersionsPanel";
+import { isPdf, primaPagina } from "./anteprimaPdf";
 
 const MONTHS_IT = [
   "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
   "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre",
 ];
 
-// Etichetta derivata dal contenuto media (foto singola / carosello / video).
+// Etichetta derivata dal contenuto media (foto singola / carosello / video / PDF).
 const mediaTypeLabel = (media) => {
   if (!media || media.length === 0) return "Nessun media";
   if (media.length > 1) {
     // Quanti sono video: in un carosello misto è l'informazione che serve
-    // davvero, "9 elementi" da solo non dice niente.
+    // davvero, "9 elementi" da solo non dice niente. Lo stesso per i PDF.
     const video = media.filter((m) => m.kind === "video").length;
+    const pdf = media.filter((m) => m.kind === "pdf").length;
     return (
       `Carosello · ${media.length} elementi` +
-      (video ? ` · ${video} video` : "")
+      (video ? ` · ${video} video` : "") +
+      (pdf ? ` · ${pdf} PDF` : "")
     );
   }
+  if (media[0].kind === "pdf") return "Documento PDF";
   return media[0].kind === "video" ? "Video" : "Immagine singola";
 };
 
@@ -367,22 +373,35 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   // post non entrava e restava lì senza che nessuno lo citasse.
   const inVolo = useRef(null);
 
+  // Un PDF sale da solo, insieme alla sua prima pagina disegnata dal browser:
+  // due file nella stessa richiesta, che il server restituisce nello stesso
+  // ordine. Se l'anteprima non riesce, il PDF sale lo stesso (senza).
+  const caricaPdf = async (file) => {
+    const anteprima = await primaPagina(file);
+    const [doc, img] = await api.uploadMedia(anteprima ? [file, anteprima] : [file]);
+    return doc ? [{ kind: "pdf", url: doc.url, thumbUrl: img?.url || "" }] : [];
+  };
+
   const uploadFiles = async (fileList) => {
-    const files = Array.from(fileList || []).filter((f) =>
-      /^(image|video)\//.test(f.type)
-    );
-    if (!files.length) return;
+    const scelti = Array.from(fileList || []);
+    // Foto e video fanno la strada di sempre: una richiesta per tutti.
+    const files = scelti.filter((f) => /^(image|video)\//.test(f.type));
+    const pdf = scelti.filter(isPdf);
+    if (!files.length && !pdf.length) return;
     setUploading(true);
-    const lavoro = api
-      .uploadMedia(files)
-      .then((items) => {
-        setMedia((prev) => [...prev, ...items]);
-        return items;
-      })
-      .catch((err) => {
-        toastErr(err?.response?.data?.error || "Caricamento media non riuscito.");
-        return [];
-      })
+    const aggiungi = (items) => {
+      setMedia((prev) => [...prev, ...items]);
+      return items;
+    };
+    const errore = (err) => {
+      toastErr(err?.response?.data?.error || "Caricamento media non riuscito.");
+      return [];
+    };
+    const lavori = [];
+    if (files.length) lavori.push(api.uploadMedia(files).then(aggiungi).catch(errore));
+    for (const f of pdf) lavori.push(caricaPdf(f).then(aggiungi).catch(errore));
+    const lavoro = Promise.all(lavori)
+      .then((gruppi) => gruppi.flat())
       .finally(() => setUploading(false));
     inVolo.current = lavoro;
     await lavoro;
@@ -545,7 +564,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
             </div>
           )}
 
-          {/* Media: foto singola, carosello (più foto/video) o video */}
+          {/* Media: foto singola, carosello (più foto/video/PDF), video o PDF */}
           <div className="ep-field-head">
             <label className="ep-field-label">Media</label>
             <span className="ep-media-type">{mediaTypeLabel(media)}</span>
@@ -566,7 +585,16 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                   }
                   title="Ingrandisci"
                 >
-                  {m.kind === "video" ? (
+                  {m.kind === "pdf" ? (
+                    // la prima pagina, o l'icona se l'anteprima non c'è
+                    m.thumbUrl ? (
+                      <img src={m.thumbUrl} alt="" />
+                    ) : (
+                      <span className="ep-pdf-icon">
+                        <FontAwesomeIcon icon={faFilePdf} />
+                      </span>
+                    )
+                  ) : m.kind === "video" ? (
                     m.thumbUrl ? (
                       <img src={m.thumbUrl} alt="" />
                     ) : (
@@ -580,6 +608,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                       <FontAwesomeIcon icon={faPlay} />
                     </span>
                   )}
+                  {m.kind === "pdf" && <span className="ep-pdf-badge">PDF</span>}
                 </button>
                 <button
                   type="button"
@@ -603,7 +632,7 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
             <input
               ref={fileRef}
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,application/pdf"
               multiple
               onChange={handleFiles}
               hidden
@@ -977,7 +1006,18 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                   >
                     <FontAwesomeIcon icon={faTimes} />
                   </button>
-                  {item.kind === "video" && item.url ? (
+                  {item.kind === "pdf" ? (
+                    // Un PDF non si sfoglia dentro la modale (su iPhone se ne
+                    // vedrebbe solo la prima pagina): si mostra la copertina e
+                    // si apre nel lettore PDF del dispositivo.
+                    item.thumbUrl ? (
+                      <img src={item.thumbUrl} alt="" />
+                    ) : (
+                      <span className="ep-pdf-icon ep-pdf-icon--grande">
+                        <FontAwesomeIcon icon={faFilePdf} />
+                      </span>
+                    )
+                  ) : item.kind === "video" && item.url ? (
                     <video src={item.url} controls />
                   ) : (
                     <img
@@ -986,6 +1026,16 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                     />
                   )}
                   <div className="ep-lightbox-actions">
+                    {item.kind === "pdf" && (
+                      <a
+                        className="ep-btn ep-btn--primary"
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <FontAwesomeIcon icon={faUpRightFromSquare} /> Apri il PDF
+                      </a>
+                    )}
                     <a
                       className="ep-btn ep-btn--ghost"
                       href={item.url || item.thumbUrl}

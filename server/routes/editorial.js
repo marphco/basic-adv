@@ -13,7 +13,7 @@ const {
 } = require("../middleware/auth");
 const { sendMailTracked } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
-const { mediaUpload, handleUpload, toMedia } = require("../services/mediaStore");
+const { mediaUploadPost, handleUpload, toMedia } = require("../services/mediaStore");
 const {
   recordNotification,
   historyView,
@@ -698,7 +698,8 @@ router.post("/plan-history/backfill", requireAdmin, async (req, res) => {
 // serviti da /uploads-ped. (Storage interim su volume Railway; → R2 in futuro.)
 router.post(
   "/media",
-  handleUpload(mediaUpload.array("files", 10)),
+  // Anche PDF: solo qui, nei post dell'agenzia (le note dei clienti no).
+  handleUpload(mediaUploadPost.array("files", 10)),
   async (req, res) => {
     try {
       // Presa in carico: messa in salvo sul bucket (se attivo) e compressione

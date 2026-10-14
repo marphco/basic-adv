@@ -806,3 +806,49 @@ body.pp-no-hscroll {
     font-size: 1.2rem;
   }
 }
+
+/* PDF (i caroselli di LinkedIn): prima pagina con il bollino; ingrandito, la
+   copertina e il pulsante per aprirlo nel lettore PDF del dispositivo. */
+.pp-pdf-icon {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c81e1e;
+  font-size: 2.6rem;
+  background: var(--pp-surface-2);
+}
+.pp-pdf-icon--grande {
+  width: min(70vw, 360px);
+  height: min(70vw, 360px);
+  font-size: 6rem;
+  border-radius: 10px;
+}
+.pp-pdf-badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: #fff;
+  background: #c81e1e;
+  pointer-events: none;
+}
+.pp-lightbox-pdf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+/* lascia spazio al pulsante sotto la copertina */
+.pp-lightbox-inner .pp-lightbox-pdf img {
+  max-height: 70vh;
+}
+.pp-lightbox-pdf .pp-btn {
+  text-decoration: none;
+}

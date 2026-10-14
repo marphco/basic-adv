@@ -10,6 +10,7 @@ import {
   faCheck,
   faLock,
   faClock,
+  faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 import { categoryColor } from "./mockData";
 
@@ -25,6 +26,7 @@ const ETICHETTE = {
   cliente: (n) => `Cliente${n > 1 ? ` ${n}` : ""}`,
   note: (n) => `Note${n > 1 ? ` ${n}` : ""}`,
   interna: (n) => `Interna${n > 1 ? ` ${n}` : ""}`,
+  pdf: (n) => (n > 1 ? `${n} PDF` : "PDF"),
 };
 
 // Card di un post. `compact` = versione testuale per la vista a matrice
@@ -39,6 +41,10 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) =
   // sulla card si scoprono solo aprendo i post uno per uno.
   const isVideo = cover?.kind === "video";
   const videoCount = (post.media || []).filter((m) => m.kind === "video").length;
+  // PDF (i caroselli di LinkedIn): come copertina si vede la prima pagina,
+  // disegnata al caricamento; senza, l'icona del PDF.
+  const isPdf = cover?.kind === "pdf";
+  const pdfCount = (post.media || []).filter((m) => m.kind === "pdf").length;
   const notes = post.notes || [];
   // Badge distinti per ORIGINE della nota:
   //  • Cliente = note lasciate DAL cliente (l'operatore ci lavora) → ambra se da
@@ -114,7 +120,13 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) =
       {!compact && (
         <div className="ep-post-thumb">
           {cover ? (
-            isVideo && !cover.thumbUrl ? (
+            isPdf ? (
+              cover.thumbUrl ? (
+                <img src={cover.thumbUrl} alt="" loading="lazy" />
+              ) : (
+                <FontAwesomeIcon icon={faFilePdf} />
+              )
+            ) : isVideo && !cover.thumbUrl ? (
               // video senza poster → <video> mostra il primo fotogramma
               // (#t=0.1 forza il render del frame anche con preload=metadata;
               // un <img> con l'URL del video darebbe immagine rotta)
@@ -179,6 +191,11 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) =
             <span className="ep-badge ep-badge--video">
               <FontAwesomeIcon icon={faPlay} />{" "}
               {E.video(videoCount, mediaCount > 1)}
+            </span>
+          )}
+          {pdfCount > 0 && (
+            <span className="ep-badge ep-badge--pdf">
+              <FontAwesomeIcon icon={faFilePdf} /> {E.pdf(pdfCount)}
             </span>
           )}
           {clientNotes.length > 0 && (
