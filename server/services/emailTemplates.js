@@ -147,8 +147,10 @@ function revisionsDoneNotification({ contactName, clientName, monthLabel, planUr
 
 // → al CLIENTE: condivisione del piano editoriale del mese (link di sola lettura
 //   dove potrà vedere i post e lasciare le sue note).
-function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl, message }) {
+function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl, message, lingua = "it" }) {
   const msg = (message || "").trim();
+  if (lingua === "en")
+    return shareEditorialPlanEn({ clientName, contactName, monthLabel, planUrl, msg });
   const body =
     banner("Da Basic Adv · piano editoriale", BRAND) +
     h("Il piano editoriale è pronto") +
@@ -172,6 +174,40 @@ function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl, mess
       title: "Piano editoriale",
       preheader: `Piano editoriale di ${monthLabel}`,
       bodyHtml: body,
+    }),
+  };
+}
+
+// La stessa email in inglese, per i clienti esteri (lingua scelta nella scheda
+// del cliente). Una mail in italiano a un'azienda americana finisce facilmente
+// in quarantena, e comunque il cliente non la capirebbe.
+function shareEditorialPlanEn({ clientName, contactName, monthLabel, planUrl, msg }) {
+  const body =
+    banner("From Basic Adv · editorial plan", BRAND) +
+    h("Your editorial plan is ready") +
+    p(`Hi ${esc(contactName || clientName)},`) +
+    p(
+      `Here is the editorial plan for <strong>${esc(
+        monthLabel
+      )}</strong> for <strong>${esc(clientName)}</strong>.`
+    ) +
+    (msg ? quote(msg) : "") +
+    p(
+      "Open the link to see all of this month's posts and leave your notes directly on each one."
+    ) +
+    button("View the editorial plan", planUrl);
+  return {
+    subject: `Editorial plan for ${monthLabel} — ${clientName}`,
+    text: `Hi ${contactName || clientName},\nHere is the editorial plan for ${monthLabel} for ${clientName}.${
+      msg ? `\n\n${msg}\n` : ""
+    }\nView the plan and leave your notes: ${planUrl}`,
+    html: wrap({
+      title: "Editorial plan",
+      preheader: `Editorial plan for ${monthLabel}`,
+      bodyHtml: body,
+      footer:
+        "Basic Adv · Editorial plans. You are receiving this email because you are involved in an editorial plan.",
+      lang: "en",
     }),
   };
 }

@@ -33,6 +33,12 @@ const MONTHS_IT = [
   "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
   "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
 ];
+const MONTHS_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+// Lingua delle email al cliente: solo questi due valori, altrimenti italiano.
+const LINGUE_EMAIL = ["it", "en"];
 
 // Lista email pulita e deduplicata (case-insensitive) da `emails` + `email`.
 function cleanEmails(emails, email) {
@@ -175,6 +181,7 @@ router.post("/clients", requireAdmin, async (req, res) => {
     const client = await Client.create({
       name: name.trim(),
       contactName: contactName || "",
+      lingua: LINGUE_EMAIL.includes(req.body?.lingua) ? req.body.lingua : "it",
       emails: cleaned,
       email: cleaned[0] || "", // primario allineato per compatibilità
       pages: Array.isArray(pages) ? pages : [],
@@ -196,6 +203,7 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
     const update = {};
     if (name !== undefined) update.name = name.trim();
     if (contactName !== undefined) update.contactName = contactName;
+    if (LINGUE_EMAIL.includes(req.body?.lingua)) update.lingua = req.body.lingua;
     if (emails !== undefined || email !== undefined) {
       const cleaned = cleanEmails(
         emails !== undefined ? emails : [],
@@ -277,13 +285,16 @@ router.post("/share", async (req, res) => {
     const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
     const planUrl = `${base}/p/${clientId}-${yyyymm}`;
     const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
+    const lingua = client.lingua === "en" ? "en" : "it";
 
     const mail = emailTemplates.shareEditorialPlan({
       clientName: client.name,
       contactName: client.contactName,
-      monthLabel,
+      monthLabel:
+        lingua === "en" ? `${MONTHS_EN[m - 1] || ""} ${year}`.trim() : monthLabel,
       planUrl,
       message: String(message || "").trim().slice(0, 2000),
+      lingua,
     });
 
     // Invio individuale (ognuno riceve la propria copia, niente indirizzi
