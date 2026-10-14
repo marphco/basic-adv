@@ -27,6 +27,7 @@ const mediaInventory = require("../services/mediaInventory");
 const mediaPrune = require("../services/mediaPrune");
 const mediaCleanup = require("../services/mediaCleanup");
 const postVersions = require("../services/postVersions");
+const recuperoClienti = require("../services/recuperoClienti");
 const storageAlert = require("../services/storageAlert");
 
 const MONTHS_IT = [
@@ -249,6 +250,32 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
 });
 
 // Elimina cliente + relativi post (solo admin).
+// Clienti eliminati che si possono recuperare (dallo storico delle versioni
+// dei post, che l'eliminazione non tocca). Solo admin.
+router.get("/clients-eliminati", requireAdmin, async (req, res) => {
+  try {
+    res.json(await recuperoClienti.elencoEliminati());
+  } catch (e) {
+    console.error("[recupero] elenco:", e?.message);
+    res.status(500).json({ error: "Elenco dei clienti eliminati non disponibile" });
+  }
+});
+
+// Ricostruisce un cliente eliminato e i suoi post. Solo admin.
+router.post("/clients-eliminati/:id/ripristina", requireAdmin, async (req, res) => {
+  try {
+    const r = await recuperoClienti.ripristina(req.params.id, {
+      nome: req.body?.name,
+      user: req.dbUser,
+    });
+    if (r.gia) return res.status(409).json({ error: "Il cliente esiste già" });
+    res.json(r);
+  } catch (e) {
+    console.error("[recupero] ripristino:", e?.message);
+    res.status(500).json({ error: e?.message || "Recupero non riuscito" });
+  }
+});
+
 router.delete("/clients/:id", requireAdmin, async (req, res) => {
   try {
     const client = await Client.findByIdAndDelete(req.params.id);

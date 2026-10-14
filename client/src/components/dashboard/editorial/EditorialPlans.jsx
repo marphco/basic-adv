@@ -1162,6 +1162,7 @@ const EditorialPlans = () => {
               toastErr("Errore nell'aggiornamento del cliente.");
             }
           }}
+          onRecovered={async () => setClients(await api.listClients())}
           onDelete={async (id) => {
             try {
               await api.deleteClient(id);

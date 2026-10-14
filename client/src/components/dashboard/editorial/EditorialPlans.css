@@ -3211,3 +3211,19 @@
 .ep-post-thumb .fa-file-pdf {
   color: var(--ep-pdf, #c81e1e);
 }
+
+/* Recupero di un cliente eliminato (scheda Clienti) */
+.ep-recupero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ep-recupero-voce {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ep-recupero-voce .ep-page-row-top {
+  margin-top: 4px;
+}

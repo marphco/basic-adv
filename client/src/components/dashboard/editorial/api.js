@@ -34,6 +34,13 @@ export const api = {
     axios
       .put(`${API_URL}/api/editorial/clients/${id}`, data, auth())
       .then((r) => normClient(r.data)),
+  // clienti eliminati che si possono recuperare, e il recupero
+  listDeletedClients: () =>
+    axios.get(`${API_URL}/api/editorial/clients-eliminati`, auth()).then((r) => r.data),
+  restoreClient: (id, name) =>
+    axios
+      .post(`${API_URL}/api/editorial/clients-eliminati/${id}/ripristina`, { name }, auth())
+      .then((r) => r.data),
   deleteClient: (id) =>
     axios.delete(`${API_URL}/api/editorial/clients/${id}`, auth()).then((r) => r.data),
   // invia per email il piano del mese a tutti i destinatari del cliente
