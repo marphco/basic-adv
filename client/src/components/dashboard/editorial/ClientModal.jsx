@@ -12,7 +12,8 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import ChannelIcon, { CHANNELS } from "./ChannelIcon";
-import { confirmDialog } from "./uiNotify";
+import { confirmDialog, toastErr, toastOk } from "./uiNotify";
+import { api } from "./api";
 
 const emptyForm = {
   name: "",
@@ -35,7 +36,36 @@ const ClientModal = ({
   onCreate,
   onUpdate,
   onDelete,
+  onRecovered,
 }) => {
+  // Clienti eliminati che si possono ancora recuperare (con i loro post).
+  const [eliminati, setEliminati] = useState([]);
+  const [nomi, setNomi] = useState({});
+  const [recuperando, setRecuperando] = useState("");
+  const caricaEliminati = () =>
+    api
+      .listDeletedClients()
+      .then(setEliminati)
+      .catch(() => setEliminati([]));
+  useEffect(() => {
+    caricaEliminati();
+  }, []);
+  const recupera = async (e) => {
+    const nome = (nomi[e.clientId] || "").trim();
+    if (!nome) return toastErr("Scrivi il nome del cliente da recuperare.");
+    setRecuperando(e.clientId);
+    try {
+      const r = await api.restoreClient(e.clientId, nome);
+      toastOk(`${nome} recuperato con ${r.post} post. Controlla le pagine nella sua scheda.`);
+      await caricaEliminati();
+      onRecovered?.();
+    } catch (err) {
+      toastErr(err?.response?.data?.error || "Recupero non riuscito.");
+    } finally {
+      setRecuperando("");
+    }
+  };
+
   // Tutti gli utenti (operatori = member o admin); admin = solo ruolo admin.
   const adminUsers = users.filter((u) => u.role === "admin");
   const adminIdSet = new Set(adminUsers.map((u) => u.id));
@@ -227,6 +257,45 @@ const ClientModal = ({
         </div>
 
         <div className="ep-modal-body">
+          {/* Clienti eliminati: si possono recuperare con tutti i post */}
+          {eliminati.length > 0 && (
+            <div className="ep-share-warning ep-recupero">
+              <strong>Clienti eliminati che puoi recuperare</strong>
+              {eliminati.map((e) => (
+                <div key={e.clientId} className="ep-recupero-voce">
+                  <div className="ep-user-email">
+                    {e.post} post · {e.mesi.join(", ")}
+                    {e.emails.length ? ` · ${e.emails.join(", ")}` : ""}
+                  </div>
+                  {e.pagine.slice(0, 3).map((p) =>
+                    p.esempio ? (
+                      <div key={p.id} className="ep-user-email">
+                        “{p.esempio}”
+                      </div>
+                    ) : null
+                  )}
+                  <div className="ep-page-row-top">
+                    <input
+                      className="ep-input"
+                      placeholder="Nome del cliente (es. Sinclair)"
+                      value={nomi[e.clientId] || ""}
+                      onChange={(ev) =>
+                        setNomi({ ...nomi, [e.clientId]: ev.target.value })
+                      }
+                    />
+                    <button
+                      className="ep-btn ep-btn--primary"
+                      onClick={() => recupera(e)}
+                      disabled={recuperando === e.clientId}
+                    >
+                      {recuperando === e.clientId ? "Recupero…" : "Recupera"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Lista clienti */}
           <div className="ep-user-list">
             {clients.length === 0 && (
@@ -577,6 +646,7 @@ ClientModal.propTypes = {
   onCreate: PropTypes.func.isRequired,
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onRecovered: PropTypes.func,
 };
 
 export default ClientModal;
