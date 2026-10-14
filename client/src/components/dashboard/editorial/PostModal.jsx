@@ -608,7 +608,12 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                       <FontAwesomeIcon icon={faPlay} />
                     </span>
                   )}
-                  {m.kind === "pdf" && <span className="ep-pdf-badge">PDF</span>}
+                  {/* in alto a destra c'è la ✕: qui niente angolo, solo la fascia */}
+                  {m.kind === "pdf" && m.thumbUrl && (
+                    <span className="ep-pdf-striscia" aria-hidden="true">
+                      <FontAwesomeIcon icon={faFilePdf} /> PDF
+                    </span>
+                  )}
                 </button>
                 <button
                   type="button"

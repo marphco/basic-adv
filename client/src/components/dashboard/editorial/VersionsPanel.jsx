@@ -53,7 +53,14 @@ const Miniature = ({ foto = [], totale = 0 }) => {
   return (
     <span className="ep-thumb-strip">
       {foto.map((m, i) => (
-        <span key={i} className="ep-thumb ep-thumb--mini">
+        <span
+          key={i}
+          className={
+            m.kind === "pdf" && m.thumbUrl
+              ? "ep-thumb ep-thumb--mini ep-pdf-foglio"
+              : "ep-thumb ep-thumb--mini"
+          }
+        >
           {m.kind === "pdf" ? (
             // la prima pagina del PDF, o l'icona se manca
             m.thumbUrl ? (
@@ -76,6 +83,9 @@ const Miniature = ({ foto = [], totale = 0 }) => {
             <span className="ep-thumb-video">
               <FontAwesomeIcon icon={faPlay} />
             </span>
+          )}
+          {m.kind === "pdf" && m.thumbUrl && (
+            <span className="ep-pdf-striscia" aria-hidden="true">PDF</span>
           )}
         </span>
       ))}
