@@ -18,7 +18,7 @@ const emptyForm = {
   name: "",
   contactName: "",
   emails: [""], // un cliente può avere più email (società con più soci)
-  linguaMail: "auto", // lingua della mail del piano: da sola, o fissata a mano
+  linguaMail: "it", // lingua della mail del piano (clienti esteri → inglese)
   operators: [], // operatore/i (id utente) — almeno uno obbligatorio
   admins: [], // admin di revisione (id) — opzionale; assente se operatore è admin
   pages: [{ name: "", channels: ["instagram"] }],
@@ -52,15 +52,6 @@ const ClientModal = ({
   const [initial, setInitial] = useState(emptyForm);
 
   const isNew = editing === "new";
-  // Cosa ha deciso la scelta automatica per questo cliente, e perché (lo
-  // calcola il server). Solo se la scelta salvata è già "automatica": se era
-  // fissata a mano, il "perché" del server direbbe solo "scelta a mano".
-  const inModifica = clients.find((c) => c.id === editing);
-  const linguaAdesso =
-    inModifica?.linguaMailInfo &&
-    inModifica.linguaMailInfo.motivo !== "scelta a mano"
-      ? inModifica.linguaMailInfo
-      : null;
   const dirty = () =>
     editing !== null && JSON.stringify(form) !== JSON.stringify(initial);
 
@@ -115,12 +106,12 @@ const ClientModal = ({
           : c.email
           ? [c.email]
           : [""],
-      // "en" della prima versione (solo inglese a mano) vale ancora
-      linguaMail: ["auto", "it", "en"].includes(c.linguaMail)
+      // stessa regola del server (services/linguaMail.js)
+      linguaMail: ["it", "en"].includes(c.linguaMail)
         ? c.linguaMail
-        : c.lingua === "en"
+        : !c.linguaMail && c.lingua === "en"
         ? "en"
-        : "auto",
+        : "it",
       operators: (c.operators || []).map(String),
       admins: (c.admins || []).map(String),
       pages: (c.pages || []).map((p) => ({
@@ -256,6 +247,13 @@ const ClientModal = ({
                         ? "1 pagina"
                         : `${c.pages?.length || 0} pagine`}
                     </span>
+                    {/* mail del piano in inglese: si vede senza aprire la scheda */}
+                    {(c.linguaMail === "en" ||
+                      (!c.linguaMail && c.lingua === "en")) && (
+                      <span className="ep-role-badge" title="Mail del piano in inglese">
+                        EN
+                      </span>
+                    )}
                   </div>
                   {(c.contactName || c.email) && (
                     <div className="ep-user-email">
@@ -390,18 +388,10 @@ const ClientModal = ({
                   value={form.linguaMail}
                   onChange={(e) => setForm({ ...form, linguaMail: e.target.value })}
                 >
-                  <option value="auto">Automatica</option>
-                  <option value="it">Sempre italiano</option>
-                  <option value="en">Sempre inglese</option>
+                  <option value="it">Italiano</option>
+                  <option value="en">Inglese</option>
                 </select>
               </div>
-              {form.linguaMail === "auto" && (
-                <p className="ep-user-noclients">
-                  {linguaAdesso
-                    ? `Adesso: ${linguaAdesso.lingua === "en" ? "inglese" : "italiano"} (${linguaAdesso.motivo}).`
-                    : "Italiano ai clienti in Italia, inglese a quelli all'estero: lo capisce da dove aprono il piano."}
-                </p>
-              )}
 
               {/* Operatori: chi gestisce il cliente e riceve i suoi feedback */}
               <div className="ep-field-head">

@@ -25,15 +25,12 @@ const ClientSchema = new mongoose.Schema({
   // `email` resta come "primario" per compatibilità: lo teniamo allineato a emails[0].
   email: { type: String, default: "" },
   emails: { type: [String], default: [] },
-  // Lingua della mail del piano (vedi services/linguaMail.js): "auto" sceglie
-  // da sola, italiano ai clienti in Italia e inglese a quelli all'estero.
-  linguaMail: { type: String, enum: ["auto", "it", "en"], default: "auto" },
-  // Prima versione (solo a mano): "en" vale ancora come "sempre inglese".
+  // Lingua della mail del piano, scelta nella scheda del cliente (vedi
+  // services/linguaMail.js). "auto" resta ammesso solo per i clienti salvati
+  // con la versione automatica, ritirata: vale come italiano.
+  linguaMail: { type: String, enum: ["auto", "it", "en"], default: "it" },
+  // Prima versione: "en" vale ancora come inglese.
   lingua: { type: String, enum: ["it", "en"] },
-  // Da dove il cliente (non l'agenzia) ha aperto il piano: ultima volta.
-  apertoDaItalia: { type: Date },
-  apertoDaEstero: { type: Date },
-  paeseEstero: { type: String, default: "" },
   pages: { type: [PageSchema], default: [] },
   // Admin responsabili del cliente: ricevono il piano "per revisione" (vista
   // dashboard con modifiche dirette + note interne). Almeno uno è richiesto
