@@ -34,7 +34,9 @@ export function removeToast(id) {
 export const toastErr = (m) => toast(m, "error");
 export const toastOk = (m) => toast(m, "success");
 
-// confirmDialog(message, { title, confirmLabel, danger }) → Promise<boolean>
+// confirmDialog(message, { title, confirmLabel, cancelLabel, danger }) → Promise<boolean>
+// `cancelLabel` serve solo alla pagina pubblica del piano (il cliente può
+// leggerla in inglese); nel pannello admin resta "Annulla".
 export function confirmDialog(message, opts = {}) {
   return new Promise((resolve) => {
     state = {
@@ -43,6 +45,7 @@ export function confirmDialog(message, opts = {}) {
         message,
         title: opts.title || "",
         confirmLabel: opts.confirmLabel || "Conferma",
+        cancelLabel: opts.cancelLabel || "Annulla",
         danger: !!opts.danger,
         resolve,
       },
@@ -68,6 +71,7 @@ export function promptDialog(message, opts = {}) {
         message,
         title: opts.title || "",
         confirmLabel: opts.confirmLabel || "Invia",
+        cancelLabel: opts.cancelLabel || "Annulla",
         placeholder: opts.placeholder || "",
         defaultValue: opts.defaultValue || "",
         resolve,

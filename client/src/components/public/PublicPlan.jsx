@@ -28,31 +28,19 @@ import UiHost from "../dashboard/editorial/UiHost";
 import "../dashboard/editorial/EditorialPlans.css";
 import LogoIcon from "../../assets/icon-white.svg";
 import "./PublicPlan.css";
-
-const MONTHS_IT = [
-  "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-  "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
-];
-const WEEKDAYS_IT = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
+import { TESTI, LINGUE, erroreServer, fmtDataOra } from "./testiPiano";
+import useLingua from "./useLingua";
 const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(
   /\/$/,
   ""
 );
 
-// Data + ora (sempre fuso ITALIANO Europe/Rome, a prescindere dal dispositivo
-// del cliente). Lo storico può avere più voci nello stesso giorno.
-const fmtDateTime = (d) => {
-  try {
-    const dt = new Date(d);
-    const tz = { timeZone: "Europe/Rome" };
-    return `${dt.toLocaleDateString("it-IT", tz)} · ${dt.toLocaleTimeString(
-      "it-IT",
-      { ...tz, hour: "2-digit", minute: "2-digit" }
-    )}`;
-  } catch {
-    return "";
-  }
-};
+// Frase con parti in grassetto: le stringhe sono testo, gli elenchi annidati
+// grassetto (vedi testiPiano.js).
+const Testo = ({ parti }) =>
+  parti.map((x, i) =>
+    Array.isArray(x) ? <strong key={i}>{x.join("")}</strong> : <span key={i}>{x}</span>
+  );
 
 function parseSlug(slug) {
   const m = String(slug || "").match(/^([a-f0-9]{24})-(\d{4})(\d{2})$/i);
@@ -79,6 +67,9 @@ function buildMonthMatrix(year, month) {
 // cliente clicca "Invia il feedback" (mai una email per nota).
 export default function PublicPlan() {
   useNoindex();
+  // Lingua del sito (Italia → italiano, altrove → inglese, o quella scelta).
+  const [lingua, scegliLingua] = useLingua();
+  const T = TESTI[lingua];
   // Guard definitivo anti scroll-orizzontale su mobile: blocca l'overflow-x a
   // livello di documento (html+body), cross-browser (anche iOS Safari dove
   // `overflow: clip` può non bastare). Solo mentre la vista pubblica è montata.
@@ -120,7 +111,7 @@ export default function PublicPlan() {
   const [data, setData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null); // { server, stato } dell'ultimo accesso fallito
 
   const [selected, setSelected] = useState(null); // post aperto nel modale
   const [lightbox, setLightbox] = useState(null); // media aperto a tutto schermo
@@ -225,7 +216,7 @@ export default function PublicPlan() {
     const val = String(em || "").trim();
     if (!val) return;
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const r = await axios.post(`${API_URL}/api/public/plan/access`, {
         clientId: parsed.clientId,
@@ -245,15 +236,12 @@ export default function PublicPlan() {
         /* localStorage non disponibile */
       }
     } catch (err) {
-      const status = err?.response?.status;
-      setError(
-        err?.response?.data?.error ||
-          (status === 404
-            ? "Servizio non ancora disponibile (404). Riprova tra poco."
-            : status
-            ? `Accesso non riuscito (HTTP ${status}).`
-            : "Impossibile contattare il server. Riprova.")
-      );
+      // Si conserva com'è arrivato e si traduce quando si disegna: se il
+      // cliente cambia lingua, cambia anche il messaggio.
+      setError({
+        server: err?.response?.data?.error || "",
+        stato: err?.response?.status || 0,
+      });
       try {
         localStorage.removeItem(storeKey);
       } catch {
@@ -302,7 +290,7 @@ export default function PublicPlan() {
       const r = await axios.post(`${API_URL}/api/public/plan/media`, fd);
       setNoteMedia((prev) => [...prev, ...(r.data.media || [])]);
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Caricamento allegati non riuscito.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreAllegati));
     } finally {
       setNoteUploading(false);
     }
@@ -344,7 +332,7 @@ export default function PublicPlan() {
       setNoteText("");
       setNoteMedia([]);
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Invio nota non riuscito.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreNota));
     } finally {
       setNoteSending(false);
     }
@@ -363,15 +351,16 @@ export default function PublicPlan() {
       setEditingNote(null);
       setEditText("");
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Modifica non riuscita.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreModifica));
     }
   };
 
   const deleteNote = async (noteId) => {
     if (
-      !(await confirmDialog("Eliminare questa nota?", {
+      !(await confirmDialog(T.eliminaNotaDomanda, {
         danger: true,
-        confirmLabel: "Elimina",
+        confirmLabel: T.elimina,
+        cancelLabel: T.annulla,
       }))
     )
       return;
@@ -381,40 +370,36 @@ export default function PublicPlan() {
       });
       applyNotes(selected.id, r.data.notes);
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Eliminazione non riuscita.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreElimina));
     }
   };
 
   const submitFeedback = async () => {
-    const message = await promptDialog(
-      "Invii le tue note a Basic. Vuoi aggiungere un messaggio? (facoltativo)",
-      {
-        title: "Invia le note a Basic",
-        confirmLabel: "Invia le note",
-        placeholder: "Es. una precisazione, un cambiamento in vista…",
-      }
-    );
+    const message = await promptDialog(T.inviaMessaggio, {
+      title: T.inviaTitolo,
+      confirmLabel: T.inviaConferma,
+      cancelLabel: T.annulla,
+      placeholder: T.inviaEsempio,
+    });
     if (message === null) return; // annullato
     setFeedbackSending(true);
     try {
       await axios.post(`${API_URL}/api/public/plan/notify`, { ...base, message });
       setFeedbackSent(true);
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Invio feedback non riuscito.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreFeedback));
     } finally {
       setFeedbackSending(false);
     }
   };
 
   const approvePlan = async () => {
-    const message = await promptDialog(
-      "Confermi l'approvazione del piano editoriale? Puoi aggiungere un messaggio per Basic (facoltativo).",
-      {
-        title: "Approva piano editoriale",
-        confirmLabel: "Approva piano",
-        placeholder: "Es. Tutto perfetto! / una precisazione per il prossimo mese…",
-      }
-    );
+    const message = await promptDialog(T.approvaMessaggio, {
+      title: T.approvaTitolo,
+      confirmLabel: T.approvaConferma,
+      cancelLabel: T.annulla,
+      placeholder: T.approvaEsempio,
+    });
     if (message === null) return; // annullato
     setApproving(true);
     try {
@@ -424,7 +409,7 @@ export default function PublicPlan() {
       });
       setApproval({ ...(r.data.approval || {}), changedSince: false });
     } catch (err) {
-      toastErr(err?.response?.data?.error || "Approvazione non riuscita.");
+      toastErr(erroreServer(err?.response?.data?.error, lingua, T.erroreApprova));
     } finally {
       setApproving(false);
     }
@@ -471,20 +456,51 @@ export default function PublicPlan() {
       {data && (
         <div className="pp-title">
           <span className="pp-month">
-            {MONTHS_IT[data.month - 1]} {data.year}
+            {T.mesi[data.month - 1]} {data.year}
           </span>
           <span className="pp-client">{data.client?.name}</span>
         </div>
       )}
+      {/* La lingua la sceglie il sito da solo; questo è per chi la vuole
+          diversa (un italiano all'estero, uno straniero in Italia). La
+          scelta resta salvata per le prossime aperture. */}
+      <div className="pp-lang" role="group" aria-label={T.cambiaLingua}>
+        {LINGUE.map((l, i) => (
+          <span key={l} className="pp-lang-item">
+            {i > 0 && <span className="pp-lang-sep" aria-hidden="true">·</span>}
+            <button
+              type="button"
+              className={`pp-lang-btn ${lingua === l ? "is-on" : ""}`}
+              aria-pressed={lingua === l}
+              onClick={() => scegliLingua(l)}
+            >
+              {l.toUpperCase()}
+            </button>
+          </span>
+        ))}
+      </div>
     </div>
   );
+
+  // Messaggio dell'ultimo accesso fallito, nella lingua di adesso.
+  const testoErrore = !error
+    ? ""
+    : erroreServer(
+        error.server,
+        lingua,
+        error.stato === 404
+          ? T.erroreServizio
+          : error.stato
+          ? T.erroreAccesso(error.stato)
+          : T.erroreRete
+      );
 
   if (!parsed) {
     return (
       <div className="pp-wrap">
         {header}
         <div className="pp-card pp-gate">
-          <p>Il link non è valido.</p>
+          <p>{T.linkNonValido}</p>
         </div>
       </div>
     );
@@ -497,7 +513,7 @@ export default function PublicPlan() {
         <div className="pp-wrap">
           {header}
           <div className="pp-card pp-gate">
-            <p>Caricamento del piano…</p>
+            <p>{T.caricamento}</p>
           </div>
         </div>
       );
@@ -509,22 +525,22 @@ export default function PublicPlan() {
           <div className="pp-gate-icon">
             <FontAwesomeIcon icon={faLock} />
           </div>
-          <h1>Il tuo piano editoriale</h1>
-          <p>Inserisci la tua email per vedere il piano e lasciare le tue note.</p>
+          <h1>{T.accessoTitolo}</h1>
+          <p>{T.accessoTesto}</p>
           <input
             className="pp-input"
             type="text"
             value={email}
-            placeholder="latua@email.it"
+            placeholder={T.accessoEsempio}
             onChange={(e) => setEmail(e.target.value)}
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
             autoFocus
           />
-          {error && <div className="pp-error">{error}</div>}
+          {testoErrore && <div className="pp-error">{testoErrore}</div>}
           <button className="pp-btn" type="submit" disabled={loading}>
-            {loading ? "Verifica…" : "Accedi al piano"}
+            {loading ? T.accessoVerifica : T.accessoEntra}
           </button>
         </form>
         <UiHost />
@@ -537,50 +553,44 @@ export default function PublicPlan() {
       <UiHost />
       {header}
       <div className="pp-intro">
-        Ciao {data.client?.contactName || data.client?.name}, ecco il piano
-        editoriale del mese.
+        {T.ciao(data.client?.contactName || data.client?.name)}
       </div>
 
       {!approval && (
         <div className="pp-guide">
-          <div className="pp-guide-title">Come funziona</div>
+          <div className="pp-guide-title">{T.guidaTitolo}</div>
           <ol className="pp-guide-steps">
             <li>
               <FontAwesomeIcon icon={faImage} />
               <span>
-                Clicca un post per vederlo in grande (foto e testo).
+                <Testo parti={T.guida1} />
               </span>
             </li>
             <li>
               <FontAwesomeIcon icon={faComment} />
               <span>
-                Se vuoi una <strong>modifica</strong>, lascia una nota sul post.
-                Puoi lasciarne quante vuoi, anche su più post.
+                <Testo parti={T.guida2} />
               </span>
             </li>
             <li>
               <FontAwesomeIcon icon={faPaperPlane} />
               <span>
-                Quando hai segnalato <strong>tutte</strong> le modifiche, premi{" "}
-                <strong>«Invia le note a Basic»</strong>: le riceviamo tutte in
-                una volta sola.
+                <Testo parti={T.guida3} />
               </span>
             </li>
             <li>
               <FontAwesomeIcon icon={faCheck} />
               <span>
-                Se è già tutto a posto, premi{" "}
-                <strong>«Approva piano editoriale»</strong>.
+                <Testo parti={T.guida4} />
               </span>
             </li>
           </ol>
           <div className="pp-guide-legend">
             <span className="pp-legend-item">
-              <span className="pp-legend-dot pp-legend-dot--you" /> Le tue note
+              <span className="pp-legend-dot pp-legend-dot--you" /> {T.legendaTue}
             </span>
             <span className="pp-legend-item">
-              <span className="pp-legend-dot pp-legend-dot--basic" /> Nota da
-              Basic
+              <span className="pp-legend-dot pp-legend-dot--basic" /> {T.legendaBasic}
             </span>
           </div>
         </div>
@@ -597,14 +607,11 @@ export default function PublicPlan() {
         >
           {feedbackSent ? (
             <span className="pp-feedback-ok">
-              <FontAwesomeIcon icon={faCheck} /> Note inviate: Basic applicherà le
-              modifiche.
+              <FontAwesomeIcon icon={faCheck} /> {T.noteInviate}
             </span>
           ) : (
             <span className="pp-feedback-info">
-              {`Hai lasciato ${pendingNotes} ${
-                pendingNotes === 1 ? "nota" : "note"
-              }: inviale a Basic per le modifiche.`}
+              {T.noteLasciate(pendingNotes)}
             </span>
           )}
           <button
@@ -614,18 +621,16 @@ export default function PublicPlan() {
           >
             <FontAwesomeIcon icon={feedbackSent ? faCheck : faPaperPlane} />{" "}
             {feedbackSending
-              ? "Invio…"
+              ? T.invio
               : feedbackSent
-              ? "Note inviate"
-              : "Invia le note a Basic"}
+              ? T.noteInviateBreve
+              : T.inviaNote}
           </button>
         </div>
       ) : !approval || approval.changedSince ? (
         <div className="pp-feedback-bar">
           <span className="pp-feedback-info">
-            {approval
-              ? "Il piano è stato aggiornato dopo l'ultima approvazione: se è tutto a posto, riconfermalo."
-              : "Se è tutto a posto, conferma il piano editoriale."}
+            {approval ? T.approvaDiNuovoInfo : T.approvaInfo}
           </span>
           <button
             className="pp-btn pp-btn--approve"
@@ -634,10 +639,10 @@ export default function PublicPlan() {
           >
             <FontAwesomeIcon icon={faCheck} />{" "}
             {approving
-              ? "Approvazione…"
+              ? T.approvazioneInCorso
               : approval
-              ? "Approva di nuovo"
-              : "Approva piano editoriale"}
+              ? T.approvaDiNuovo
+              : T.approvaPiano}
           </button>
         </div>
       ) : null}
@@ -653,8 +658,8 @@ export default function PublicPlan() {
           <div className="pp-approval-head">
             <FontAwesomeIcon icon={faCheck} />
             {approval.count > 1
-              ? `Piano approvato ${approval.count} volte`
-              : `Piano approvato il ${fmtDateTime(approval.at)}`}
+              ? T.approvatoVolte(approval.count)
+              : T.approvatoIl(fmtDataOra(approval.at, lingua))}
           </div>
           {approval.count > 1 && (
             <ul className="pp-approval-list">
@@ -663,8 +668,8 @@ export default function PublicPlan() {
                 .reverse()
                 .map((h, i) => (
                   <li key={i}>
-                    <span>{approval.history.length - i}ª approvazione</span>
-                    <time>{fmtDateTime(h.at)}</time>
+                    <span>{T.nApprovazione(approval.history.length - i)}</span>
+                    <time>{fmtDataOra(h.at, lingua)}</time>
                   </li>
                 ))}
             </ul>
@@ -673,14 +678,14 @@ export default function PublicPlan() {
       )}
 
       {daysWithPosts.length === 0 ? (
-        <div className="pp-card">Nessun post pubblicato per questo mese.</div>
+        <div className="pp-card">{T.nessunPost}</div>
       ) : (
         <div className="editorial-plans pp-plan">
           {isNarrow ? (
             <div className="ep-agenda">
               {daysWithPosts.map((day) => {
                 const wd =
-                  WEEKDAYS_IT[(new Date(year, month - 1, day).getDay() + 6) % 7];
+                  T.giorni[(new Date(year, month - 1, day).getDay() + 6) % 7];
                 return (
                   <div
                     key={day}
@@ -699,7 +704,7 @@ export default function PublicPlan() {
                               {pageName(p.pageId)}
                             </span>
                           )}
-                          <PostChip post={p} onClick={() => openPost(p)} />
+                          <PostChip post={p} etichette={T.card} onClick={() => openPost(p)} />
                         </div>
                       ))}
                     </div>
@@ -722,7 +727,7 @@ export default function PublicPlan() {
                       >
                         {day && (
                           <>
-                            <span className="ep-mh-wd">{WEEKDAYS_IT[di]}</span>
+                            <span className="ep-mh-wd">{T.giorni[di]}</span>
                             <span className="ep-mh-day">{day}</span>
                           </>
                         )}
@@ -747,6 +752,7 @@ export default function PublicPlan() {
                                 key={p.id}
                                 post={p}
                                 compact
+                                etichette={T.card}
                                 onClick={() => openPost(p)}
                               />
                             ))}
@@ -761,7 +767,7 @@ export default function PublicPlan() {
           ) : (
             <div className="ep-calendar">
               <div className="ep-weekrow ep-weekdays">
-                {WEEKDAYS_IT.map((w) => (
+                {T.giorni.map((w) => (
                   <div key={w} className="ep-weekday">
                     {w}
                   </div>
@@ -793,6 +799,7 @@ export default function PublicPlan() {
                             <PostChip
                               key={p.id}
                               post={p}
+                              etichette={T.card}
                               onClick={() => openPost(p)}
                             />
                           ))}
@@ -807,7 +814,7 @@ export default function PublicPlan() {
         </div>
       )}
 
-      <div className="pp-footer">Basic Adv · Piano editoriale</div>
+      <div className="pp-footer">{T.piede}</div>
 
       {/* ---- Modale dettaglio post + note ---- */}
       {selected && (
@@ -816,7 +823,7 @@ export default function PublicPlan() {
             <button
               className="pp-modal-close"
               onClick={closeModal}
-              aria-label="Chiudi"
+              aria-label={T.chiudi}
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -835,7 +842,7 @@ export default function PublicPlan() {
               )}
               {selected.sponsored && (
                 <span className="pp-spons">
-                  <FontAwesomeIcon icon={faBullhorn} /> Sponsorizzato
+                  <FontAwesomeIcon icon={faBullhorn} /> {T.sponsorizzato}
                 </span>
               )}
             </div>
@@ -852,7 +859,7 @@ export default function PublicPlan() {
                     type="button"
                     className="pp-thumb"
                     onClick={() => setLightbox({ list: selected.media, index: i })}
-                    aria-label="Ingrandisci"
+                    aria-label={T.ingrandisci}
                   >
                     {m.kind === "video" && !m.thumbUrl ? (
                       <video src={`${m.url}#t=0.1`} muted preload="metadata" />
@@ -894,13 +901,13 @@ export default function PublicPlan() {
                               setEditText("");
                             }}
                           >
-                            Annulla
+                            {T.annulla}
                           </button>
                           <button
                             className="pp-note-mini"
                             onClick={() => saveEdit(n.id)}
                           >
-                            Salva
+                            {T.salva}
                           </button>
                         </div>
                       </>
@@ -908,7 +915,7 @@ export default function PublicPlan() {
                       <>
                         {n.fromAgency && (
                           <span className="pp-note-tag">
-                            {n.needsReply ? "Richiesta da Basic" : "Nota da Basic"}
+                            {n.needsReply ? T.richiestaBasic : T.notaBasic}
                           </span>
                         )}
                         {n.text && (
@@ -925,7 +932,7 @@ export default function PublicPlan() {
                                 type="button"
                                 className="pp-note-thumb"
                                 onClick={() => setLightbox({ list: n.media, index: i })}
-                                aria-label="Ingrandisci"
+                                aria-label={T.ingrandisci}
                               >
                                 {m.kind === "video" && !m.thumbUrl ? (
                                   <video
@@ -957,13 +964,13 @@ export default function PublicPlan() {
                                 setEditText(n.text);
                               }}
                             >
-                              Modifica
+                              {T.modifica}
                             </button>
                             <button
                               className="pp-note-mini"
                               onClick={() => deleteNote(n.id)}
                             >
-                              Elimina
+                              {T.elimina}
                             </button>
                           </div>
                         )}
@@ -984,7 +991,7 @@ export default function PublicPlan() {
                 className="pp-input"
                 rows={3}
                 value={noteText}
-                placeholder="Aggiungi una nota su questo post (puoi allegare foto o video)…"
+                placeholder={T.notaEsempio}
                 onChange={(e) => setNoteText(e.target.value)}
               />
               {noteMedia.length > 0 && (
@@ -995,7 +1002,7 @@ export default function PublicPlan() {
                         type="button"
                         className="pp-note-thumb"
                         onClick={() => setLightbox({ list: noteMedia, index: i })}
-                        aria-label="Ingrandisci"
+                        aria-label={T.ingrandisci}
                       >
                         {m.kind === "video" ? (
                           <video
@@ -1016,7 +1023,7 @@ export default function PublicPlan() {
                         type="button"
                         className="pp-note-thumb-x"
                         onClick={() => removeNoteMedia(i)}
-                        aria-label="Rimuovi allegato"
+                        aria-label={T.rimuoviAllegato}
                       >
                         <FontAwesomeIcon icon={faTimes} />
                       </button>
@@ -1035,7 +1042,7 @@ export default function PublicPlan() {
                     icon={noteUploading ? faSpinner : faImage}
                     spin={noteUploading}
                   />{" "}
-                  {noteUploading ? "Carico…" : "Foto / Video"}
+                  {noteUploading ? T.carico : T.fotoVideo}
                 </button>
                 <input
                   ref={noteFileRef}
@@ -1053,7 +1060,7 @@ export default function PublicPlan() {
                   }
                 >
                   <FontAwesomeIcon icon={faPaperPlane} />{" "}
-                  {noteSending ? "Invio…" : "Aggiungi nota"}
+                  {noteSending ? T.invio : T.aggiungiNota}
                 </button>
               </div>
             </div>
@@ -1072,7 +1079,7 @@ export default function PublicPlan() {
               <button
                 className="pp-lightbox-close"
                 onClick={() => setLightbox(null)}
-                aria-label="Chiudi"
+                aria-label={T.chiudi}
               >
                 <FontAwesomeIcon icon={faTimes} />
               </button>
@@ -1083,7 +1090,7 @@ export default function PublicPlan() {
                     e.stopPropagation();
                     lightboxPrev();
                   }}
-                  aria-label="Precedente"
+                  aria-label={T.precedente}
                 >
                   <FontAwesomeIcon icon={faChevronLeft} />
                 </button>
@@ -1107,7 +1114,7 @@ export default function PublicPlan() {
                     e.stopPropagation();
                     lightboxNext();
                   }}
-                  aria-label="Successivo"
+                  aria-label={T.successivo}
                 >
                   <FontAwesomeIcon icon={faChevronRight} />
                 </button>
