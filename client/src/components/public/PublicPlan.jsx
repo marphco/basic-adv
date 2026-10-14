@@ -14,6 +14,8 @@ import {
   faSpinner,
   faChevronLeft,
   faChevronRight,
+  faFilePdf,
+  faUpRightFromSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import useNoindex from "../../hooks/useNoindex";
 import { categoryColor } from "../dashboard/editorial/mockData";
@@ -861,7 +863,16 @@ export default function PublicPlan() {
                     onClick={() => setLightbox({ list: selected.media, index: i })}
                     aria-label={T.ingrandisci}
                   >
-                    {m.kind === "video" && !m.thumbUrl ? (
+                    {m.kind === "pdf" ? (
+                      // la prima pagina del PDF, o l'icona se manca
+                      m.thumbUrl ? (
+                        <img src={m.thumbUrl} alt="" />
+                      ) : (
+                        <span className="pp-pdf-icon">
+                          <FontAwesomeIcon icon={faFilePdf} />
+                        </span>
+                      )
+                    ) : m.kind === "video" && !m.thumbUrl ? (
                       <video src={`${m.url}#t=0.1`} muted preload="metadata" />
                     ) : (
                       <img
@@ -874,6 +885,7 @@ export default function PublicPlan() {
                         <FontAwesomeIcon icon={faPlay} />
                       </span>
                     )}
+                    {m.kind === "pdf" && <span className="pp-pdf-badge">PDF</span>}
                   </button>
                 ))}
               </div>
@@ -1101,7 +1113,27 @@ export default function PublicPlan() {
                 onTouchStart={onLbTouchStart}
                 onTouchEnd={onLbTouchEnd}
               >
-                {item.kind === "video" ? (
+                {item.kind === "pdf" ? (
+                  // Il PDF si sfoglia nel lettore del dispositivo: dentro la
+                  // pagina, su iPhone, se ne vedrebbe solo la prima pagina.
+                  <div className="pp-lightbox-pdf">
+                    {item.thumbUrl ? (
+                      <img src={item.thumbUrl} alt="" />
+                    ) : (
+                      <span className="pp-pdf-icon pp-pdf-icon--grande">
+                        <FontAwesomeIcon icon={faFilePdf} />
+                      </span>
+                    )}
+                    <a
+                      className="pp-btn"
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <FontAwesomeIcon icon={faUpRightFromSquare} /> {T.apriPdf}
+                    </a>
+                  </div>
+                ) : item.kind === "video" ? (
                   <video src={item.url} controls autoPlay />
                 ) : (
                   <img src={item.url || item.thumbUrl} alt="" />

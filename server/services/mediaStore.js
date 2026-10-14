@@ -23,6 +23,11 @@ if (!fs.existsSync(PED_DIR)) fs.mkdirSync(PED_DIR, { recursive: true });
 // Tipi consentiti: solo immagini e video (niente eseguibili/altro).
 const ALLOWED =
   /^(image\/(jpeg|jpg|png|webp|gif|heic|heif)|video\/(mp4|quicktime|webm|x-m4v))$/i;
+// I post dell'agenzia accettano anche il PDF (su LinkedIn i caroselli sono
+// documenti). Le note dei clienti no: restano foto e video, con il loro
+// portinaio di sempre (`mediaUpload`), che non cambia.
+const ALLOWED_POST =
+  /^(image\/(jpeg|jpg|png|webp|gif|heic|heif)|video\/(mp4|quicktime|webm|x-m4v)|application\/pdf)$/i;
 const MAX_BYTES = 60 * 1024 * 1024; // 60MB/file (video brevi)
 
 const storage = multer.diskStorage({
@@ -45,6 +50,16 @@ const mediaUpload = multer({
   },
 });
 
+// Media dei post (agenzia): come sopra, più il PDF.
+const mediaUploadPost = multer({
+  storage,
+  limits: { fileSize: MAX_BYTES, files: 10 },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_POST.test(file.mimetype)) cb(null, true);
+    else cb(new Error("Tipo file non consentito (solo foto, video e PDF)."));
+  },
+});
+
 // Esegue il middleware multer e converte gli errori in 400 JSON (così non
 // finiscono nell'error handler globale).
 function handleUpload(mw) {
@@ -59,7 +74,12 @@ function handleUpload(mw) {
     });
 }
 
-const kindOf = (mimetype) => (/^video\//i.test(mimetype) ? "video" : "image");
+const kindOf = (mimetype) =>
+  /^video\//i.test(mimetype)
+    ? "video"
+    : /^application\/pdf$/i.test(mimetype)
+    ? "pdf"
+    : "image";
 
 // Base URL pubblica del SERVER (dietro al proxy Railway).
 function reqBase(req) {
@@ -97,6 +117,7 @@ const isOwnMediaUrl = (u) => /\/uploads-ped\/[\w.-]+$/i.test(String(u || ""));
 module.exports = {
   PED_DIR,
   mediaUpload,
+  mediaUploadPost,
   handleUpload,
   toMedia,
   removeFiles,

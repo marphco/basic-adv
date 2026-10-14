@@ -193,7 +193,11 @@ async function build({ clientId = "", year = 0, month = 0 } = {}) {
           key,
           name: path.basename(key),
           path: `/${key}`, // serve l'anteprima anche qui: non si cancella al buio
-          kind: /\.(mp4|mov|m4v|webm)$/i.test(key) ? "video" : "image",
+          kind: /\.(mp4|mov|m4v|webm)$/i.test(key)
+            ? "video"
+            : /\.pdf$/i.test(key)
+            ? "pdf"
+            : "image",
           bytes,
         };
         (storico.has(key) ? trattenuti : orfani).push(voce);

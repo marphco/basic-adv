@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTriangleExclamation,
@@ -7,6 +8,7 @@ import {
   faTrash,
   faCheck,
   faImage,
+  faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 import { api, API_URL } from "./api";
 
@@ -24,6 +26,20 @@ const src = (p) => (p ? `${API_URL}${p}` : "");
 // con l'indirizzo di un mp4 darebbe solo un'icona di immagine rotta.
 const Anteprima = ({ file, className = "" }) => {
   const video = file.kind === "video";
+  // Un PDF si riconosce dalla sua prima pagina (disegnata al caricamento);
+  // senza, dall'icona. Mai un <img> col PDF dentro: sarebbe un'immagine rotta.
+  if (file.kind === "pdf")
+    return (
+      <div className={`ep-thumb ${className}`}>
+        {file.thumb ? (
+          <img src={src(file.thumb)} alt="" loading="lazy" />
+        ) : (
+          <span className="ep-pdf-icon">
+            <FontAwesomeIcon icon={faFilePdf} />
+          </span>
+        )}
+      </div>
+    );
   return (
     <div className={`ep-thumb ${className}`}>
       {video && !file.thumb ? (
@@ -38,6 +54,15 @@ const Anteprima = ({ file, className = "" }) => {
       )}
     </div>
   );
+};
+
+Anteprima.propTypes = {
+  file: PropTypes.shape({
+    kind: PropTypes.string,
+    path: PropTypes.string,
+    thumb: PropTypes.string,
+  }).isRequired,
+  className: PropTypes.string,
 };
 
 // Contenuti dell'archivio: cosa occupa spazio, di chi è, e come liberarlo.

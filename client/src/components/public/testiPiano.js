@@ -87,6 +87,7 @@ export const TESTI = {
     ingrandisci: "Ingrandisci",
     precedente: "Precedente",
     successivo: "Successivo",
+    apriPdf: "Apri il PDF",
 
     // note
     annulla: "Annulla",
@@ -117,6 +118,7 @@ export const TESTI = {
       video: (quanti, carosello) => (carosello ? `${quanti} video` : "Video"),
       cliente: (n) => `Cliente${n > 1 ? ` ${n}` : ""}`,
       note: (n) => `Note${n > 1 ? ` ${n}` : ""}`,
+      pdf: (n) => (n > 1 ? `${n} PDF` : "PDF"),
     },
 
     dataOra: (data, ora) => `${data} · ${ora}`,
@@ -183,6 +185,7 @@ export const TESTI = {
     ingrandisci: "Enlarge",
     precedente: "Previous",
     successivo: "Next",
+    apriPdf: "Open the PDF",
 
     annulla: "Cancel",
     salva: "Save",
@@ -210,6 +213,7 @@ export const TESTI = {
         carosello ? `${quanti} ${quanti === 1 ? "video" : "videos"}` : "Video",
       cliente: (n) => `Client${n > 1 ? ` ${n}` : ""}`,
       note: (n) => `${n > 1 ? "Notes" : "Note"}${n > 1 ? ` ${n}` : ""}`,
+      pdf: (n) => (n > 1 ? `${n} PDFs` : "PDF"),
     },
 
     // Le ore sono sempre quelle italiane (lo storico è dell'agenzia): per chi
