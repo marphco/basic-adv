@@ -18,7 +18,7 @@ const emptyForm = {
   name: "",
   contactName: "",
   emails: [""], // un cliente può avere più email (società con più soci)
-  lingua: "it", // lingua della mail del piano (clienti esteri → inglese)
+  linguaMail: "auto", // lingua della mail del piano: da sola, o fissata a mano
   operators: [], // operatore/i (id utente) — almeno uno obbligatorio
   admins: [], // admin di revisione (id) — opzionale; assente se operatore è admin
   pages: [{ name: "", channels: ["instagram"] }],
@@ -52,6 +52,15 @@ const ClientModal = ({
   const [initial, setInitial] = useState(emptyForm);
 
   const isNew = editing === "new";
+  // Cosa ha deciso la scelta automatica per questo cliente, e perché (lo
+  // calcola il server). Solo se la scelta salvata è già "automatica": se era
+  // fissata a mano, il "perché" del server direbbe solo "scelta a mano".
+  const inModifica = clients.find((c) => c.id === editing);
+  const linguaAdesso =
+    inModifica?.linguaMailInfo &&
+    inModifica.linguaMailInfo.motivo !== "scelta a mano"
+      ? inModifica.linguaMailInfo
+      : null;
   const dirty = () =>
     editing !== null && JSON.stringify(form) !== JSON.stringify(initial);
 
@@ -106,7 +115,12 @@ const ClientModal = ({
           : c.email
           ? [c.email]
           : [""],
-      lingua: c.lingua === "en" ? "en" : "it",
+      // "en" della prima versione (solo inglese a mano) vale ancora
+      linguaMail: ["auto", "it", "en"].includes(c.linguaMail)
+        ? c.linguaMail
+        : c.lingua === "en"
+        ? "en"
+        : "auto",
       operators: (c.operators || []).map(String),
       admins: (c.admins || []).map(String),
       pages: (c.pages || []).map((p) => ({
@@ -186,7 +200,7 @@ const ClientModal = ({
       name: form.name.trim(),
       contactName: form.contactName.trim(),
       emails: form.emails.map((e) => e.trim()).filter(Boolean),
-      lingua: form.lingua,
+      linguaMail: form.linguaMail,
       operators: form.operators,
       admins: reviewAdmins,
       pages: form.pages.map((pg) => ({
@@ -373,13 +387,21 @@ const ClientModal = ({
                 <label className="ep-field-label">Lingua della mail del piano</label>
                 <select
                   className="ep-select"
-                  value={form.lingua}
-                  onChange={(e) => setForm({ ...form, lingua: e.target.value })}
+                  value={form.linguaMail}
+                  onChange={(e) => setForm({ ...form, linguaMail: e.target.value })}
                 >
-                  <option value="it">Italiano</option>
-                  <option value="en">Inglese (clienti esteri)</option>
+                  <option value="auto">Automatica</option>
+                  <option value="it">Sempre italiano</option>
+                  <option value="en">Sempre inglese</option>
                 </select>
               </div>
+              {form.linguaMail === "auto" && (
+                <p className="ep-user-noclients">
+                  {linguaAdesso
+                    ? `Adesso: ${linguaAdesso.lingua === "en" ? "inglese" : "italiano"} (${linguaAdesso.motivo}).`
+                    : "Italiano ai clienti in Italia, inglese a quelli all'estero: lo capisce da dove aprono il piano."}
+                </p>
+              )}
 
               {/* Operatori: chi gestisce il cliente e riceve i suoi feedback */}
               <div className="ep-field-head">
