@@ -62,7 +62,7 @@ export default function UiHost() {
                 className="ui-btn ui-btn--ghost"
                 onClick={() => resolveConfirm(false)}
               >
-                Annulla
+                {s.confirm.cancelLabel || "Annulla"}
               </button>
               <button
                 className={`ui-btn ${
@@ -95,7 +95,7 @@ export default function UiHost() {
                 className="ui-btn ui-btn--ghost"
                 onClick={() => resolvePrompt(null)}
               >
-                Annulla
+                {s.prompt.cancelLabel || "Annulla"}
               </button>
               <button
                 className="ui-btn ui-btn--primary"

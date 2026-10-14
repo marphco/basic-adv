@@ -13,9 +13,24 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { categoryColor } from "./mockData";
 
+// Le parole scritte sulla card. Sono quelle del pannello admin e restano le
+// predefinite: solo la pagina pubblica del piano (il cliente, magari in
+// inglese) ne passa altre con `etichette`. Senza, la card è identica a prima.
+const ETICHETTE = {
+  daRivedere: "Da rivedere",
+  schedulato: "Schedulato",
+  pubblicato: "Pubblicato",
+  sponsor: "Sponsor",
+  video: (quanti, carosello) => (carosello ? `${quanti} video` : "Video"),
+  cliente: (n) => `Cliente${n > 1 ? ` ${n}` : ""}`,
+  note: (n) => `Note${n > 1 ? ` ${n}` : ""}`,
+  interna: (n) => `Interna${n > 1 ? ` ${n}` : ""}`,
+};
+
 // Card di un post. `compact` = versione testuale per la vista a matrice
 // (pagine × giorni), senza miniatura, come nel PED a griglia.
-const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
+const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) => {
+  const E = { ...ETICHETTE, ...(etichette || {}) };
   const cover = post.media?.[0];
   const mediaCount = post.media?.length || 0;
   // `isVideo` riguarda solo la COPERTINA (serve alla miniatura). Per capire se
@@ -125,7 +140,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
       <div className="ep-post-body">
         {post.isDuplicate && (
           <span className="ep-dup-flag">
-            <FontAwesomeIcon icon={faClone} /> Da rivedere
+            <FontAwesomeIcon icon={faClone} /> {E.daRivedere}
           </span>
         )}
         {post.category && (
@@ -140,17 +155,17 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
         <div className="ep-post-badges">
           {ps === "schedulato" && (
             <span className="ep-badge ep-badge--sched">
-              <FontAwesomeIcon icon={faClock} /> Schedulato
+              <FontAwesomeIcon icon={faClock} /> {E.schedulato}
             </span>
           )}
           {ps === "pubblicato" && (
             <span className="ep-badge ep-badge--pub">
-              <FontAwesomeIcon icon={faCheck} /> Pubblicato
+              <FontAwesomeIcon icon={faCheck} /> {E.pubblicato}
             </span>
           )}
           {post.sponsored && (
             <span className="ep-badge ep-badge--sponsored">
-              <FontAwesomeIcon icon={faBullhorn} /> Sponsor
+              <FontAwesomeIcon icon={faBullhorn} /> {E.sponsor}
             </span>
           )}
           {mediaCount > 1 && (
@@ -163,7 +178,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
           {videoCount > 0 && (
             <span className="ep-badge ep-badge--video">
               <FontAwesomeIcon icon={faPlay} />{" "}
-              {mediaCount > 1 ? `${videoCount} video` : "Video"}
+              {E.video(videoCount, mediaCount > 1)}
             </span>
           )}
           {clientNotes.length > 0 && (
@@ -173,19 +188,19 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers }) => {
               }`}
             >
               <FontAwesomeIcon icon={clientPending ? faComment : faCheck} />{" "}
-              Cliente{clientNotes.length > 1 ? ` ${clientNotes.length}` : ""}
+              {E.cliente(clientNotes.length)}
             </span>
           )}
           {agencyNotes.length > 0 && (
             <span className="ep-badge ep-badge--agency">
               <FontAwesomeIcon icon={faComment} />{" "}
-              Note{agencyNotes.length > 1 ? ` ${agencyNotes.length}` : ""}
+              {E.note(agencyNotes.length)}
             </span>
           )}
           {internalNotes.length > 0 && (
             <span className="ep-badge ep-badge--internal">
               <FontAwesomeIcon icon={internalPending ? faLock : faCheck} />{" "}
-              Interna{internalNotes.length > 1 ? ` ${internalNotes.length}` : ""}
+              {E.interna(internalNotes.length)}
             </span>
           )}
         </div>
@@ -200,6 +215,8 @@ PostChip.propTypes = {
   onClick: PropTypes.func.isRequired,
   movable: PropTypes.bool,
   dndHandlers: PropTypes.object,
+  // parole della card in un'altra lingua (solo pagina pubblica del piano)
+  etichette: PropTypes.object,
 };
 
 export default PostChip;

@@ -78,6 +78,48 @@ body.pp-no-hscroll {
   color: var(--pp-muted);
 }
 
+/* Selettore di lingua: lo stesso del sito (EN · IT, attiva piena, l'altra
+   attenuata, puntino arancione), con un'area di tocco più larga perché qui
+   lo si usa soprattutto dal telefono. */
+.pp-lang {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.pp-lang-item {
+  display: inline-flex;
+  align-items: center;
+}
+.pp-lang-btn {
+  background: transparent;
+  border: none;
+  padding: 10px 6px;
+  color: inherit;
+  font: inherit;
+  letter-spacing: 0.04em;
+  opacity: 0.5;
+  cursor: pointer;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+.pp-lang-btn.is-on {
+  opacity: 1;
+}
+.pp-lang-btn:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+.pp-lang-btn:focus-visible {
+  outline: 2px solid var(--pp-brand);
+  outline-offset: 2px;
+}
+.pp-lang-sep {
+  color: var(--pp-brand);
+}
+
 .pp-card {
   background: var(--pp-surface);
   border: 1px solid var(--pp-border);
