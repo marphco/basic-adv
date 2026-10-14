@@ -39,10 +39,6 @@ const MONTHS_EN = [
 ];
 const { linguaMail, SCELTE: SCELTE_LINGUA } = require("../services/linguaMail");
 
-// La lingua che la mail del piano avrà adesso, e perché: la scheda del cliente
-// la mostra, così la scelta automatica non è una scatola nera.
-const conLingua = (c) => ({ ...c, linguaMailInfo: linguaMail(c) });
-
 // Lista email pulita e deduplicata (case-insensitive) da `emails` + `email`.
 function cleanEmails(emails, email) {
   const all = [...(Array.isArray(emails) ? emails : []), email]
@@ -158,7 +154,7 @@ router.get("/clients", async (req, res) => {
       c.operators = list.map((o) => o.id);
       c.operatorsInfo = list;
     });
-    res.json(clients.map(conLingua));
+    res.json(clients);
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dei clienti" });
   }
@@ -186,7 +182,7 @@ router.post("/clients", requireAdmin, async (req, res) => {
       contactName: contactName || "",
       linguaMail: SCELTE_LINGUA.includes(req.body?.linguaMail)
         ? req.body.linguaMail
-        : "auto",
+        : "it",
       emails: cleaned,
       email: cleaned[0] || "", // primario allineato per compatibilità
       pages: Array.isArray(pages) ? pages : [],
@@ -194,7 +190,7 @@ router.post("/clients", requireAdmin, async (req, res) => {
       createdBy: req.dbUser._id,
     });
     await reconcileOperators(client._id, opIds);
-    res.status(201).json(conLingua({ ...client.toObject(), operators: opIds }));
+    res.status(201).json({ ...client.toObject(), operators: opIds });
   } catch (e) {
     res.status(500).json({ error: "Errore nella creazione del cliente" });
   }
@@ -210,7 +206,7 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
     if (contactName !== undefined) update.contactName = contactName;
     if (SCELTE_LINGUA.includes(req.body?.linguaMail)) {
       update.linguaMail = req.body.linguaMail;
-      // il vecchio campo (solo "inglese a mano") lascia il posto alla scelta nuova
+      // il campo della prima versione lascia il posto alla scelta nuova
       update.$unset = { lingua: 1 };
     }
     if (emails !== undefined || email !== undefined) {
@@ -246,9 +242,7 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
     const ops = await User.find({ assignedClients: client._id })
       .select("_id")
       .lean();
-    res.json(
-      conLingua({ ...client.toObject(), operators: ops.map((u) => String(u._id)) })
-    );
+    res.json({ ...client.toObject(), operators: ops.map((u) => String(u._id)) });
   } catch (e) {
     res.status(500).json({ error: "Errore nell'aggiornamento del cliente" });
   }
@@ -296,7 +290,7 @@ router.post("/share", async (req, res) => {
     const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
     const planUrl = `${base}/p/${clientId}-${yyyymm}`;
     const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
-    const { lingua } = linguaMail(client);
+    const lingua = linguaMail(client);
 
     const mail = emailTemplates.shareEditorialPlan({
       clientName: client.name,

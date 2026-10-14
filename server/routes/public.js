@@ -8,7 +8,6 @@ const PlanApproval = require("../models/PlanApproval");
 const { sendMail } = require("../services/mailer");
 const emailTemplates = require("../services/emailTemplates");
 const { recordAccess } = require("../services/planHistory");
-const { aperturaDa } = require("../services/linguaMail");
 const mediaIntake = require("../services/mediaIntake");
 const {
   mediaUpload,
@@ -207,15 +206,6 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       return res
         .status(403)
         .json({ error: "Email non riconosciuta per questo piano." });
-
-    // Da dove il CLIENTE apre il piano (paese che la pagina legge da Vercel):
-    // decide la lingua delle prossime mail (services/linguaMail.js). Le
-    // aperture dell'agenzia non contano. Mai bloccante per l'apertura.
-    const daDove = aperturaDa(req.body?.paese);
-    if (daDove && recipients(client).includes(norm(email)))
-      Client.updateOne({ _id: client._id }, { $set: daDove }).catch((e) =>
-        console.error("[linguaMail] paese non registrato:", e?.message)
-      );
 
     // STORICO: registro l'apertura del piano. È la prova più forte che il piano
     // è arrivato al cliente (il link si sblocca solo con una sua email).
