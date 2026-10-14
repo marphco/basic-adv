@@ -118,7 +118,13 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) =
       {...(dndHandlers || {})}
     >
       {!compact && (
-        <div className="ep-post-thumb">
+        // Una prima pagina da sola sembra una foto qualsiasi: il PDF porta
+        // l'angolo piegato e la fascia rossa, come l'icona che tutti conoscono.
+        <div
+          className={
+            isPdf && cover.thumbUrl ? "ep-post-thumb ep-pdf-foglio" : "ep-post-thumb"
+          }
+        >
           {cover ? (
             isPdf ? (
               cover.thumbUrl ? (
@@ -146,6 +152,7 @@ const PostChip = ({ post, compact, onClick, movable, dndHandlers, etichette }) =
               <FontAwesomeIcon icon={faPlay} />
             </span>
           )}
+          {isPdf && cover.thumbUrl && <span className="ep-pdf-striscia" aria-hidden="true">PDF</span>}
         </div>
       )}
 

@@ -859,7 +859,9 @@ export default function PublicPlan() {
                   <button
                     key={i}
                     type="button"
-                    className="pp-thumb"
+                    className={
+                      m.kind === "pdf" && m.thumbUrl ? "pp-thumb ep-pdf-foglio" : "pp-thumb"
+                    }
                     onClick={() => setLightbox({ list: selected.media, index: i })}
                     aria-label={T.ingrandisci}
                   >
@@ -885,7 +887,11 @@ export default function PublicPlan() {
                         <FontAwesomeIcon icon={faPlay} />
                       </span>
                     )}
-                    {m.kind === "pdf" && <span className="pp-pdf-badge">PDF</span>}
+                    {m.kind === "pdf" && m.thumbUrl && (
+                      <span className="ep-pdf-striscia" aria-hidden="true">
+                        <FontAwesomeIcon icon={faFilePdf} /> PDF
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

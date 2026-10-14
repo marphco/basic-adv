@@ -826,18 +826,25 @@ body.pp-no-hscroll {
   font-size: 6rem;
   border-radius: 10px;
 }
-.pp-pdf-badge {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 2px 7px;
-  border-radius: 5px;
-  color: #fff;
-  background: #c81e1e;
-  pointer-events: none;
+/* Angolo piegato e fascia rossa (regole in EditorialPlans.css), in grande. */
+.pp-thumb.ep-pdf-foglio {
+  --piega: 34px;
+}
+.pp-thumb .ep-pdf-striscia {
+  padding: 6px 0;
+  font-size: 0.8rem;
+}
+/* PDF da solo nel post: il riquadro si stringe attorno alla pagina, così
+   angolo e fascia stanno sul foglio e non sul vuoto ai lati. */
+.pp-media--single .pp-thumb.ep-pdf-foglio {
+  --piega: 48px;
+  width: auto;
+  max-width: 100%;
+  justify-self: center;
+}
+.pp-media--single .pp-thumb.ep-pdf-foglio img {
+  width: auto;
+  max-width: 100%;
 }
 .pp-lightbox-pdf {
   display: flex;

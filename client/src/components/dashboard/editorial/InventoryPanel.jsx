@@ -30,12 +30,17 @@ const Anteprima = ({ file, className = "" }) => {
   // senza, dall'icona. Mai un <img> col PDF dentro: sarebbe un'immagine rotta.
   if (file.kind === "pdf")
     return (
-      <div className={`ep-thumb ${className}`}>
+      <div className={`ep-thumb ${file.thumb ? "ep-pdf-foglio " : ""}${className}`}>
         {file.thumb ? (
           <img src={src(file.thumb)} alt="" loading="lazy" />
         ) : (
           <span className="ep-pdf-icon">
             <FontAwesomeIcon icon={faFilePdf} />
+          </span>
+        )}
+        {file.thumb && (
+          <span className="ep-pdf-striscia" aria-hidden="true">
+            <FontAwesomeIcon icon={faFilePdf} /> PDF
           </span>
         )}
       </div>

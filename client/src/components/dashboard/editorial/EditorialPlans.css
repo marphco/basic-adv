@@ -3135,18 +3135,73 @@
   font-size: 5rem;
   border-radius: 12px;
 }
-.ep-pdf-badge {
+/* Una prima pagina, da sola, sembra una foto qualsiasi. Sopra la copertina
+   il PDF porta allora i due segni dell'icona dei documenti che tutti
+   conoscono: l'angolo piegato in alto a destra e la fascia rossa "PDF" in
+   basso. È il suo equivalente del ▶ dei video. */
+.ep-pdf-foglio {
+  --piega: 10px;
+  background: transparent !important;
+}
+.ep-pdf-foglio > img {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--piega)) 0,
+    100% var(--piega),
+    100% 100%,
+    0 100%
+  );
+}
+.ep-pdf-foglio::after {
+  content: "";
   position: absolute;
-  left: 4px;
-  bottom: 4px;
+  top: 0;
+  right: 0;
+  width: var(--piega);
+  height: var(--piega);
+  /* il retro del foglio, ripiegato verso il basso a sinistra */
+  background: linear-gradient(to bottom left, transparent 50%, #e9e4dc 50%);
+  filter: drop-shadow(-1px 1px 1px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+  z-index: 1;
+}
+.ep-post-thumb.ep-pdf-foglio { --piega: 11px; }
+.ep-thumb--mini.ep-pdf-foglio { --piega: 13px; }
+/* nell'archivio l'angolo in alto a destra è del peso del file: basta la fascia */
+.ep-inv-tile .ep-pdf-foglio { --piega: 0px; }
+
+.ep-pdf-striscia {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  padding: 2px 0;
   font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 1px 5px;
-  border-radius: 4px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
   color: #fff;
   background: var(--ep-pdf, #c81e1e);
   pointer-events: none;
+  z-index: 1;
+}
+.ep-post-thumb .ep-pdf-striscia {
+  padding: 1px 0;
+  font-size: 7px;
+}
+.ep-thumb--mini .ep-pdf-striscia {
+  font-size: 8px;
+}
+.ep-inv-tile .ep-pdf-striscia {
+  padding: 4px 0;
+  font-size: 0.72rem;
+}
+.ep-media-tile .ep-pdf-striscia svg {
+  font-size: 0.85em;
 }
 .ep-badge--pdf {
   background: var(--ep-pdf, #c81e1e);
