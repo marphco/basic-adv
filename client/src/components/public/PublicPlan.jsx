@@ -37,6 +37,21 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8080").replac
   ""
 );
 
+// Il paese da cui si apre il piano (Vercel lo ricava dall'indirizzo, come per
+// la lingua della pagina): decide la lingua delle prossime mail al cliente.
+// Una richiesta sola per pagina, e se tarda il piano si apre lo stesso senza.
+let paeseInCorso = null;
+const paese = () => {
+  paeseInCorso ||= fetch("/api/geo")
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((d) => String(d?.country || ""))
+    .catch(() => "");
+  return Promise.race([
+    paeseInCorso,
+    new Promise((ok) => setTimeout(() => ok(""), 1500)),
+  ]);
+};
+
 // Frase con parti in grassetto: le stringhe sono testo, gli elenchi annidati
 // grassetto (vedi testiPiano.js).
 const Testo = ({ parti }) =>
@@ -225,6 +240,7 @@ export default function PublicPlan() {
         year: parsed.year,
         month: parsed.month,
         email: val,
+        paese: await paese(),
       });
       setData(r.data);
       setPosts(r.data.posts || []);

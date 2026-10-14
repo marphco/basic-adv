@@ -37,8 +37,11 @@ const MONTHS_EN = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
-// Lingua delle email al cliente: solo questi due valori, altrimenti italiano.
-const LINGUE_EMAIL = ["it", "en"];
+const { linguaMail, SCELTE: SCELTE_LINGUA } = require("../services/linguaMail");
+
+// La lingua che la mail del piano avrà adesso, e perché: la scheda del cliente
+// la mostra, così la scelta automatica non è una scatola nera.
+const conLingua = (c) => ({ ...c, linguaMailInfo: linguaMail(c) });
 
 // Lista email pulita e deduplicata (case-insensitive) da `emails` + `email`.
 function cleanEmails(emails, email) {
@@ -155,7 +158,7 @@ router.get("/clients", async (req, res) => {
       c.operators = list.map((o) => o.id);
       c.operatorsInfo = list;
     });
-    res.json(clients);
+    res.json(clients.map(conLingua));
   } catch (e) {
     res.status(500).json({ error: "Errore nel recupero dei clienti" });
   }
@@ -181,7 +184,9 @@ router.post("/clients", requireAdmin, async (req, res) => {
     const client = await Client.create({
       name: name.trim(),
       contactName: contactName || "",
-      lingua: LINGUE_EMAIL.includes(req.body?.lingua) ? req.body.lingua : "it",
+      linguaMail: SCELTE_LINGUA.includes(req.body?.linguaMail)
+        ? req.body.linguaMail
+        : "auto",
       emails: cleaned,
       email: cleaned[0] || "", // primario allineato per compatibilità
       pages: Array.isArray(pages) ? pages : [],
@@ -189,7 +194,7 @@ router.post("/clients", requireAdmin, async (req, res) => {
       createdBy: req.dbUser._id,
     });
     await reconcileOperators(client._id, opIds);
-    res.status(201).json({ ...client.toObject(), operators: opIds });
+    res.status(201).json(conLingua({ ...client.toObject(), operators: opIds }));
   } catch (e) {
     res.status(500).json({ error: "Errore nella creazione del cliente" });
   }
@@ -203,7 +208,11 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
     const update = {};
     if (name !== undefined) update.name = name.trim();
     if (contactName !== undefined) update.contactName = contactName;
-    if (LINGUE_EMAIL.includes(req.body?.lingua)) update.lingua = req.body.lingua;
+    if (SCELTE_LINGUA.includes(req.body?.linguaMail)) {
+      update.linguaMail = req.body.linguaMail;
+      // il vecchio campo (solo "inglese a mano") lascia il posto alla scelta nuova
+      update.$unset = { lingua: 1 };
+    }
     if (emails !== undefined || email !== undefined) {
       const cleaned = cleanEmails(
         emails !== undefined ? emails : [],
@@ -237,7 +246,9 @@ router.put("/clients/:id", requireAdmin, async (req, res) => {
     const ops = await User.find({ assignedClients: client._id })
       .select("_id")
       .lean();
-    res.json({ ...client.toObject(), operators: ops.map((u) => String(u._id)) });
+    res.json(
+      conLingua({ ...client.toObject(), operators: ops.map((u) => String(u._id)) })
+    );
   } catch (e) {
     res.status(500).json({ error: "Errore nell'aggiornamento del cliente" });
   }
@@ -285,7 +296,7 @@ router.post("/share", async (req, res) => {
     const base = (process.env.APP_URL || "https://basicadv.com").replace(/\/$/, "");
     const planUrl = `${base}/p/${clientId}-${yyyymm}`;
     const monthLabel = `${MONTHS_IT[m - 1] || ""} ${year}`.trim();
-    const lingua = client.lingua === "en" ? "en" : "it";
+    const { lingua } = linguaMail(client);
 
     const mail = emailTemplates.shareEditorialPlan({
       clientName: client.name,
