@@ -25,6 +25,9 @@ const ClientSchema = new mongoose.Schema({
   // `email` resta come "primario" per compatibilità: lo teniamo allineato a emails[0].
   email: { type: String, default: "" },
   emails: { type: [String], default: [] },
+  // Lingua delle email inviate al cliente (il piano del mese). I clienti
+  // esistenti, senza il campo, restano in italiano come sempre.
+  lingua: { type: String, enum: ["it", "en"], default: "it" },
   pages: { type: [PageSchema], default: [] },
   // Admin responsabili del cliente: ricevono il piano "per revisione" (vista
   // dashboard con modifiche dirette + note interne). Almeno uno è richiesto

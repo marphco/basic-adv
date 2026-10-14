@@ -18,6 +18,7 @@ const emptyForm = {
   name: "",
   contactName: "",
   emails: [""], // un cliente può avere più email (società con più soci)
+  lingua: "it", // lingua della mail del piano (clienti esteri → inglese)
   operators: [], // operatore/i (id utente) — almeno uno obbligatorio
   admins: [], // admin di revisione (id) — opzionale; assente se operatore è admin
   pages: [{ name: "", channels: ["instagram"] }],
@@ -105,6 +106,7 @@ const ClientModal = ({
           : c.email
           ? [c.email]
           : [""],
+      lingua: c.lingua === "en" ? "en" : "it",
       operators: (c.operators || []).map(String),
       admins: (c.admins || []).map(String),
       pages: (c.pages || []).map((p) => ({
@@ -184,6 +186,7 @@ const ClientModal = ({
       name: form.name.trim(),
       contactName: form.contactName.trim(),
       emails: form.emails.map((e) => e.trim()).filter(Boolean),
+      lingua: form.lingua,
       operators: form.operators,
       admins: reviewAdmins,
       pages: form.pages.map((pg) => ({
@@ -365,6 +368,18 @@ const ClientModal = ({
               <p className="ep-user-noclients">
                 Per società con più soci puoi inviare il piano a più indirizzi.
               </p>
+
+              <div className="ep-field">
+                <label className="ep-field-label">Lingua della mail del piano</label>
+                <select
+                  className="ep-select"
+                  value={form.lingua}
+                  onChange={(e) => setForm({ ...form, lingua: e.target.value })}
+                >
+                  <option value="it">Italiano</option>
+                  <option value="en">Inglese (clienti esteri)</option>
+                </select>
+              </div>
 
               {/* Operatori: chi gestisce il cliente e riceve i suoi feedback */}
               <div className="ep-field-head">
