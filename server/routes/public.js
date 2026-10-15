@@ -197,6 +197,28 @@ async function findPost(clientId, year, month, postId) {
   });
 }
 
+// I mesi tra cui il cliente può spostarsi dopo l'accesso: quelli con dei post,
+// più quello aperto. Gli ultimi 12 al massimo, con lo stato di approvazione di
+// ciascuno (l'approvazione resta mese per mese).
+async function mesiNavigabili(clientId, year, month) {
+  const aperto = Number(year) * 100 + Number(month);
+  const [conPost, approvati] = await Promise.all([
+    Post.find({ clientId }).select("year month -_id").lean(),
+    PlanApproval.find({ clientId }).select("year month approvals createdAt -_id").lean(),
+  ]);
+  const chiavi = new Set(conPost.map((p) => p.year * 100 + p.month));
+  chiavi.add(aperto);
+  const ok = new Set(
+    approvati
+      .filter((a) => (a.approvals && a.approvals.length) || a.createdAt)
+      .map((a) => a.year * 100 + a.month)
+  );
+  return [...chiavi]
+    .sort((x, y) => x - y)
+    .slice(-12)
+    .map((k) => ({ year: Math.floor(k / 100), month: k % 100, approvato: ok.has(k) }));
+}
+
 // Sblocca + restituisce il piano del mese (sola lettura, sanitizzato).
 router.post("/plan/access", rateLimit, async (req, res) => {
   try {
@@ -263,6 +285,7 @@ router.post("/plan/access", rateLimit, async (req, res) => {
       month: Number(month),
       posts: posts.map((p) => sanitizePost(p, pagesById, email)),
       approval: view ? { ...view, changedSince } : null,
+      mesi: await mesiNavigabili(clientId, year, month),
     });
   } catch (e) {
     res.status(500).json({ error: "Errore nel caricamento del piano." });
