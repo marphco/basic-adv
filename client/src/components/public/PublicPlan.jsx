@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -84,6 +84,7 @@ export default function PublicPlan() {
     };
   }, []);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const parsed = useMemo(
     () => parseSlug(pathname.replace(/^\/p\//, "").replace(/\/$/, "")),
     [pathname]
@@ -91,22 +92,26 @@ export default function PublicPlan() {
 
   // Persistenza accesso cliente: localStorage con scadenza 30 giorni. Sopravvive
   // a refresh e riapertura del link (stesso browser); dopo 30 gg richiede l'email.
+  // Vale per tutti i mesi del cliente: ci si sposta da un mese all'altro senza
+  // rimettere l'email. (Prima era un'email per ogni mese: quella si legge
+  // ancora, così chi era già entrato non deve rifarlo.)
   const SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
-  const storeKey = parsed
+  const storeKey = parsed ? `pp:${parsed.clientId}` : "";
+  const vecchiaChiave = parsed
     ? `pp:${parsed.clientId}-${parsed.year}${String(parsed.month).padStart(2, "0")}`
     : "";
   const readStoredEmail = () => {
     if (!storeKey) return "";
-    try {
-      const o = JSON.parse(localStorage.getItem(storeKey) || "null");
-      if (!o || !o.email || !o.exp || Date.now() > o.exp) {
-        localStorage.removeItem(storeKey);
-        return "";
+    for (const k of [storeKey, vecchiaChiave]) {
+      try {
+        const o = JSON.parse(localStorage.getItem(k) || "null");
+        if (o && o.email && o.exp && Date.now() <= o.exp) return o.email;
+        if (o) localStorage.removeItem(k);
+      } catch {
+        /* localStorage non disponibile */
       }
-      return o.email;
-    } catch {
-      return "";
     }
+    return "";
   };
 
   const [email, setEmail] = useState("");
@@ -271,6 +276,35 @@ export default function PublicPlan() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cambio di mese dal selettore: stesso cliente, stessa email, nuovo mese.
+  // Il primo giro lo fa l'auto-accesso qui sopra.
+  const meseAperto = parsed ? parsed.year * 100 + parsed.month : 0;
+  const primoMese = useRef(meseAperto);
+  useEffect(() => {
+    if (!meseAperto || meseAperto === primoMese.current) return;
+    primoMese.current = meseAperto;
+    setSelected(null);
+    setLightbox(null);
+    setFeedbackSent(false);
+    setNoteText("");
+    setNoteMedia([]);
+    setEditingNote(null);
+    const em = email.trim() || readStoredEmail();
+    if (em) doAccess(em);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meseAperto]);
+  // Su telefono la riga dei mesi scorre di lato: il mese aperto sempre in vista.
+  useEffect(() => {
+    document
+      .querySelector(".pp-mese.is-on")
+      ?.scrollIntoView?.({ inline: "center", block: "nearest" });
+  }, [data]);
+  const vaiAlMese = (y, m) => {
+    if (!parsed || (y === parsed.year && m === parsed.month)) return;
+    navigate(`/p/${parsed.clientId}-${y}${String(m).padStart(2, "0")}`);
+    window.scrollTo?.(0, 0);
+  };
+
   const base = { clientId: parsed?.clientId, year: parsed?.year, month: parsed?.month, email: email.trim() };
   const applyNotes = (postId, notes) => {
     setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, notes } : p)));
@@ -396,9 +430,11 @@ export default function PublicPlan() {
   };
 
   const approvePlan = async () => {
-    const message = await promptDialog(T.approvaMessaggio, {
-      title: T.approvaTitolo,
-      confirmLabel: T.approvaConferma,
+    // Il mese sempre per esteso: si approva solo questo, non gli altri.
+    const nomeMese = `${T.mesi[data.month - 1]} ${data.year}`;
+    const message = await promptDialog(T.approvaMessaggio(nomeMese), {
+      title: T.approvaTitolo(nomeMese),
+      confirmLabel: T.approvaConferma(nomeMese),
       cancelLabel: T.annulla,
       placeholder: T.approvaEsempio,
     });
@@ -554,6 +590,31 @@ export default function PublicPlan() {
     <div className="pp-wrap pp-wrap--plan">
       <UiHost />
       {header}
+      {/* Mesi del piano: ci si sposta senza rimettere l'email. Ogni mese si
+          approva da sé; la spunta dice quali sono già approvati. */}
+      {data.mesi?.length > 1 && (
+        <nav className="pp-mesi" aria-label={T.mesiTitolo}>
+          {data.mesi.map((x) => {
+            const qui = x.year === data.year && x.month === data.month;
+            return (
+              <button
+                key={`${x.year}-${x.month}`}
+                type="button"
+                className={`pp-mese ${qui ? "is-on" : ""}`}
+                aria-current={qui ? "page" : undefined}
+                onClick={() => vaiAlMese(x.year, x.month)}
+                disabled={loading}
+                title={x.approvato ? T.meseApprovato : undefined}
+              >
+                {T.mesi[x.month - 1]} {x.year}
+                {x.approvato && (
+                  <FontAwesomeIcon icon={faCheck} className="pp-mese-ok" aria-label={T.meseApprovato} />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      )}
       <div className="pp-intro">
         {T.ciao(data.client?.contactName || data.client?.name)}
       </div>
@@ -644,7 +705,7 @@ export default function PublicPlan() {
               ? T.approvazioneInCorso
               : approval
               ? T.approvaDiNuovo
-              : T.approvaPiano}
+              : T.approvaPiano(`${T.mesi[data.month - 1]} ${data.year}`)}
           </button>
         </div>
       ) : null}

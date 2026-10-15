@@ -215,6 +215,57 @@ body.pp-no-hscroll {
   font-size: 0.85rem;
 }
 
+/* Mesi del piano: una riga di "linguette", il mese aperto in arancione, la
+   spunta verde sui mesi già approvati. Su telefono scorrono di lato. */
+.pp-mesi {
+  display: flex;
+  gap: 8px;
+  margin: -6px 0 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.pp-mesi::-webkit-scrollbar {
+  display: none;
+}
+.pp-mese {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--pp-border);
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pp-mese:hover:not(:disabled) {
+  border-color: var(--pp-brand);
+}
+.pp-mese.is-on {
+  background: var(--pp-brand);
+  border-color: var(--pp-brand);
+  color: #fff;
+}
+.pp-mese:disabled {
+  cursor: progress;
+}
+.pp-mese:focus-visible {
+  outline: 2px solid var(--pp-brand);
+  outline-offset: 2px;
+}
+.pp-mese-ok {
+  color: #22c55e;
+  font-size: 0.75rem;
+}
+.pp-mese.is-on .pp-mese-ok {
+  color: #fff;
+}
 .pp-intro {
   font-size: 0.9rem;
   color: var(--pp-muted);
