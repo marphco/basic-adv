@@ -183,30 +183,28 @@ function shareEditorialPlan({ clientName, contactName, monthLabel, planUrl, mess
 // in quarantena, e comunque il cliente non la capirebbe.
 function shareEditorialPlanEn({ clientName, contactName, monthLabel, planUrl, msg }) {
   const body =
-    banner("From Basic Adv · editorial plan", BRAND) +
-    h("Your editorial plan is ready") +
+    banner("Basic Adv · Content calendar", BRAND) +
+    h("Your content calendar is ready") +
     p(`Hi ${esc(contactName || clientName)},`) +
     p(
-      `Here is the editorial plan for <strong>${esc(
-        monthLabel
-      )}</strong> for <strong>${esc(clientName)}</strong>.`
+      `The <strong>${esc(monthLabel)}</strong> content calendar for <strong>${esc(
+        clientName
+      )}</strong> is ready for your review.`
     ) +
     (msg ? quote(msg) : "") +
-    p(
-      "Open the link to see all of this month's posts and leave your notes directly on each one."
-    ) +
-    button("View the editorial plan", planUrl);
+    p("Click below to see all of this month's posts and leave comments right on each one.") +
+    button("View content calendar", planUrl);
   return {
-    subject: `Editorial plan for ${monthLabel} — ${clientName}`,
-    text: `Hi ${contactName || clientName},\nHere is the editorial plan for ${monthLabel} for ${clientName}.${
+    subject: `${monthLabel} content calendar — ${clientName}`,
+    text: `Hi ${contactName || clientName},\nThe ${monthLabel} content calendar for ${clientName} is ready for your review.${
       msg ? `\n\n${msg}\n` : ""
-    }\nView the plan and leave your notes: ${planUrl}`,
+    }\nView it and leave your comments: ${planUrl}`,
     html: wrap({
-      title: "Editorial plan",
-      preheader: `Editorial plan for ${monthLabel}`,
+      title: "Content calendar",
+      preheader: `Your ${monthLabel} content calendar is ready`,
       bodyHtml: body,
       footer:
-        "Basic Adv · Editorial plans. You are receiving this email because you are involved in an editorial plan.",
+        "Basic Adv · Content calendars. You're receiving this email because you're part of a content calendar review.",
       lang: "en",
     }),
   };
@@ -414,22 +412,22 @@ function grazieRichiesta({ name, lingua = "it", servizi = [] }) {
   const en = lingua === "en";
   const cosa = servizi.length ? servizi.join(", ") : "";
   const body = en
-    ? h("Thank you, we've got your request") +
+    ? h("Thanks, we've received your request") +
       p(`Hi ${esc(name)},`) +
-      p(`thanks for telling us about your project${cosa ? ` (<strong>${esc(cosa)}</strong>)` : ""}. We are reading your answers and will get back to you soon.`) +
-      p("If you want to add something in the meantime, just reply to this email.")
+      p(`Thanks for telling us about your project${cosa ? ` (<strong>${esc(cosa)}</strong>)` : ""}. We're reviewing your answers and will get back to you soon.`) +
+      p("If there's anything you'd like to add in the meantime, just reply to this email.")
     : h("Grazie, abbiamo ricevuto la tua richiesta") +
       p(`Ciao ${esc(name)},`) +
       p(`grazie per averci raccontato il tuo progetto${cosa ? ` (<strong>${esc(cosa)}</strong>)` : ""}. Stiamo leggendo le tue risposte e ti ricontatteremo presto.`) +
       p("Se nel frattempo vuoi aggiungere qualcosa, rispondi pure a questa email.");
   return {
-    subject: en ? "Thank you for contacting us!" : "Grazie per averci contattato!",
+    subject: en ? "Thanks for reaching out!" : "Grazie per averci contattato!",
     html: wrap({
-      title: en ? "Thank you" : "Grazie",
+      title: en ? "Thanks" : "Grazie",
       preheader: en ? "We'll get back to you soon." : "Ti ricontatteremo presto.",
       bodyHtml: body,
       footer: en
-        ? "Basic Adv · You receive this email because you filled in the form on basicadv.com."
+        ? "Basic Adv · You're receiving this email because you filled out the form on basicadv.com."
         : "Basic Adv · Ricevi questa email perché hai compilato il form su basicadv.com.",
       lang: lingua,
     }),

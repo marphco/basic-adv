@@ -133,56 +133,56 @@ export const TESTI = {
     cambiaLingua: "Language",
 
     linkNonValido: "This link is not valid.",
-    caricamento: "Loading your plan…",
-    accessoTitolo: "Your content plan",
-    accessoTesto: "Enter your email to see the plan and leave your notes.",
-    accessoEsempio: "your@email.com",
+    caricamento: "Loading your content calendar…",
+    accessoTitolo: "Your content calendar",
+    accessoTesto: "Enter your email to view the calendar and leave comments.",
+    accessoEsempio: "you@company.com",
     accessoVerifica: "Checking…",
-    accessoEntra: "Open the plan",
-    erroreServizio: "The service isn't available yet (404). Please try again shortly.",
-    erroreAccesso: (stato) => `Couldn't open the plan (HTTP ${stato}).`,
-    erroreRete: "Can't reach the server. Please try again.",
+    accessoEntra: "View calendar",
+    erroreServizio: "This page isn't available right now (404). Please try again in a few minutes.",
+    erroreAccesso: (stato) => `We couldn't open the calendar (HTTP ${stato}).`,
+    erroreRete: "We can't reach the server. Check your connection and try again.",
 
-    ciao: (nome) => `Hi ${nome}, here is this month's content plan.`,
+    ciao: (nome) => `Hi ${nome}, here's your content calendar for this month.`,
     guidaTitolo: "How it works",
-    guida1: ["Click a post to see it full size (image and text)."],
-    guida2: ["Want a ", ["change"], "? Leave a note on the post. You can leave as many as you like, on as many posts as you like."],
-    guida3: ["Once you've flagged ", ["all"], " the changes, press ", ["“Send notes to Basic”"], ": we receive them all at once."],
-    guida4: ["If everything is already fine, press ", ["“Approve content plan”"], "."],
-    legendaTue: "Your notes",
-    legendaBasic: "Note from Basic",
+    guida1: ["Click any post to see it full size, with its caption."],
+    guida2: ["Want something ", ["changed"], "? Leave a comment on the post. Add as many comments as you need, on any post."],
+    guida3: ["When you've added ", ["all"], " your comments, click ", ["“Send comments to Basic”"], " and we'll get them all at once."],
+    guida4: ["If everything looks good, click ", ["“Approve calendar”"], "."],
+    legendaTue: "Your comments",
+    legendaBasic: "Comment from Basic",
 
-    noteInviate: "Notes sent: Basic will make the changes.",
+    noteInviate: "Comments sent. Basic will make the changes.",
     noteLasciate: (n) =>
       n === 1
-        ? "You've left 1 note: send it to Basic to get the change made."
-        : `You've left ${n} notes: send them to Basic to get the changes made.`,
+        ? "You've left 1 comment. Send it to Basic so they can make the change."
+        : `You've left ${n} comments. Send them to Basic so they can make the changes.`,
     invio: "Sending…",
-    noteInviateBreve: "Notes sent",
-    inviaNote: "Send notes to Basic",
-    inviaMessaggio: "You're sending your notes to Basic. Would you like to add a message? (optional)",
-    inviaTitolo: "Send notes to Basic",
-    inviaConferma: "Send notes",
-    inviaEsempio: "E.g. a clarification, an upcoming change…",
+    noteInviateBreve: "Comments sent",
+    inviaNote: "Send comments to Basic",
+    inviaMessaggio: "You're about to send your comments to Basic. Want to add a message? (optional)",
+    inviaTitolo: "Send comments to Basic",
+    inviaConferma: "Send comments",
+    inviaEsempio: "E.g. some context, an upcoming change…",
 
-    approvaDiNuovoInfo: "The plan was updated after your last approval: if everything is fine, please confirm it again.",
-    approvaInfo: "If everything is fine, approve the content plan.",
+    approvaDiNuovoInfo: "The calendar was updated after you approved it. If everything looks good, please approve it again.",
+    approvaInfo: "If everything looks good, approve the calendar.",
     approvazioneInCorso: "Approving…",
     approvaDiNuovo: "Approve again",
-    approvaPiano: "Approve content plan",
-    approvaMessaggio: "Do you confirm you approve the content plan? You can add a message for Basic (optional).",
-    approvaTitolo: "Approve content plan",
-    approvaConferma: "Approve plan",
-    approvaEsempio: "E.g. All perfect! / a note for next month…",
-    approvatoVolte: (n) => `Plan approved ${n} times`,
-    approvatoIl: (data) => `Plan approved on ${data}`,
+    approvaPiano: "Approve calendar",
+    approvaMessaggio: "Approve this content calendar? You can add a message for Basic (optional).",
+    approvaTitolo: "Approve content calendar",
+    approvaConferma: "Approve",
+    approvaEsempio: "E.g. Looks great! / A note for next month…",
+    approvatoVolte: (n) => `Approved ${n} times`,
+    approvatoIl: (data) => `Approved on ${data}`,
     nApprovazione: (n) => `${ordinaleEn(n)} approval`,
 
-    nessunPost: "No posts published for this month.",
-    piede: "Basic Adv · Content plan",
+    nessunPost: "No posts scheduled for this month yet.",
+    piede: "Basic Adv · Content calendar",
     chiudi: "Close",
     sponsorizzato: "Sponsored",
-    ingrandisci: "Enlarge",
+    ingrandisci: "View full size",
     precedente: "Previous",
     successivo: "Next",
     apriPdf: "Open the PDF",
@@ -192,33 +192,33 @@ export const TESTI = {
     modifica: "Edit",
     elimina: "Delete",
     richiestaBasic: "Request from Basic",
-    notaBasic: "Note from Basic",
-    notaEsempio: "Add a note on this post (you can attach photos or videos)…",
+    notaBasic: "Comment from Basic",
+    notaEsempio: "Add a comment on this post (you can attach photos or videos)…",
     rimuoviAllegato: "Remove attachment",
     carico: "Uploading…",
     fotoVideo: "Photo / Video",
-    aggiungiNota: "Add note",
-    eliminaNotaDomanda: "Delete this note?",
+    aggiungiNota: "Add comment",
+    eliminaNotaDomanda: "Delete this comment?",
 
-    erroreAllegati: "Couldn't upload the attachments.",
-    erroreNota: "Couldn't send the note.",
-    erroreModifica: "Couldn't save the change.",
-    erroreElimina: "Couldn't delete the note.",
-    erroreFeedback: "Couldn't send your feedback.",
-    erroreApprova: "Couldn't approve the plan.",
+    erroreAllegati: "We couldn't upload your attachments.",
+    erroreNota: "We couldn't send your comment.",
+    erroreModifica: "We couldn't save your changes.",
+    erroreElimina: "We couldn't delete the comment.",
+    erroreFeedback: "We couldn't send your comments.",
+    erroreApprova: "We couldn't approve the calendar.",
 
     card: {
       sponsor: "Sponsored",
       video: (quanti, carosello) =>
         carosello ? `${quanti} ${quanti === 1 ? "video" : "videos"}` : "Video",
       cliente: (n) => `Client${n > 1 ? ` ${n}` : ""}`,
-      note: (n) => `${n > 1 ? "Notes" : "Note"}${n > 1 ? ` ${n}` : ""}`,
+      note: (n) => (n > 1 ? `${n} comments` : "Comment"),
       pdf: (n) => (n > 1 ? `${n} PDFs` : "PDF"),
     },
 
     // Le ore sono sempre quelle italiane (lo storico è dell'agenzia): per chi
     // legge dall'estero va detto, altrimenti sembrano ore sue.
-    dataOra: (data, ora) => `${data} · ${ora} (Italian time)`,
+    dataOra: (data, ora) => `${data} · ${ora} (Italy time)`,
   },
 };
 
@@ -228,20 +228,20 @@ export const TESTI = {
 // l'errore di riserva dell'azione.
 const ERRORI_SERVER_EN = {
   "Accesso negato.": "Access denied.",
-  "Email non riconosciuta per questo piano.": "This email isn't recognised for this plan.",
-  "Errore nel caricamento degli allegati.": "Couldn't upload the attachments.",
-  "Errore nel caricamento del piano.": "Couldn't load the plan.",
-  "Errore nell'approvazione del piano.": "Couldn't approve the plan.",
-  "Errore nell'eliminazione della nota.": "Couldn't delete the note.",
-  "Errore nell'invio del feedback.": "Couldn't send your feedback.",
-  "Errore nell'invio della nota.": "Couldn't send the note.",
-  "Errore nella modifica della nota.": "Couldn't save the change.",
-  "La nota è vuota.": "The note is empty.",
-  "Non ci sono note da inviare.": "There are no notes to send.",
-  "Nota non trovata.": "Note not found.",
+  "Email non riconosciuta per questo piano.": "We don't recognize this email for this calendar.",
+  "Errore nel caricamento degli allegati.": "We couldn't upload your attachments.",
+  "Errore nel caricamento del piano.": "We couldn't load the calendar.",
+  "Errore nell'approvazione del piano.": "We couldn't approve the calendar.",
+  "Errore nell'eliminazione della nota.": "We couldn't delete the comment.",
+  "Errore nell'invio del feedback.": "We couldn't send your comments.",
+  "Errore nell'invio della nota.": "We couldn't send your comment.",
+  "Errore nella modifica della nota.": "We couldn't save your changes.",
+  "La nota è vuota.": "The comment is empty.",
+  "Non ci sono note da inviare.": "There are no comments to send.",
+  "Nota non trovata.": "Comment not found.",
   "Post non trovato.": "Post not found.",
-  "Puoi eliminare solo le tue note.": "You can only delete your own notes.",
-  "Puoi modificare solo le tue note.": "You can only edit your own notes.",
+  "Puoi eliminare solo le tue note.": "You can only delete your own comments.",
+  "Puoi modificare solo le tue note.": "You can only edit your own comments.",
   "Troppi tentativi, riprova tra un minuto.": "Too many attempts, please try again in a minute.",
 };
 
@@ -253,17 +253,22 @@ export function erroreServer(messaggio, lingua, riserva) {
 
 export const ELENCO_ERRORI_SERVER = Object.keys(ERRORI_SERVER_EN);
 
-// Data e ora sempre nel fuso italiano, come prima; in inglese giorno/mese/anno
-// all'europea (en-GB), non mese/giorno all'americana.
+// Data e ora sempre nel fuso italiano, come prima.
 export function fmtDataOra(d, lingua) {
   try {
     const dt = new Date(d);
     if (Number.isNaN(dt.getTime())) return "";
     const tz = { timeZone: "Europe/Rome" };
-    const loc = lingua === "it" ? "it-IT" : "en-GB";
-    return TESTI[lingua].dataOra(
-      dt.toLocaleDateString(loc, tz),
-      dt.toLocaleTimeString(loc, { ...tz, hour: "2-digit", minute: "2-digit" })
+    if (lingua === "it")
+      return TESTI.it.dataOra(
+        dt.toLocaleDateString("it-IT", tz),
+        dt.toLocaleTimeString("it-IT", { ...tz, hour: "2-digit", minute: "2-digit" })
+      );
+    // in inglese il mese a parole (Oct 14, 2026): 10/14 o 14/10 si leggono
+    // al contrario a seconda di chi guarda
+    return TESTI.en.dataOra(
+      dt.toLocaleDateString("en-US", { ...tz, month: "short", day: "numeric", year: "numeric" }),
+      dt.toLocaleTimeString("en-US", { ...tz, hour: "numeric", minute: "2-digit" })
     );
   } catch {
     return "";
