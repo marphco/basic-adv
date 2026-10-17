@@ -35,6 +35,63 @@ import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
 import VersionsPanel from "./VersionsPanel";
 import { isPdf, primaPagina } from "./anteprimaPdf";
+import {
+  DndContext,
+  closestCenter,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// Riordino dei media: ogni casella ha bisogno di un identificativo che si
+// sposti con lei. L'indirizzo del file basta; se lo stesso file c'è due volte
+// si aggiunge quante volte è comparso prima.
+const idMedia = (media) => {
+  const visti = {};
+  return media.map((m) => {
+    const k = m.url || "senza-indirizzo";
+    visti[k] = (visti[k] || 0) + 1;
+    return `${k}#${visti[k]}`;
+  });
+};
+
+// Una casella dei media che si può trascinare. Col mouse basta trascinare; sul
+// telefono si tiene premuto un attimo, così scorrere la pagina col dito resta
+// scorrere e un tocco apre ancora l'anteprima.
+const CasellaMedia = ({ id, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`ep-media-tile ${isDragging ? "is-trascinata" : ""}`}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      {...attributes}
+      {...listeners}
+      // Invio/Spazio sulla ✕ o sull'anteprima fanno la loro azione: il
+      // riordino da tastiera parte solo dalla casella stessa.
+      onKeyDown={(e) => e.target === e.currentTarget && listeners?.onKeyDown?.(e)}
+      aria-roledescription="media da riordinare"
+    >
+      {children}
+    </div>
+  );
+};
+
+CasellaMedia.propTypes = {
+  id: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};
 
 const MONTHS_IT = [
   "gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -430,6 +487,25 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   const removeMedia = (i) =>
     setMedia((prev) => prev.filter((_, idx) => idx !== i));
 
+  // Riordino trascinando. Finito un trascinamento, il clic che il browser
+  // manda al rilascio non deve aprire l'anteprima.
+  const sensori = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const appenaTrascinato = useRef(false);
+  const fineTrascinamento = ({ active, over }) => {
+    setTimeout(() => (appenaTrascinato.current = false), 0);
+    if (!over || active.id === over.id) return;
+    setMedia((prev) => {
+      const ids = idMedia(prev);
+      const da = ids.indexOf(active.id);
+      const a = ids.indexOf(over.id);
+      return da < 0 || a < 0 ? prev : arrayMove(prev, da, a);
+    });
+  };
+
   // Inserisce un allegato del cliente tra i media del post (senza duplicati).
   // Per "sostituire": aggiungi e poi togli il vecchio con la ✕ nella griglia media.
   const addMediaFromNote = (item) => {
@@ -569,18 +645,33 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
             <label className="ep-field-label">Media</label>
             <span className="ep-media-type">{mediaTypeLabel(media)}</span>
           </div>
+          {media.length > 1 && (
+            <p className="ep-media-hint">
+              Trascina per cambiare l&apos;ordine (sul telefono tieni premuto). La
+              prima è la copertina.
+            </p>
+          )}
           <div
             className={`ep-media-grid ${dragOver ? "is-dragover" : ""}`}
             onDragOver={onMediaDragOver}
             onDragLeave={onMediaDragLeave}
             onDrop={onMediaDrop}
           >
+            <DndContext
+              sensors={sensori}
+              collisionDetection={closestCenter}
+              onDragStart={() => (appenaTrascinato.current = true)}
+              onDragEnd={fineTrascinamento}
+              onDragCancel={() => (appenaTrascinato.current = false)}
+            >
+            <SortableContext items={idMedia(media)} strategy={rectSortingStrategy}>
             {media.map((m, i) => (
-              <div key={i} className="ep-media-tile">
+              <CasellaMedia key={idMedia(media)[i]} id={idMedia(media)[i]}>
                 <button
                   type="button"
                   className="ep-media-open"
                   onClick={() =>
+                    !appenaTrascinato.current &&
                     setLightbox({ list: media, index: i, source: "media" })
                   }
                   title="Ingrandisci"
@@ -623,8 +714,10 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
-              </div>
+              </CasellaMedia>
             ))}
+            </SortableContext>
+            </DndContext>
             <button
               type="button"
               className="ep-media-add"

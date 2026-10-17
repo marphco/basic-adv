@@ -3227,3 +3227,24 @@
 .ep-recupero-voce .ep-page-row-top {
   margin-top: 4px;
 }
+
+/* Riordino dei media nel modale del post */
+.ep-media-tile {
+  touch-action: manipulation;
+  cursor: grab;
+}
+.ep-media-tile.is-trascinata {
+  z-index: 2;
+  cursor: grabbing;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  outline: 2px solid var(--foreground-color, #ff4003);
+}
+.ep-media-tile:focus-visible {
+  outline: 2px solid var(--foreground-color, #ff4003);
+  outline-offset: 2px;
+}
+.ep-media-hint {
+  margin: -4px 0 8px;
+  font-size: 0.78rem;
+  color: var(--ep-muted);
+}
