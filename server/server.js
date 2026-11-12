@@ -141,8 +141,24 @@ const mediaIntake = require("./services/mediaIntake");
 app.use("/uploads", express.static(UPLOAD_DIR), bucketFallback("uploads"));
 // Media dei piani editoriali (sottocartella dedicata, route separata: NON
 // interferisce con /uploads del form AI). L'X-Robots-Tag globale vale anche qui.
+// `?scarica=1` → il file arriva come allegato, con il suo nome: il browser lo
+// scarica invece di aprirlo in una scheda (l'attributo `download` dei link non
+// vale tra domini diversi, ed è il caso della dashboard). Senza, tutto come prima.
+const comeAllegato = (req, res, next) => {
+  if (req.query.scarica !== undefined) {
+    let nome = "";
+    try {
+      nome = path.basename(decodeURIComponent(req.path || "")).replace(/[^\w.-]/g, "_");
+    } catch {
+      /* percorso non decodificabile: lo gestisce chi viene dopo */
+    }
+    if (nome) res.attachment(nome);
+  }
+  next();
+};
 app.use(
   "/uploads-ped",
+  comeAllegato,
   express.static(require("./services/mediaStore").PED_DIR),
   bucketFallback("uploads-ped")
 );
