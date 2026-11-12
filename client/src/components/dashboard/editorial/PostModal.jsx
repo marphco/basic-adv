@@ -35,6 +35,7 @@ import { confirmDialog, toastErr } from "./uiNotify";
 import { api } from "./api";
 import VersionsPanel from "./VersionsPanel";
 import { isPdf, primaPagina } from "./anteprimaPdf";
+import { urlScarica, suIos, preparaFile, condividi } from "./scaricaMedia";
 import {
   DndContext,
   closestCenter,
@@ -133,6 +134,26 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
   const [salvando, setSalvando] = useState(false);
   const [notes, setNotes] = useState(draft.notes || []);
   const [lightbox, setLightbox] = useState(null); // { item, source: 'media'|'note' }
+  // Salvataggio su iPhone: il file si prepara, poi il menu di condivisione
+  // ("Salva video" / "Salva immagine"). { url, stato: "prepara" | "tocca", file }
+  const [salvaIos, setSalvaIos] = useState(null);
+  const salvaSuIphone = async (url) => {
+    if (salvaIos?.url === url && salvaIos.file) {
+      const esito = await condividi(salvaIos.file);
+      if (esito !== "serve-un-tocco") setSalvaIos(null);
+      return;
+    }
+    setSalvaIos({ url, stato: "prepara" });
+    const file = await preparaFile(url);
+    if (!file) {
+      // condivisione non disponibile: il file come allegato, Safari lo scarica
+      setSalvaIos(null);
+      window.location.href = urlScarica(url);
+      return;
+    }
+    const esito = await condividi(file);
+    setSalvaIos(esito === "serve-un-tocco" ? { url, stato: "tocca", file } : null);
+  };
   const [captionCopied, setCaptionCopied] = useState(false);
   // Nota che l'agenzia lascia AL cliente (spiegazione o richiesta) OPPURE nota
   // INTERNA (solo agenzia, mai al cliente).
@@ -1134,15 +1155,43 @@ const PostModal = ({ draft, client, onClose, onSave, onDelete, onRestored }) => 
                         <FontAwesomeIcon icon={faUpRightFromSquare} /> Apri il PDF
                       </a>
                     )}
-                    <a
-                      className="ep-btn ep-btn--ghost"
-                      href={item.url || item.thumbUrl}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <FontAwesomeIcon icon={faDownload} /> Scarica
-                    </a>
+                    {suIos() ? (
+                      <button
+                        type="button"
+                        className="ep-btn ep-btn--ghost"
+                        onClick={() => salvaSuIphone(item.url || item.thumbUrl)}
+                        disabled={
+                          salvaIos?.url === (item.url || item.thumbUrl) &&
+                          salvaIos.stato === "prepara"
+                        }
+                      >
+                        {salvaIos?.url === (item.url || item.thumbUrl) &&
+                        salvaIos.stato === "prepara" ? (
+                          <>
+                            <FontAwesomeIcon icon={faSpinner} spin /> Preparo…
+                          </>
+                        ) : salvaIos?.url === (item.url || item.thumbUrl) &&
+                          salvaIos.stato === "tocca" ? (
+                          <>
+                            <FontAwesomeIcon icon={faDownload} /> Tocca per salvare
+                          </>
+                        ) : (
+                          <>
+                            <FontAwesomeIcon icon={faDownload} /> Scarica
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      // Il server lo manda come allegato: si scarica e basta,
+                      // senza aprire schede.
+                      <a
+                        className="ep-btn ep-btn--ghost"
+                        href={urlScarica(item.url || item.thumbUrl)}
+                        download
+                      >
+                        <FontAwesomeIcon icon={faDownload} /> Scarica
+                      </a>
+                    )}
                     {lightbox.source === "note" && (
                       <button
                         className="ep-btn ep-btn--primary"
